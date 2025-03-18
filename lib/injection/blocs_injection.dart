@@ -49,7 +49,9 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(
-      () => VideoFelicitupBloc(),
+      () => VideoFelicitupBloc(
+        felicitupRepository: di(),
+      ),
     )
     ..registerFactory(
       () => BoteFelicitupBloc(

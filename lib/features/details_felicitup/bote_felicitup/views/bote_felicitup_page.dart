@@ -24,6 +24,7 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+      buildWhen: (previous, current) => previous.felicitup != current.felicitup,
       builder: (_, state) {
         final felicitup = state.felicitup;
         final currentUser = context.read<AppBloc>().state.currentUser;
@@ -40,7 +41,7 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(context.sp(20)),
-                      color: Colors.white,
+                      color: context.colors.white,
                     ),
                     child: Text(
                       'Bote regalo',

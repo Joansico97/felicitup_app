@@ -1,16 +1,30 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
-import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/bloc/details_felicitup_dashboard_bloc.dart';
+import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class VideoFelicitupPage extends StatelessWidget {
+class VideoFelicitupPage extends StatefulWidget {
   const VideoFelicitupPage({super.key});
+
+  @override
+  State<VideoFelicitupPage> createState() => _VideoFelicitupPageState();
+}
+
+class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
+  @override
+  void initState() {
+    super.initState();
+    final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+    context.read<VideoFelicitupBloc>().add(VideoFelicitupEvent.startListening(felicitup?.id ?? ''));
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+      buildWhen: (previous, current) => previous.felicitup != current.felicitup,
       builder: (_, state) {
         final felicitup = state.felicitup;
         final currentUser = context.read<AppBloc>().state.currentUser;
@@ -61,8 +75,90 @@ class VideoFelicitupPage extends StatelessWidget {
               ],
             ),
           ),
-          body: Center(
-            child: Text('Video Felicitup Page'),
+          body: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  height: context.sp(40),
+                  width: context.sp(113),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(context.sp(20)),
+                    color: context.colors.white,
+                  ),
+                  child: Text(
+                    'Vídeo',
+                    style: context.styles.smallText.copyWith(
+                      color: context.colors.softOrange,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: context.sp(22)),
+              BlocBuilder<VideoFelicitupBloc, VideoFelicitupState>(
+                builder: (_, state) {
+                  final invitedUsers = state.invitedUsers;
+
+                  return Column(
+                    children: [
+                      ...List.generate(
+                        invitedUsers?.length ?? 0,
+                        (index) => Column(
+                          children: [
+                            DetailsRow(
+                              prefixChild: Row(
+                                children: [
+                                  Container(
+                                    height: context.sp(23),
+                                    width: context.sp(23),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: context.colors.lightGrey,
+                                    ),
+                                    child: Text(
+                                      invitedUsers?[index].name![0].toUpperCase() ?? '',
+                                      style: context.styles.subtitle,
+                                    ),
+                                  ),
+                                  SizedBox(width: context.sp(14)),
+                                  Text(
+                                    invitedUsers?[index].name ?? '',
+                                    style: context.styles.smallText.copyWith(
+                                      color: invitedUsers?[index].videoData?.videoUrl?.isEmpty ?? false
+                                          ? context.colors.text
+                                          : context.colors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              sufixChild: Container(
+                                padding: EdgeInsets.all(context.sp(5)),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: invitedUsers?[index].videoData?.videoUrl?.isNotEmpty ?? false
+                                      ? context.colors.softOrange
+                                      : context.colors.text,
+                                ),
+                                child: Icon(
+                                  Icons.play_arrow,
+                                  color: invitedUsers?[index].videoData?.videoUrl?.isNotEmpty ?? false
+                                      ? Colors.white
+                                      : context.colors.text,
+                                  size: context.sp(11),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: context.sp(12)),
+                          ],
+                        ),
+                      )
+                    ],
+                  );
+                },
+              )
+            ],
           ),
         );
       },
