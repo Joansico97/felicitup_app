@@ -11,18 +11,20 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 class AuthFirebaseResource implements AuthRepository {
   AuthFirebaseResource({
     required DatabaseHelper client,
-  }) : _client = client;
+    required FirebaseAuth firebaseAuth,
+  })  : _client = client,
+        _firebaseAuth = firebaseAuth;
 
-  final _ref = FirebaseAuth.instance;
+  final FirebaseAuth _firebaseAuth;
   final DatabaseHelper _client;
 
   @override
   Future<Either<ApiException, void>> logout() async {
     try {
-      await _ref.signOut();
+      await _firebaseAuth.signOut();
       return const Right(null);
     } on FirebaseAuthException catch (e) {
-      // final message = _ref.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
+      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
       return Left(ApiException(400, e.message ?? ''));
     } catch (e) {
       return Left(ApiException(400, e.toString()));
@@ -32,10 +34,10 @@ class AuthFirebaseResource implements AuthRepository {
   @override
   Future<Either<ApiException, String>> login({required String email, required String password}) async {
     try {
-      await _ref.signInWithEmailAndPassword(email: email, password: password);
+      await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
       return const Right('');
     } on FirebaseAuthException catch (e) {
-      // final message = _ref.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
+      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
       return Left(ApiException(400, e.message ?? ''));
     } catch (e) {
       return Left(ApiException(400, e.toString()));
@@ -45,13 +47,13 @@ class AuthFirebaseResource implements AuthRepository {
   @override
   Future<Either<ApiException, UserCredential>> register({required String email, required String password}) async {
     try {
-      final userCredential = await _ref.createUserWithEmailAndPassword(
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
       return Right(userCredential);
     } on FirebaseAuthException catch (e) {
-      // final message = _ref.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
+      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
       return Left(ApiException(400, e.message ?? ''));
     } catch (e) {
       return Left(ApiException(400, e.toString()));
@@ -67,11 +69,11 @@ class AuthFirebaseResource implements AuthRepository {
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
       );
-      final response = await _ref.signInWithCredential(credential);
+      final response = await _firebaseAuth.signInWithCredential(credential);
 
       return Right(response);
     } on FirebaseAuthException catch (e) {
-      // final message = _ref.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
+      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
       return Left(ApiException(400, e.message ?? ''));
     } catch (e) {
       return Left(ApiException(400, e.toString()));
@@ -81,7 +83,7 @@ class AuthFirebaseResource implements AuthRepository {
   @override
   Future<Either<ApiException, String>> setFCMToken({required String token}) async {
     try {
-      final userId = _ref.currentUser?.uid;
+      final userId = _firebaseAuth.currentUser?.uid;
       if (userId == null) {
         return Left(ApiException(400, 'User not logged in'));
       }
@@ -102,7 +104,7 @@ class AuthFirebaseResource implements AuthRepository {
   @override
   Future<Either<ApiException, String>> updateCurrentChat({required String chatId}) async {
     try {
-      final userId = _ref.currentUser?.uid;
+      final userId = _firebaseAuth.currentUser?.uid;
       if (userId == null) {
         return Left(ApiException(400, 'User not logged in'));
       }
@@ -135,11 +137,11 @@ class AuthFirebaseResource implements AuthRepository {
         idToken: appleCredential.identityToken,
         accessToken: appleCredential.authorizationCode,
       );
-      final response = await _ref.signInWithCredential(credential);
+      final response = await _firebaseAuth.signInWithCredential(credential);
 
       return Right(response);
     } on FirebaseAuthException catch (e) {
-      // final message = _ref.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
+      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
       return Left(ApiException(400, e.message ?? ''));
     } catch (e) {
       FirebaseCrashlytics.instance.recordError(e, StackTrace.current);

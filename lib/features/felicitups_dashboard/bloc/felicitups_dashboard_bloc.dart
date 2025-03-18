@@ -17,7 +17,9 @@ part 'felicitups_dashboard_bloc.freezed.dart';
 class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsDashboardState> {
   FelicitupsDashboardBloc({
     required FelicitupRepository felicitupRepository,
+    required FirebaseAuth firebaseAuth,
   })  : _felicitupRepository = felicitupRepository,
+        _firebaseAuth = firebaseAuth,
         super(FelicitupsDashboardState.initial()) {
     on<FelicitupsDashboardEvent>(
       (events, emit) => events.map(
@@ -34,6 +36,7 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
   StreamSubscription<Either<ApiException, List<FelicitupModel>>>? _felicitupSubscription;
   StreamSubscription<Either<ApiException, List<FelicitupModel>>>? _felicitupPastSubscription;
   final FelicitupRepository _felicitupRepository;
+  final FirebaseAuth _firebaseAuth;
 
   _changeLoading(Emitter<FelicitupsDashboardState> emit) {}
 
@@ -56,7 +59,7 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
   }
 
   _startListening(Emitter<FelicitupsDashboardState> emit) {
-    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final userId = _firebaseAuth.currentUser!.uid;
     _felicitupSubscription = _felicitupRepository.streamFelicitups(userId).listen((either) {
       either.fold(
         (error) {},

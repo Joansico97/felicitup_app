@@ -97,11 +97,20 @@ Page<Widget> _detailsFelicitupDashboardHandler(
   GoRouterState state,
   Widget child,
 ) {
+  final data = state.extra as String?;
+
   return CustomTransitionPage(
     key: state.pageKey,
     child: MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => injection.di<DetailsFelicitupDashboardBloc>()),
+        BlocProvider(
+          create: (_) => injection.di<DetailsFelicitupDashboardBloc>()
+            ..add(
+              data == null
+                  ? DetailsFelicitupDashboardEvent.noEvent()
+                  : DetailsFelicitupDashboardEvent.getFelicitupInfo(data),
+            ),
+        ),
         BlocProvider(create: (_) => injection.di<InfoFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<MessageFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<PeopleFelicitupBloc>()),

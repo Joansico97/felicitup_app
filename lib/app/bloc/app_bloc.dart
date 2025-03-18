@@ -13,8 +13,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   AppBloc({
     required UserRepository userRepository,
     required AuthRepository authRepository,
+    required FirebaseAuth firebaseAuth,
   })  : _userRepository = userRepository,
         _authRepository = authRepository,
+        _firebaseAuth = firebaseAuth,
         super(AppState.initial()) {
     on<AppEvent>(
       (event, emit) => event.map(
@@ -27,6 +29,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   final UserRepository _userRepository;
   final AuthRepository _authRepository;
+  final FirebaseAuth _firebaseAuth;
 
   _changeLoading(Emitter<AppState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
@@ -36,7 +39,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     logger.debug('loadUserData');
     emit(state.copyWith(isLoading: true));
     try {
-      final response = await _userRepository.getUserData(FirebaseAuth.instance.currentUser?.uid ?? '');
+      final response = await _userRepository.getUserData(_firebaseAuth.currentUser?.uid ?? '');
 
       response.fold(
         (error) {

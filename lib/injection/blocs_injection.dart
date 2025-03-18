@@ -6,6 +6,7 @@ void _initBlocsInjection() {
       () => AppBloc(
         userRepository: di(),
         authRepository: di(),
+        firebaseAuth: di(),
       ),
     )
     ..registerFactory(
@@ -28,10 +29,13 @@ void _initBlocsInjection() {
     ..registerFactory(
       () => FelicitupsDashboardBloc(
         felicitupRepository: di(),
+        firebaseAuth: di(),
       ),
     )
     ..registerFactory(
-      () => DetailsFelicitupDashboardBloc(),
+      () => DetailsFelicitupDashboardBloc(
+        felicitupRepository: di(),
+      ),
     )
     ..registerFactory(
       () => InfoFelicitupBloc(),
@@ -40,12 +44,16 @@ void _initBlocsInjection() {
       () => MessageFelicitupBloc(),
     )
     ..registerFactory(
-      () => PeopleFelicitupBloc(),
+      () => PeopleFelicitupBloc(
+        felicitupRepository: di(),
+      ),
     )
     ..registerFactory(
       () => VideoFelicitupBloc(),
     )
     ..registerFactory(
-      () => BoteFelicitupBloc(),
+      () => BoteFelicitupBloc(
+        felicitupRepository: di(),
+      ),
     );
 }

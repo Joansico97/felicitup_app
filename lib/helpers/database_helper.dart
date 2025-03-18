@@ -1,10 +1,16 @@
-import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseHelper {
+  DatabaseHelper({
+    required FirebaseFirestore firestore,
+  }) : _firestore = firestore;
+
+  final FirebaseFirestore _firestore;
+
   String createId(
     String collection,
   ) {
-    final collRef = firestore.FirebaseFirestore.instance.collection(collection);
+    final collRef = _firestore.collection(collection);
     final docId = collRef.doc();
     return docId.id;
   }
@@ -15,10 +21,10 @@ class DatabaseHelper {
   }) async {
     try {
       if (document != null) {
-        final response = await firestore.FirebaseFirestore.instance.collection(collection).doc(document).get();
+        final response = await _firestore.collection(collection).doc(document).get();
         return response.data() ?? {};
       } else {
-        final response = await firestore.FirebaseFirestore.instance.collection(collection).get();
+        final response = await _firestore.collection(collection).get();
         return response.docs.map((e) => e.data()).toList();
       }
     } catch (e) {
@@ -33,9 +39,9 @@ class DatabaseHelper {
   }) async {
     try {
       if (document != null) {
-        await firestore.FirebaseFirestore.instance.collection(collection).doc(document).set(data);
+        await _firestore.collection(collection).doc(document).set(data);
       } else {
-        await firestore.FirebaseFirestore.instance.collection(collection).add(data);
+        await _firestore.collection(collection).add(data);
       }
     } catch (e) {
       return;
@@ -48,7 +54,7 @@ class DatabaseHelper {
     required String document,
   }) async {
     try {
-      await firestore.FirebaseFirestore.instance.collection(collection).doc(document).update(data);
+      await _firestore.collection(collection).doc(document).update(data);
     } catch (e) {
       return;
     }
@@ -59,7 +65,7 @@ class DatabaseHelper {
     required String document,
   }) async {
     try {
-      await firestore.FirebaseFirestore.instance.collection(collection).doc(document).delete();
+      await _firestore.collection(collection).doc(document).delete();
     } catch (e) {
       return;
     }
