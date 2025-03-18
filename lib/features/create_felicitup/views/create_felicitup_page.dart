@@ -52,6 +52,7 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<CreateFelicitupBloc, CreateFelicitupState>(
+      listenWhen: (previous, current) => previous.isLoading != current.isLoading || previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());

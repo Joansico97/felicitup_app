@@ -15,6 +15,8 @@ abstract class FelicitupRepository {
   });
   Future<Either<ApiException, void>> setLike(String felicitupId, String userId);
   Future<Either<ApiException, FelicitupModel>> getFelicitupById(String felicitupId);
+  Future<Either<ApiException, void>> setParticipation(String felicitupId, String newStatus);
+  Future<Either<ApiException, void>> deleteParticipant(String felicitupId, String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamPastFelicitups(String userId);
   Stream<Either<ApiException, List<InvitedModel>>> getInvitedStream(String felicitupId);

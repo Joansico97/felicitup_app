@@ -134,6 +134,65 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> setParticipation(String felicitupId, String newStatus) async {
+    try {
+      final docRef = _firestore.collection(AppConstants.feclitiupsCollection).doc(felicitupId);
+      final felicitup = await docRef.get();
+      if (!felicitup.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+      final userId = _firebaseAuth.currentUser!.uid;
+
+      final felicitupData = felicitup.data() as Map<String, dynamic>; //Cast a Map
+      final invitedUserDetails = felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
+      final userIndex = invitedUserDetails.indexWhere((user) => user['id'] == userId);
+      if (userIndex == -1) {
+        return Left(ApiException(1000, 'User not found'));
+      }
+      final updatedInvitedUserDetails = List<dynamic>.from(invitedUserDetails);
+      updatedInvitedUserDetails[userIndex]['assistanceStatus'] = newStatus;
+      await docRef.update({
+        'invitedUserDetails': updatedInvitedUserDetails,
+      });
+
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> deleteParticipant(String felicitupId, String userId) async {
+    try {
+      final docRef = _firestore.collection(AppConstants.feclitiupsCollection).doc(felicitupId);
+      final felicitup = await docRef.get();
+      if (!felicitup.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+
+      final felicitupData = felicitup.data() as Map<String, dynamic>; //Cast a Map
+      final invitedUserDetails = felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
+      final invitedUsers = felicitupData['invitedUsers'] as List<dynamic>? ?? [];
+      final userIndex = invitedUserDetails.indexWhere((user) => user['id'] == userId);
+      if (userIndex == -1) {
+        return Left(ApiException(1000, 'User not found'));
+      }
+      final updatedInvitedUserDetails = List<dynamic>.from(invitedUserDetails);
+      updatedInvitedUserDetails.removeAt(userIndex);
+      invitedUsers.remove(userId);
+
+      await docRef.update({
+        'invitedUsers': invitedUsers,
+        'invitedUserDetails': updatedInvitedUserDetails,
+      });
+
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId) {
     try {
       return _firestore

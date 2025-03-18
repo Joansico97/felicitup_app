@@ -44,7 +44,7 @@ Future<void> showConfirDoublemModal({
                       padding: EdgeInsets.all(context.sp(2)),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: context.colors.black,
+                        color: context.colors.orange,
                       ),
                       child: Icon(
                         Icons.close,
@@ -69,13 +69,15 @@ Future<void> showConfirDoublemModal({
                         await onAction1();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: context.colors.black,
+                        backgroundColor: context.colors.orange,
                         disabledBackgroundColor: context.colors.lightGrey,
                         elevation: 0,
                       ),
                       child: Text(
                         label1,
-                        style: context.styles.buttons,
+                        style: context.styles.buttons.copyWith(
+                          color: context.colors.white,
+                        ),
                       ),
                     ),
                     ElevatedButton(
