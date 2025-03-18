@@ -17,6 +17,14 @@ abstract class FelicitupRepository {
   Future<Either<ApiException, FelicitupModel>> getFelicitupById(String felicitupId);
   Future<Either<ApiException, void>> setParticipation(String felicitupId, String newStatus);
   Future<Either<ApiException, void>> deleteParticipant(String felicitupId, String userId);
+  Future<Either<ApiException, void>> updatePaymentData(
+    String felicitupId,
+    String paymentMethod,
+    String paymentStatus,
+    DateTime paymentDate,
+    String fileUrl,
+  );
+  Future<Either<ApiException, void>> confirmPaymentData(String felicitupId, String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamPastFelicitups(String userId);
   Stream<Either<ApiException, List<InvitedModel>>> getInvitedStream(String felicitupId);

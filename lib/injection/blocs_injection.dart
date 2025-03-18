@@ -58,5 +58,11 @@ void _initBlocsInjection() {
       () => BoteFelicitupBloc(
         felicitupRepository: di(),
       ),
+    )
+    ..registerFactory(
+      () => PaymentBloc(
+        felicitupRepository: di(),
+        userRepository: di(),
+      ),
     );
 }

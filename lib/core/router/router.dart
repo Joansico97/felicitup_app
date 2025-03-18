@@ -102,6 +102,11 @@ class CustomRouter {
           ),
         ],
       ),
+      GoRoute(
+        path: RouterPaths.payment,
+        pageBuilder: _paymentHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
     ],
   );
 

@@ -193,6 +193,85 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> updatePaymentData(
+    String felicitupId,
+    String paymentMethod,
+    String paymentStatus,
+    DateTime paymentDate,
+    String fileUrl,
+  ) async {
+    try {
+      final docId = _databaseHelper.createId(AppConstants.usersInvitedInformationCollection);
+      await _databaseHelper.set(
+        AppConstants.usersInvitedInformationCollection,
+        document: docId,
+        {
+          'id': docId,
+          'userId': _firebaseAuth.currentUser!.uid,
+          'photoUrl': fileUrl,
+          'paymentMethod': paymentMethod,
+          'paymentStatus': paymentStatus,
+          'confirmDate': paymentDate,
+        },
+      );
+
+      final docRef = _firestore.collection(AppConstants.feclitiupsCollection).doc(felicitupId);
+      final felicitupDoc = await docRef.get();
+      if (!felicitupDoc.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+
+      final felicitupData = felicitupDoc.data() as Map<String, dynamic>; //Cast a Map
+      final invitedUserDetails = felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
+      final userIndex = invitedUserDetails.indexWhere((user) => user['id'] == _firebaseAuth.currentUser!.uid);
+
+      if (userIndex == -1) {
+        throw Exception('Usuario con ID $_firebaseAuth.currentUser!.uid no encontrado en invitedUserDetails.');
+      }
+      final updatedInvitedUserDetails = List<dynamic>.from(invitedUserDetails);
+      updatedInvitedUserDetails[userIndex]['idInformation'] = docId;
+      updatedInvitedUserDetails[userIndex]['paid'] = enumToStringPayment(PaymentStatus.waiting);
+
+      await docRef.update({
+        'invitedUserDetails': updatedInvitedUserDetails,
+      });
+
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> confirmPaymentData(String felicitupId, String userId) async {
+    try {
+      final docRef = _firestore.collection(AppConstants.feclitiupsCollection).doc(felicitupId);
+      final felicitupDoc = await docRef.get();
+      if (!felicitupDoc.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+
+      final felicitupData = felicitupDoc.data() as Map<String, dynamic>; //Cast a Map
+      final invitedUserDetails = felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
+      final userIndex = invitedUserDetails.indexWhere((user) => user['id'] == userId);
+
+      if (userIndex == -1) {
+        throw Exception('Usuario con ID $_firebaseAuth.currentUser!.uid no encontrado en invitedUserDetails.');
+      }
+      final updatedInvitedUserDetails = List<dynamic>.from(invitedUserDetails);
+      updatedInvitedUserDetails[userIndex]['paid'] = enumToStringPayment(PaymentStatus.paid);
+
+      await docRef.update({
+        'invitedUserDetails': updatedInvitedUserDetails,
+      });
+
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId) {
     try {
       return _firestore

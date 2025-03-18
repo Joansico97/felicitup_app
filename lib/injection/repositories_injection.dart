@@ -11,6 +11,8 @@ void _initRepositoriesInjection() {
     ..registerLazySingleton<UserRepository>(
       () => UserFirebaseResource(
         client: di(),
+        firebaseAuth: di(),
+        firebaseStorage: di(),
       ),
     )
     ..registerLazySingleton<FelicitupRepository>(

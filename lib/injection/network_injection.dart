@@ -18,5 +18,8 @@ void _initNetworkInjection() {
     )
     ..registerLazySingleton<FirebaseFunctions>(
       () => FirebaseFunctions.instance,
+    )
+    ..registerLazySingleton<FirebaseStorage>(
+      () => FirebaseStorage.instance,
     );
 }

@@ -21,6 +21,7 @@ class RouterPaths {
   static const String peopleFelicitup = '/peopleFelicitup';
   static const String videoFelicitup = '/videoFelicitup';
   static const String boteFelicitup = '/boteFelicitup';
+  static const String payment = '/payment';
   static const String pastFelicitups = '/pastFelicitups';
   static const String confirmPayment = '/confirmPayment';
   static const String verifyPayment = '/verifyPayment';
