@@ -57,35 +57,32 @@ Page<Widget> _homeHandler(
   BuildContext context,
   GoRouterState state,
   Widget child,
-) =>
-    CustomTransitionPage(
-      key: state.pageKey,
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (_) => injection.di<HomeBloc>()),
-          BlocProvider(create: (_) => injection.di<CreateFelicitupBloc>()
-              // ..add(
-              //   CreateFelicitupEvent.loadFriendsData([]),
-              // ),
-              ),
-          BlocProvider(create: (_) => injection.di<FelicitupsDashboardBloc>()),
-        ],
-        child: HomePage(
-          childView: child,
-        ),
+) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => injection.di<HomeBloc>()),
+        BlocProvider(create: (_) => injection.di<CreateFelicitupBloc>()),
+        BlocProvider(create: (_) => injection.di<FelicitupsDashboardBloc>()),
+      ],
+      child: HomePage(
+        childView: child,
       ),
-      transitionDuration: Duration(milliseconds: 500),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOut;
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
 
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
 
-        return SlideTransition(position: offsetAnimation, child: child);
-      },
-    );
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
 
 Widget _createFelicitupHandler(BuildContext context, GoRouterState state) {
   return CreateFelicitupPage();
@@ -95,20 +92,59 @@ Widget _felicitupsDashboardHandler(BuildContext context, GoRouterState state) {
   return FelicitupsDashboardPage();
 }
 
-// Widget _homeHandler(BuildContext context, GoRouterState state) {
-//   return Consumer(
-//     builder: (_, ref, __) {
-//       Future.delayed(const Duration(milliseconds: 100), () async {
-//         await ref.read(homeEventsProvider.notifier).getAndUpdateContacts();
-//         await ref.read(homeEventsProvider.notifier).fillFriendsList();
-//         await ref.read(notificationsProvider.notifier).getFCMToken();
-//         await ref.read(appEventsProvider.notifier).getUserInfo();
-//         await ref.read(appEventsProvider.notifier).getUserImage();
-//       });
-//       return const HomePage();
-//     },
-//   );
-// }
+Page<Widget> _detailsFelicitupDashboardHandler(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => injection.di<DetailsFelicitupDashboardBloc>()),
+        BlocProvider(create: (_) => injection.di<InfoFelicitupBloc>()),
+        BlocProvider(create: (_) => injection.di<MessageFelicitupBloc>()),
+        BlocProvider(create: (_) => injection.di<PeopleFelicitupBloc>()),
+        BlocProvider(create: (_) => injection.di<VideoFelicitupBloc>()),
+        BlocProvider(create: (_) => injection.di<BoteFelicitupBloc>()),
+      ],
+      child: DetailsFelicitupDashboardPage(
+        childView: child,
+      ),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Widget _infoFelicitupHandler(BuildContext context, GoRouterState state) {
+  return InfoFelicitupPage();
+}
+
+Widget _messageFelicitupHandler(BuildContext context, GoRouterState state) {
+  return MessageFelicitupPage();
+}
+
+Widget _peopleFelicitupHandler(BuildContext context, GoRouterState state) {
+  return PeopleFelicitupPage();
+}
+
+Widget _videoFelicitupHandler(BuildContext context, GoRouterState state) {
+  return VideoFelicitupPage();
+}
+
+Widget _boteFelicitupHandler(BuildContext context, GoRouterState state) {
+  return BoteFelicitupPage();
+}
 
 // Widget _loginHandler(BuildContext context, GoRouterState state) => const LoginPage();
 // Widget _registerHandler(BuildContext context, GoRouterState state) => const RegisterPage();

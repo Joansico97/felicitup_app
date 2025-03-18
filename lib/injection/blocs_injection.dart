@@ -35,5 +35,17 @@ void _initBlocsInjection() {
     )
     ..registerFactory(
       () => InfoFelicitupBloc(),
+    )
+    ..registerFactory(
+      () => MessageFelicitupBloc(),
+    )
+    ..registerFactory(
+      () => PeopleFelicitupBloc(),
+    )
+    ..registerFactory(
+      () => VideoFelicitupBloc(),
+    )
+    ..registerFactory(
+      () => BoteFelicitupBloc(),
     );
 }

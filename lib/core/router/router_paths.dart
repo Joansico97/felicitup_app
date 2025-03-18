@@ -15,7 +15,12 @@ class RouterPaths {
   static const String notifications = '/notifications';
   static const String notificationsSettings = '/notificationsSettings';
   static const String inviteContacts = '/inviteContacts';
-  static const String felicitupDetails = '/felicitupDetails';
+  static const String felicitupDetailsDashboard = '/felicitupDetailsDashboard';
+  static const String infoFelicitup = '/infoFelicitup';
+  static const String messageFelicitup = '/messageFelicitup';
+  static const String peopleFelicitup = '/peopleFelicitup';
+  static const String videoFelicitup = '/videoFelicitup';
+  static const String boteFelicitup = '/boteFelicitup';
   static const String pastFelicitups = '/pastFelicitups';
   static const String confirmPayment = '/confirmPayment';
   static const String verifyPayment = '/verifyPayment';
