@@ -118,6 +118,41 @@ class CustomRouter {
         pageBuilder: _notificationsHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.profile,
+        pageBuilder: _profileHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.wishList,
+        pageBuilder: _wishListHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.wishListEdit,
+        pageBuilder: _wishListEditHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.singleChat,
+        pageBuilder: _singleChatHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.listSingleChat,
+        pageBuilder: _listSingleChatHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.contacts,
+        pageBuilder: _contactsHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.notificationsSettings,
+        pageBuilder: _notificationsSettingsHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
     ],
   );
 

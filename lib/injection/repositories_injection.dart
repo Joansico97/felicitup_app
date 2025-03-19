@@ -14,6 +14,7 @@ void _initRepositoriesInjection() {
         firebaseAuth: di(),
         firebaseStorage: di(),
         firebaseFunctionsHelper: di(),
+        firestore: di(),
       ),
     )
     ..registerLazySingleton<FelicitupRepository>(

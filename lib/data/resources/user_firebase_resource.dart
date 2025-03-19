@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
@@ -15,15 +16,18 @@ class UserFirebaseResource implements UserRepository {
     required FirebaseAuth firebaseAuth,
     required FirebaseStorage firebaseStorage,
     required FirebaseFunctionsHelper firebaseFunctionsHelper,
+    required FirebaseFirestore firestore,
   })  : _client = client,
         _firebaseAuth = firebaseAuth,
         _firebaseStorage = firebaseStorage,
-        _firebaseFunctionsHelper = firebaseFunctionsHelper;
+        _firebaseFunctionsHelper = firebaseFunctionsHelper,
+        _firestore = firestore;
 
   final DatabaseHelper _client;
   final FirebaseAuth _firebaseAuth;
   final FirebaseStorage _firebaseStorage;
   final FirebaseFunctionsHelper _firebaseFunctionsHelper;
+  final FirebaseFirestore _firestore;
 
   @override
   Future<Either<ApiException, Map<String, dynamic>>> getUserData(String userId) async {
@@ -222,6 +226,51 @@ class UserFirebaseResource implements UserRepository {
           'matchList': ids,
         },
       );
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> createGiftItem(GiftcarModel item) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+
+      await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
+        'giftCardList': FieldValue.arrayUnion([item.toJson()]),
+      });
+
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> deleteGiftItem(String id) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+
+      await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
+        'giftCardList': FieldValue.arrayRemove([id]),
+      });
+
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> editGiftItem(GiftcarModel item) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+
+      await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
+        'giftCardList': FieldValue.arrayUnion([item.toJson()]),
+      });
+
       return Right(null);
     } catch (e) {
       return Left(ApiException(1000, e.toString()));

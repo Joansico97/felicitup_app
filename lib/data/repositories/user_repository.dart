@@ -21,4 +21,7 @@ abstract class UserRepository {
   Future<Either<ApiException, void>> asignCurrentChatId(String id);
   Future<Either<ApiException, void>> updateContacts(List<Map<String, dynamic>> contacts, List<String> phones);
   Future<Either<ApiException, void>> updateMatchList(List<String> ids);
+  Future<Either<ApiException, void>> createGiftItem(GiftcarModel item);
+  Future<Either<ApiException, void>> editGiftItem(GiftcarModel item);
+  Future<Either<ApiException, void>> deleteGiftItem(String id);
 }

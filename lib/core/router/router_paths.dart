@@ -34,4 +34,6 @@ class RouterPaths {
   static const String giftcardItemDetail = '/giftcardItemDetail';
   static const String singleChat = '/singleChat';
   static const String listSingleChat = '/listSingleChat';
+  static const String wishList = '/wishList';
+  static const String wishListEdit = '/wishListEdit';
 }

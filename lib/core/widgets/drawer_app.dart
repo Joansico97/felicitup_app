@@ -21,13 +21,7 @@ class DrawerApp extends StatelessWidget {
           children: [
             SettingsButton(
               onTap: () {
-                // UserModel currentUser = ref.read(appEventsProvider.select((state) => state.currentUser!));
-                // context.push(
-                //   RouterPaths.profile,
-                //   extra: {
-                //     'user': currentUser,
-                //   },
-                // );
+                context.go(RouterPaths.profile);
                 Scaffold.of(context).closeDrawer();
               },
               label: 'Perfil',
@@ -35,7 +29,7 @@ class DrawerApp extends StatelessWidget {
             ),
             SettingsButton(
               onTap: () {
-                context.push(RouterPaths.giftcard);
+                context.go(RouterPaths.wishList);
                 Scaffold.of(context).closeDrawer();
               },
               label: 'Lista de deseos',
@@ -43,7 +37,7 @@ class DrawerApp extends StatelessWidget {
             ),
             SettingsButton(
               onTap: () {
-                context.push(RouterPaths.listSingleChat);
+                context.go(RouterPaths.listSingleChat);
                 Scaffold.of(context).closeDrawer();
               },
               label: 'Mesnajes directos',
@@ -51,7 +45,7 @@ class DrawerApp extends StatelessWidget {
             ),
             SettingsButton(
               onTap: () {
-                context.push(RouterPaths.contacts);
+                context.go(RouterPaths.contacts);
                 Scaffold.of(context).closeDrawer();
               },
               label: 'Contactos',
@@ -59,7 +53,7 @@ class DrawerApp extends StatelessWidget {
             ),
             SettingsButton(
               onTap: () {
-                context.push(RouterPaths.notificationsSettings);
+                context.go(RouterPaths.notificationsSettings);
                 Scaffold.of(context).closeDrawer();
               },
               label: 'Configuración de notificaciones',

@@ -80,5 +80,26 @@ void _initBlocsInjection() {
     )
     ..registerFactory(
       () => NotificationsBloc(),
+    )
+    ..registerFactory(
+      () => ProfileBloc(),
+    )
+    ..registerFactory(
+      () => WishListBloc(
+        firebaseAuth: di(),
+        userRepository: di(),
+      ),
+    )
+    ..registerFactory(
+      () => SingleChatBloc(),
+    )
+    ..registerFactory(
+      () => ListSingleChatBloc(),
+    )
+    ..registerFactory(
+      () => ContactsBloc(),
+    )
+    ..registerFactory(
+      () => NotificationsSettingsBloc(),
     );
 }

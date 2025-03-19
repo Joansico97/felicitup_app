@@ -223,3 +223,147 @@ Page<Widget> _notificationsHandler(BuildContext context, GoRouterState state) {
     },
   );
 }
+
+Page<Widget> _profileHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<ProfileBloc>(),
+      child: ProfilePage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Page<Widget> _wishListHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<WishListBloc>(),
+      child: WishListPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Page<Widget> _wishListEditHandler(BuildContext context, GoRouterState state) {
+  final data = state.extra as GiftcarModel;
+
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<WishListBloc>(),
+      child: WishListEditPage(
+        wishListItem: data,
+      ),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Page<Widget> _singleChatHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<SingleChatBloc>(),
+      child: SingleChatPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Page<Widget> _listSingleChatHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<ListSingleChatBloc>(),
+      child: ListSingleChatPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Page<Widget> _contactsHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<ContactsBloc>(),
+      child: ContactsPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Page<Widget> _notificationsSettingsHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<NotificationsSettingsBloc>(),
+      child: NotificationsSettingsPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
