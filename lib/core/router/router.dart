@@ -113,6 +113,11 @@ class CustomRouter {
         pageBuilder: _videoEditorHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.notifications,
+        pageBuilder: _notificationsHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
     ],
   );
 

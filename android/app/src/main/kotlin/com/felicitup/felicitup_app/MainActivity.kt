@@ -1,4 +1,4 @@
-package com.felicitup.felicitup.felicitup_app
+package com.felicitup.felicitup_app
 
 import io.flutter.embedding.android.FlutterActivity
 

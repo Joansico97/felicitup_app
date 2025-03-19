@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:either_dart/either.dart';
+import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
 import 'package:felicitup_app/data/models/models.dart';
@@ -17,8 +18,10 @@ part 'felicitups_dashboard_bloc.freezed.dart';
 class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsDashboardState> {
   FelicitupsDashboardBloc({
     required FelicitupRepository felicitupRepository,
+    required UserRepository userRepository,
     required FirebaseAuth firebaseAuth,
   })  : _felicitupRepository = felicitupRepository,
+        _userRepository = userRepository,
         _firebaseAuth = firebaseAuth,
         super(FelicitupsDashboardState.initial()) {
     on<FelicitupsDashboardEvent>(
@@ -26,6 +29,7 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
         changeLoading: (_) => _changeLoading(emit),
         changeListBoolsTap: (event) => _changeListBoolTap(emit, event.index, event.controller),
         setLike: (event) => _setLike(emit, event.felicitupId, event.userId),
+        updateMatchList: (event) => _updateMatchList(event.currentUser),
         startListening: (_) => _startListening(emit),
         recivedData: (event) => _recivedData(emit, event.listFelicitups),
         recivedPastData: (event) => _recivedPastData(emit, event.listFelicitups),
@@ -36,6 +40,7 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
   StreamSubscription<Either<ApiException, List<FelicitupModel>>>? _felicitupSubscription;
   StreamSubscription<Either<ApiException, List<FelicitupModel>>>? _felicitupPastSubscription;
   final FelicitupRepository _felicitupRepository;
+  final UserRepository _userRepository;
   final FirebaseAuth _firebaseAuth;
 
   _changeLoading(Emitter<FelicitupsDashboardState> emit) {}
@@ -56,6 +61,25 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
       await stopLoadingModal();
       unawaited(showErrorModal('Error al dar like'));
     }
+  }
+
+  _updateMatchList(UserModel currentUser) async {
+    List<String> phones = [...currentUser.friendsPhoneList ?? []];
+
+    final response = await _userRepository.getListUserDataByPhone(phones);
+
+    response.fold(
+      (l) => logger.error(l),
+      (r) async {
+        List<String> ids = [];
+        for (final doc in r) {
+          if (doc.id != null) {
+            ids.add(doc.id!);
+          }
+        }
+        await _userRepository.updateMatchList(ids);
+      },
+    );
   }
 
   _startListening(Emitter<FelicitupsDashboardState> emit) {

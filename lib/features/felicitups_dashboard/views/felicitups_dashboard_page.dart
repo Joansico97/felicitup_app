@@ -41,11 +41,19 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: BlocBuilder<HomeBloc, HomeState>(
         builder: (_, state) {
+          final currentUser = context.read<AppBloc>().state.currentUser;
           return state.create || !state.showButton
               ? SizedBox()
               : FloatingActionButton(
                   // onPressed: () => context.read<HomeBloc>().add(const HomeEvent.changeCreate()),
-                  onPressed: () => context.go(RouterPaths.createFelicitup),
+                  onPressed: () {
+                    if (currentUser != null) {
+                      context
+                          .read<FelicitupsDashboardBloc>()
+                          .add(FelicitupsDashboardEvent.updateMatchList(currentUser));
+                    }
+                    context.go(RouterPaths.createFelicitup);
+                  },
                   backgroundColor: context.colors.lightGrey,
                   elevation: 0,
                   shape: RoundedRectangleBorder(

@@ -18,7 +18,7 @@ class SettingsButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        width: context.sp(230),
+        width: context.sp(260),
         padding: EdgeInsets.symmetric(
           horizontal: context.sp(20),
           vertical: context.sp(15),
@@ -45,7 +45,7 @@ class SettingsButton extends StatelessWidget {
                   ),
                   child: Icon(
                     icon,
-                    size: 18,
+                    size: context.sp(18),
                     color: context.colors.orange,
                   ),
                 ),
@@ -53,7 +53,7 @@ class SettingsButton extends StatelessWidget {
                   width: context.sp(16),
                 ),
                 SizedBox(
-                  width: context.sp(100),
+                  width: context.sp(120),
                   child: Text(
                     label,
                     style: context.styles.paragraph,

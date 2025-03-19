@@ -78,7 +78,7 @@ class CommonHeader extends StatelessWidget {
                 child: Row(
                   children: [
                     IconButton(
-                      onPressed: () => context.push(RouterPaths.notifications),
+                      onPressed: () => context.go(RouterPaths.notifications),
                       icon: Icon(
                         Icons.notifications,
                         color: context.colors.darkGrey,

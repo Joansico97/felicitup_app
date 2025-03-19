@@ -12,7 +12,7 @@ class DrawerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: context.sp(230),
+      width: context.sp(260),
       color: context.colors.lightGrey,
       child: SafeArea(
         child: Column(

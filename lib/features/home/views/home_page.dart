@@ -21,7 +21,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    final currentUser = context.read<AppBloc>().state.currentUser;
     context.read<AppBloc>().add(AppEvent.loadUserData());
+    context.read<AppBloc>().add(AppEvent.initializeNotifications());
+    if (currentUser != null) {
+      context.read<HomeBloc>().add(HomeEvent.getAndUpdateContacts(currentUser));
+    }
   }
 
   @override

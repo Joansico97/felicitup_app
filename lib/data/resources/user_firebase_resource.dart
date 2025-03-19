@@ -43,6 +43,27 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
+  Future<Either<ApiException, Map<String, dynamic>>> getUserDataByPhone(String phone) async {
+    try {
+      final response = await _client.get(
+        AppConstants.usersCollection,
+      );
+      if (response != null) {
+        final user = response.firstWhere((user) => user['phone'] == phone, orElse: () => null);
+        if (user != null) {
+          return Right(user);
+        } else {
+          return Left(ApiException(404, 'User not found'));
+        }
+      } else {
+        return Left(ApiException(404, 'No users found in collection'));
+      }
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Future<Either<ApiException, List<Map<String, dynamic>>>> getListUserData(List<String> usersIds) async {
     try {
       final response = await _client.get(AppConstants.usersCollection);
@@ -53,6 +74,32 @@ class UserFirebaseResource implements UserRepository {
       } else {
         return Left(ApiException(404, 'Users not found'));
       }
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, List<UserModel>>> getListUserDataByPhone(List<String> phones) async {
+    try {
+      final List<UserModel> users = [];
+      final List<Map<String, dynamic>> firebaseUsers = [];
+
+      final response = await _client.get(AppConstants.usersCollection);
+
+      if (response == null) {
+        return Left(ApiException(404, 'Users not found'));
+      }
+
+      firebaseUsers.addAll(response);
+      final Set<Map<String, dynamic>> usersSet = firebaseUsers.map((e) => e).toSet();
+      List<Map<String, dynamic>> matchingUsers = usersSet.where((user) {
+        return phones.any((phone) => user['phone'] == phone);
+      }).toList();
+      for (final user in matchingUsers) {
+        users.add(UserModel.fromJson(user));
+      }
+      return Right(users);
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -130,6 +177,50 @@ class UserFirebaseResource implements UserRepository {
         AppConstants.usersCollection,
         document: uid,
         {'currentChat': id},
+      );
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> updateContacts(
+    List<Map<String, dynamic>> contacts,
+    List<String> phones,
+  ) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+      await _client.update(
+        AppConstants.usersCollection,
+        document: uid,
+        {
+          'friendList': contacts,
+          'friendsPhoneList': phones,
+        },
+      );
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> updateMatchList(List<String> ids) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+      await _client.update(
+        AppConstants.usersCollection,
+        document: uid,
+        {
+          'matchList': ids,
+        },
       );
       return Right(null);
     } catch (e) {
