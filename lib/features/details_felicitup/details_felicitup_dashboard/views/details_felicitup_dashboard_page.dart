@@ -144,18 +144,33 @@ class DetailsFelicitupDashboardPage extends StatelessWidget {
                                     switch (index) {
                                       case 0:
                                         detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.infoFelicitup);
+                                        context
+                                            .read<DetailsFelicitupDashboardBloc>()
+                                            .add(DetailsFelicitupDashboardEvent.asignCurrentChat(''));
                                         break;
                                       case 1:
                                         detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.messageFelicitup);
+                                        context
+                                            .read<DetailsFelicitupDashboardBloc>()
+                                            .add(DetailsFelicitupDashboardEvent.asignCurrentChat(felicitup.chatId));
                                         break;
                                       case 2:
                                         detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.peopleFelicitup);
+                                        context
+                                            .read<DetailsFelicitupDashboardBloc>()
+                                            .add(DetailsFelicitupDashboardEvent.asignCurrentChat(''));
                                         break;
                                       case 3:
                                         detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.videoFelicitup);
+                                        context
+                                            .read<DetailsFelicitupDashboardBloc>()
+                                            .add(DetailsFelicitupDashboardEvent.asignCurrentChat(''));
                                         break;
                                       case 4:
                                         detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.boteFelicitup);
+                                        context
+                                            .read<DetailsFelicitupDashboardBloc>()
+                                            .add(DetailsFelicitupDashboardEvent.asignCurrentChat(''));
                                         break;
                                       default:
                                     }

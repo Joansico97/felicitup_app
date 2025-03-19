@@ -10,9 +10,23 @@ class PushMessageModel with _$PushMessageModel {
     required String title,
     required String body,
     required DateTime sentDate,
-    Map<String, dynamic>? data,
-    String? imageUrl,
+    DataMessageModel? data,
   }) = _PushMessageModel;
 
   factory PushMessageModel.fromJson(Map<String, dynamic> json) => _$PushMessageModelFromJson(json);
+}
+
+@freezed
+class DataMessageModel with _$DataMessageModel {
+  const factory DataMessageModel({
+    String? felicitupId,
+    String? chatId,
+    String? isAssistance,
+    String? isPast,
+    String? singleChatId,
+    String? name,
+    List<String>? ids,
+  }) = _DataMessageModel;
+
+  factory DataMessageModel.fromJson(Map<String, dynamic> json) => _$DataMessageModelFromJson(json);
 }

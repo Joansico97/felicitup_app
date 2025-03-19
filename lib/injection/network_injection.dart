@@ -7,6 +7,11 @@ void _initNetworkInjection() {
         firestore: di(),
       ),
     )
+    ..registerLazySingleton<FirebaseFunctionsHelper>(
+      () => FirebaseFunctionsHelper(
+        firebaseFunctions: di(),
+      ),
+    )
     ..registerLazySingleton<FirebaseAuth>(
       () => FirebaseAuth.instance,
     )

@@ -15,4 +15,11 @@ class CreateFelicitupEvent with _$CreateFelicitupEvent {
   const factory CreateFelicitupEvent.addParticipant(Map<String, dynamic> participant) = _addParticipant;
   const factory CreateFelicitupEvent.loadFriendsData(List<String> usersIds) = _loadFriendsData;
   const factory CreateFelicitupEvent.createFelicitup(String felicitupMessage) = _createFelicitup;
+  const factory CreateFelicitupEvent.sendNotification(
+    String userId,
+    String title,
+    String message,
+    String currentChat,
+    Map<String, dynamic> data,
+  ) = _sendNotification;
 }

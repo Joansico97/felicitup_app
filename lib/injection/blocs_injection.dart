@@ -22,6 +22,7 @@ void _initBlocsInjection() {
     )
     ..registerFactory(
       () => CreateFelicitupBloc(
+        databaseHelper: di(),
         userRepository: di(),
         felicitupRepository: di(),
       ),
@@ -35,13 +36,18 @@ void _initBlocsInjection() {
     ..registerFactory(
       () => DetailsFelicitupDashboardBloc(
         felicitupRepository: di(),
+        userRepository: di(),
       ),
     )
     ..registerFactory(
       () => InfoFelicitupBloc(),
     )
     ..registerFactory(
-      () => MessageFelicitupBloc(),
+      () => MessageFelicitupBloc(
+        felicitupRepository: di(),
+        userRepository: di(),
+        chatRepository: di(),
+      ),
     )
     ..registerFactory(
       () => PeopleFelicitupBloc(
@@ -64,5 +70,8 @@ void _initBlocsInjection() {
         felicitupRepository: di(),
         userRepository: di(),
       ),
+    )
+    ..registerFactory(
+      () => VideoEditorBloc(),
     );
 }

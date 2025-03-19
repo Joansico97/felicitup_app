@@ -4,6 +4,7 @@ import 'package:felicitup_app/data/models/models.dart';
 
 abstract class FelicitupRepository {
   Future<Either<ApiException, String>> createFelicitup({
+    required String id,
     required int boteQuantity,
     required String eventReason,
     required String felicitupMessage,
@@ -28,4 +29,5 @@ abstract class FelicitupRepository {
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamPastFelicitups(String userId);
   Stream<Either<ApiException, List<InvitedModel>>> getInvitedStream(String felicitupId);
+  Stream<Either<ApiException, List<ChatMessageModel>>> getChatMessages(String chatId);
 }

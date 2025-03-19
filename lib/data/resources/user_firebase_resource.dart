@@ -5,7 +5,7 @@ import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
-import 'package:felicitup_app/helpers/database_helper.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -14,13 +14,16 @@ class UserFirebaseResource implements UserRepository {
     required DatabaseHelper client,
     required FirebaseAuth firebaseAuth,
     required FirebaseStorage firebaseStorage,
+    required FirebaseFunctionsHelper firebaseFunctionsHelper,
   })  : _client = client,
         _firebaseAuth = firebaseAuth,
-        _firebaseStorage = firebaseStorage;
+        _firebaseStorage = firebaseStorage,
+        _firebaseFunctionsHelper = firebaseFunctionsHelper;
 
   final DatabaseHelper _client;
   final FirebaseAuth _firebaseAuth;
   final FirebaseStorage _firebaseStorage;
+  final FirebaseFunctionsHelper _firebaseFunctionsHelper;
 
   @override
   Future<Either<ApiException, Map<String, dynamic>>> getUserData(String userId) async {
@@ -89,6 +92,46 @@ class UserFirebaseResource implements UserRepository {
       } else {
         return Left(ApiException(404, 'User not found'));
       }
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> sendNotification(
+    String userId,
+    String title,
+    String message,
+    String currentChat,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      await _firebaseFunctionsHelper.sendNotification(
+        userId: userId,
+        title: title,
+        message: message,
+        currentChat: currentChat,
+        data: data,
+      );
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> asignCurrentChatId(String id) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+      await _client.update(
+        AppConstants.usersCollection,
+        document: uid,
+        {'currentChat': id},
+      );
+      return Right(null);
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }

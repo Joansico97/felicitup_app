@@ -8,5 +8,13 @@ abstract class UserRepository {
   Future<Either<ApiException, Map<String, dynamic>>> getUserData(String userId);
   Future<Either<ApiException, List<Map<String, dynamic>>>> getListUserData(List<String> usersIds);
   Future<Either<ApiException, String>> uploadFile(File file, String destination);
+  Future<Either<ApiException, void>> sendNotification(
+    String userId,
+    String title,
+    String message,
+    String currentChat,
+    Map<String, dynamic> data,
+  );
   Future<Either<ApiException, UserInvitedInformationModel>> getUserInvitedInformation(String id);
+  Future<Either<ApiException, void>> asignCurrentChatId(String id);
 }

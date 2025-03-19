@@ -13,6 +13,7 @@ void _initRepositoriesInjection() {
         client: di(),
         firebaseAuth: di(),
         firebaseStorage: di(),
+        firebaseFunctionsHelper: di(),
       ),
     )
     ..registerLazySingleton<FelicitupRepository>(
@@ -20,6 +21,11 @@ void _initRepositoriesInjection() {
         databaseHelper: di(),
         userRepository: di(),
         firebaseAuth: di(),
+        firestore: di(),
+      ),
+    )
+    ..registerLazySingleton<ChatRepository>(
+      () => ChatFirebaseResource(
         firestore: di(),
       ),
     );

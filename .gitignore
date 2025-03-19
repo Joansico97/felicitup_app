@@ -63,3 +63,5 @@ Makefile
 
 # Env
 .env
+
+serviceAccountMergeKey.json

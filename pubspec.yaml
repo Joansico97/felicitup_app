@@ -18,8 +18,6 @@ dependencies:
   flutter_svg: ^2.0.17
 
   # State Management
-  # flutter_riverpod: ^2.6.1
-  # riverpod_annotation: ^2.6.1
   bloc: ^9.0.0
   hydrated_bloc: ^10.0.0
   flutter_bloc: ^9.0.0

@@ -30,6 +30,14 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           event.paymentDate,
           event.file,
         ),
+        sendNotification: (event) => _sendNotification(
+          emit,
+          event.userId,
+          event.title,
+          event.message,
+          event.currentChat,
+          event.data,
+        ),
       ),
     );
   }
@@ -187,6 +195,25 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           errorMessage: 'Error actualizando información',
         ),
       );
+    }
+  }
+
+  _sendNotification(
+    Emitter<PaymentState> emit,
+    String userId,
+    String title,
+    String message,
+    String currentChat,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      await _userRepository.sendNotification(userId, title, message, currentChat, data);
+    } catch (e) {
+      emit(state.copyWith(
+        isLoading: false,
+        updateStatus: UpdateStatus.error,
+        errorMessage: 'Error enviando notificación',
+      ));
     }
   }
 }

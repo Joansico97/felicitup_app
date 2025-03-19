@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
+import 'package:felicitup_app/data/models/chat_message_model/chat_message_model.dart';
 import 'package:felicitup_app/data/models/felicitup_models/felicitup_model/felicitup_model.dart';
 import 'package:felicitup_app/data/models/felicitup_models/invited_model/invited_model.dart';
 import 'package:felicitup_app/data/models/user_models/user_models.dart';
@@ -27,6 +28,7 @@ class FelicitupFirebaseResource implements FelicitupRepository {
 
   @override
   Future<Either<ApiException, String>> createFelicitup({
+    required String id,
     required int boteQuantity,
     required String eventReason,
     required String felicitupMessage,
@@ -37,7 +39,6 @@ class FelicitupFirebaseResource implements FelicitupRepository {
     required List<Map<String, dynamic>> participants,
   }) async {
     try {
-      final felicitupId = _databaseHelper.createId(AppConstants.feclitiupsCollection);
       final chatId = _databaseHelper.createId(AppConstants.chatsCollection);
       await _databaseHelper.set(
         AppConstants.chatsCollection,
@@ -58,9 +59,9 @@ class FelicitupFirebaseResource implements FelicitupRepository {
           final listUsersData = createListIdsFromUsers(currentUser: user, participants: participants);
           await _databaseHelper.set(
             AppConstants.feclitiupsCollection,
-            document: felicitupId,
+            document: id,
             {
-              'id': felicitupId,
+              'id': id,
               'date': felicitupDate,
               'owner': listOwners,
               'createdBy': user.id,
@@ -81,7 +82,7 @@ class FelicitupFirebaseResource implements FelicitupRepository {
         },
       );
 
-      return Right(felicitupId);
+      return Right('Felicitup created successfully');
     } catch (e) {
       return Left(ApiException(1000, 'Error creating felicitup'));
     }
@@ -322,6 +323,23 @@ class FelicitupFirebaseResource implements FelicitupRepository {
         final List<Map<String, dynamic>> invitedUsers = List.from(data['invitedUserDetails']);
         final List<InvitedModel> listInvited = invitedUsers.map((e) => InvitedModel.fromJson(e)).toList();
         return Right(listInvited);
+      });
+    } catch (e) {
+      return Stream.value(Left(ApiException(1000, e.toString())));
+    }
+  }
+
+  @override
+  Stream<Either<ApiException, List<ChatMessageModel>>> getChatMessages(String chatId) {
+    try {
+      return _firestore.collection(AppConstants.chatsCollection).doc(chatId).snapshots().map((event) {
+        final data = event.data();
+        if (data == null) {
+          return Left(ApiException(1000, 'Felicitup not found'));
+        }
+        final List<Map<String, dynamic>> messageData = List.from(data['messages']);
+        final List<ChatMessageModel> listMessages = messageData.map((e) => ChatMessageModel.fromJson(e)).toList();
+        return Right(listMessages);
       });
     } catch (e) {
       return Stream.value(Left(ApiException(1000, e.toString())));

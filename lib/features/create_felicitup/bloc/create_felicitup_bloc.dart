@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -15,9 +17,11 @@ part 'create_felicitup_bloc.freezed.dart';
 
 class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupState> {
   CreateFelicitupBloc({
+    required DatabaseHelper databaseHelper,
     required UserRepository userRepository,
     required FelicitupRepository felicitupRepository,
-  })  : _userRepository = userRepository,
+  })  : _databaseHelper = databaseHelper,
+        _userRepository = userRepository,
         _felicitupRepository = felicitupRepository,
         super(CreateFelicitupState.initial()) {
     on<CreateFelicitupEvent>(
@@ -35,10 +39,18 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
         addParticipant: (event) => _addParticipant(emit, event.participant),
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
         createFelicitup: (event) => _createFelicitup(emit, event.felicitupMessage),
+        sendNotification: (event) => _sendNotification(
+          event.userId,
+          event.title,
+          event.message,
+          event.currentChat,
+          event.data,
+        ),
       ),
     );
   }
 
+  final DatabaseHelper _databaseHelper;
   final UserRepository _userRepository;
   final FelicitupRepository _felicitupRepository;
 
@@ -273,8 +285,10 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
           felicitupDate.second,
         );
       }
+      final felicitupId = _databaseHelper.createId(AppConstants.feclitiupsCollection);
 
       final response = await _felicitupRepository.createFelicitup(
+        id: felicitupId,
         boteQuantity: state.boteQuantity ?? 0,
         eventReason: state.eventReason,
         felicitupMessage: felicitupMessage,
@@ -291,6 +305,26 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
           unawaited(showErrorModal(l.message));
         },
         (r) {
+          List participants = [...state.invitedContacts];
+          List ids = participants.map((e) => e['id']).toList();
+          ids.removeAt(0);
+          for (var element in ids) {
+            add(CreateFelicitupEvent.sendNotification(
+              element,
+              'Nueva Felicitup',
+              'Has sido invitado a un felicitup',
+              '',
+              {
+                'felicitupId': felicitupId,
+                'chatId': '',
+                'isAssistance': 'false',
+                'isPast': 'false',
+                'singleChatId': '',
+                'name': '',
+                'ids': [],
+              },
+            ));
+          }
           emit(state.copyWith(
             isLoading: false,
             status: CreateStatus.success,
@@ -301,6 +335,26 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
     } catch (e) {
       emit(state.copyWith(isLoading: false));
       showErrorModal('Ocurrió un error al crear la felicitup');
+    }
+  }
+
+  _sendNotification(
+    String userId,
+    String title,
+    String message,
+    String currentChat,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      await _userRepository.sendNotification(
+        userId,
+        title,
+        message,
+        currentChat,
+        data,
+      );
+    } catch (e) {
+      logger.error(e);
     }
   }
 }

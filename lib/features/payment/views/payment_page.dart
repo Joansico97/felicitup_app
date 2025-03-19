@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
@@ -388,6 +389,8 @@ class _ConfirmViewState extends State<ConfirmView> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = context.read<AppBloc>().state.currentUser;
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: context.sp(24),
@@ -635,15 +638,34 @@ class _ConfirmViewState extends State<ConfirmView> {
                 SizedBox(
                   width: context.sp(200),
                   child: PrimaryButton(
-                    onTap: () => context.read<PaymentBloc>().add(
-                          PaymentEvent.updatePaymentInfo(
-                            widget.felicitup.id,
-                            selectedPaymentMethod,
-                            selectedPaymentStatus,
-                            selectedDate!,
-                            '',
-                          ),
-                        ),
+                    onTap: () {
+                      context.read<PaymentBloc>().add(
+                            PaymentEvent.updatePaymentInfo(
+                              widget.felicitup.id,
+                              selectedPaymentMethod,
+                              selectedPaymentStatus,
+                              selectedDate!,
+                              '',
+                            ),
+                          );
+                      context.read<PaymentBloc>().add(
+                            PaymentEvent.sendNotification(
+                              widget.felicitup.createdBy,
+                              'Pago realizado',
+                              '${currentUser?.firstName ?? ''} ha realizado el pago de la felicitup de ${widget.felicitup.owner.first.name.split(' ')[0]}',
+                              '',
+                              {
+                                'felicitupId': widget.felicitup.id,
+                                'chatId': '',
+                                'isAssistance': 'pago',
+                                'isPast': 'false',
+                                'singleChatId': '',
+                                'name': '',
+                                'ids': [],
+                              },
+                            ),
+                          );
+                    },
                     label: 'Enviar Pago',
                     isActive: true,
                   ),

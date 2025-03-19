@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -36,7 +35,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   _loadUserData(Emitter<AppState> emit) async {
-    logger.debug('loadUserData');
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _userRepository.getUserData(_firebaseAuth.currentUser?.uid ?? '');

@@ -1,3 +1,4 @@
+import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/features.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -105,6 +106,11 @@ class CustomRouter {
       GoRoute(
         path: RouterPaths.payment,
         pageBuilder: _paymentHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.videoEditor,
+        pageBuilder: _videoEditorHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
     ],

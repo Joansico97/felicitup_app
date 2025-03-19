@@ -13,6 +13,7 @@ class ChatMessageModel with _$ChatMessageModel {
     required String message,
     required String sendedBy,
     required String userName,
+    String? userImg,
     @TimestampConverter() required DateTime sendedAt,
   }) = _ChatMessageModel;
 
