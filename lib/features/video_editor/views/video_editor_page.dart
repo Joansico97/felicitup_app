@@ -32,7 +32,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   String? videoUrl;
   Duration _duration = Duration.zero; // Duración total del video.
   Duration _position = Duration.zero; // Posición actual de reproducción.
-  bool _isInitialized = false; //Para saber cuando ya está inicializado el controlador
+  // bool _isInitialized = false; //Para saber cuando ya está inicializado el controlador
   bool _isPlaying = false;
 
   @override
@@ -192,7 +192,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                                 _controller!.play();
                                 setState(() {
                                   _duration = _controller!.value.duration;
-                                  _isInitialized = true; //El controlador ya se inicializó
+                                  // _isInitialized = true; //El controlador ya se inicializó
                                   _isPlaying = true;
                                 });
                                 _controller!.addListener(() {

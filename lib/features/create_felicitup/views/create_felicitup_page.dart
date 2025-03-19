@@ -109,7 +109,10 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                                   title: '¿Quieres salir de la creación de tu felicitup?',
                                   onAccept: () async {
                                     context.go(RouterPaths.felicitupsDashboard);
-                                    // context.read<HomeBloc>().add(const HomeEvent.changeCreate());
+                                    context
+                                        .read<CreateFelicitupBloc>()
+                                        .add(CreateFelicitupEvent.deleteCurrentFelicitup());
+                                    // context.read<HomeBloc>().add(const HomeEvent.changeShowButton());
                                     // ref.read(homeEventsProvider.notifier).toggleCreate();
                                     // ref.read(homeEventsProvider.notifier).deleteCurrentFelicitup();
                                   },

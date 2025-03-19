@@ -40,30 +40,28 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
       drawer: const DrawerApp(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: BlocBuilder<HomeBloc, HomeState>(
+        buildWhen: (previous, current) =>
+            previous.showButton != current.showButton || previous.create != current.create,
         builder: (_, state) {
           final currentUser = context.read<AppBloc>().state.currentUser;
-          return state.create || !state.showButton
-              ? SizedBox()
-              : FloatingActionButton(
-                  // onPressed: () => context.read<HomeBloc>().add(const HomeEvent.changeCreate()),
-                  onPressed: () {
-                    if (currentUser != null) {
-                      context
-                          .read<FelicitupsDashboardBloc>()
-                          .add(FelicitupsDashboardEvent.updateMatchList(currentUser));
-                    }
-                    context.go(RouterPaths.createFelicitup);
-                  },
-                  backgroundColor: context.colors.lightGrey,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(context.sp(50)),
-                  ),
-                  child: Image.asset(
-                    Assets.images.logo.path,
-                    scale: context.sp(11),
-                  ),
-                );
+
+          return FloatingActionButton(
+            onPressed: () {
+              if (currentUser != null) {
+                context.read<FelicitupsDashboardBloc>().add(FelicitupsDashboardEvent.updateMatchList(currentUser));
+              }
+              context.go(RouterPaths.createFelicitup);
+            },
+            backgroundColor: context.colors.lightGrey,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(context.sp(50)),
+            ),
+            child: Image.asset(
+              Assets.images.logo.path,
+              scale: context.sp(11),
+            ),
+          );
         },
       ),
       body: SafeArea(
