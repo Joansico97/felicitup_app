@@ -58,6 +58,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   _logout(Emitter<AppState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
+      await _userRepository.asignCurrentChatId('');
       await _authRepository.logout();
       emit(state.copyWith(
         isLoading: false,
