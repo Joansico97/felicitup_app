@@ -13,23 +13,12 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> detailsFelicitupNavigatorKey = GlobalKey<NavigatorState>();
 
-final noAuthenticated = [
-  RouterPaths.init,
-  RouterPaths.login,
-  RouterPaths.register,
-  RouterPaths.termsConditions,
-  RouterPaths.verification,
-  RouterPaths.inviteContacts,
-  RouterPaths.resetPassword,
-  RouterPaths.notificationInfo,
-];
-
 class CustomRouter {
   static final _router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: RouterPaths.felicitupsDashboard,
     redirect: (context, state) {
-      if (!noAuthenticated.contains(state.matchedLocation)) {
+      if (!RouterPaths().noAuthenticated.contains(state.matchedLocation)) {
         if (FirebaseAuth.instance.currentUser == null) {
           return RouterPaths.init;
         } else {

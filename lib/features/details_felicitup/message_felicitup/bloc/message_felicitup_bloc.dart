@@ -74,15 +74,15 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
               'Nuevo mensaje de $userName',
               chatMessage.message,
               felicitup.chatId,
-              {
-                'felicitupId': felicitup.id,
-                'chatId': felicitup.chatId,
-                'isAssistance': 'false',
-                'isPast': 'false',
-                'singleChatId': '',
-                'name': '',
-                'ids': [],
-              },
+              DataMessageModel(
+                felicitupId: felicitup.id,
+                chatId: felicitup.chatId,
+                isAssistance: 'false',
+                isPast: 'false',
+                singleChatId: '',
+                name: '',
+                ids: [],
+              ),
             );
           }
         },

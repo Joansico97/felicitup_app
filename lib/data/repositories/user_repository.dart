@@ -15,7 +15,14 @@ abstract class UserRepository {
     String title,
     String message,
     String currentChat,
-    Map<String, dynamic> data,
+    DataMessageModel data,
+  );
+  Future<Either<ApiException, void>> sendNotificationToListUsers(
+    List<String> ids,
+    String title,
+    String message,
+    String currentChat,
+    DataMessageModel data,
   );
   Future<Either<ApiException, UserInvitedInformationModel>> getUserInvitedInformation(String id);
   Future<Either<ApiException, void>> asignCurrentChatId(String id);
@@ -24,4 +31,6 @@ abstract class UserRepository {
   Future<Either<ApiException, void>> createGiftItem(GiftcarModel item);
   Future<Either<ApiException, void>> editGiftItem(GiftcarModel item);
   Future<Either<ApiException, void>> deleteGiftItem(String id);
+  Future<Either<ApiException, void>> setFCMToken(String token);
+  Future<Either<ApiException, void>> syncNotifications(PushMessageModel notification);
 }

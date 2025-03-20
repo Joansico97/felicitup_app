@@ -204,10 +204,16 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     String title,
     String message,
     String currentChat,
-    Map<String, dynamic> data,
+    DataMessageModel data,
   ) async {
     try {
-      await _userRepository.sendNotification(userId, title, message, currentChat, data);
+      await _userRepository.sendNotification(
+        userId,
+        title,
+        message,
+        currentChat,
+        data,
+      );
     } catch (e) {
       emit(state.copyWith(
         isLoading: false,

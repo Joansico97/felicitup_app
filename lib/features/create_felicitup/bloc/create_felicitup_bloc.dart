@@ -39,8 +39,8 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
         addParticipant: (event) => _addParticipant(emit, event.participant),
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
         createFelicitup: (event) => _createFelicitup(emit, event.felicitupMessage),
-        sendNotification: (event) => _sendNotification(
-          event.userId,
+        sendNotifications: (event) => _sendNotifications(
+          event.ids,
           event.title,
           event.message,
           event.currentChat,
@@ -306,25 +306,26 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
         },
         (r) {
           List participants = [...state.invitedContacts];
-          List ids = participants.map((e) => e['id']).toList();
+          List<String> ids = participants.map((e) => e['id'] as String).toList();
           ids.removeAt(0);
-          for (var element in ids) {
-            add(CreateFelicitupEvent.sendNotification(
-              element,
+          add(
+            CreateFelicitupEvent.sendNotifications(
+              ids,
               'Nueva Felicitup',
               'Has sido invitado a un felicitup',
               '',
-              {
-                'felicitupId': felicitupId,
-                'chatId': '',
-                'isAssistance': 'false',
-                'isPast': 'false',
-                'singleChatId': '',
-                'name': '',
-                'ids': [],
-              },
-            ));
-          }
+              DataMessageModel(
+                felicitupId: felicitupId,
+                chatId: '',
+                isAssistance: 'false',
+                isPast: 'false',
+                singleChatId: '',
+                name: '',
+                ids: [],
+              ),
+            ),
+          );
+
           emit(state.copyWith(
             isLoading: false,
             status: CreateStatus.success,
@@ -338,16 +339,16 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
     }
   }
 
-  _sendNotification(
-    String userId,
+  _sendNotifications(
+    List<String> ids,
     String title,
     String message,
     String currentChat,
-    Map<String, dynamic> data,
+    DataMessageModel data,
   ) async {
     try {
-      await _userRepository.sendNotification(
-        userId,
+      await _userRepository.sendNotificationToListUsers(
+        ids,
         title,
         message,
         currentChat,

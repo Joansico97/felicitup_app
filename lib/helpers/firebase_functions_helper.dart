@@ -27,6 +27,25 @@ class FirebaseFunctionsHelper {
     );
   }
 
+  Future<void> sendNotificationToList({
+    required List<String> ids,
+    required String title,
+    required String message,
+    required String currentChat,
+    required Map<String, dynamic> data,
+  }) async {
+    await _call(
+      'sendNotificationToList',
+      params: {
+        'userIds': ids,
+        'title': title,
+        'message': message,
+        'currentChat': currentChat,
+        'data': data,
+      },
+    );
+  }
+
   Future<void> mergeVideos({
     required List<String> videoUrls,
     required String felicitupId,

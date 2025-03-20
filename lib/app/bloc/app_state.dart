@@ -6,6 +6,7 @@ class AppState with _$AppState {
     required bool isLoading,
     required UserModel? currentUser,
     required AuthorizationStatus status,
+    List<PushMessageModel>? notifications,
   }) = _AppState;
 
   factory AppState.initial() => AppState(

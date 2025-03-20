@@ -11,7 +11,7 @@ class PaymentEvent with _$PaymentEvent {
     String title,
     String message,
     String currentChat,
-    Map<String, dynamic> data,
+    DataMessageModel data,
   ) = _sendNotification;
   const factory PaymentEvent.updatePaymentInfo(
     String felicitupId,

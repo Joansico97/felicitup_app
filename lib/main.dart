@@ -3,10 +3,6 @@ import 'package:felicitup_app/core/config/config.dart';
 import 'package:flutter/material.dart';
 import 'package:felicitup_app/injection/injection_container.dart' as injection;
 
-// Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-//   await Firebase.initializeApp();
-// }
-
 Future<void> main() async {
   await initConfig();
   await initObservers();

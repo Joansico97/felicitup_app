@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 import '../core/utils/utils.dart';
 
@@ -25,6 +26,10 @@ class AppObserver extends BlocObserver {
   void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
     super.onError(bloc, error, stackTrace);
     logger.error('Error (${bloc.runtimeType}, $error, $stackTrace)');
-    // TODO: Handle errors (Crashlytics, Sentry, etc.)
+    FirebaseCrashlytics.instance.recordError(
+      'Bloc: ${bloc.runtimeType} - Error: $error',
+      stackTrace,
+      fatal: true,
+    );
   }
 }

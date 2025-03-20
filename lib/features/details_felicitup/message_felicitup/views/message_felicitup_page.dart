@@ -72,6 +72,18 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage> with Widget
     super.dispose();
   }
 
+  void _scrollToBottom() {
+    if (scrollController.hasClients) {
+      // Verifica si el controlador está adjunto.
+      //Con esto le decimos que la animacion sea hasta el final
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent, // El final de la lista.
+        duration: Duration(milliseconds: 300), // Duración de la animación.
+        curve: Curves.easeOut, // Curva de animación.
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
@@ -95,10 +107,14 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage> with Widget
                   Expanded(
                     child: CustomScrollView(
                       controller: scrollController,
+                      // reverse: true,
                       slivers: [
                         BlocBuilder<MessageFelicitupBloc, MessageFelicitupState>(
                           builder: (_, state) {
                             List<ChatMessageModel> chatMessages = state.messages;
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _scrollToBottom();
+                            });
 
                             return SliverList(
                               delegate: SliverChildBuilderDelegate(
@@ -149,38 +165,10 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage> with Widget
                                     currentUser?.firstName ?? '',
                                   ),
                                 );
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _scrollToBottom();
+                            });
                             textController.clear();
-                            // await notifier
-                            //     .sendMessage(
-                            // chatMessage: ChatMessageModel(
-                            //   id: '${widget.chatId}-${widget.userId}',
-                            //   message: textValue,
-                            //   sendedBy: widget.userId,
-                            //   userName: ref.read(appEventsProvider).currentUser?.firstName ?? '',
-                            //   sendedAt: DateTime.now(),
-                            // ),
-                            //   chatId: widget.chatId,
-                            //   ids: widget.ids,
-                            //   userId: widget.userId,
-                            //   felicitupId: widget.felicitupId,
-                            //   isPast: true,
-                            // )
-                            //     .whenComplete(
-                            //   () async {
-                            //     textController.clear();
-                            //     await ref.read(chatEventsProvider.notifier).getChats(widget.chatId);
-                            //   },
-                            // ).whenComplete(
-                            //   () {
-                            //     if (scrollController.hasClients) {
-                            //       scrollController.animateTo(
-                            //         scrollController.position.maxScrollExtent + 100,
-                            //         duration: const Duration(milliseconds: 100),
-                            //         curve: Curves.easeInOut,
-                            //       );
-                            //     }
-                            //   },
-                            // );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

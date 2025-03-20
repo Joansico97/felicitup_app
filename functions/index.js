@@ -1,68 +1,117 @@
-const { onRequest } = require("firebase-functions/v2/https");
-const functions = require('firebase-functions');
-const logger = require("firebase-functions/logger");
+/* eslint-disable max-len */
 const admin = require("firebase-admin");
+const serviceAccount = require("./serviceAccountMergeKey.json");
 
-const { getDeviceToken, sendPushNotification } = require("./notifications/notifications");
-const { getUserDataById, getUserDataByPhone } = require("./users/users");
-const { getFelicitupById, getFelicitupRefById } = require("./felicitups/felicitups");
-const { exec, spawn } = require('child_process');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: "felicitup-prod.appspot.com",
+});
+
+const functions = require("firebase-functions");
+
+const {getDeviceToken, sendPushNotification, sendPushNotificationToListContacts} = require("./notifications/notifications");
+const {getUserDataById} = require("./users/users");
+const {deleteFelicitupTask} = require("./felicitups/send_felicitup_task");
+const {getFelicitupById, getFelicitupRefById} = require("./felicitups/felicitups");
+const {exec, spawn} = require("child_process");
 
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { ffmpegPath } = require("ffmpeg-static");
+const {ffmpegPath} = require("ffmpeg-static");
 const constants = require("./constants/constants");
 
 const bucket = admin.storage().bucket();
 
-const serviceAccount = require("./serviceAccountMergeKey.json");
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: "felicitup-prod.appspot.com",
-});
 
 exports.sendNotification = functions.https.onCall(
-    async (data, context) => {
-        try {
-            const userId = data.userId;
-            const title = data.title;
-            const message = data.message;
-            const currentChat = data.currentChat;
-            const userData = await getUserDataById(userId);
-            const token = await getDeviceToken(userId);
-            const dataInfo = data.data;
-            
-            console.log("Current Chat: " + currentChat);
-            console.log("User Data: " + userData.currentChat);
-            console.log("data info: " + dataInfo);
-            if (!currentChat || userData.currentChat !== currentChat) {
-                const payload = {
-                    token,
-                    notification: {
-                        title: title,
-                        body: message,
-                    },
-                    data: dataInfo,
-                };
-                console.log("Sending Notification to: " + userId);
-                await sendPushNotification(payload);
-            }
+    async (data) => {
+      try {
+        const userId = data.userId;
+        const title = data.title;
+        const message = data.message;
+        const currentChat = data.currentChat;
+        const userData = await getUserDataById(userId);
+        const token = await getDeviceToken(userId);
+        const dataInfo = data.data;
 
-        } catch (e) {
-            console.log("Firebase Notification Failed: " + e.message);
-            return { error: { message: e.message} };
+        console.log("Current Chat: " + currentChat);
+        console.log("User Data: " + userData.currentChat);
+        console.log("data info: " + dataInfo);
+        if (!currentChat || userData.currentChat !== currentChat) {
+          const payload = {
+            token,
+            notification: {
+              title: title,
+              body: message,
+            },
+            data: dataInfo,
+          };
+          console.log("Sending Notification to: " + userId);
+          await sendPushNotification(payload);
         }
+      } catch (e) {
+        console.log("Firebase Notification Failed: " + e.message);
+        return {error: {message: e.message}};
+      }
     });
 
+exports.sendNotificationToList = functions.https.onCall(
+    async (data) => {
+      try {
+        const userIds = data.userIds; // Lista de IDs de usuarios
+        const title = data.title;
+        const message = data.message;
+        const dataInfo = data.data;
+        const currentChat = data.currentChat;
+
+        // Obtener los tokens de los usuarios que cumplen con la condición
+        const tokensToSend = [];
+        for (const userId of userIds) {
+          const userData = await getUserDataById(userId);
+          const token = await getDeviceToken(userId);
+          if (token && (!currentChat || userData.currentChat !== currentChat)) {
+            tokensToSend.push(token);
+          }
+        }
+
+        if (tokensToSend.length > 0) {
+          const payload = {
+            tokens: tokensToSend,
+            notification: {
+              title: title,
+              body: message,
+            },
+            data: dataInfo,
+          };
+
+          console.log("Sending Notifications to tokens:", tokensToSend);
+          await sendPushNotificationToListContacts(payload);
+        }
+      } catch (e) {
+        console.log("Firebase Notification Failed: " + e.message);
+        return {error: {message: e.message}};
+      }
+    });
+
+/**
+ * Downloads a file from Firebase Storage to a temporary local path.
+ * @param {string} filePath - The path of the file in the Firebase Storage bucket.
+ * @param {string} tempFilePath - The local temporary file path where the file will be downloaded.
+ * @return {Promise<void>} - Resolves when the file is successfully downloaded.
+ */
 async function downloadFileToTemp(filePath, tempFilePath) {
-    const file = bucket.file(filePath);
-    await file.download({ destination: tempFilePath });
-    console.log(`Archivo descargado a: ${tempFilePath}`);
+  const file = bucket.file(filePath);
+  await file.download({destination: tempFilePath});
+  console.log(`Archivo descargado a: ${tempFilePath}`);
 }
 
-// Función para normalizar un video (forzar aspect ratio 9/16, resolución 1080x1920, mantener rotación original y normalizar audio)
+/**
+ * Normalizes a video by forcing aspect ratio 9/16, resolution 1080x1920, maintaining original rotation, and normalizing audio.
+ * @param {string} inputPath - The path to the input video file.
+ * @param {string} outputPath - The path to save the normalized video file.
+ * @return {Promise<void>} - Resolves when the video is successfully normalized.
+ */
 async function normalizeVideo(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
     const ffmpegCommand = `ffmpeg -i ${inputPath} -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -c:v libx264 -c:a aac -strict experimental -r 30 ${outputPath}`;
@@ -81,12 +130,17 @@ async function normalizeVideo(inputPath, outputPath) {
   });
 }
 
-// Función para unir los videos usando el filtro concat de ffmpeg
+/**
+ * Merges multiple video files into one using the FFmpeg concat filter.
+ * @param {string[]} videoPaths - Array of paths to the video files to be merged.
+ * @param {string} outputFilePath - The path to save the merged video file.
+ * @return {Promise<void>} - Resolves when the videos are successfully merged.
+ */
 async function mergeVideosWithConcatFilter(videoPaths, outputFilePath) {
   return new Promise((resolve, reject) => {
     // Crear el comando de ffmpeg con el filtro concat
-    const inputArgs = videoPaths.map((path) => `-i ${path}`).join(' ');
-    const filterComplex = `"${videoPaths.map((_, i) => `[${i}:v][${i}:a]`).join('')}concat=n=${videoPaths.length}:v=1:a=1[outv][outa]"`;
+    const inputArgs = videoPaths.map((path) => `-i ${path}`).join(" ");
+    const filterComplex = `"${videoPaths.map((_, i) => `[${i}:v][${i}:a]`).join("")}concat=n=${videoPaths.length}:v=1:a=1[outv][outa]"`;
 
     const ffmpegCommand = `ffmpeg ${inputArgs} -filter_complex ${filterComplex} -map "[outv]" -map "[outa]" -c:v libx264 -c:a aac -strict experimental ${outputFilePath}`;
 
@@ -105,10 +159,10 @@ async function mergeVideosWithConcatFilter(videoPaths, outputFilePath) {
 }
 
 // Función principal
-exports.mergeVideos = functions.runWith({
-  timeoutSeconds: 540, // 9 minutos (máximo)
-  memory: "8GB", // Ejemplo con 2GB (puedes usar 256MB, 512MB, 1GB)
-}).https.onCall(async (data, context) => {
+exports.mergeVideos = functions.https.onCall({
+  timeoutSeconds: 540,
+  memory: "8GB",
+}, async (data) => {
   const videoUrls = data.videoUrls; // La lista de URLs que tu app envía
   const outputFileName = `merged-${Date.now()}.mp4`;
   const tempDir = os.tmpdir();
@@ -118,33 +172,34 @@ exports.mergeVideos = functions.runWith({
 
   if (!videoUrls || !Array.isArray(videoUrls) || videoUrls.length === 0) {
     throw new functions.https.HttpsError(
-      "invalid-argument",
-      "Debe proporcionar una lista de URLs de videos."
+        "invalid-argument",
+        "Debe proporcionar una lista de URLs de videos.",
     );
   }
 
+  let tempFiles = [];
   try {
     // 1. Descargar los videos a archivos temporales
-    const tempFiles = [];
+    tempFiles = [];
     await Promise.all(
-      videoUrls.map(async (url, index) => {
-        const fileName = `temp-${index}.mp4`;
-        const tempFilePath = path.join(tempDir, fileName);
-        tempFiles.push(tempFilePath);
-        await downloadFileToTemp(url, tempFilePath);
-        console.log(`Video ${index} descargado a ${tempFilePath}`);
-      })
+        videoUrls.map(async (url, index) => {
+          const fileName = `temp-file.mp4`;
+          const tempFilePath = path.join(tempDir, fileName);
+          tempFiles.push(tempFilePath);
+          await downloadFileToTemp(url, tempFilePath);
+          console.log(`Video ${index} descargado a ${tempFilePath}`);
+        }),
     );
 
     // 2. Normalizar los videos (forzar aspect ratio 9/16, resolución 1080x1920, mantener rotación original y normalizar audio)
     const normalizedFiles = [];
     await Promise.all(
-      tempFiles.map(async (file, index) => {
-        const normalizedFileName = `normalized-${index}.mp4`;
-        const normalizedFilePath = path.join(tempDir, normalizedFileName);
-        await normalizeVideo(file, normalizedFilePath);
-        normalizedFiles.push(normalizedFilePath);
-      })
+        tempFiles.map(async (file, index) => {
+          const normalizedFileName = `normalized-${index}.mp4`;
+          const normalizedFilePath = path.join(tempDir, normalizedFileName);
+          await normalizeVideo(file, normalizedFilePath);
+          normalizedFiles.push(normalizedFilePath);
+        }),
     );
 
     // 3. Unir los videos usando el filtro concat de ffmpeg
@@ -152,31 +207,30 @@ exports.mergeVideos = functions.runWith({
 
     // 4. Subir el video unido a Firebase Storage
     const destinationPath = `videos/${felicitupId}/${outputFileName}`;
-    await bucket.upload(outputFilePath, { destination: destinationPath });
+    await bucket.upload(outputFilePath, {destination: destinationPath});
     console.log(`Video subido a ${destinationPath}`);
 
     // 5. Obtener la URL firmada del video unido
     const mergedFile = bucket.file(destinationPath);
-    const [url] = await mergedFile.getSignedUrl({ action: "read", expires: "03-01-2500" });
+    const [url] = await mergedFile.getSignedUrl({action: "read", expires: "03-01-2500"});
     console.log(`URL del video unido: ${url}`);
 
     // 6. Actualizar Firestore con la URL del video unido
     const docRef = await getFelicitupRefById(felicitupId);
-    await docRef.update({ finalVideoUrl: url });
-    console.log('Documento actualizado exitosamente!');
+    await docRef.update({finalVideoUrl: url});
+    console.log("Documento actualizado exitosamente!");
 
     // 7. Enviar notificación push al usuario
     const token = await getDeviceToken(userId);
     const payload = {
       token,
       notification: {
-        title: 'Felicitup lista',
-        body: 'Tu felicitup está lista para ser vista!',
+        title: "Felicitup lista",
+        body: "Tu felicitup está lista para ser vista!",
       },
     };
     await sendPushNotification(payload);
-    console.log('Notificación push enviada.');
-
+    console.log("Notificación push enviada.");
   } catch (error) {
     console.error("Error en la función:", error);
     throw new functions.https.HttpsError("internal", "Error en la función", error);
@@ -184,31 +238,30 @@ exports.mergeVideos = functions.runWith({
     // 8. Eliminar archivos temporales
     const filesToDelete = [outputFilePath, ...tempFiles];
     await Promise.all(
-      filesToDelete.map((file) => {
-        if (fs.existsSync(file)) {
-          fs.unlinkSync(file);
-          console.log(`Archivo temporal ${file} eliminado`);
-        } else {
-          console.log(`El archivo temporal ${file} no existe`);
-        }
-      })
+        filesToDelete.map((file) => {
+          if (fs.existsSync(file)) {
+            fs.unlinkSync(file);
+            console.log(`Archivo temporal ${file} eliminado`);
+          } else {
+            console.log(`El archivo temporal ${file} no existe`);
+          }
+        }),
     );
   }
 });
 
-exports.sendManualFelicitup = functions.https.onCall(async (data, context) => { 
+exports.sendManualFelicitup = functions.https.onCall(async (data) => {
   try {
     const felicitupId = data.felicitupId;
 
     if (!felicitupId) {
-      res.status(400).send('El ID de la felicitup es requerido.');
-      return;
+      throw new functions.https.HttpsError("invalid-argument", "El ID de la felicitup es requerido.");
     }
 
     const felicitup = await getFelicitupById(felicitupId);
     const docRef = await getFelicitupRefById(felicitupId);
 
-    const atLeastOneVideo = felicitup.invitedUserDetails.some(user => user.videoData && user.videoData.videoUrl && user.videoData.videoUrl.trim() !== "");
+    const atLeastOneVideo = felicitup.invitedUserDetails.some((user) => user.videoData && user.videoData.videoUrl && user.videoData.videoUrl.trim() !== "");
 
     console.log("atLeastOneVideo", atLeastOneVideo);
 
@@ -225,12 +278,12 @@ exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
         const paid = "paid";
         const userImage = ownerData.userImg;
         const videoUrl = "";
-  
+
         const subElement = {
           videoUrl: videoUrl,
           videoThumbnail: "",
-        }
-        
+        };
+
         const newElement = {
           assistanceStatus: status,
           id: id,
@@ -240,41 +293,40 @@ exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
           userImage: userImage,
           videoData: subElement,
         };
-  
+
         await docRef.update({
           invitedUserDetails: admin.firestore.FieldValue.arrayUnion(newElement),
           invitedUsers: admin.firestore.FieldValue.arrayUnion(id),
         });
-  
+
         console.log(`User ${ownerName} added to felicitup ${felicitupId}`);
-  
+
         const payload = {
           token: ownerToken,
           notification: {
-            title: 'Hola, ' + ownerName,
-            body: 'Tienes una nueva felicitup lista para ser vista!',
+            title: "Hola, " + ownerName,
+            body: "Tienes una nueva felicitup lista para ser vista!",
           },
         };
         await sendPushNotification(payload);
       }
     }
-    
 
-    await docRef.update({ status: "Finished" });
+
+    await docRef.update({status: "Finished"});
     deleteFelicitupTask(felicitupId);
-
   } catch (error) {
     console.error("Error al ejecutar la tarea:", error);
     throw new functions.https.HttpsError("internal", "Error al programar la tarea.", error);
   }
 });
 
-exports.generateThumbnail = functions.https.onCall(async (data, context) => {
+exports.generateThumbnail = functions.https.onCall(async (data) => {
   const filePath = data.filePath;
   const file = bucket.file(filePath);
   const tempDir = os.tmpdir();
 
-  const fileName = `temp-${index}.mp4`;
+  const fileName = `temp-temp_file.mp4`;
   const tempFilePath = path.join(tempDir, fileName);
 
   try {
@@ -297,8 +349,39 @@ exports.generateThumbnail = functions.https.onCall(async (data, context) => {
       "-q:v",
       "2",
       tempThumbPath,
-      "-y"
+      "-y",
     ]);
+    const felicitupId = data.felicitupId;
+
+    if (!felicitupId) {
+      throw new functions.https.HttpsError("invalid-argument", "El ID de la felicitup es requerido.");
+    }
+
+    const docRef = await getFelicitupRefById(felicitupId);
+    const felicitup = await docRef.get();
+
+    if (!felicitup.exists) {
+      throw new functions.https.HttpsError("not-found", "No se encontró la felicitup.");
+    }
+
+    const invitedUserDetails = felicitup.data().invitedUserDetails || [];
+    const userId = data.userId;
+
+    const updatedDetails = invitedUserDetails.map((user) => {
+      if (user.id === userId) {
+        return {
+          ...user,
+          videoData: {
+            ...user.videoData,
+            videoThumbnail: tempThumbPath,
+          },
+        };
+      }
+      return user;
+    });
+
+    await docRef.update({invitedUserDetails: updatedDetails});
+    console.log("Miniatura asignada correctamente en la felicitup.");
     console.log("Miniatura generada en:", tempThumbPath);
   } catch (error) {
     console.error("Error al generar la miniatura:", error);
@@ -310,64 +393,143 @@ exports.generateThumbnail = functions.https.onCall(async (data, context) => {
   }
 });
 
-exports.checkBirthdays = functions.pubsub.schedule('0 0 * * *') // 00:00 todos los días, UTC.
-  .timeZone('UTC')
-  .onRun(async (context) => {
+const deleterBirthdayAlert = async (userId, id) => {
+  if (!userId) {
+    throw new functions.https.HttpsError("invalid-argument", "El ID del usuario es requerido.");
+  }
 
-    const now = new Date();
-    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    const db = admin.firestore();
-    const usersRef = db.collection(constants.usersPath);
-    const snapshot = await usersRef
-        .where('birthDate.month', '==', today.getUTCMonth() + 1)
-        .where('birthDate.day', '==', today.getUTCDate())
-        .get();
+  const db = admin.firestore();
+  const usersRef = db.collection(constants.usersPath);
+  const userDoc = await usersRef.doc(userId).get();
 
-    if (snapshot.empty) {
-      console.log('No hay usuarios que cumplan años hoy.');
-      return null;
-    }
+  if (!userDoc.exists) { // <--- ¡Importante! Verifica si el documento existe.
+    console.log(`Usuario con ID ${userId} no encontrado.`);
+    return; // O maneja el error como sea apropiado.
+  }
 
-    for (const userDoc of snapshot.docs) {
-      const userData = userDoc.data();
-      const userId = userDoc.id;
-      const userName = userData.name || 'Un usuario';
+  try {
+    const alertsToRemove = userDoc.data().birthdayAlerts.filter((alert) => alert.id === id); // Filtra las alertas
 
-      console.log(`Cumpleaños de ${userName} (${userId})`);
+    // Usa Promise all para ejecutar las promesas al tiempo
+    await Promise.all(alertsToRemove.map((alert) =>
+      db.collection(constants.usersPath).doc(userId).update({
+        birthdayAlerts: admin.firestore.FieldValue.arrayRemove(alert),
+      }),
+    ));
+    console.log(`Alertas de cumpleaños eliminada para el usuario ${userId}`);
+    return {message: "Tarea programada exitosamente."}; // Devuelve un mensaje
+  } catch (error) {
+    console.error("Error al programar la tarea:", error);
+    throw new functions.https.HttpsError("internal", "Error al programar la tarea.", error);
+  }
+};
 
-      const friends = userData.friends;
-      if (!friends || friends.length === 0) {
-        console.log(`${userName} no tiene amigos.`);
-        continue;
-      }
+exports.checkBirthdays = functions.https.onRequest( // Cambio a https.onRequest
+    {
+      schedule: "0 0 * * *", //  Cron schedule.
+      region: "us-central1", //  ¡SIEMPRE especifica la región!  Cambia a tu región.
+      timeZone: "UTC", //  ¡SIEMPRE especifica la zona horaria!
+      timeoutSeconds: 300, //  Opcional:  Aumenta el timeout si es necesario (máximo 540s para onRequest)
+      memory: "256MiB", //  Opcional:  Ajusta la memoria si es necesario.
+    },
+    async (req, res) => { //  onRun cambia a onRequest, y recibe req, res.
+      const now = new Date();
+      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const db = admin.firestore();
+      const usersRef = db.collection(constants.usersPath); //  Asegúrate de que 'constants' esté definido.
 
-      for (const friendId of friends) {
-        // --- Cambios aquí: Actualizar el documento del AMIGO ---
+      try {
+        const snapshot = await usersRef
+            .where("birthDate.month", "==", today.getUTCMonth() + 1)
+            .where("birthDate.day", "==", today.getUTCDate())
+            .get();
 
-        // Obtener la referencia al documento del amigo.
-        const friendDocRef = usersRef.doc(friendId);
-
-        //  Actualizar un campo en el documento del amigo.
-        //  Usamos un campo 'birthdayAlerts' (es un array) para almacenar la información.
-        try {
-          await friendDocRef.update({
-            birthdayAlerts: admin.firestore.FieldValue.arrayUnion({
-              friendId: userId,
-              friendName: userName,
-              timestamp: admin.firestore.FieldValue.serverTimestamp(), // ¡Importante!
-            }),
-          });
-          console.log(`Información de cumpleaños agregada al documento de ${friendId}`);
-
-        } catch (error) {
-          console.error("Error al actualizar el documento del amigo:", error);
-          // Considera manejar el error (reintentar, registrar el error, etc.).
-          //  NO uses un 'return' aquí, para que intente con los otros amigos.
+        if (snapshot.empty) {
+          functions.logger.info("No hay usuarios que cumplan años hoy."); // Usa functions.logger
+          res.status(200).send("No birthdays today"); // Respuesta en lugar de return null
+          return;
         }
 
-        // --- Fin de los cambios ---
-      }
-    }
+        for (const userDoc of snapshot.docs) {
+          const userData = userDoc.data();
+          const userId = userDoc.id;
+          const userName = userData.name || "Un usuario";
+          const friendProfilePic = userData.userImg || "";
 
-    return null;
-});
+          functions.logger.info(`Cumpleaños de ${userName} (${userId})`); // Usa functions.logger
+
+          const friends = userData.friends;
+          if (!friends || friends.length === 0) {
+            functions.logger.info(`${userName} no tiene amigos.`); // Usa functions.logger
+            continue;
+          }
+
+          for (const friendId of friends) {
+            const friendDocRef = usersRef.doc(friendId);
+
+            try {
+              // Verificamos que exista
+              const friendDoc = await friendDocRef.get();
+              if (friendDoc.exists) { // Si existe
+                const id = admin.firestore.FieldValue.serverTimestamp().toMillis().toString() + "-" + friendId;
+                await friendDocRef.update({
+                  birthdayAlerts: admin.firestore.FieldValue.arrayUnion({
+                    id: id,
+                    friendId: userId,
+                    friendName: userName,
+                    friendProfilePic: friendProfilePic,
+                    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                  }),
+                });
+                // Llama a la función auxiliar *después* de actualizar Firestore.
+                await deleterBirthdayAlert(userId, id);
+                functions.logger.info(`Información de cumpleaños agregada al documento de ${friendId}`);
+              } else {
+                functions.logger.info(`El amigo con id ${friendId} no existe`);
+              }
+            } catch (error) {
+              functions.logger.error("Error al actualizar el documento del amigo:", error, {userId, friendId}); // Log estructurado.
+              //  NO uses 'return' aquí. Continúa con los otros amigos.
+            }
+          }
+        }
+
+        res.status(200).send("Birthday check completed"); // Responde
+      } catch (error) {
+        functions.logger.error("Error en checkBirthdays", error);
+        res.status(500).send("Internal Server Error");
+      }
+    },
+);
+
+// exports.deleterBirthdayAlert = functions.region("us-central1").https.onCall(async (data) => {
+//   const userId = data.userId;
+//   const id = data.id;
+
+//   if (!userId) {
+//     throw new functions.https.HttpsError("invalid-argument", "El ID del usuario es requerido.");
+//   }
+
+//   const db = admin.firestore();
+//   const usersRef = db.collection(constants.usersPath);
+//   const userDoc = await usersRef.doc(userId).get();
+//   try {
+//     const now = admin.firestore.Timestamp.now();
+//     const executionTime = new Date(now.toDate().getTime() + 24 * 60 * 60 * 1000); // 24 horas después
+//     userDoc.data().birthdayAlerts.forEach(async (alert) => {
+//       if (alert.id === id) {
+//         await db.collection(constants.usersPath).doc(userId).update({
+//           birthdayAlerts: admin.firestore.FieldValue.arrayRemove(alert),
+//         });
+//         console.log(`Alerta de cumpleaños eliminada para el usuario ${userId}`);
+//       }
+//     },
+//     );
+
+//     console.log(`Tarea programada para el usuario ${userId} a las ${executionTime}`);
+//     return {message: "Tarea programada exitosamente."};
+//   } catch (error) {
+//     console.error("Error al programar la tarea:", error);
+//     throw new functions.https.HttpsError("internal", "Error al programar la tarea.", error);
+//   }
+// });

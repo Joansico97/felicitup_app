@@ -154,7 +154,7 @@ class UserFirebaseResource implements UserRepository {
     String title,
     String message,
     String currentChat,
-    Map<String, dynamic> data,
+    DataMessageModel data,
   ) async {
     try {
       await _firebaseFunctionsHelper.sendNotification(
@@ -162,8 +162,32 @@ class UserFirebaseResource implements UserRepository {
         title: title,
         message: message,
         currentChat: currentChat,
-        data: data,
+        data: data.toJson(),
       );
+
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> sendNotificationToListUsers(
+    List<String> ids,
+    String title,
+    String message,
+    String currentChat,
+    DataMessageModel data,
+  ) async {
+    try {
+      await _firebaseFunctionsHelper.sendNotificationToList(
+        ids: ids,
+        title: title,
+        message: message,
+        currentChat: currentChat,
+        data: data.toJson(),
+      );
+
       return Right(null);
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
@@ -271,6 +295,42 @@ class UserFirebaseResource implements UserRepository {
         'giftCardList': FieldValue.arrayUnion([item.toJson()]),
       });
 
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> setFCMToken(String token) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+      await _client.update(
+        AppConstants.usersCollection,
+        document: uid,
+        {
+          'fcmToken': token,
+        },
+      );
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> syncNotifications(PushMessageModel notification) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+      await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
+        'notifications': FieldValue.arrayUnion([notification.toJson()]),
+      });
       return Right(null);
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
