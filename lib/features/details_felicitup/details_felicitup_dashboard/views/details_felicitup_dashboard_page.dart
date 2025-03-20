@@ -9,82 +9,102 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class DetailsFelicitupDashboardPage extends StatelessWidget {
+class DetailsFelicitupDashboardPage extends StatefulWidget {
   const DetailsFelicitupDashboardPage({
     super.key,
     required this.childView,
+    required this.fromNotification,
   });
 
   final Widget childView;
+  final bool fromNotification;
+
+  @override
+  State<DetailsFelicitupDashboardPage> createState() => _DetailsFelicitupDashboardPageState();
+}
+
+class _DetailsFelicitupDashboardPageState extends State<DetailsFelicitupDashboardPage> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.fromNotification) {
+      final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context
+            .read<DetailsFelicitupDashboardBloc>()
+            .add(DetailsFelicitupDashboardEvent.changeCurrentIndex((felicitup?.hasVideo ?? false) ? 3 : 4));
+      });
+    }
+  }
+
+  final List<Widget> pagesComplete = [
+    InfoFelicitupPage(),
+    MessageFelicitupPage(),
+    PeopleFelicitupPage(),
+    VideoFelicitupPage(),
+    BoteFelicitupPage(),
+  ];
+
+  final List<Widget> pagesWithoutBote = [
+    InfoFelicitupPage(),
+    MessageFelicitupPage(),
+    PeopleFelicitupPage(),
+    VideoFelicitupPage(),
+  ];
+
+  final List<Widget> pagesWithoutVideo = [
+    InfoFelicitupPage(),
+    MessageFelicitupPage(),
+    PeopleFelicitupPage(),
+    BoteFelicitupPage(),
+  ];
+
+  List<IconData> icons = [
+    Icons.person_outline,
+    Icons.chat_outlined,
+    Icons.people_outline,
+    Icons.camera_alt_outlined,
+    Icons.attach_money_outlined,
+  ];
+
+  List<IconData> iconsWithoutBote = [
+    Icons.person_outline,
+    Icons.chat_outlined,
+    Icons.people_outline,
+    Icons.camera_alt_outlined,
+  ];
+
+  List<IconData> iconsWithoutVideo = [
+    Icons.person_outline,
+    Icons.chat_outlined,
+    Icons.people_outline,
+    Icons.attach_money_outlined,
+  ];
+
+  List<IconData> selectedIcons = [
+    Icons.person,
+    Icons.chat,
+    Icons.people,
+    Icons.camera_alt,
+    Icons.attach_money,
+  ];
+
+  List<IconData> selectedIconsWithoutBote = [
+    Icons.person,
+    Icons.chat,
+    Icons.people,
+    Icons.camera_alt,
+  ];
+
+  List<IconData> selectedIconsWithoutVideo = [
+    Icons.person,
+    Icons.chat,
+    Icons.people,
+    Icons.attach_money,
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pagesComplete = [
-      InfoFelicitupPage(),
-      MessageFelicitupPage(),
-      PeopleFelicitupPage(),
-      VideoFelicitupPage(),
-      BoteFelicitupPage(),
-    ];
-
-    final List<Widget> pagesWithoutBote = [
-      InfoFelicitupPage(),
-      MessageFelicitupPage(),
-      PeopleFelicitupPage(),
-      VideoFelicitupPage(),
-    ];
-
-    final List<Widget> pagesWithoutVideo = [
-      InfoFelicitupPage(),
-      MessageFelicitupPage(),
-      PeopleFelicitupPage(),
-      BoteFelicitupPage(),
-    ];
-
-    List<IconData> icons = [
-      Icons.person_outline,
-      Icons.chat_outlined,
-      Icons.people_outline,
-      Icons.camera_alt_outlined,
-      Icons.attach_money_outlined,
-    ];
-
-    List<IconData> iconsWithoutBote = [
-      Icons.person_outline,
-      Icons.chat_outlined,
-      Icons.people_outline,
-      Icons.camera_alt_outlined,
-    ];
-
-    List<IconData> iconsWithoutVideo = [
-      Icons.person_outline,
-      Icons.chat_outlined,
-      Icons.people_outline,
-      Icons.attach_money_outlined,
-    ];
-
-    List<IconData> selectedIcons = [
-      Icons.person,
-      Icons.chat,
-      Icons.people,
-      Icons.camera_alt,
-      Icons.attach_money,
-    ];
-
-    List<IconData> selectedIconsWithoutBote = [
-      Icons.person,
-      Icons.chat,
-      Icons.people,
-      Icons.camera_alt,
-    ];
-
-    List<IconData> selectedIconsWithoutVideo = [
-      Icons.person,
-      Icons.chat,
-      Icons.people,
-      Icons.attach_money,
-    ];
-
     return BlocListener<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
       listenWhen: (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
@@ -116,7 +136,7 @@ class DetailsFelicitupDashboardPage extends StatelessWidget {
                           Expanded(
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
-                              child: childView,
+                              child: widget.childView,
                             ),
                           ),
                           Container(

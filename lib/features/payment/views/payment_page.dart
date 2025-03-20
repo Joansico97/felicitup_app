@@ -655,13 +655,8 @@ class _ConfirmViewState extends State<ConfirmView> {
                               '${currentUser?.firstName ?? ''} ha realizado el pago de la felicitup de ${widget.felicitup.owner.first.name.split(' ')[0]}',
                               '',
                               DataMessageModel(
+                                type: enumToPushMessageType(PushMessageType.payment),
                                 felicitupId: widget.felicitup.id,
-                                chatId: '',
-                                isAssistance: 'pago',
-                                isPast: 'false',
-                                singleChatId: '',
-                                name: '',
-                                ids: [],
                               ),
                             ),
                           );

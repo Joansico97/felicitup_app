@@ -315,13 +315,8 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
               'Has sido invitado a un felicitup',
               '',
               DataMessageModel(
+                type: enumToPushMessageType(PushMessageType.felicitup),
                 felicitupId: felicitupId,
-                chatId: '',
-                isAssistance: 'false',
-                isPast: 'false',
-                singleChatId: '',
-                name: '',
-                ids: [],
               ),
             ),
           );

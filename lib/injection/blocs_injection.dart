@@ -97,7 +97,9 @@ void _initBlocsInjection() {
       () => ListSingleChatBloc(),
     )
     ..registerFactory(
-      () => ContactsBloc(),
+      () => ContactsBloc(
+        userRepository: di(),
+      ),
     )
     ..registerFactory(
       () => NotificationsSettingsBloc(),

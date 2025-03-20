@@ -43,7 +43,10 @@ class InProgressSection extends StatelessWidget {
                       (index) => GestureDetector(
                         onTap: () => context.go(
                           RouterPaths.messageFelicitup,
-                          extra: listFelicitups[index].id,
+                          extra: {
+                            'felicitupId': listFelicitups[index].id,
+                            'fromNotification': false,
+                          },
                         ),
                         onLongPress: () {},
                         child: FelicitupCard(

@@ -4,6 +4,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/wish_list/bloc/wish_list_bloc.dart';
 import 'package:felicitup_app/features/wish_list/widgets/widgets.dart';
@@ -36,12 +37,13 @@ class WishListPage extends StatelessWidget {
                   return CollapsedHeader(
                     title: 'Lista de deseos',
                     onPressed: () {
-                      if (state.isCreate) {
-                        context.go(RouterPaths.wishList);
-                      } else {
+                      logger.debug(state.isEdit);
+                      if (state.isEdit) {
                         context.read<WishListBloc>().add(
                               WishListEvent.editGiftItem(),
                             );
+                      } else {
+                        context.go(RouterPaths.felicitupsDashboard);
                       }
                     },
                   );

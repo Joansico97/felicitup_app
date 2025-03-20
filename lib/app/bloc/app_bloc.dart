@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
+import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
@@ -29,6 +30,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         changeLoading: (_) => _changeLoading(emit),
         loadUserData: (_) => _loadUserData(emit),
         initializeNotifications: (_) => _initializeNotifications(emit),
+        handleRemoteMessage: (event) => handleRemoteMessage(event.message, emit),
         logout: (_) => _logout(emit),
       ),
     );
@@ -45,11 +47,13 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   _loadUserData(Emitter<AppState> emit) async {
     emit(state.copyWith(isLoading: true));
+    logger.debug('Loading user data');
     try {
       final response = await _userRepository.getUserData(_firebaseAuth.currentUser?.uid ?? '');
 
       response.fold(
         (error) {
+          logger.error(error);
           emit(state.copyWith(isLoading: false));
         },
         (data) {
@@ -71,6 +75,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         settings.authorizationStatus == AuthorizationStatus.denied) {
       await requestPermission(emit);
     }
+    await initializeLocalNotifications();
     _getFCMToken();
     _onForegroundMessage(emit);
   }
@@ -116,17 +121,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       },
     );
 
-    // ref.read(localNotificationsProvider.notifier).showLocalNotification(
-    //       id: notification.messageId.hashCode,
-    //       title: notification.title,
-    //       body: notification.body,
-    //       data: jsonEncode(message.data),
-    //     );
+    showLocalNotification(
+      id: notification.messageId.hashCode,
+      title: notification.title,
+      body: notification.body,
+      data: message.data,
+    );
 
-    final listProv = [...state.notifications ?? []];
-    emit(state.copyWith(notifications: [notification, ...listProv]));
-
-    // state = state.copyWith(notifications: [notification, ...listProv]);
+    emit(state.copyWith(notifications: [notification, ...state.notifications ?? []]));
   }
 
   void _onForegroundMessage(Emitter<AppState> emit) {
@@ -178,7 +180,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     int id,
     String? title,
     String? body,
-    String? data,
+    Map<String, dynamic>? data,
   ) {
     showLocalNotification(id: id, title: title, body: body, data: data);
   }
@@ -187,7 +189,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     required int id,
     String? title,
     String? body,
-    String? data,
+    Map<String, dynamic>? data,
   }) {
     const androidDetails = AndroidNotificationDetails(
       'channelId',
@@ -212,97 +214,55 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       title,
       body,
       notificationDetails,
-      payload: data,
+      payload: jsonEncode(data),
     );
   }
 
   static void onDidReceiveNotificationResponse(NotificationResponse response) async {
     final resp = jsonDecode(response.payload ?? '{}');
-    logger.debug(resp);
-    // final context = rootNavigatorKey.currentContext!;
-    // final felicitupId = resp['felicitupId'];
-    // final chatId = resp['chatId'];
-    // final isAssistance = resp['isAssistance'];
-    // final isPast = resp['isPast'];
-    // final singleChatId = resp['singleChatId'];
-    // final name = resp['name'];
-    // final ids = resp['ids'];
+    final String type = resp['type'];
+    final felicitupId = resp['felicitupId'] ?? '';
+    final chatId = resp['chatId'] ?? '';
+    final name = resp['name'] ?? '';
+    final ids = resp['ids'] ?? [];
+    final pushMessageType = pushMessageTypeToEnum(type);
 
-    // if (singleChatId != null) {
-    //   if (context.mounted) {
-    //     context.pushReplacement(
-    //       RouterPaths.singleChat,
-    //       extra: {
-    //         'chatId': chatId ?? '',
-    //         'name': name ?? '',
-    //         'ids': ids ?? [],
-    //       },
-    //     );
-    //   }
-    // }
-
-    // if (felicitupId != null && isAssistance != null && isAssistance == 'true') {
-    //   if (context.mounted) {
-    //     context.pushReplacement(
-    //       RouterPaths.felicitupDetails,
-    //       extra: {
-    //         'felicitupId': felicitupId,
-    //       },
-    //     );
-    //   }
-    // }
-
-    // if (felicitupId != null && isAssistance != null && isAssistance == 'asistencia') {
-    //   if (context.mounted) {
-    //     context.pushReplacement(
-    //       RouterPaths.felicitupDetails,
-    //       extra: {
-    //         'felicitupId': felicitupId,
-    //         'change': true,
-    //       },
-    //     );
-    //   }
-    // }
-
-    // if (felicitupId != null && isAssistance != null && isAssistance == 'pago') {
-    //   if (context.mounted) {
-    //     context.pushReplacement(
-    //       RouterPaths.felicitupDetails,
-    //       extra: {
-    //         'felicitupId': felicitupId,
-    //         'change': false,
-    //       },
-    //     );
-    //   }
-    // }
-
-    // if (felicitupId != null && chatId != null && isPast != null) {
-    //   if (context.mounted) {
-    //     context.pushReplacement(
-    //       RouterPaths.pastFelicitups,
-    //       extra: {
-    //         'felicitupId': felicitupId,
-    //       },
-    //     );
-    //   }
-    // }
-
-    // if (felicitupId != null && chatId != null) {
-    //   if (context.mounted) {
-    //     context.pushReplacement(
-    //       RouterPaths.felicitupDetails,
-    //       extra: {
-    //         'felicitupId': felicitupId,
-    //         'reset': true,
-    //       },
-    //     );
-    //   }
-    // }
-
-    // if (felicitupId != null && isAssistance != null && isAssistance == 'false') {
-    //   if (context.mounted) {
-    //     context.push('${RouterPaths.notificationInfo}/$felicitupId');
-    //   }
-    // }
+    switch (pushMessageType) {
+      case PushMessageType.felicitup:
+        CustomRouter().router.go(
+          RouterPaths.messageFelicitup,
+          extra: {
+            'felicitupId': felicitupId,
+            'fromNotification': false,
+          },
+        );
+        break;
+      case PushMessageType.chat:
+        CustomRouter().router.go(
+          RouterPaths.messageFelicitup,
+          extra: {
+            'felicitupId': felicitupId,
+            'fromNotification': false,
+          },
+        );
+      case PushMessageType.payment:
+        CustomRouter().router.go(
+          RouterPaths.boteFelicitup,
+          extra: {
+            'felicitupId': felicitupId,
+            'fromNotification': true,
+          },
+        );
+      case PushMessageType.singleChat:
+        CustomRouter().router.go(
+          RouterPaths.singleChat,
+          extra: {
+            'chatId': chatId,
+            'name': name,
+            'ids': ids,
+          },
+        );
+        break;
+    }
   }
 }

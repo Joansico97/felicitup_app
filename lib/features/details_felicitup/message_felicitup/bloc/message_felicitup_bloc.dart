@@ -75,13 +75,9 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
               chatMessage.message,
               felicitup.chatId,
               DataMessageModel(
+                type: enumToPushMessageType(PushMessageType.chat),
                 felicitupId: felicitup.id,
                 chatId: felicitup.chatId,
-                isAssistance: 'false',
-                isPast: 'false',
-                singleChatId: '',
-                name: '',
-                ids: [],
               ),
             );
           }
