@@ -92,6 +92,31 @@ Widget _felicitupsDashboardHandler(BuildContext context, GoRouterState state) {
   return FelicitupsDashboardPage();
 }
 
+Page<Widget> _felicitupNotificationHandler(
+  BuildContext context,
+  GoRouterState state,
+) {
+  final data = state.extra as String;
+
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<FelicitupNotificationBloc>()..add(FelicitupNotificationEvent.getFelicitupData(data)),
+      child: FelicitupNotificationPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
 Page<Widget> _detailsFelicitupDashboardHandler(
   BuildContext context,
   GoRouterState state,

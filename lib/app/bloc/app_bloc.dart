@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
-import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -31,6 +31,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         loadUserData: (_) => _loadUserData(emit),
         initializeNotifications: (_) => _initializeNotifications(emit),
         handleRemoteMessage: (event) => handleRemoteMessage(event.message, emit),
+        getFCMToken: (_) => _getFCMToken(),
         logout: (_) => _logout(emit),
       ),
     );
@@ -47,7 +48,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   _loadUserData(Emitter<AppState> emit) async {
     emit(state.copyWith(isLoading: true));
-    logger.debug('Loading user data');
+
     try {
       final response = await _userRepository.getUserData(_firebaseAuth.currentUser?.uid ?? '');
 
@@ -71,12 +72,15 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   _initializeNotifications(Emitter<AppState> emit) async {
     final settings = await _firebaseMessaging.getNotificationSettings();
 
-    if (settings.authorizationStatus == AuthorizationStatus.notDetermined ||
-        settings.authorizationStatus == AuthorizationStatus.denied) {
+    if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
       await requestPermission(emit);
     }
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      add(AppEvent.getFCMToken());
+      emit(state.copyWith(status: AuthorizationStatus.authorized));
+    }
     await initializeLocalNotifications();
-    _getFCMToken();
+
     _onForegroundMessage(emit);
   }
 
@@ -95,11 +99,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   _getFCMToken() async {
-    if (state.status == AuthorizationStatus.authorized) {
-      final token = await _firebaseMessaging.getToken();
+    try {
+      String? token = await _firebaseMessaging.getToken();
+      logger.info('FCM Token: $token');
       if (token != null) {
         await _userRepository.setFCMToken(token);
       }
+    } catch (e) {
+      logger.error(e);
     }
   }
 
@@ -220,49 +227,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   static void onDidReceiveNotificationResponse(NotificationResponse response) async {
     final resp = jsonDecode(response.payload ?? '{}');
-    final String type = resp['type'];
-    final felicitupId = resp['felicitupId'] ?? '';
-    final chatId = resp['chatId'] ?? '';
-    final name = resp['name'] ?? '';
-    final ids = resp['ids'] ?? [];
-    final pushMessageType = pushMessageTypeToEnum(type);
-
-    switch (pushMessageType) {
-      case PushMessageType.felicitup:
-        CustomRouter().router.go(
-          RouterPaths.messageFelicitup,
-          extra: {
-            'felicitupId': felicitupId,
-            'fromNotification': false,
-          },
-        );
-        break;
-      case PushMessageType.chat:
-        CustomRouter().router.go(
-          RouterPaths.messageFelicitup,
-          extra: {
-            'felicitupId': felicitupId,
-            'fromNotification': false,
-          },
-        );
-      case PushMessageType.payment:
-        CustomRouter().router.go(
-          RouterPaths.boteFelicitup,
-          extra: {
-            'felicitupId': felicitupId,
-            'fromNotification': true,
-          },
-        );
-      case PushMessageType.singleChat:
-        CustomRouter().router.go(
-          RouterPaths.singleChat,
-          extra: {
-            'chatId': chatId,
-            'name': name,
-            'ids': ids,
-          },
-        );
-        break;
-    }
+    redirectHelper(data: resp);
   }
 }

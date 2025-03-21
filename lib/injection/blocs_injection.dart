@@ -38,6 +38,13 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(
+      () => FelicitupNotificationBloc(
+        felicitupRepository: di(),
+        userRepository: di(),
+        firebaseAuth: di(),
+      ),
+    )
+    ..registerFactory(
       () => DetailsFelicitupDashboardBloc(
         felicitupRepository: di(),
         userRepository: di(),

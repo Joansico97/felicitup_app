@@ -36,6 +36,7 @@ class RouterPaths {
   static const String listSingleChat = '/listSingleChat';
   static const String wishList = '/wishList';
   static const String wishListEdit = '/wishListEdit';
+  static const String felicitupNotification = '/felicitupNotification';
 
   List<String> get noAuthenticated => [
         init,

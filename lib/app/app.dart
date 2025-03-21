@@ -1,7 +1,7 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
-import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/data/resources/resources.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:felicitup_app/injection/injection_container.dart' as injection;
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/router/router.dart';
@@ -83,58 +83,7 @@ class _HandleNotificationsInteractionsState extends State<HandleNotificationsInt
   }
 
   void _handleMessage(RemoteMessage message) async {
-    final String type = message.data['type'];
-    final pushMessageType = pushMessageTypeToEnum(type);
-    final felicitupId = message.data['felicitupId'] ?? '';
-    final chatId = message.data['chatId'] ?? '';
-    final name = message.data['name'] ?? '';
-    final ids = message.data['ids'] ?? [];
-
-    switch (pushMessageType) {
-      case PushMessageType.felicitup:
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          CustomRouter().router.go(
-            RouterPaths.messageFelicitup,
-            extra: {
-              'felicitupId': felicitupId,
-              'fromNotification': false,
-            },
-          );
-        });
-        break;
-      case PushMessageType.chat:
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          CustomRouter().router.go(
-            RouterPaths.messageFelicitup,
-            extra: {
-              'felicitupId': felicitupId,
-              'fromNotification': false,
-            },
-          );
-        });
-      case PushMessageType.payment:
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          CustomRouter().router.go(
-            RouterPaths.boteFelicitup,
-            extra: {
-              'felicitupId': felicitupId,
-              'fromNotification': true,
-            },
-          );
-        });
-      case PushMessageType.singleChat:
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          CustomRouter().router.go(
-            RouterPaths.singleChat,
-            extra: {
-              'chatId': chatId,
-              'name': name,
-              'ids': ids,
-            },
-          );
-        });
-        break;
-    }
+    redirectHelper(data: message.data);
   }
 
   @override

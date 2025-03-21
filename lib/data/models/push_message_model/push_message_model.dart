@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'push_message_model.freezed.dart';
 part 'push_message_model.g.dart';
 
-enum PushMessageType { felicitup, chat, singleChat, payment }
+enum PushMessageType { felicitup, chat, singleChat, payment, participation }
 
 String enumToPushMessageType(PushMessageType enumValue) {
   switch (enumValue) {
@@ -15,6 +15,8 @@ String enumToPushMessageType(PushMessageType enumValue) {
       return 'singleChat';
     case PushMessageType.payment:
       return 'payment';
+    case PushMessageType.participation:
+      return 'participation';
   }
 }
 
@@ -28,6 +30,8 @@ PushMessageType pushMessageTypeToEnum(String value) {
       return PushMessageType.singleChat;
     case 'payment':
       return PushMessageType.payment;
+    case 'participation':
+      return PushMessageType.participation;
     default:
       throw Exception('Unknown PushMessageType: $value');
   }

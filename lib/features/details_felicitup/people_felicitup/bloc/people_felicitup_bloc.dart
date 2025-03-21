@@ -47,7 +47,11 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
     emit(PeopleFelicitupState(isLoading: !state.isLoading));
   }
 
-  _informParticipation(Emitter<PeopleFelicitupState> emit, String felicitupId, String newStatus) async {
+  _informParticipation(
+    Emitter<PeopleFelicitupState> emit,
+    String felicitupId,
+    String newStatus,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _felicitupRepository.setParticipation(felicitupId, newStatus);

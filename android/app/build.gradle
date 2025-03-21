@@ -71,11 +71,11 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
     implementation 'androidx.window:window:1.0.0'
     implementation 'androidx.window:window-java:1.0.0'
-    implementation 'com.google.firebase:firebase-messaging:23.4.1'  // ¡VERSIÓN CORRECTA! Usa una versión compatible.
     implementation "com.google.android.gms:play-services-auth:21.1.0" //Esta version esta bien
 
     // Agrega la dependencia de Crashlytics (si la necesitas).
     implementation platform('com.google.firebase:firebase-bom:33.0.0') //¡BOM, importante!
+    implementation 'com.google.firebase:firebase-messaging'  // ¡VERSIÓN CORRECTA! Usa una versión compatible.
     implementation 'com.google.firebase:firebase-crashlytics' // Sin versión, usa el BOM
     implementation 'com.google.firebase:firebase-analytics' 
 }

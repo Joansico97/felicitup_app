@@ -6,5 +6,6 @@ class AppEvent with _$AppEvent {
   const factory AppEvent.loadUserData() = _loadUserData;
   const factory AppEvent.initializeNotifications() = _initializeNotifications;
   const factory AppEvent.handleRemoteMessage(RemoteMessage message) = _handleRemoteMessage;
+  const factory AppEvent.getFCMToken() = _getFCMToken;
   const factory AppEvent.logout() = _logout;
 }

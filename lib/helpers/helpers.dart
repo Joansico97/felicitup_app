@@ -5,4 +5,5 @@ export './files_helper.dart';
 export './firebase_functions_helper.dart';
 export './generate_color.dart';
 export './list_avatares.dart';
+export './redirect_helper.dart';
 export './validates.dart';

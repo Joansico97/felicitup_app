@@ -142,6 +142,11 @@ class CustomRouter {
         pageBuilder: _notificationsSettingsHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.felicitupNotification,
+        pageBuilder: _felicitupNotificationHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
     ],
   );
 
