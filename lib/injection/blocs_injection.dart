@@ -13,10 +13,14 @@ void _initBlocsInjection() {
     ..registerFactory(
       () => LoginBloc(
         authRepository: di(),
+        firestore: di(),
       ),
     )
     ..registerFactory(
-      () => RegisterBloc(),
+      () => RegisterBloc(
+        authRepository: di(),
+        userRepository: di(),
+      ),
     )
     ..registerFactory(
       () => HomeBloc(
@@ -58,6 +62,7 @@ void _initBlocsInjection() {
         felicitupRepository: di(),
         userRepository: di(),
         chatRepository: di(),
+        firebaseFunctions: di(),
       ),
     )
     ..registerFactory(
@@ -89,7 +94,9 @@ void _initBlocsInjection() {
       () => NotificationsBloc(),
     )
     ..registerFactory(
-      () => ProfileBloc(),
+      () => ProfileBloc(
+        userRepository: di(),
+      ),
     )
     ..registerFactory(
       () => WishListBloc(
@@ -110,5 +117,13 @@ void _initBlocsInjection() {
     )
     ..registerFactory(
       () => NotificationsSettingsBloc(),
+    )
+    ..registerFactory(
+      () => FederatedRegisterBloc(
+        userRepository: di(),
+      ),
+    )
+    ..registerFactory(
+      () => TermsPoliciesBloc(),
     );
 }

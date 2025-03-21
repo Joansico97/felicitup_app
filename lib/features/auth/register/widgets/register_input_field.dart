@@ -1,230 +1,145 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 
-class AppRegisterInputField extends StatelessWidget {
-  const AppRegisterInputField({
+class CustomTextFormField extends StatefulWidget {
+  final String? labelText;
+  final String? hintText;
+  final String? Function(String?)? validator;
+  final void Function(String)? onChanged;
+  final InputDecoration? decoration;
+  final TextStyle? style;
+  final bool isPassword;
+  final bool isEmail;
+  final double? width;
+  final double? height;
+  final TextEditingController controller;
+
+  const CustomTextFormField({
     super.key,
-    required this.isEmail,
-    required this.isText,
-    required this.hintText,
     required this.controller,
-    required this.validator,
-    this.isObscure,
-    this.onTap,
+    this.labelText,
+    this.hintText,
+    this.validator,
+    this.onChanged,
+    this.decoration,
+    this.style,
+    this.isPassword = false,
+    this.isEmail = false,
+    this.width,
+    this.height,
   });
 
-  final bool isEmail;
-  final bool isText;
-  final String hintText;
-  final TextEditingController controller;
-  final Function validator;
-  final bool? isObscure;
-  final VoidCallback? onTap;
+  @override
+  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
+}
+
+class _CustomTextFormFieldState extends State<CustomTextFormField> {
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
-    return isEmail
-        ? Container(
-            constraints: BoxConstraints(
-              maxHeight: context.sp(45),
-              minHeight: context.sp(45),
-              maxWidth: context.sp(240),
-              minWidth: context.sp(240),
-            ),
-            alignment: Alignment.center,
-            child: TextFormField(
-              controller: controller,
-              keyboardType: TextInputType.emailAddress,
-              style: context.styles.paragraph,
-              decoration: InputDecoration(
-                border: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    width: 2,
-                    color: context.colors.darkGrey,
-                  ),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    width: 2,
-                    color: context.colors.darkGrey,
-                  ),
-                ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    width: 1,
-                    color: context.colors.darkGrey,
-                  ),
-                ),
-                errorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    width: 1,
-                    color: context.colors.primary,
-                  ),
-                ),
-                // disabledBorder: InputBorder.none,
-                focusedErrorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    width: 1,
-                    color: context.colors.primary,
-                  ),
-                ),
-                hintText: hintText,
-                hintStyle: context.styles.paragraph.copyWith(
-                  color: context.colors.darkGrey,
-                ),
-                errorStyle: context.styles.smallText.copyWith(
-                  color: context.colors.error,
-                ),
-              ),
-              validator: (value) {
-                String pattern =
-                    r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-                RegExp regex = RegExp(pattern);
+    // Define el keyboardType según el tipo de campo
+    final keyboardType = widget.isEmail
+        ? TextInputType.emailAddress
+        : widget.isPassword
+            ? TextInputType.visiblePassword
+            : TextInputType.text;
 
-                if (value == null || value.isEmpty) {
-                  return 'Debes ingresar un correo electrónico';
-                } else if (!regex.hasMatch(value.trim())) {
-                  return 'Debes ingresar un correo electrónico válido';
-                }
-                return null;
-              },
-              // validator: validator(),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: context.sp(60),
+        minHeight: context.sp(50),
+        maxWidth: context.sp(300),
+        minWidth: context.sp(240),
+      ),
+      child: TextFormField(
+        controller: widget.controller,
+        decoration: InputDecoration(
+          labelText: widget.labelText,
+          labelStyle: context.styles.paragraph.copyWith(
+            color: context.colors.darkGrey,
+          ),
+          hintText: widget.hintText,
+          hintStyle: context.styles.paragraph.copyWith(
+            color: context.colors.darkGrey,
+          ),
+          border: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: context.colors.darkGrey,
             ),
-          )
-        : isText
-            ? Container(
-                constraints: BoxConstraints(
-                  maxHeight: context.sp(45),
-                  minHeight: context.sp(45),
-                  maxWidth: context.sp(240),
-                  minWidth: context.sp(240),
-                ),
-                alignment: Alignment.center,
-                child: TextFormField(
-                  controller: controller,
-                  keyboardType: TextInputType.text,
-                  style: context.styles.paragraph,
-                  decoration: InputDecoration(
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: context.colors.darkGrey,
-                      ),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: context.colors.darkGrey,
-                      ),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        width: 1,
-                        color: context.colors.darkGrey,
-                      ),
-                    ),
-                    errorBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        width: 1,
-                        color: context.colors.primary,
-                      ),
-                    ),
-                    // disabledBorder: InputBorder.none,
-                    focusedErrorBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        width: 1,
-                        color: context.colors.primary,
-                      ),
-                    ),
-                    hintText: hintText,
-                    hintStyle: context.styles.paragraph.copyWith(
-                      color: context.colors.darkGrey,
-                    ),
-                    errorStyle: context.styles.smallText.copyWith(
-                      color: context.colors.error,
-                    ),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: context.colors.orange,
+            ),
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: context.colors.darkGrey,
+            ),
+          ),
+          errorBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: context.colors.error,
+            ),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: context.sp(16),
+            vertical: context.sp(12),
+          ),
+          suffixIcon: widget.isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility : Icons.visibility_off,
+                    color: context.colors.orange,
                   ),
-                  validator: validateText,
-                  // validator: validator(),
-                ),
-              )
-            : Container(
-                constraints: BoxConstraints(
-                  maxHeight: context.sp(45),
-                  minHeight: context.sp(45),
-                  maxWidth: context.sp(240),
-                  minWidth: context.sp(240),
-                ),
-                alignment: Alignment.center,
-                child: TextFormField(
-                  controller: controller,
-                  keyboardType: TextInputType.text,
-                  obscuringCharacter: '*',
-                  obscureText: isObscure!,
-                  style: context.styles.paragraph,
-                  decoration: InputDecoration(
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: context.colors.darkGrey,
-                      ),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        width: 2,
-                        color: context.colors.darkGrey,
-                      ),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        width: 1,
-                        color: context.colors.darkGrey,
-                      ),
-                    ),
-                    disabledBorder: InputBorder.none,
-                    focusedErrorBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        width: 1,
-                        color: context.colors.primary,
-                      ),
-                    ),
-                    hintText: hintText,
-                    hintStyle: context.styles.paragraph.copyWith(
-                      color: context.colors.darkGrey,
-                    ),
-                    errorStyle: context.styles.smallText.copyWith(
-                      color: context.colors.error,
-                    ),
-                    suffixIcon: IconButton(
-                      onPressed: onTap,
-                      icon: Icon(
-                        isObscure! ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: context.colors.orange,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  validator: (value) {
-                    String pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!\@\#\$%\^&\*\(\)\-_\[\]\{\}]).{8,}$';
-                    RegExp regex = RegExp(pattern);
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor rellena el campo';
-                    } else if (value.length <= 5) {
-                      return 'La contraseña debe ser de más de 6 caracteres';
-                    } else if (!regex.hasMatch(value.trim())) {
-                      return 'Ingresa una contraseña segura';
-                    }
-                    return null;
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
                   },
-                  // validator: validator(),
-                ),
-              );
+                )
+              : null,
+          // ...?widget.decoration?.toMap(), // Combina con la decoración personalizada si se proporciona
+        ),
+        style: context.styles.paragraph.copyWith(
+          height: 1,
+          letterSpacing: widget.isPassword ? 1.5 : 0,
+        ),
+        keyboardType: keyboardType, // Asigna el keyboardType dinámico
+        obscureText: widget.isPassword ? _obscureText : false,
+        obscuringCharacter: '•',
+        validator: widget.validator ?? _defaultValidator,
+        onChanged: widget.onChanged,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+      ),
+    );
   }
 
-  String? validateText(value) {
+  String? _defaultValidator(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Por favor rellena el campo';
+      return 'Este campo es obligatorio';
+    }
+    if (widget.isEmail && !_isValidEmail(value)) {
+      return 'Ingresa un correo electrónico válido';
+    }
+    if (widget.isPassword && !_isValidPassword(value)) {
+      return 'La contraseña debe tener al menos 8 caracteres';
     }
     return null;
+  }
+
+  bool _isValidEmail(String email) {
+    // Expresión regular para validar correos
+    final emailRegex = RegExp(
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');
+    return emailRegex.hasMatch(email);
+  }
+
+  bool _isValidPassword(String password) {
+    String pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!\@\#\$%\^&\*\(\)\-_\[\]\{\}]).{8,}$';
+    RegExp regex = RegExp(pattern);
+    // Validación básica de contraseña (al menos 8 caracteres)
+    return regex.hasMatch(password) || password.length >= 8;
   }
 }

@@ -7,7 +7,7 @@ admin.initializeApp({
   storageBucket: "felicitup-prod.appspot.com",
 });
 
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v2");
 
 const {getDeviceToken, sendPushNotification, sendPushNotificationToListContacts} = require("./notifications/notifications");
 const {getUserDataById} = require("./users/users");
@@ -23,22 +23,127 @@ const constants = require("./constants/constants");
 
 const bucket = admin.storage().bucket();
 
+exports.testFunction = functions.https.onCall(
+    {region: "us-central1"}, // ¡Siempre especifica la región!
+    async (data, context) => {
+      console.log("Data recibida en testFunction:", data);
+      return {message: "Datos recibidos correctamente!", data: data};
+    },
+);
+
+// exports.sendNotification = functions.https.onCall(async (data, context) => {
+//   console.log("Data:", data);
+//   try {
+//     // Verificar que el userId esté presente
+//     const userId = data.userId;
+//     if (!userId) {
+//       throw new functions.https.HttpsError(
+//           "invalid-argument",
+//           "El ID del usuario es requerido.",
+//       );
+//     }
+
+//     // Obtener el título, cuerpo y datos adicionales de la notificación
+//     const title = data.title;
+//     const body = data.message;
+//     const dataInfo = data.dataInfo;
+
+//     if (!title || !body) {
+//       throw new functions.https.HttpsError(
+//           "invalid-argument",
+//           "El título y el cuerpo de la notificación son requeridos.",
+//       );
+//     }
+
+//     // Buscar el usuario en Firestore
+//     const db = admin.firestore();
+//     const userDoc = await db.collection("Users").doc(userId).get();
+
+//     if (!userDoc.exists) {
+//       throw new functions.https.HttpsError(
+//           "not-found",
+//           "No se encontró el usuario con el ID proporcionado.",
+//       );
+//     }
+
+//     // Extraer el fcmToken del documento del usuario
+//     const userData = userDoc.data();
+//     const fcmToken = userData.fcmToken;
+
+//     if (!fcmToken) {
+//       throw new functions.https.HttpsError(
+//           "not-found",
+//           "El usuario no tiene un token de FCM registrado.",
+//       );
+//     }
+
+//     // Crear el payload de la notificación
+//     const payload = {
+//       token: fcmToken,
+//       notification: {
+//         title: title,
+//         body: body,
+//       },
+//       data: dataInfo, // Datos adicionales
+//     };
+
+//     console.log("Enviando notificación a:", userId);
+//     console.log("Payload:", payload);
+
+//     // Enviar la notificación utilizando Firebase Messaging
+//     const response = await admin.messaging().send(payload);
+//     console.log("Notificación enviada con éxito:", response);
+
+//     return {success: true, message: "Notificación enviada correctamente."};
+//   } catch (error) {
+//     console.error("Error enviando notificación:", error);
+//     throw new functions.https.HttpsError(
+//         "unknown",
+//         error.message || "Ocurrió un error al enviar la notificación.",
+//     );
+//   }
+// });
 
 exports.sendNotification = functions.https.onCall(
-    async (data) => {
+    {
+      region: "us-central1",
+      timeoutSeconds: 300,
+      memory: "256MiB",
+    },
+    async (data, context) => {
       try {
-        const userId = data.userId;
-        const title = data.title;
-        const message = data.message;
-        const currentChat = data.currentChat;
-        const userData = await getUserDataById(userId);
-        const token = await getDeviceToken(userId);
-        const dataInfo = data.data;
+      // Accede a los datos dentro de 'data.data':
+        const userId = data.data.userId; // <-- data.data
+        const title = data.data.title; // <-- data.data
+        const message = data.data.message;// <-- data.data
+        const currentChat = data.data.currentChat; // <-- data.data
+        const dataInfo = data.data.dataInfo; // <-- data.data  O data.data.dataInfo, según necesites.
+        console.log("Data recibida en sendNotification:", dataInfo);
 
-        console.log("Current Chat: " + currentChat);
-        console.log("User Data: " + userData.currentChat);
-        console.log("data info: " + dataInfo);
+        if (!userId) {
+          throw new functions.https.HttpsError("invalid-argument", "El ID del usuario es requerido.");
+        }
+
+        // ... resto de tu lógica, usando userId, title, message, etc. ...
+        const db = admin.firestore();
+        const userDoc = await db.collection("Users").doc(userId).get();
+
+        if (!userDoc.exists) {
+          throw new functions.https.HttpsError("not-found", "No se encontró el usuario con el ID proporcionado.");
+        }
+
+        const userData = userDoc.data();
+        const token = userData.fcmToken;
+
+        if (!token) {
+          throw new functions.https.HttpsError(
+              "not-found",
+              "El usuario no tiene un token de FCM registrado.",
+          );
+        }
+
         if (!currentChat || userData.currentChat !== currentChat) {
+          console.log("Enviando notificación a:", token);
           const payload = {
             token,
             notification: {
@@ -47,31 +152,45 @@ exports.sendNotification = functions.https.onCall(
             },
             data: dataInfo,
           };
-          console.log("Sending Notification to: " + userId);
           await sendPushNotification(payload);
+          // await admin.messaging().send(payload);
+          return {success: true};
         }
-      } catch (e) {
-        console.log("Firebase Notification Failed: " + e.message);
-        return {error: {message: e.message}};
+      } catch (error) {
+        functions.logger.error("Error en sendNotification:", error, {userId: data && data.data ? data.data.userId : undefined}); // Log estructurado.
+        if (error instanceof functions.https.HttpsError) {
+          throw error;
+        }
+        throw new functions.https.HttpsError("internal", "Error al enviar la notificación", error);
       }
-    });
+    },
+);
 
 exports.sendNotificationToList = functions.https.onCall(
     async (data) => {
       try {
-        const userIds = data.userIds; // Lista de IDs de usuarios
-        const title = data.title;
-        const message = data.message;
-        const dataInfo = data.data;
-        const currentChat = data.currentChat;
+        const userIds = data.data.userIds; // Lista de IDs de usuarios
+        const title = data.data.title;
+        const message = data.data.message;
+        const dataInfo = data.data.dataInfo;
+        const currentChat = data.data.currentChat;
+
+        if (!Array.isArray(userIds)) {
+          console.table(userIds);
+          throw new functions.https.HttpsError("invalid-argument", "La lista de IDs de usuarios no es válida.");
+        }
 
         // Obtener los tokens de los usuarios que cumplen con la condición
         const tokensToSend = [];
         for (const userId of userIds) {
-          const userData = await getUserDataById(userId);
-          const token = await getDeviceToken(userId);
-          if (token && (!currentChat || userData.currentChat !== currentChat)) {
-            tokensToSend.push(token);
+          try {
+            const userData = await getUserDataById(userId);
+            const token = await getDeviceToken(userId);
+            if (token && (!currentChat || userData.currentChat !== currentChat)) {
+              tokensToSend.push(token);
+            }
+          } catch (error) {
+            console.error(`Error al obtener datos del usuario ${userId}:`, error);
           }
         }
 
@@ -87,10 +206,12 @@ exports.sendNotificationToList = functions.https.onCall(
 
           console.log("Sending Notifications to tokens:", tokensToSend);
           await sendPushNotificationToListContacts(payload);
+        } else {
+          console.log("No se encontraron tokens válidos para enviar notificaciones.");
         }
       } catch (e) {
         console.log("Firebase Notification Failed: " + e.message);
-        return {error: {message: e.message}};
+        throw new functions.https.HttpsError("internal", "Error al enviar notificaciones", e.message);
       }
     });
 

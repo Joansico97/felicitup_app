@@ -39,13 +39,6 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
         addParticipant: (event) => _addParticipant(emit, event.participant),
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
         createFelicitup: (event) => _createFelicitup(emit, event.felicitupMessage),
-        sendNotifications: (event) => _sendNotifications(
-          event.ids,
-          event.title,
-          event.message,
-          event.currentChat,
-          event.data,
-        ),
       ),
     );
   }
@@ -304,22 +297,24 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
           emit(state.copyWith(isLoading: false));
           unawaited(showErrorModal(l.message));
         },
-        (r) {
+        (r) async {
           List participants = [...state.invitedContacts];
           List<String> ids = participants.map((e) => e['id'] as String).toList();
           ids.removeAt(0);
-          add(
-            CreateFelicitupEvent.sendNotifications(
-              ids,
+          for (String id in ids) {
+            await _userRepository.sendNotification(
+              id,
               'Nueva Felicitup',
               'Has sido invitado a un felicitup',
               '',
               DataMessageModel(
                 type: enumToPushMessageType(PushMessageType.felicitup),
                 felicitupId: felicitupId,
+                chatId: '',
+                name: '',
               ),
-            ),
-          );
+            );
+          }
 
           emit(state.copyWith(
             isLoading: false,
@@ -331,26 +326,6 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
     } catch (e) {
       emit(state.copyWith(isLoading: false));
       showErrorModal('Ocurrió un error al crear la felicitup');
-    }
-  }
-
-  _sendNotifications(
-    List<String> ids,
-    String title,
-    String message,
-    String currentChat,
-    DataMessageModel data,
-  ) async {
-    try {
-      await _userRepository.sendNotificationToListUsers(
-        ids,
-        title,
-        message,
-        currentChat,
-        data,
-      );
-    } catch (e) {
-      logger.error(e);
     }
   }
 }

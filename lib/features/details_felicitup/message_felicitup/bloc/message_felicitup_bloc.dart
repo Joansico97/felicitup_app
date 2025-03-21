@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
@@ -17,9 +18,11 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
     required FelicitupRepository felicitupRepository,
     required UserRepository userRepository,
     required ChatRepository chatRepository,
+    required FirebaseFunctions firebaseFunctions,
   })  : _felicitupRepository = felicitupRepository,
         _userRepository = userRepository,
         _chatRepository = chatRepository,
+        // _firebaseFunctions = firebaseFunctions,
         super(MessageFelicitupState.initial()) {
     on<MessageFelicitupEvent>(
       (events, emit) => events.map(
@@ -42,6 +45,7 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
   final FelicitupRepository _felicitupRepository;
   final UserRepository _userRepository;
   final ChatRepository _chatRepository;
+  // final FirebaseFunctions _firebaseFunctions;
 
   _loadMessages(Emitter<MessageFelicitupState> emit) {}
 
@@ -65,12 +69,22 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
 
       response.fold(
         (l) {},
-        (r) {
-          List ids = [...felicitup.invitedUsers];
+        (r) async {
+          List<String> ids = [...felicitup.invitedUsers];
           ids.remove(userId);
-          for (var element in ids) {
-            _userRepository.sendNotification(
-              element,
+          // await _firebaseFunctions
+          //     .httpsCallable('testFunction') // Llama a la función de prueba.
+          //     .call(
+          //   {'testParam': 'Hola desde Flutter!'},
+          // ); // Envía un parámetro simple.
+
+          for (String id in ids) {
+            await _userRepository.sendNotification(
+              //   'testUserId', //  ¡Valores SIMPLES!
+              //   'Test Title',
+              //   'Test Message',
+              //   'testChat',
+              id,
               'Nuevo mensaje de $userName',
               chatMessage.message,
               felicitup.chatId,
@@ -78,6 +92,7 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
                 type: enumToPushMessageType(PushMessageType.chat),
                 felicitupId: felicitup.id,
                 chatId: felicitup.chatId,
+                name: '',
               ),
             );
           }

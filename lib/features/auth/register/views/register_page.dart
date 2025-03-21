@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
-import 'package:felicitup_app/features/auth/register/widgets/widgets.dart';
-import 'package:felicitup_app/gen/assets.gen.dart';
-import 'package:flutter/gestures.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
+import 'package:felicitup_app/features/auth/register/bloc/register_bloc.dart';
+import 'package:felicitup_app/features/auth/register/views/views.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class RegisterPage extends StatelessWidget {
@@ -11,50 +14,49 @@ class RegisterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SafeArea(
-          child: Container(
-            height: context.fullHeight,
-            width: context.fullWidth,
-            padding: EdgeInsets.symmetric(
-              horizontal: context.sp(60),
-              vertical: context.sp(20),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  SizedBox(height: context.sp(42)),
-                  Image.asset(
-                    Assets.images.logo.path,
-                    height: context.sp(60),
-                  ),
-                  SizedBox(height: context.sp(23)),
-                  Image.asset(
-                    Assets.images.logoLetter.path,
-                    height: context.sp(62),
-                  ),
-                  SizedBox(height: context.sp(24)),
-                  RegisterForm(),
-                  SizedBox(height: context.sp(12)),
-                  RichText(
-                    text: TextSpan(
-                      text: '¿Ya estás registrado?',
-                      style: context.styles.smallText,
-                      children: [
-                        TextSpan(
-                          text: ' Acceder',
-                          style: context.styles.smallText.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                          recognizer: TapGestureRecognizer()..onTap = () => context.push(RouterPaths.login),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // SizedBox(height: size.height(.03)),
-                ],
+    return BlocListener<RegisterBloc, RegisterState>(
+      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listener: (_, state) async {
+        if (state.isLoading) {
+          unawaited(startLoadingModal());
+        } else {
+          await stopLoadingModal();
+        }
+
+        if (state.status == RegisterStatus.finished) {
+          context.go(RouterPaths.login);
+        }
+
+        if (state.status == RegisterStatus.error) {
+          unawaited(showErrorModal(state.errorMessage));
+        }
+      },
+      child: Scaffold(
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SafeArea(
+            child: Container(
+              height: context.fullHeight,
+              width: context.fullWidth,
+              padding: EdgeInsets.symmetric(
+                horizontal: context.sp(60),
+                vertical: context.sp(12),
+              ),
+              child: BlocBuilder<RegisterBloc, RegisterState>(
+                builder: (_, state) {
+                  final status = state.status;
+                  if (status == RegisterStatus.success) {
+                    return FinishRegisterView();
+                  } else if (status == RegisterStatus.initial) {
+                    return RegisterView();
+                  } else if (status == RegisterStatus.formFinished) {
+                    return GetUserPhoneView();
+                  } else if (status == RegisterStatus.validateCode) {
+                    return ValidateCodeView();
+                  } else {
+                    return RegisterView();
+                  }
+                },
               ),
             ),
           ),

@@ -73,7 +73,6 @@ class AuthFirebaseResource implements AuthRepository {
 
       return Right(response);
     } on FirebaseAuthException catch (e) {
-      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
       return Left(ApiException(400, e.message ?? ''));
     } catch (e) {
       return Left(ApiException(400, e.toString()));

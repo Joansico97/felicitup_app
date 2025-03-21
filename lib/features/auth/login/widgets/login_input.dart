@@ -35,8 +35,8 @@ class _LoginInputState extends State<LoginInput> {
       children: [
         ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: context.sp(45),
-            minHeight: context.sp(45),
+            maxHeight: context.sp(50),
+            minHeight: context.sp(50),
             maxWidth: context.sp(240),
             minWidth: context.sp(240),
           ),
@@ -51,6 +51,7 @@ class _LoginInputState extends State<LoginInput> {
               obscureText: widget.isPassword ? widget.isObscure! : false,
               style: context.styles.menu.copyWith(
                 letterSpacing: widget.isPassword ? 1.5 : 1,
+                height: 1,
               ),
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(
@@ -104,6 +105,7 @@ class _LoginInputState extends State<LoginInput> {
                 hintText: widget.hintText,
                 hintStyle: context.styles.paragraph.copyWith(
                   color: context.colors.darkGrey,
+                  height: 1,
                 ),
                 suffixIcon: IconButton(
                   onPressed: widget.changeObscure,

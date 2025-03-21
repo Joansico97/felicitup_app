@@ -17,12 +17,12 @@ class FirebaseFunctionsHelper {
   }) async {
     await _call(
       'sendNotification',
-      params: {
+      parameters: {
         'userId': userId,
         'title': title,
         'message': message,
         'currentChat': currentChat,
-        'data': data,
+        'dataInfo': data,
       },
     );
   }
@@ -36,7 +36,7 @@ class FirebaseFunctionsHelper {
   }) async {
     await _call(
       'sendNotificationToList',
-      params: {
+      parameters: {
         'userIds': ids,
         'title': title,
         'message': message,
@@ -53,7 +53,7 @@ class FirebaseFunctionsHelper {
   }) async {
     await _call(
       'mergeVideos',
-      params: {
+      parameters: {
         'videoUrls': videoUrls,
         'felicitupId': felicitupId,
         'userId': userId,
@@ -66,7 +66,7 @@ class FirebaseFunctionsHelper {
   }) async {
     await _call(
       'sendManualFelicitup',
-      params: {
+      parameters: {
         'felicitupId': felicitupId,
       },
     );
@@ -74,11 +74,11 @@ class FirebaseFunctionsHelper {
 
   Future<T> _call<T>(
     String functionName, {
-    Map<String, dynamic>? params,
+    Map<String, dynamic>? parameters,
   }) async {
     try {
-      final HttpsCallable callable = _firebaseFunctions.httpsCallable(functionName);
-      final HttpsCallableResult<dynamic> result = await callable.call(params);
+      final callable = _firebaseFunctions.httpsCallable(functionName);
+      final HttpsCallableResult<dynamic> result = await callable.call(parameters);
       return result.data as T;
     } catch (e) {
       logger.error('Error calling $functionName $e');

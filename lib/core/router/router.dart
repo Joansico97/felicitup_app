@@ -43,6 +43,11 @@ class CustomRouter {
         pageBuilder: _registerHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.federatedRegister,
+        pageBuilder: _federatedRegisterHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
       ShellRoute(
         navigatorKey: homeNavigatorKey,
         parentNavigatorKey: rootNavigatorKey,

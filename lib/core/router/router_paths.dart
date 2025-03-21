@@ -37,6 +37,7 @@ class RouterPaths {
   static const String wishList = '/wishList';
   static const String wishListEdit = '/wishListEdit';
   static const String felicitupNotification = '/felicitupNotification';
+  static const String termsPolicies = '/termsPolicies';
 
   List<String> get noAuthenticated => [
         init,
@@ -47,5 +48,6 @@ class RouterPaths {
         inviteContacts,
         resetPassword,
         notificationInfo,
+        termsPolicies,
       ];
 }

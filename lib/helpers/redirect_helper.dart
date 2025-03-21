@@ -62,5 +62,16 @@ void redirectHelper({required Map<String, dynamic> data}) {
         );
       });
       break;
+    case PushMessageType.video:
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        CustomRouter().router.go(
+          RouterPaths.videoFelicitup,
+          extra: {
+            'felicitupId': felicitupId,
+            'fromNotification': true,
+          },
+        );
+      });
+      break;
   }
 }

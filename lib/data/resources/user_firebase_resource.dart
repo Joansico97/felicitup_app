@@ -257,6 +257,35 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> updateUserImageFromFile(File file) async {
+    try {
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> updateUserImageFromUrl(String url) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+      await _client.update(
+        AppConstants.usersCollection,
+        document: uid,
+        {
+          'userImg': url,
+        },
+      );
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Future<Either<ApiException, void>> createGiftItem(GiftcarModel item) async {
     try {
       final uid = _firebaseAuth.currentUser?.uid;
@@ -331,6 +360,53 @@ class UserFirebaseResource implements UserRepository {
       await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
         'notifications': FieldValue.arrayUnion([notification.toJson()]),
       });
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> setInitialUserInfo(UserModel user) async {
+    try {
+      final uid = user.id;
+      await _client.set(
+        AppConstants.usersCollection,
+        document: uid,
+        user.toJson(),
+      );
+      return Right(null);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> setUserInfoRemaining(
+    String name,
+    String lastName,
+    String phone,
+    String isoCode,
+    String gender,
+    DateTime birthDate,
+  ) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+      await _client.update(
+        AppConstants.usersCollection,
+        document: uid,
+        {
+          'name': name,
+          'lastName': lastName,
+          'phone': phone,
+          'isoCode': isoCode,
+          'gender': gender,
+          'birthDate': birthDate,
+        },
+      );
       return Right(null);
     } catch (e) {
       return Left(ApiException(1000, e.toString()));

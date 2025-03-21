@@ -34,6 +34,7 @@ Page<Widget> _loginHandler(BuildContext context, GoRouterState state) => CustomT
         return SlideTransition(position: offsetAnimation, child: child);
       },
     );
+
 Page<Widget> _registerHandler(BuildContext context, GoRouterState state) => CustomTransitionPage(
       key: state.pageKey,
       child: BlocProvider(
@@ -52,6 +53,26 @@ Page<Widget> _registerHandler(BuildContext context, GoRouterState state) => Cust
         return SlideTransition(position: offsetAnimation, child: child);
       },
     );
+Page<Widget> _federatedRegisterHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: BlocProvider(
+      create: (_) => injection.di<FederatedRegisterBloc>(),
+      child: const FederatedRegisterPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
 
 Page<Widget> _homeHandler(
   BuildContext context,

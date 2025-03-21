@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'push_message_model.freezed.dart';
 part 'push_message_model.g.dart';
 
-enum PushMessageType { felicitup, chat, singleChat, payment, participation }
+enum PushMessageType { felicitup, chat, singleChat, payment, participation, video }
 
 String enumToPushMessageType(PushMessageType enumValue) {
   switch (enumValue) {
@@ -17,6 +17,8 @@ String enumToPushMessageType(PushMessageType enumValue) {
       return 'payment';
     case PushMessageType.participation:
       return 'participation';
+    case PushMessageType.video:
+      return 'video';
   }
 }
 
@@ -32,6 +34,8 @@ PushMessageType pushMessageTypeToEnum(String value) {
       return PushMessageType.payment;
     case 'participation':
       return PushMessageType.participation;
+    case 'video':
+      return PushMessageType.video;
     default:
       throw Exception('Unknown PushMessageType: $value');
   }
@@ -57,7 +61,7 @@ class DataMessageModel with _$DataMessageModel {
     String? felicitupId,
     String? chatId,
     String? name,
-    List<String>? ids,
+    // List<String>? ids,
   }) = _DataMessageModel;
 
   factory DataMessageModel.fromJson(Map<String, dynamic> json) => _$DataMessageModelFromJson(json);

@@ -34,12 +34,17 @@ class _ProfilePageState extends State<ProfilePage> {
     final currentUser = context.read<AppBloc>().state.currentUser;
 
     return BlocListener<ProfileBloc, ProfileState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) => previous.isLoading != current.isLoading || previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
         } else {
           await stopLoadingModal();
+        }
+
+        if (state.status == ProfileStatus.success) {
+          context.read<AppBloc>().add(AppEvent.loadUserData());
+          context.go(RouterPaths.felicitupsDashboard);
         }
       },
       child: Scaffold(
@@ -47,24 +52,28 @@ class _ProfilePageState extends State<ProfilePage> {
         persistentFooterButtons: [
           SizedBox(
             width: context.sp(300),
-            child: PrimaryButton(
-              onTap: () {
-                if (imageFile != null) {
-                  // await ref.read(userEventsProvider.notifier).updateUserImage(imageFile!);
-                }
-                if (avatarUrl != null) {
-                  // await ref.read(userEventsProvider.notifier).updateUserImageFromUrl(avatarUrl!);
-                }
-                if (context.mounted) {
-                  setState(() {
-                    imageFile = null;
-                    canSave = false;
-                  });
-                  context.go(RouterPaths.felicitupsDashboard);
-                }
+            child: BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (_, state) {
+                return PrimaryButton(
+                  onTap: () {
+                    if (imageFile != null) {
+                      // await ref.read(userEventsProvider.notifier).updateUserImage(imageFile!);
+                    }
+                    if (avatarUrl != null) {
+                      context.read<ProfileBloc>().add(ProfileEvent.updateUserImageFromUrl(avatarUrl!));
+                    }
+                    if (context.mounted) {
+                      setState(() {
+                        imageFile = null;
+                        canSave = false;
+                      });
+                      // context.go(RouterPaths.felicitupsDashboard);
+                    }
+                  },
+                  label: 'Guardar cambios',
+                  isActive: state.status == ProfileStatus.success,
+                );
               },
-              label: 'Guardar cambios',
-              isActive: true,
             ),
           ),
         ],
@@ -252,10 +261,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       hintText: currentUser?.firstName ?? '',
                     ),
                     SizedBox(height: context.sp(12)),
-                    // EditInputField(
-                    //   controller: nameController,
-                    //   hintText: currentUser?.firstName ?? '',
-                    // ),
+                    EditInputField(
+                      controller: lastNameController,
+                      hintText: currentUser?.lastName ?? '',
+                    ),
                     // SizedBox(height: context.sp(12)),
                     // EditInputField(
                     //   controller: nameController,

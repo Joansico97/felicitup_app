@@ -4,4 +4,7 @@ part of 'login_bloc.dart';
 class LoginEvent with _$LoginEvent {
   const factory LoginEvent.changeLoading() = _changeLoading;
   const factory LoginEvent.loginEvent(String email, String password) = _loginEvent;
+  const factory LoginEvent.setUserInfo(UserModel user) = _setUserInfo;
+  const factory LoginEvent.googleLoginEvent() = _googleLoginEvent;
+  const factory LoginEvent.appleLoginEvent() = _appleLoginEvent;
 }

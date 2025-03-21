@@ -11,5 +11,6 @@ export './notifications/notifications.dart';
 export './payment/payment.dart';
 export './profile/profile.dart';
 export './single_chat/single_chat.dart';
+export './terms_policies/terms_policies.dart';
 export './video_editor/video_editor.dart';
 export './wish_list/wish_list.dart';
