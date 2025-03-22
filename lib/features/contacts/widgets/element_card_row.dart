@@ -3,10 +3,10 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
+import 'package:felicitup_app/features/contacts/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ElementCardRow extends StatelessWidget {
@@ -117,12 +117,7 @@ class ElementCardRow extends StatelessWidget {
                 ),
           SizedBox(width: context.sp(8)),
           GestureDetector(
-            onTap: () => context.push(
-              RouterPaths.detailsContact,
-              extra: {
-                'contact': contact,
-              },
-            ),
+            onTap: () => _showContactDetails(contact, isRegistered),
             child: Icon(
               Icons.drag_indicator,
             ),
@@ -131,4 +126,15 @@ class ElementCardRow extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showContactDetails(ContactModel contact, bool isRegistered) {
+  showDialog(
+    context: rootNavigatorKey.currentContext!,
+    useSafeArea: false,
+    builder: (_) => DetailsContactPage(
+      contact: contact,
+      isRegistered: isRegistered,
+    ),
+  );
 }
