@@ -13,7 +13,7 @@ class RegisterState with _$RegisterState {
     String? email,
     String? password,
     String? confirmPassword,
-    String? gender,
+    String? genre,
     String? phone,
     String? isoCode,
     DateTime? birthDate,

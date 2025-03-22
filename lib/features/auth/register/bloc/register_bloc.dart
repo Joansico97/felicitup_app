@@ -25,7 +25,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           event.email,
           event.password,
           event.confirmPassword,
-          event.gender,
+          event.genre,
           event.birthDate,
         ),
         savePhoneInfo: (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
@@ -51,7 +51,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     String email,
     String password,
     String confirmPassword,
-    String gender,
+    String genre,
     DateTime birthDate,
   ) async {
     emit(state.copyWith(isLoading: true));
@@ -64,7 +64,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       email: email,
       password: password,
       confirmPassword: confirmPassword,
-      gender: gender,
+      genre: genre,
       birthDate: birthDate,
     ));
   }
@@ -95,9 +95,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           phone: state.phone!,
           fcmToken: '',
           currentChat: '',
-          userImg: state.gender == 'Masculino'
+          userImg: state.genre == 'Masculino'
               ? 'https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/commonFiles%2Favatares%2Favatar_man_1.png?alt=media&token=11af323b-5266-422b-94c4-5a176a931ec0'
-              : state.gender == 'Femenino'
+              : state.genre == 'Femenino'
                   ? 'https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/commonFiles%2Favatares%2Favatar_woman_1.png?alt=media&token=23a0d5b4-22d4-4e76-9f77-6250fc1ca163'
                   : '',
           friendList: [],

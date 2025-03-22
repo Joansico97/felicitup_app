@@ -6,7 +6,7 @@ class FederatedRegisterEvent with _$FederatedRegisterEvent {
   const factory FederatedRegisterEvent.initRegister(
     String name,
     String lastName,
-    String gender,
+    String genre,
     DateTime birthDate,
   ) = _initRegister;
   const factory FederatedRegisterEvent.savePhoneInfo(

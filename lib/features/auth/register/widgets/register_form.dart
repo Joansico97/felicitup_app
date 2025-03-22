@@ -130,7 +130,7 @@ class _RegisterFormState extends State<RegisterForm> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                GenderCheckBox(
+                GenreCheckBox(
                   label: 'Masculino',
                   boolValue: masculine,
                   onChanged: (value) => setState(() {
@@ -139,7 +139,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     other = false;
                   }),
                 ),
-                GenderCheckBox(
+                GenreCheckBox(
                   label: 'Femenino',
                   boolValue: feminine,
                   onChanged: (value) => setState(() {
@@ -148,7 +148,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     other = false;
                   }),
                 ),
-                GenderCheckBox(
+                GenreCheckBox(
                   label: 'Otro',
                   boolValue: other,
                   onChanged: (value) => setState(() {
@@ -242,8 +242,8 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 }
 
-class GenderCheckBox extends StatelessWidget {
-  const GenderCheckBox({
+class GenreCheckBox extends StatelessWidget {
+  const GenreCheckBox({
     super.key,
     required this.label,
     required this.boolValue,

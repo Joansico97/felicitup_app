@@ -18,7 +18,7 @@ class FederatedRegisterBloc extends Bloc<FederatedRegisterEvent, FederatedRegist
           emit,
           event.name,
           event.lastName,
-          event.gender,
+          event.genre,
           event.birthDate,
         ),
         savePhoneInfo: (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
@@ -41,7 +41,7 @@ class FederatedRegisterBloc extends Bloc<FederatedRegisterEvent, FederatedRegist
     Emitter<FederatedRegisterState> emit,
     String name,
     String lastName,
-    String gender,
+    String genre,
     DateTime birthDate,
   ) async {
     emit(state.copyWith(isLoading: true));
@@ -51,7 +51,7 @@ class FederatedRegisterBloc extends Bloc<FederatedRegisterEvent, FederatedRegist
       currentIndex: state.currentIndex + 1,
       name: name,
       lastName: lastName,
-      gender: gender,
+      genre: genre,
       birthDate: birthDate,
     ));
   }
@@ -76,7 +76,7 @@ class FederatedRegisterBloc extends Bloc<FederatedRegisterEvent, FederatedRegist
         state.lastName!,
         state.phone!,
         state.isoCode!,
-        state.gender!,
+        state.genre!,
         state.birthDate!,
       );
 

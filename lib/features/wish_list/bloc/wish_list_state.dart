@@ -6,6 +6,11 @@ class WishListState with _$WishListState {
     required bool isLoading,
     required bool isCreate,
     required bool isEdit,
+    String? productName,
+    String? productDescription,
+    String? productPrice,
+    List<String>? links,
+    List<GiftcarModel>? listGiftcard,
   }) = _WishListState;
 
   factory WishListState.initial() => const WishListState(

@@ -294,7 +294,7 @@ Page<Widget> _profileHandler(BuildContext context, GoRouterState state) {
 Page<Widget> _wishListHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
     child: BlocProvider(
-      create: (_) => injection.di<WishListBloc>(),
+      create: (_) => injection.di<WishListBloc>()..add(WishListEvent.startListening()),
       child: WishListPage(),
     ),
     transitionDuration: Duration(milliseconds: 500),
@@ -316,7 +316,7 @@ Page<Widget> _wishListEditHandler(BuildContext context, GoRouterState state) {
 
   return CustomTransitionPage(
     child: BlocProvider(
-      create: (_) => injection.di<WishListBloc>(),
+      create: (_) => injection.di<WishListBloc>()..add(WishListEvent.startListening()),
       child: WishListEditPage(
         wishListItem: data,
       ),

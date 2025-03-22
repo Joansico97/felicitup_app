@@ -9,7 +9,7 @@ class FederatedRegisterState with _$FederatedRegisterState {
     String? lastName,
     String? phone,
     String? isoCode,
-    String? gender,
+    String? genre,
     DateTime? birthDate,
   }) = _FederatedRegisterState;
 

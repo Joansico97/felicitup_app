@@ -41,6 +41,8 @@ class UserFirebaseResource implements UserRepository {
       } else {
         return Left(ApiException(404, 'User not found'));
       }
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -62,6 +64,8 @@ class UserFirebaseResource implements UserRepository {
       } else {
         return Left(ApiException(404, 'No users found in collection'));
       }
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -78,6 +82,8 @@ class UserFirebaseResource implements UserRepository {
       } else {
         return Left(ApiException(404, 'Users not found'));
       }
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -104,6 +110,8 @@ class UserFirebaseResource implements UserRepository {
         users.add(UserModel.fromJson(user));
       }
       return Right(users);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -125,6 +133,8 @@ class UserFirebaseResource implements UserRepository {
       await imageUploadTask;
       final String imageUrl = await storageRef.getDownloadURL();
       return Right(imageUrl);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -143,6 +153,8 @@ class UserFirebaseResource implements UserRepository {
       } else {
         return Left(ApiException(404, 'User not found'));
       }
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -166,6 +178,8 @@ class UserFirebaseResource implements UserRepository {
       );
 
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -189,6 +203,8 @@ class UserFirebaseResource implements UserRepository {
       );
 
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -207,6 +223,8 @@ class UserFirebaseResource implements UserRepository {
         {'currentChat': id},
       );
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -231,6 +249,8 @@ class UserFirebaseResource implements UserRepository {
         },
       );
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -251,6 +271,8 @@ class UserFirebaseResource implements UserRepository {
         },
       );
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -280,6 +302,8 @@ class UserFirebaseResource implements UserRepository {
         },
       );
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -291,10 +315,12 @@ class UserFirebaseResource implements UserRepository {
       final uid = _firebaseAuth.currentUser?.uid;
 
       await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
-        'giftCardList': FieldValue.arrayUnion([item.toJson()]),
+        'giftcardList': FieldValue.arrayUnion([item.toJson()]),
       });
 
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -302,32 +328,132 @@ class UserFirebaseResource implements UserRepository {
 
   @override
   Future<Either<ApiException, void>> deleteGiftItem(String id) async {
-    try {
-      final uid = _firebaseAuth.currentUser?.uid;
+    final uid = _firebaseAuth.currentUser?.uid;
 
-      await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
-        'giftCardList': FieldValue.arrayRemove([id]),
-      });
-
-      return Right(null);
-    } catch (e) {
-      return Left(ApiException(1000, e.toString()));
+    if (uid == null) {
+      return Left(ApiException(401, "Usuario no autenticado"));
     }
+
+    final userDocRef = _firestore.collection(AppConstants.usersCollection).doc(uid);
+
+    return FirebaseFirestore.instance.runTransaction<Either<ApiException, void>>((transaction) async {
+      try {
+        final userDoc = await transaction.get(userDocRef);
+
+        if (!userDoc.exists) {
+          return Left(ApiException(404, "Usuario no encontrado"));
+        }
+
+        final userData = userDoc.data();
+        if (userData == null) {
+          return Left(ApiException(404, "Error al obtener la información del usuario"));
+        }
+        final giftcardList = userData['giftcardList'] as List<dynamic>? ?? [];
+
+        final indexToRemove = giftcardList.indexWhere((item) {
+          if (item is String) {
+            return item == id;
+          } else if (item is Map) {
+            return item['id'] == id;
+          }
+          return false;
+        });
+
+        if (indexToRemove == -1) {
+          return Left(ApiException(404, "Elemento no encontrado en la lista"));
+        }
+
+        final updatedList = List<dynamic>.from(giftcardList);
+        final itemToRemove = updatedList.removeAt(indexToRemove);
+
+        transaction.update(userDocRef, {
+          'giftcardList': FieldValue.arrayRemove([itemToRemove]),
+        });
+
+        return Right(null);
+      } on FirebaseException catch (e) {
+        return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      } catch (e) {
+        return Left(ApiException(500, "Error desconocido: ${e.toString()}"));
+      }
+    });
   }
 
   @override
-  Future<Either<ApiException, void>> editGiftItem(GiftcarModel item) async {
-    try {
-      final uid = _firebaseAuth.currentUser?.uid;
+  Future<Either<ApiException, void>> editGiftItem({
+    required String itemId, // ID del item a editar
+    String? newProductName,
+    String? newProductValue,
+    String? newProductDescription,
+    List<String>? newLinks,
+  }) async {
+    final uid = _firebaseAuth.currentUser?.uid;
 
-      await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
-        'giftCardList': FieldValue.arrayUnion([item.toJson()]),
-      });
-
-      return Right(null);
-    } catch (e) {
-      return Left(ApiException(1000, e.toString()));
+    if (uid == null) {
+      return Left(ApiException(401, "Usuario no autenticado"));
     }
+
+    final userDocRef = _firestore.collection(AppConstants.usersCollection).doc(uid);
+
+    return FirebaseFirestore.instance.runTransaction<Either<ApiException, void>>((transaction) async {
+      try {
+        final userDoc = await transaction.get(userDocRef); //Obtener documento actual
+
+        if (!userDoc.exists) {
+          return Left(ApiException(404, "Usuario no encontrado")); // 404 Not Found
+        }
+
+        final userData = userDoc.data();
+        if (userData == null) {
+          return Left(ApiException(404, "No se pudieron obtener los datos del usuario."));
+        }
+
+        final giftcardList = userData['giftcardList'] as List<dynamic>? ?? []; //Obtener lista, o lista vacía
+
+        final itemIndex = giftcardList.indexWhere((item) {
+          if (item is Map<String, dynamic>) {
+            return item['id'] == itemId; //Compara con el id
+          }
+          return false;
+        });
+
+        if (itemIndex == -1) {
+          return Left(ApiException(404, "Ítem no encontrado"));
+        }
+
+        //Crea una copia de la lista.
+        final updatedList = List<dynamic>.from(giftcardList);
+
+        // 1.  Crea un mapa con los *nuevos* valores, solo si se proporcionaron.
+        final Map<String, dynamic> updatedItem =
+            Map.from(updatedList[itemIndex] as Map<String, dynamic>); //Crea una copia del elemento a actualizar
+
+        if (newProductName != null) {
+          updatedItem['productName'] = newProductName;
+        }
+        if (newProductValue != null) {
+          updatedItem['productValue'] = newProductValue;
+        }
+        if (newProductDescription != null) {
+          updatedItem['productDescription'] = newProductDescription;
+        }
+        if (newLinks != null) {
+          updatedItem['links'] = newLinks;
+        }
+
+        //Reemplaza en la lista el item
+        updatedList[itemIndex] = updatedItem;
+
+        // 2.  Actualiza el documento *usando la lista modificada*.
+        transaction.update(userDocRef, {'giftcardList': updatedList});
+
+        return Right(null); // Éxito
+      } on FirebaseException catch (e) {
+        return Left(ApiException(int.parse(e.code), e.message ?? "Error de firebase"));
+      } catch (e) {
+        return Left(ApiException(500, "Error desconocido: ${e.toString()}"));
+      }
+    });
   }
 
   @override
@@ -345,6 +471,8 @@ class UserFirebaseResource implements UserRepository {
         },
       );
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -361,6 +489,8 @@ class UserFirebaseResource implements UserRepository {
         'notifications': FieldValue.arrayUnion([notification.toJson()]),
       });
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -376,6 +506,8 @@ class UserFirebaseResource implements UserRepository {
         user.toJson(),
       );
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -387,7 +519,7 @@ class UserFirebaseResource implements UserRepository {
     String lastName,
     String phone,
     String isoCode,
-    String gender,
+    String genre,
     DateTime birthDate,
   ) async {
     try {
@@ -403,13 +535,33 @@ class UserFirebaseResource implements UserRepository {
           'lastName': lastName,
           'phone': phone,
           'isoCode': isoCode,
-          'gender': gender,
+          'genre': genre,
           'birthDate': birthDate,
         },
       );
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Stream<Either<ApiException, List<GiftcarModel>>> getGiftcardListStream() {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      return _firestore.collection(AppConstants.usersCollection).doc(uid).snapshots().map((event) {
+        final data = event.data();
+        if (data == null) {
+          return Left(ApiException(1000, 'User not found'));
+        }
+        final List<Map<String, dynamic>> listData = List.from(data['giftcardList']);
+        final List<GiftcarModel> listGiftcard = listData.map((e) => GiftcarModel.fromJson(e)).toList();
+        return Right(listGiftcard);
+      });
+    } catch (e) {
+      return Stream.value(Left(ApiException(1000, e.toString())));
     }
   }
 }

@@ -35,44 +35,47 @@ class FederatedRegisterPage extends StatelessWidget {
           await stopLoadingModal();
         }
       },
-      child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.sp(60),
-                  vertical: context.sp(12),
-                ),
-                child: BlocBuilder<FederatedRegisterBloc, FederatedRegisterState>(
-                  builder: (_, state) {
-                    return AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (widget, animation) {
-                        final slideAnimation = Tween<Offset>(
-                          begin: const Offset(1.0, 0.0),
-                          end: Offset.zero,
-                        ).animate(animation);
+      child: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          body: SafeArea(
+            child: Column(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: context.sp(60),
+                    vertical: context.sp(12),
+                  ),
+                  child: BlocBuilder<FederatedRegisterBloc, FederatedRegisterState>(
+                    builder: (_, state) {
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (widget, animation) {
+                          final slideAnimation = Tween<Offset>(
+                            begin: const Offset(1.0, 0.0),
+                            end: Offset.zero,
+                          ).animate(animation);
 
-                        final fadeAnimation = Tween<double>(
-                          begin: 0.0,
-                          end: 1.0,
-                        ).animate(animation);
+                          final fadeAnimation = Tween<double>(
+                            begin: 0.0,
+                            end: 1.0,
+                          ).animate(animation);
 
-                        return FadeTransition(
-                          opacity: fadeAnimation,
-                          child: SlideTransition(
-                            position: slideAnimation,
-                            child: widget,
-                          ),
-                        );
-                      },
-                      child: getView(state.currentIndex),
-                    );
-                  },
+                          return FadeTransition(
+                            opacity: fadeAnimation,
+                            child: SlideTransition(
+                              position: slideAnimation,
+                              child: widget,
+                            ),
+                          );
+                        },
+                        child: getView(state.currentIndex),
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

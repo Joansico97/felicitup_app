@@ -119,7 +119,7 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    GenderCheckBox(
+                    GenreCheckBox(
                       label: 'Masculino',
                       boolValue: masculine,
                       onChanged: (value) => setState(() {
@@ -128,7 +128,7 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                         other = false;
                       }),
                     ),
-                    GenderCheckBox(
+                    GenreCheckBox(
                       label: 'Femenino',
                       boolValue: feminine,
                       onChanged: (value) => setState(() {
@@ -137,7 +137,7 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                         other = false;
                       }),
                     ),
-                    GenderCheckBox(
+                    GenreCheckBox(
                       label: 'Otro',
                       boolValue: other,
                       onChanged: (value) => setState(() {

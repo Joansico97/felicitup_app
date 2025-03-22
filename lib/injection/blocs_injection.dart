@@ -100,7 +100,6 @@ void _initBlocsInjection() {
     )
     ..registerFactory(
       () => WishListBloc(
-        firebaseAuth: di(),
         userRepository: di(),
       ),
     )

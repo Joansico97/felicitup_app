@@ -9,7 +9,7 @@ class RegisterEvent with _$RegisterEvent {
     String email,
     String password,
     String confirmPassword,
-    String gender,
+    String genre,
     DateTime birthDate,
   ) = _initRegister;
   const factory RegisterEvent.savePhoneInfo(

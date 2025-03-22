@@ -17,8 +17,6 @@ class WishListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = context.read<AppBloc>().state.currentUser;
-
     return BlocListener<WishListBloc, WishListState>(
       listenWhen: (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
@@ -52,6 +50,7 @@ class WishListPage extends StatelessWidget {
               SizedBox(height: context.sp(12)),
               BlocBuilder<WishListBloc, WishListState>(
                 builder: (_, state) {
+                  final listGiftcard = state.listGiftcard;
                   return Expanded(
                     child: state.isEdit
                         ? FadeInUp(
@@ -70,9 +69,9 @@ class WishListPage extends StatelessWidget {
                               child: Column(
                                 children: [
                                   ...List.generate(
-                                    currentUser?.giftcardList?.length ?? 0,
+                                    listGiftcard?.length ?? 0,
                                     (index) => WishListItem(
-                                      giftcard: currentUser!.giftcardList![index],
+                                      giftcard: listGiftcard![index],
                                     ),
                                   ),
                                 ],
@@ -88,9 +87,21 @@ class WishListPage extends StatelessWidget {
                   return SizedBox(
                     width: context.sp(300),
                     child: PrimaryButton(
-                      onTap: () => context.read<WishListBloc>().add(
-                            WishListEvent.editGiftItem(),
-                          ),
+                      onTap: () {
+                        if (state.isEdit) {
+                          context.read<WishListBloc>().add(
+                                WishListEvent.createGiftItemInfo(),
+                              );
+                          context.read<AppBloc>().add(AppEvent.loadUserData());
+                          context.read<WishListBloc>().add(
+                                WishListEvent.editGiftItem(),
+                              );
+                        } else {
+                          context.read<WishListBloc>().add(
+                                WishListEvent.editGiftItem(),
+                              );
+                        }
+                      },
                       label: state.isEdit ? 'Guardar' : 'Añadir regalo',
                       isActive: true,
                     ),
@@ -144,6 +155,9 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
             controller: nameController,
             hintText: 'Ingresa el nombre del producto',
             titleText: 'Nombre del producto',
+            onchangeEditing: (value) => context.read<WishListBloc>().add(
+                  WishListEvent.setProductName(value),
+                ),
           ),
           SizedBox(height: context.sp(16)),
           InputCommon(
@@ -152,6 +166,9 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
             hintText: 'Ingresa el precio del producto',
             titleText: 'Precio del producto',
             isPrice: true,
+            onchangeEditing: (value) => context.read<WishListBloc>().add(
+                  WishListEvent.setProductPrice(value),
+                ),
           ),
           SizedBox(height: context.sp(16)),
           InputCommon(
@@ -159,6 +176,9 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
             controller: descriptionController,
             hintText: 'Ingresa la descripción del producto',
             titleText: 'Descripción del producto',
+            onchangeEditing: (value) => context.read<WishListBloc>().add(
+                  WishListEvent.setProductDescription(value),
+                ),
           ),
           SizedBox(height: context.sp(16)),
           Text(
@@ -219,6 +239,56 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
               },
               isActive: true,
               isCollapsed: true,
+            ),
+          ),
+          Visibility(
+            visible: showLink,
+            child: Column(
+              children: [
+                SizedBox(height: context.sp(16)),
+                InputCommon(
+                  focusNode: _focusNode3,
+                  controller: linkController,
+                  hintText: 'Ingresa el link del producto',
+                  titleText: 'Link del producto',
+                ),
+                SizedBox(
+                  width: context.sp(100),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          if (linkController.text.isNotEmpty) {
+                            context.read<WishListBloc>().add(
+                                  WishListEvent.setLinks(links),
+                                );
+                            setState(() {
+                              links.add(linkController.text);
+                              linkController.clear();
+                              showLink = false;
+                            });
+                          }
+                        },
+                        icon: Icon(
+                          Icons.check_box_outlined,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            showLink = false;
+                          });
+                        },
+                        icon: Icon(
+                          Icons.cancel_outlined,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: context.sp(16)),
+              ],
             ),
           ),
         ],

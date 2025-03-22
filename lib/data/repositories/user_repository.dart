@@ -31,7 +31,13 @@ abstract class UserRepository {
   Future<Either<ApiException, void>> updateUserImageFromFile(File file);
   Future<Either<ApiException, void>> updateUserImageFromUrl(String url);
   Future<Either<ApiException, void>> createGiftItem(GiftcarModel item);
-  Future<Either<ApiException, void>> editGiftItem(GiftcarModel item);
+  Future<Either<ApiException, void>> editGiftItem({
+    required String itemId,
+    String? newProductName,
+    String? newProductValue,
+    String? newProductDescription,
+    List<String>? newLinks,
+  });
   Future<Either<ApiException, void>> deleteGiftItem(String id);
   Future<Either<ApiException, void>> setFCMToken(String token);
   Future<Either<ApiException, void>> syncNotifications(PushMessageModel notification);
@@ -41,7 +47,8 @@ abstract class UserRepository {
     String lastName,
     String phone,
     String isoCode,
-    String gender,
+    String genre,
     DateTime birthDate,
   );
+  Stream<Either<ApiException, List<GiftcarModel>>> getGiftcardListStream();
 }
