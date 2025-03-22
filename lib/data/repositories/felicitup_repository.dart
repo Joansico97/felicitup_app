@@ -25,6 +25,10 @@ abstract class FelicitupRepository {
     DateTime paymentDate,
     String fileUrl,
   );
+  Future<Either<ApiException, void>> updateVideoData(
+    String felicitupId,
+    String fileUrl,
+  );
   Future<Either<ApiException, void>> confirmPaymentData(String felicitupId, String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamPastFelicitups(String userId);

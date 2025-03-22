@@ -98,14 +98,10 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                   File? response = await pickVideoFromCamera(context);
 
                   if (response != null) {
-                    setState(() {
-                      selectedVideo = response;
-                      _controller = VideoPlayerController.file(selectedVideo!)
-                        ..initialize().then((_) {
-                          setState(() {});
-                          _controller!.play();
-                        });
-                    });
+                    context
+                        .read<VideoEditorBloc>()
+                        .add(VideoEditorEvent.uploadUserVideo(widget.felicitup.id, response));
+                    setState(() {});
                   }
                 },
                 label: 'Grabar Vídeo',
@@ -123,139 +119,151 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                     if (context.mounted) {
                       context.go(
                         RouterPaths.videoFelicitup,
-                        extra: widget.felicitup.id,
+                        extra: {
+                          'felicitupId': widget.felicitup.id,
+                          'fromNotification': false,
+                        },
                       );
                     }
                   },
                 ),
                 SizedBox(height: context.sp(12)),
-                Expanded(
-                  child: videoUrl == null
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              height: context.sp(80),
-                              width: context.sp(80),
-                              margin: EdgeInsets.only(bottom: context.sp(12)),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF313131),
-                                shape: BoxShape.circle,
-                              ),
-                              alignment: Alignment.center,
-                              child: Icon(
-                                Icons.video_call_outlined,
-                                size: context.sp(40),
-                              ),
-                            ),
-                            Text(
-                              'Añadir video',
-                              style: context.styles.smallText.copyWith(
-                                color: const Color(0xFF7A7A7A),
-                              ),
-                            ),
-                          ],
-                        )
-                      : FutureBuilder(
-                          future: _controller!.initialize(),
-                          builder: (_, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.done) {
-                              Future.delayed(const Duration(seconds: 1), () {
-                                _controller!.play();
-                                setState(() {
-                                  _duration = _controller!.value.duration;
-                                  // _isInitialized = true; //El controlador ya se inicializó
-                                  _isPlaying = true;
-                                });
-                                _controller!.addListener(() {
-                                  if (_controller!.value.isPlaying) {
-                                    //Solo actualiza si está reproduciendo
-                                    setState(() {
-                                      _position = _controller!.value.position;
-                                    });
-                                  }
-                                });
-                              });
+                BlocBuilder<VideoEditorBloc, VideoEditorState>(
+                  builder: (_, state) {
+                    return Expanded(
+                      child: state.currentSelectedVideo.isEmpty
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  height: context.sp(80),
+                                  width: context.sp(80),
+                                  margin: EdgeInsets.only(bottom: context.sp(12)),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF313131),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Icon(
+                                    Icons.video_call_outlined,
+                                    size: context.sp(40),
+                                  ),
+                                ),
+                                Text(
+                                  'Añadir video',
+                                  style: context.styles.smallText.copyWith(
+                                    color: const Color(0xFF7A7A7A),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : FutureBuilder(
+                              future: _controller!.initialize(),
+                              builder: (_, snapshot) {
+                                _controller = VideoPlayerController.networkUrl(
+                                  Uri.parse(
+                                    state.currentSelectedVideo,
+                                  ),
+                                  videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+                                );
 
-                              return GestureDetector(
-                                onTap: () {
-                                  if (_controller!.value.isPlaying) {
-                                    _controller!.pause();
-                                    setState(() {
-                                      _isPlaying = false;
-                                    });
-                                    // notifier.setIsPlaying(false);
-                                  } else {
+                                if (snapshot.connectionState == ConnectionState.done) {
+                                  Future.delayed(const Duration(seconds: 1), () {
                                     _controller!.play();
                                     setState(() {
+                                      _duration = _controller!.value.duration;
                                       _isPlaying = true;
                                     });
-                                    // notifier.setIsPlaying(true);
-                                  }
-                                },
-                                child: Stack(
-                                  children: [
-                                    AspectRatio(
-                                      aspectRatio: 9 / 16,
-                                      child: VideoPlayer(
-                                        _controller!,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 10,
-                                      child: SizedBox(
-                                        height: context.sp(10),
-                                        width: context.sp(300),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(context.sp(10)),
+                                    _controller!.addListener(() {
+                                      if (_controller!.value.isPlaying) {
+                                        setState(() {
+                                          _position = _controller!.value.position;
+                                        });
+                                      }
+                                    });
+                                  });
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      if (_controller!.value.isPlaying) {
+                                        _controller!.pause();
+                                        setState(() {
+                                          _isPlaying = false;
+                                        });
+                                        // notifier.setIsPlaying(false);
+                                      } else {
+                                        _controller!.play();
+                                        setState(() {
+                                          _isPlaying = true;
+                                        });
+                                        // notifier.setIsPlaying(true);
+                                      }
+                                    },
+                                    child: Stack(
+                                      children: [
+                                        AspectRatio(
+                                          aspectRatio: 9 / 16,
+                                          child: VideoPlayer(
+                                            _controller!,
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 10,
                                           child: SizedBox(
-                                            child: VideoProgressIndicator(
-                                              _controller!,
-                                              allowScrubbing: true,
-                                              padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
-                                              colors: VideoProgressColors(
-                                                playedColor: context.colors.orange,
-                                                bufferedColor: context.colors.lightGrey,
-                                                backgroundColor: context.colors.darkGrey,
+                                            height: context.sp(10),
+                                            width: context.sp(300),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(context.sp(10)),
+                                              child: SizedBox(
+                                                child: VideoProgressIndicator(
+                                                  _controller!,
+                                                  allowScrubbing: true,
+                                                  padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
+                                                  colors: VideoProgressColors(
+                                                    playedColor: context.colors.orange,
+                                                    bufferedColor: context.colors.lightGrey,
+                                                    backgroundColor: context.colors.darkGrey,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: context.sp(20),
-                                      right: context.sp(20),
-                                      child: GestureDetector(
-                                        onTap: () {},
-                                        child: Container(
-                                          height: context.sp(10),
-                                          width: context.sp(10),
-                                          alignment: AlignmentDirectional.center,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: context.colors.grey,
-                                          ),
-                                          child: Icon(
-                                            Icons.fullscreen,
-                                            color: context.colors.orange,
+                                        Positioned(
+                                          bottom: context.sp(20),
+                                          right: context.sp(20),
+                                          child: GestureDetector(
+                                            onTap: () {},
+                                            child: Container(
+                                              height: context.sp(10),
+                                              width: context.sp(10),
+                                              alignment: AlignmentDirectional.center,
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: context.colors.grey,
+                                              ),
+                                              child: Icon(
+                                                Icons.fullscreen,
+                                                color: context.colors.orange,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              );
-                            } else {
-                              return Container(
-                                height: context.sp(300),
-                                width: context.sp(300),
-                                alignment: Alignment.center,
-                                child: const CircularProgressIndicator(),
-                              );
-                            }
-                          },
-                        ),
+                                  );
+                                } else {
+                                  return Container(
+                                    height: context.sp(300),
+                                    width: context.sp(300),
+                                    alignment: Alignment.center,
+                                    child: const CircularProgressIndicator(),
+                                  );
+                                }
+                              },
+                            ),
+                    );
+                  },
                 ),
                 SizedBox(height: context.sp(12)),
                 SizedBox(

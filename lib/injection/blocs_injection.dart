@@ -88,7 +88,10 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(
-      () => VideoEditorBloc(),
+      () => VideoEditorBloc(
+        userRepository: di(),
+        felicitupRepository: di(),
+      ),
     )
     ..registerFactory(
       () => NotificationsBloc(),

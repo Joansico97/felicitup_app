@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appTitle = '/Felicitup';
+  static const String appTitle = 'Felicitup';
   static const String feclitiupsCollection = 'Felicitups';
   static const String usersCollection = 'Users';
   static const String chatsCollection = 'Chats';

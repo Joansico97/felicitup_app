@@ -83,6 +83,8 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       );
 
       return Right('Felicitup created successfully');
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, 'Error creating felicitup'));
     }
@@ -97,6 +99,8 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       }
       final felicitup = FelicitupModel.fromJson(data.data()!);
       return Right(felicitup);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -129,6 +133,8 @@ class FelicitupFirebaseResource implements FelicitupRepository {
           return Right(null);
         },
       );
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -157,6 +163,8 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       });
 
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -188,6 +196,8 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       });
 
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -238,6 +248,38 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       });
 
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> updateVideoData(String felicitupId, String fileUrl) async {
+    try {
+      final docRef = _firestore.collection(AppConstants.feclitiupsCollection).doc(felicitupId);
+      final felicitup = await docRef.get();
+      if (!felicitup.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+      final userId = _firebaseAuth.currentUser!.uid;
+
+      final felicitupData = felicitup.data() as Map<String, dynamic>; //Cast a Map
+      final invitedUserDetails = felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
+      final userIndex = invitedUserDetails.indexWhere((user) => user['id'] == userId);
+      if (userIndex == -1) {
+        return Left(ApiException(1000, 'User not found'));
+      }
+      final updatedInvitedUserDetails = List<dynamic>.from(invitedUserDetails);
+      updatedInvitedUserDetails[userIndex]['videoData']['videoUrl'] = fileUrl;
+      await docRef.update({
+        'invitedUserDetails': updatedInvitedUserDetails,
+      });
+
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -267,6 +309,8 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       });
 
       return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }

@@ -141,6 +141,29 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
+  Future<Either<ApiException, String>> uploadVideoFile(File file, String destination) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+      final String videoFileName = "$uid/$destination/${uid}_$destination.mp4";
+      Reference storageRef = _firebaseStorage.ref(videoFileName);
+      final UploadTask videoUploadTask = storageRef.putFile(
+        File(file.path),
+        SettableMetadata(contentType: 'video/mp4'),
+      );
+      await videoUploadTask;
+      final String videoUrl = await storageRef.getDownloadURL();
+      return Right(videoUrl);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Future<Either<ApiException, UserInvitedInformationModel>> getUserInvitedInformation(String id) async {
     try {
       final response = await _client.get(

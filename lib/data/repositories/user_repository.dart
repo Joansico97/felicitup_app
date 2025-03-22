@@ -10,6 +10,7 @@ abstract class UserRepository {
   Future<Either<ApiException, List<Map<String, dynamic>>>> getListUserData(List<String> usersIds);
   Future<Either<ApiException, List<UserModel>>> getListUserDataByPhone(List<String> phones);
   Future<Either<ApiException, String>> uploadFile(File file, String destination);
+  Future<Either<ApiException, String>> uploadVideoFile(File file, String destination);
   Future<Either<ApiException, void>> sendNotification(
     String userId,
     String title,
