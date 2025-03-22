@@ -36,10 +36,20 @@ class VideoSpace extends StatelessWidget {
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(context.sp(10)),
                   child: SizedBox(
-                    child: Image.network(
-                      screenshotImage!,
-                      fit: BoxFit.cover,
-                    ),
+                    child: screenshotImage != null
+                        ? Image.network(
+                            screenshotImage!,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            color: context.colors.grey,
+                            child: Center(
+                              child: Text(
+                                name ?? '',
+                                style: context.styles.subtitle,
+                              ),
+                            ),
+                          ),
                   ),
                 )
               : Center(
