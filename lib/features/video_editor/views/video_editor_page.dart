@@ -31,8 +31,8 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   File? selectedVideo;
   late VideoPlayerController? _controller;
   String? videoUrl;
-  final Duration _duration = Duration.zero;
-  final Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+  Duration _position = Duration.zero;
   bool _isPlaying = false;
   bool _showControls = true;
   Timer? _hideControlsTimer;
@@ -40,7 +40,14 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
-    logger.info(widget.felicitup.id);
+    if (widget.felicitup.finalVideoUrl != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          _initializeVideoPlayerFromUrl(widget.felicitup.finalVideoUrl!);
+          context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(widget.felicitup.finalVideoUrl!));
+        }
+      });
+    }
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
@@ -90,13 +97,17 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
         setState(() {});
         _controller!.play();
         setState(() {
+          _duration = _controller!.value.duration;
+          _position = _controller!.value.position;
           _isPlaying = true;
         });
       });
 
     _controller!.addListener(() {
       if (mounted) {
-        setState(() {});
+        setState(() {
+          _position = _controller!.value.position;
+        });
       }
     });
   }

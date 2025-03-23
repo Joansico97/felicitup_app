@@ -23,6 +23,7 @@ void _initRepositoriesInjection() {
         userRepository: di(),
         firebaseAuth: di(),
         firestore: di(),
+        firebaseFunctionsHelper: di(),
       ),
     )
     ..registerLazySingleton<ChatRepository>(

@@ -16,15 +16,18 @@ class FelicitupFirebaseResource implements FelicitupRepository {
     required UserRepository userRepository,
     required FirebaseAuth firebaseAuth,
     required FirebaseFirestore firestore,
+    required FirebaseFunctionsHelper firebaseFunctionsHelper,
   })  : _databaseHelper = databaseHelper,
         _userRepository = userRepository,
         _firebaseAuth = firebaseAuth,
-        _firestore = firestore;
+        _firestore = firestore,
+        _firebaseFunctionsHelper = firebaseFunctionsHelper;
 
   final DatabaseHelper _databaseHelper;
   final UserRepository _userRepository;
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
+  final FirebaseFunctionsHelper _firebaseFunctionsHelper;
 
   @override
   Future<Either<ApiException, String>> createFelicitup({
@@ -308,6 +311,23 @@ class FelicitupFirebaseResource implements FelicitupRepository {
         'invitedUserDetails': updatedInvitedUserDetails,
       });
 
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> mergeVideos(String felicitupId, List<String> listUrlVideos) async {
+    try {
+      final uid = _firebaseAuth.currentUser!.uid;
+      await _firebaseFunctionsHelper.mergeVideos(
+        videoUrls: listUrlVideos,
+        felicitupId: felicitupId,
+        userId: uid,
+      );
       return Right(null);
     } on FirebaseException catch (e) {
       return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));

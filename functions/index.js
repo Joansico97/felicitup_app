@@ -31,79 +31,6 @@ exports.testFunction = functions.https.onCall(
     },
 );
 
-// exports.sendNotification = functions.https.onCall(async (data, context) => {
-//   console.log("Data:", data);
-//   try {
-//     // Verificar que el userId esté presente
-//     const userId = data.userId;
-//     if (!userId) {
-//       throw new functions.https.HttpsError(
-//           "invalid-argument",
-//           "El ID del usuario es requerido.",
-//       );
-//     }
-
-//     // Obtener el título, cuerpo y datos adicionales de la notificación
-//     const title = data.title;
-//     const body = data.message;
-//     const dataInfo = data.dataInfo;
-
-//     if (!title || !body) {
-//       throw new functions.https.HttpsError(
-//           "invalid-argument",
-//           "El título y el cuerpo de la notificación son requeridos.",
-//       );
-//     }
-
-//     // Buscar el usuario en Firestore
-//     const db = admin.firestore();
-//     const userDoc = await db.collection("Users").doc(userId).get();
-
-//     if (!userDoc.exists) {
-//       throw new functions.https.HttpsError(
-//           "not-found",
-//           "No se encontró el usuario con el ID proporcionado.",
-//       );
-//     }
-
-//     // Extraer el fcmToken del documento del usuario
-//     const userData = userDoc.data();
-//     const fcmToken = userData.fcmToken;
-
-//     if (!fcmToken) {
-//       throw new functions.https.HttpsError(
-//           "not-found",
-//           "El usuario no tiene un token de FCM registrado.",
-//       );
-//     }
-
-//     // Crear el payload de la notificación
-//     const payload = {
-//       token: fcmToken,
-//       notification: {
-//         title: title,
-//         body: body,
-//       },
-//       data: dataInfo, // Datos adicionales
-//     };
-
-//     console.log("Enviando notificación a:", userId);
-//     console.log("Payload:", payload);
-
-//     // Enviar la notificación utilizando Firebase Messaging
-//     const response = await admin.messaging().send(payload);
-//     console.log("Notificación enviada con éxito:", response);
-
-//     return {success: true, message: "Notificación enviada correctamente."};
-//   } catch (error) {
-//     console.error("Error enviando notificación:", error);
-//     throw new functions.https.HttpsError(
-//         "unknown",
-//         error.message || "Ocurrió un error al enviar la notificación.",
-//     );
-//   }
-// });
-
 exports.sendNotification = functions.https.onCall(
     {
       region: "us-central1",
@@ -281,15 +208,16 @@ async function mergeVideosWithConcatFilter(videoPaths, outputFilePath) {
 
 // Función principal
 exports.mergeVideos = functions.https.onCall({
+  region: "us-central1",
   timeoutSeconds: 540,
-  memory: "8GB",
-}, async (data) => {
-  const videoUrls = data.videoUrls; // La lista de URLs que tu app envía
+  memory: "8GiB",
+}, async (data, context) => {
+  const videoUrls = data.data.videoUrls; // La lista de URLs que tu app envía
   const outputFileName = `merged-${Date.now()}.mp4`;
   const tempDir = os.tmpdir();
   const outputFilePath = path.join(tempDir, outputFileName);
-  const userId = data.userId;
-  const felicitupId = data.felicitupId;
+  const userId = data.data.userId;
+  const felicitupId = data.data.felicitupId;
 
   if (!videoUrls || !Array.isArray(videoUrls) || videoUrls.length === 0) {
     throw new functions.https.HttpsError(

@@ -30,7 +30,7 @@ class VideoSpace extends StatelessWidget {
           width: context.sp(100),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(context.sp(10)),
-            color: context.colors.grey,
+            color: context.colors.darkGrey.valueOpacity(.5),
           ),
           child: hasVideo
               ? ClipRRect(
@@ -38,14 +38,25 @@ class VideoSpace extends StatelessWidget {
                   child: SizedBox(
                     child: screenshotImage != null
                         ? Image.network(
-                            screenshotImage!,
+                            screenshotImage ?? '',
                             fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) => loadingProgress == null
+                                ? child
+                                : Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                            errorBuilder: (context, error, stackTrace) => Center(
+                              child: Text(
+                                name?.split(' ')[0] ?? '',
+                                style: context.styles.subtitle,
+                              ),
+                            ),
                           )
                         : Container(
                             color: context.colors.grey,
                             child: Center(
                               child: Text(
-                                name ?? '',
+                                name?.split(' ')[0] ?? '',
                                 style: context.styles.subtitle,
                               ),
                             ),

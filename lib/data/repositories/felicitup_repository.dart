@@ -30,6 +30,7 @@ abstract class FelicitupRepository {
     String fileUrl,
   );
   Future<Either<ApiException, void>> confirmPaymentData(String felicitupId, String userId);
+  Future<Either<ApiException, void>> mergeVideos(String felicitupId, List<String> listUrlVideos);
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamPastFelicitups(String userId);
   Stream<Either<ApiException, List<InvitedModel>>> getInvitedStream(String felicitupId);
