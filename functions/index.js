@@ -299,9 +299,9 @@ exports.mergeVideos = functions.https.onCall({
   }
 });
 
-exports.sendManualFelicitup = functions.https.onCall(async (data) => {
+exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
   try {
-    const felicitupId = data.felicitupId;
+    const felicitupId = data.data.felicitupId;
 
     if (!felicitupId) {
       throw new functions.https.HttpsError("invalid-argument", "El ID de la felicitup es requerido.");

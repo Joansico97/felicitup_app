@@ -1,7 +1,6 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
-import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
@@ -22,7 +21,6 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
   void initState() {
     super.initState();
     final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-    logger.info(felicitup?.id);
     context.read<PeopleFelicitupBloc>().add(PeopleFelicitupEvent.startListening(felicitup?.id ?? ''));
   }
 

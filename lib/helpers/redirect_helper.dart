@@ -73,5 +73,16 @@ void redirectHelper({required Map<String, dynamic> data}) {
         );
       });
       break;
+    case PushMessageType.past:
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        CustomRouter().router.go(
+          RouterPaths.chatPastFelicitup,
+          extra: {
+            'felicitupId': felicitupId,
+            'fromNotification': false,
+          },
+        );
+      });
+      break;
   }
 }

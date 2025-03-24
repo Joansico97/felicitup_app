@@ -72,18 +72,9 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
         (r) async {
           List<String> ids = [...felicitup.invitedUsers];
           ids.remove(userId);
-          // await _firebaseFunctions
-          //     .httpsCallable('testFunction') // Llama a la función de prueba.
-          //     .call(
-          //   {'testParam': 'Hola desde Flutter!'},
-          // ); // Envía un parámetro simple.
 
           for (String id in ids) {
             await _userRepository.sendNotification(
-              //   'testUserId', //  ¡Valores SIMPLES!
-              //   'Test Title',
-              //   'Test Message',
-              //   'testChat',
               id,
               'Nuevo mensaje de $userName',
               chatMessage.message,

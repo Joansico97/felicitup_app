@@ -30,7 +30,6 @@ class VideoEditorPage extends StatefulWidget {
 class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingObserver, TickerProviderStateMixin {
   File? selectedVideo;
   late VideoPlayerController? _controller;
-  String? videoUrl;
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   bool _isPlaying = false;

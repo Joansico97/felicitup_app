@@ -120,10 +120,13 @@ class PastFelicitupWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: () => context.push(
-                    RouterPaths.pastFelicitups,
+                  onTap: () => context.go(
+                    (felicitup.finalVideoUrl?.isNotEmpty ?? false)
+                        ? RouterPaths.videoPastFelicitup
+                        : RouterPaths.mainPastFelicitup,
                     extra: {
                       'felicitupId': felicitup.id,
+                      'fromNotification': false,
                     },
                   ),
                   child: Container(
@@ -196,10 +199,11 @@ class PastFelicitupWidget extends StatelessWidget {
                       },
                     ),
                     IconButton(
-                      onPressed: () => context.push(
-                        RouterPaths.pastFelicitups,
+                      onPressed: () => context.go(
+                        RouterPaths.chatPastFelicitup,
                         extra: {
                           'felicitupId': felicitup.id,
+                          'fromNotification': false,
                         },
                       ),
                       icon: Icon(
@@ -344,10 +348,11 @@ class PastFelicitupWidget extends StatelessWidget {
                 ),
                 SizedBox(height: context.sp(8)),
                 GestureDetector(
-                  onTap: () => context.push(
-                    RouterPaths.pastFelicitups,
+                  onTap: () => context.go(
+                    RouterPaths.mainPastFelicitup,
                     extra: {
                       'felicitupId': felicitup.id,
+                      'fromNotification': false,
                     },
                   ),
                   child: Row(

@@ -337,6 +337,18 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> sendFelicitup(String felicitupId) async {
+    try {
+      await _firebaseFunctionsHelper.sendManualFelicitup(felicitupId: felicitupId);
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId) {
     try {
       return _firestore
@@ -369,7 +381,7 @@ class FelicitupFirebaseResource implements FelicitupRepository {
           .map((event) {
         final List<Map<String, dynamic>> documents = event.docs.map((e) => e.data()).toList();
         final List<FelicitupModel> listFelicitups = documents.map((e) => FelicitupModel.fromJson(e)).toList();
-        return Right(listFelicitups.where((element) => element.status == 'inProgress').toList());
+        return Right(listFelicitups.where((element) => element.status == 'Finished').toList());
       });
     } catch (e) {
       return Stream.value(Left(ApiException(1000, e.toString())));

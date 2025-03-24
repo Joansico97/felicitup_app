@@ -1,9 +1,11 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
-import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/bloc/details_felicitup_dashboard_bloc.dart';
+import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class InfoFelicitupPage extends StatelessWidget {
   const InfoFelicitupPage({super.key});
@@ -65,8 +67,13 @@ class InfoFelicitupPage extends StatelessWidget {
                   children: [
                     FloatingActionButton(
                       onPressed: () => showConfirmModal(
-                        title: 'Estás seguro de querer enviar la felicitup?', onAccept: () async {},
-                        // onAccept: () async => await notifier.sendManualFelicitup(felicitupId: felicitupId),
+                        title: 'Estás seguro de querer enviar la felicitup?',
+                        onAccept: () async {
+                          context.read<InfoFelicitupBloc>().add(
+                                InfoFelicitupEvent.sendFelicitup(felicitup.id),
+                              );
+                          context.go(RouterPaths.felicitupsDashboard);
+                        },
                       ),
                       backgroundColor: context.colors.orange,
                       child: Icon(

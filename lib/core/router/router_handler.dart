@@ -414,3 +414,62 @@ Page<Widget> _notificationsSettingsHandler(BuildContext context, GoRouterState s
     },
   );
 }
+
+Page<Widget> _detailsPastFelicitupDashboardHandler(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+) {
+  final data = state.extra as Map<String, dynamic>?;
+
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => injection.di<DetailsPastFelicitupDashboardBloc>()
+            ..add(
+              data?['felicitupId'] == null
+                  ? DetailsPastFelicitupDashboardEvent.noEvent()
+                  : DetailsPastFelicitupDashboardEvent.getFelicitupInfo(data!['felicitupId'] as String),
+            ),
+        ),
+        BlocProvider(create: (_) => injection.di<MainPastFelicitupBloc>()),
+        BlocProvider(create: (_) => injection.di<ChatPastFelicitupBloc>()),
+        BlocProvider(create: (_) => injection.di<PeoplePastFelicitupBloc>()),
+        BlocProvider(create: (_) => injection.di<VideoPastFelicitupBloc>()),
+      ],
+      child: DetailsPastFelicitupDashboardPage(
+        childView: child,
+        fromNotification: data?['fromNotification'] ?? false,
+      ),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Widget _mainPastFelicitupHandler(BuildContext context, GoRouterState state) {
+  return MainPastFelicitupPage();
+}
+
+Widget _chatPastFelicitupHandler(BuildContext context, GoRouterState state) {
+  return ChatPastFelicitupPage();
+}
+
+Widget _peoplePastFelicitupHandler(BuildContext context, GoRouterState state) {
+  return PeoplePastFelicitupPage();
+}
+
+Widget _videoPastFelicitupHandler(BuildContext context, GoRouterState state) {
+  return VideoPastFelicitupPage();
+}

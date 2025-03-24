@@ -2,6 +2,7 @@ export './auth/auth.dart';
 export './contacts/contacts.dart';
 export './create_felicitup/create_felicitup.dart';
 export './details_felicitup/details_felicitup.dart';
+export './details_past_felicitups/details_past_felicitups.dart';
 export './felicitup_notification/felicitup_notification.dart';
 export './felicitups_dashboard/felicitups_dashboard.dart';
 export './home/home.dart';

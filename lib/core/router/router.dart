@@ -12,6 +12,7 @@ part 'router_handler.dart';
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> detailsFelicitupNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> detailsPastFelicitupNavigatorKey = GlobalKey<NavigatorState>();
 
 class CustomRouter {
   static final _router = GoRouter(
@@ -151,6 +152,33 @@ class CustomRouter {
         path: RouterPaths.felicitupNotification,
         pageBuilder: _felicitupNotificationHandler,
         parentNavigatorKey: rootNavigatorKey,
+      ),
+      ShellRoute(
+        navigatorKey: detailsPastFelicitupNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
+        pageBuilder: _detailsPastFelicitupDashboardHandler,
+        routes: [
+          GoRoute(
+            path: RouterPaths.mainPastFelicitup,
+            builder: _mainPastFelicitupHandler,
+            parentNavigatorKey: detailsPastFelicitupNavigatorKey,
+          ),
+          GoRoute(
+            path: RouterPaths.chatPastFelicitup,
+            builder: _chatPastFelicitupHandler,
+            parentNavigatorKey: detailsPastFelicitupNavigatorKey,
+          ),
+          GoRoute(
+            path: RouterPaths.peoplePastFelicitup,
+            builder: _peoplePastFelicitupHandler,
+            parentNavigatorKey: detailsPastFelicitupNavigatorKey,
+          ),
+          GoRoute(
+            path: RouterPaths.videoPastFelicitup,
+            builder: _videoPastFelicitupHandler,
+            parentNavigatorKey: detailsPastFelicitupNavigatorKey,
+          ),
+        ],
       ),
     ],
   );

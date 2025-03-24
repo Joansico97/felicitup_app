@@ -55,7 +55,9 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(
-      () => InfoFelicitupBloc(),
+      () => InfoFelicitupBloc(
+        felicitupRepository: di(),
+      ),
     )
     ..registerFactory(
       () => MessageFelicitupBloc(
@@ -129,5 +131,29 @@ void _initBlocsInjection() {
     )
     ..registerFactory(
       () => TermsPoliciesBloc(),
+    )
+    ..registerFactory(
+      () => DetailsPastFelicitupDashboardBloc(
+        felicitupRepository: di(),
+        userRepository: di(),
+      ),
+    )
+    ..registerFactory(
+      () => MainPastFelicitupBloc(),
+    )
+    ..registerFactory(
+      () => ChatPastFelicitupBloc(
+        felicitupRepository: di(),
+        userRepository: di(),
+        chatRepository: di(),
+      ),
+    )
+    ..registerFactory(
+      () => PeoplePastFelicitupBloc(
+        felicitupRepository: di(),
+      ),
+    )
+    ..registerFactory(
+      () => VideoPastFelicitupBloc(),
     );
 }

@@ -14,5 +14,6 @@ class CreateFelicitupEvent with _$CreateFelicitupEvent {
   const factory CreateFelicitupEvent.changeFelicitupOwner(Map<String, dynamic> felicitupOwner) = _changeFelicitupOwner;
   const factory CreateFelicitupEvent.addParticipant(Map<String, dynamic> participant) = _addParticipant;
   const factory CreateFelicitupEvent.loadFriendsData(List<String> usersIds) = _loadFriendsData;
+  const factory CreateFelicitupEvent.searchEvent(String value) = _searchEvent;
   const factory CreateFelicitupEvent.createFelicitup(String felicitupMessage) = _createFelicitup;
 }

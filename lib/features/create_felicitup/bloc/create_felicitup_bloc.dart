@@ -39,6 +39,7 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
         addParticipant: (event) => _addParticipant(emit, event.participant),
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
         createFelicitup: (event) => _createFelicitup(emit, event.felicitupMessage),
+        searchEvent: (event) => _searchEvent(emit, event.value),
       ),
     );
   }
@@ -327,5 +328,13 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
       emit(state.copyWith(isLoading: false));
       showErrorModal('Ocurrió un error al crear la felicitup');
     }
+  }
+
+  _searchEvent(Emitter<CreateFelicitupState> emit, String value) {
+    final listProv = state.friendList.where((element) {
+      return element.fullName != null &&
+          value.toLowerCase().split('').every((char) => element.fullName!.toLowerCase().contains(char));
+    }).toList();
+    emit(state.copyWith(friendList: listProv));
   }
 }
