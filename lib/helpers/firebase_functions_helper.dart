@@ -72,6 +72,19 @@ class FirebaseFunctionsHelper {
     );
   }
 
+  Future<void> generateThumbnail({
+    required String filePath,
+    required String userId,
+  }) async {
+    await _call(
+      'generateThumbnail',
+      parameters: {
+        'filePath': filePath,
+        'userId': userId,
+      },
+    );
+  }
+
   Future<T> _call<T>(
     String functionName, {
     Map<String, dynamic>? parameters,

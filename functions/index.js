@@ -371,7 +371,7 @@ exports.sendManualFelicitup = functions.https.onCall(async (data) => {
 });
 
 exports.generateThumbnail = functions.https.onCall(async (data) => {
-  const filePath = data.filePath;
+  const filePath = data.data.filePath;
   const file = bucket.file(filePath);
   const tempDir = os.tmpdir();
 
@@ -414,7 +414,7 @@ exports.generateThumbnail = functions.https.onCall(async (data) => {
     }
 
     const invitedUserDetails = felicitup.data().invitedUserDetails || [];
-    const userId = data.userId;
+    const userId = data.data.userId;
 
     const updatedDetails = invitedUserDetails.map((user) => {
       if (user.id === userId) {

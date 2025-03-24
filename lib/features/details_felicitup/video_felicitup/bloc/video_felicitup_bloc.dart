@@ -6,6 +6,7 @@ import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/felicitup_repository.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'video_felicitup_event.dart';
@@ -80,20 +81,5 @@ class VideoFelicitupBloc extends Bloc<VideoFelicitupEvent, VideoFelicitupState> 
   Future<void> close() {
     _invitedUsersSubscription?.cancel(); // Cancelar la suscripción *SIEMPRE*.
     return super.close();
-  }
-
-  String extractFilePathFromFirebaseStorageUrl(String fullUrl) {
-    final uri = Uri.parse(fullUrl);
-
-    final pathSegments = uri.pathSegments;
-
-    final int oIndex = pathSegments.indexOf('o');
-    if (oIndex == -1 || oIndex == pathSegments.length - 1) {
-      return '';
-    }
-    final List<String> extractedPathSegments = pathSegments.sublist(oIndex + 1);
-    final String encodedFilePath = extractedPathSegments.join('/');
-
-    return encodedFilePath;
   }
 }

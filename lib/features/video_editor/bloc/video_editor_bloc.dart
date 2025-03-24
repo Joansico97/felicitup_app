@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'video_editor_event.dart';
@@ -13,8 +15,12 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
   VideoEditorBloc({
     required UserRepository userRepository,
     required FelicitupRepository felicitupRepository,
+    required FirebaseAuth firebaseAuth,
+    required FirebaseFunctionsHelper firebaseFunctionsHelper,
   })  : _userRepository = userRepository,
         _felicitupRepository = felicitupRepository,
+        _firebaseAuth = firebaseAuth,
+        _firebaseFunctionsHelper = firebaseFunctionsHelper,
         super(VideoEditorState.initial()) {
     on<VideoEditorEvent>(
       (events, emit) => events.map(
@@ -22,12 +28,15 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         setUrlVideo: (event) => _setUrlVideo(emit, event.url),
         uploadUserVideo: (event) => _uploadUserVideo(emit, event.felicitupId, event.file),
         updateParticipantInfo: (event) => _updateParticipantInfo(event.felicitupId, event.url),
+        generateThumbnail: (event) => _generateThumbnail(event.filePath),
       ),
     );
   }
 
   final UserRepository _userRepository;
   final FelicitupRepository _felicitupRepository;
+  final FirebaseAuth _firebaseAuth;
+  final FirebaseFunctionsHelper _firebaseFunctionsHelper;
 
   _changeLoading(Emitter<VideoEditorState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
@@ -45,11 +54,20 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         (error) => logger.error('Error uploading video: $error'),
         (url) {
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
+          add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
           emit(state.copyWith(isLoading: false, currentSelectedVideo: url));
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _generateThumbnail(String filePath) async {
+    try {
+      await _firebaseFunctionsHelper.generateThumbnail(filePath: filePath, userId: _firebaseAuth.currentUser!.uid);
+    } catch (e) {
+      logger.error('Error generating thumbnail: $e');
     }
   }
 

@@ -91,6 +91,8 @@ void _initBlocsInjection() {
       () => VideoEditorBloc(
         userRepository: di(),
         felicitupRepository: di(),
+        firebaseAuth: di(),
+        firebaseFunctionsHelper: di(),
       ),
     )
     ..registerFactory(
