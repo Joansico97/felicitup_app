@@ -3,7 +3,6 @@ import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/user_models/user_models.dart';
 import 'package:felicitup_app/features/create_felicitup/bloc/create_felicitup_bloc.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
-import 'package:felicitup_app/features/home/home.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -123,14 +122,11 @@ class SelectContactsView extends StatelessWidget {
               final listOwner = state.felicitupOwner;
 
               return SizedBox(
-                width: context.sp(155),
+                width: context.sp(170),
                 child: PrimarySmallButton(
                   onTap: () => commoBottomModal(
                     context: context,
-                    onTap: () {
-                      context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.deleteCurrentFelicitup());
-                      context.read<HomeBloc>().add(HomeEvent.changeCreate());
-                    },
+                    onTap: () {},
                     body: BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                       builder: (_, state) {
                         List<UserModel> friendList = [...state.friendList];
@@ -181,7 +177,7 @@ class SelectContactsView extends StatelessWidget {
             builder: (_, state) {
               final felicitupDate = state.selectedDate;
               return SizedBox(
-                width: context.sp(155),
+                width: context.sp(170),
                 child: PrimarySmallButton(
                   onTap: () async {
                     final DateTime? pickedDate = await showGenericDatePicker(

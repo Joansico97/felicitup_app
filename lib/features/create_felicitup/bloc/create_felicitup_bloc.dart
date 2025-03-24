@@ -210,10 +210,11 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
 
   _changeFelicitupOwner(Emitter<CreateFelicitupState> emit, Map<String, dynamic> owner) {
     final List<Map<String, dynamic>> owners = [...state.felicitupOwner];
-    if (owners.contains(owner)) {
-      owners.remove(owner);
-    } else {
+    bool exist = owners.any((element) => element['name'] == owner['name']);
+    if (!exist) {
       owners.add(owner);
+    } else {
+      owners.remove(owner);
     }
     emit(state.copyWith(felicitupOwner: owners));
   }
