@@ -67,11 +67,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         imageFile = null;
                         canSave = false;
                       });
-                      // context.go(RouterPaths.felicitupsDashboard);
                     }
                   },
                   label: 'Guardar cambios',
-                  isActive: state.status == ProfileStatus.success,
+                  isActive: true,
                 );
               },
             ),
@@ -264,6 +263,15 @@ class _ProfilePageState extends State<ProfilePage> {
                     EditInputField(
                       controller: lastNameController,
                       hintText: currentUser?.lastName ?? '',
+                    ),
+                    SizedBox(height: context.sp(12)),
+                    Container(
+                      height: context.sp(20),
+                      width: context.sp(300),
+                      decoration: BoxDecoration(
+                        color: context.colors.lightGrey,
+                        borderRadius: BorderRadius.circular(context.sp(4)),
+                      ),
                     ),
                     // SizedBox(height: context.sp(12)),
                     // EditInputField(

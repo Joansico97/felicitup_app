@@ -154,7 +154,7 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
               BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;
-                  return listOwner.isEmpty || listOwner[0]['userImg'] == ''
+                  return listOwner.isEmpty || listOwner[0].userImg == ''
                       ? SizedBox(
                           width: context.sp(120),
                           child: SvgPicture.asset(
@@ -179,7 +179,7 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                               context.sp(100),
                             ),
                             child: Image.network(
-                              listOwner[0]['userImg'],
+                              listOwner[0].userImg ?? '',
                               fit: BoxFit.cover,
                             ),
                           ),

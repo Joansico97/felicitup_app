@@ -49,6 +49,11 @@ class CustomRouter {
         pageBuilder: _federatedRegisterHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.forgotPassword,
+        pageBuilder: _forgotPasswordHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
       ShellRoute(
         navigatorKey: homeNavigatorKey,
         parentNavigatorKey: rootNavigatorKey,

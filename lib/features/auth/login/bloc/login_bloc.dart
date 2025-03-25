@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:felicitup_app/core/constants/app_constants.dart';
@@ -23,6 +25,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         googleLoginEvent: (_) => _googleLoginEvent(emit),
         appleLoginEvent: (_) => _appleLoginEvent(emit),
         setUserInfo: (event) => _setUserInfo(emit, event.user),
+        changeEvent: (_) => _changeEvent(emit),
       ),
     );
   }
@@ -198,6 +201,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+  }
+
+  _changeEvent(Emitter<LoginState> emit) async {
+    emit(state.copyWith(status: LoginStatus.inProgress));
   }
 
   Future<bool> checkUserExist({required String email}) async {

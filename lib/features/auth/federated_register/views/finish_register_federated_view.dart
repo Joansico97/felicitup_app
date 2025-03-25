@@ -12,8 +12,8 @@ class FinishRegisterFederatedView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Spacer(),
         Image.asset(
           Assets.images.logo.path,
           height: context.sp(60),
@@ -35,14 +35,14 @@ class FinishRegisterFederatedView extends StatelessWidget {
           textAlign: TextAlign.center,
           style: context.styles.paragraph,
         ),
-        const Spacer(),
+        SizedBox(height: context.sp(24)),
         SizedBox(
           height: context.sp(45),
           width: context.sp(300),
           child: PrimaryButton(
             onTap: () => context.go(RouterPaths.felicitupsDashboard),
             isBig: false,
-            label: 'Iniciar Sesión',
+            label: 'Acceder',
             isActive: true,
           ),
         ),

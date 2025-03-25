@@ -49,11 +49,11 @@ class SummaryView extends StatelessWidget {
                                   listOwner.length,
                                   (index) => index != listOwner.length - 1
                                       ? Text(
-                                          '${listOwner[index]['name']} ',
+                                          '${listOwner[index].name} ',
                                           style: context.styles.subtitle,
                                         )
                                       : Text(
-                                          'y ${listOwner[index]['name']} ',
+                                          'y ${listOwner[index].name} ',
                                           style: context.styles.subtitle,
                                         ),
                                 )
@@ -62,7 +62,7 @@ class SummaryView extends StatelessWidget {
                           ],
                         )
                       : Text(
-                          '$reason de ${listOwner[0]['name']}',
+                          '$reason de ${listOwner[0].name}',
                           style: context.styles.subtitle,
                         );
                 },
@@ -71,7 +71,7 @@ class SummaryView extends StatelessWidget {
               BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;
-                  return listOwner.isEmpty || listOwner[0]['userImg'] == ''
+                  return listOwner.isEmpty || listOwner[0].userImg == ''
                       ? SizedBox(
                           width: context.sp(120),
                           child: SvgPicture.asset(
@@ -96,7 +96,7 @@ class SummaryView extends StatelessWidget {
                               context.sp(100),
                             ),
                             child: Image.network(
-                              listOwner[0]['userImg'],
+                              listOwner[0].userImg ?? '',
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -144,7 +144,7 @@ class SummaryView extends StatelessWidget {
                       _ResumenCard(
                         label: selectedDate != null
                             ? 'Fecha: ${DateFormat('dd·MM·yyyy').format(selectedDate)}'
-                            : 'Fecha: ${DateFormat('dd·MM·yyyy').format(listOwner[0]['date'])}',
+                            : 'Fecha: ${DateFormat('dd·MM·yyyy').format(listOwner[0].date)}',
                         onTap: () => context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.jumpToStep(0)),
                       ),
                       SizedBox(height: context.sp(8)),
@@ -160,8 +160,8 @@ class SummaryView extends StatelessWidget {
                       SizedBox(height: context.sp(8)),
                       _ResumenCard(
                         label: selectedDate != null
-                            ? 'Fecha: ${DateFormat('dd·MM·yyyy').format(selectedDate.subtract(Duration(days: 1)))}'
-                            : 'Fecha: ${DateFormat('dd·MM·yyyy').format(listOwner[0]['date'].subtract(Duration(days: 1)))}',
+                            ? 'Fecha envío: ${DateFormat('dd·MM·yyyy').format(selectedDate.subtract(Duration(days: 1)))}'
+                            : 'Fecha envío: ${DateFormat('dd·MM·yyyy').format(listOwner[0].date.subtract(Duration(days: 1)))}',
                         onTap: () => context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.jumpToStep(0)),
                       ),
                     ],

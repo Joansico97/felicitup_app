@@ -1,6 +1,6 @@
 part of 'login_bloc.dart';
 
-enum LoginStatus { initial, success, federated, error }
+enum LoginStatus { initial, inProgress, success, federated, error }
 
 @freezed
 class LoginState with _$LoginState {

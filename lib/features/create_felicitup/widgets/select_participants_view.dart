@@ -32,7 +32,7 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
               BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;
-                  return listOwner.isEmpty || listOwner[0]['userImg'] == ''
+                  return listOwner.isEmpty || listOwner[0].userImg == ''
                       ? SizedBox(
                           width: context.sp(120),
                           child: SvgPicture.asset(
@@ -57,7 +57,7 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                               context.sp(100),
                             ),
                             child: Image.network(
-                              listOwner[0]['userImg'],
+                              listOwner[0].userImg ?? '',
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -103,7 +103,7 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;
                   List<UserModel> friendList = [...state.friendList];
-                  friendList.removeWhere((element) => listOwner.any((owner) => owner['id'] == element.id));
+                  friendList.removeWhere((element) => listOwner.any((owner) => owner.id == element.id));
                   friendList.sort((a, b) => a.fullName!.compareTo(b.fullName!));
                   return friendList.isEmpty
                       ? Center(
@@ -118,20 +118,26 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                               friendList.length,
                               (index) => GestureDetector(
                                 onTap: () {
+                                  final participant = InvitedModel(
+                                    id: friendList[index].id,
+                                    name: friendList[index].fullName,
+                                    userImage: friendList[index].userImg,
+                                    assistanceStatus: enumToStringAssistance(AssistanceStatus.pending),
+                                    videoData: VideoDataModel(
+                                      videoUrl: '',
+                                      videoThumbnail: '',
+                                    ),
+                                    paid: enumToStringPayment(PaymentStatus.pending),
+                                    idInformation: '',
+                                  );
                                   context.read<CreateFelicitupBloc>().add(
-                                        CreateFelicitupEvent.addParticipant(
-                                          {
-                                            'id': friendList[index].id,
-                                            'name': friendList[index].fullName,
-                                            'userImg': friendList[index].userImg,
-                                            'date': friendList[index].birthDate,
-                                          },
-                                        ),
+                                        CreateFelicitupEvent.addParticipant(participant),
                                       );
                                 },
                                 child: ContactCardRow(
                                   contact: friendList[index],
-                                  isSelected: state.invitedContacts.any((owner) => owner['id'] == friendList[index].id),
+                                  isSelected: state.invitedContacts
+                                      .any((participant) => participant.id == friendList[index].id),
                                 ),
                               ),
                             ),
@@ -166,9 +172,8 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                         ...List.generate(
                           listParticipants.length,
                           (index) => OnlyViewCardRow(
-                            contactName: listParticipants[index]['name'],
-                            date: listParticipants[index]['date'],
-                            userImg: listParticipants[index]['userImg'],
+                            contactName: listParticipants[index].name ?? '',
+                            userImg: listParticipants[index].userImage ?? '',
                             stepOne: false,
                             stepTwo: false,
                             isSelected: true,
@@ -181,12 +186,6 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
               );
             },
           ),
-          // child: Consumer(
-          //   builder: (_, ref, __) {
-          //     final listParticipants = ref.watch(CreateFelicitupEventsProvider.select((state) => state.invitedContacts));
-          //     return ;
-          //   },
-          // ),
         ),
       ],
     );

@@ -45,7 +45,7 @@ class _LoginFormState extends State<LoginForm> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 GestureDetector(
-                  onTap: () => context.push(RouterPaths.resetPassword),
+                  onTap: () => context.go(RouterPaths.forgotPassword),
                   child: Text(
                     'Olvidaste tu contraseña?',
                     style: context.styles.smallText,
@@ -57,16 +57,22 @@ class _LoginFormState extends State<LoginForm> {
             SizedBox(
               height: context.sp(45),
               width: context.sp(172),
-              child: PrimaryButton(
-                onTap: () => context.read<LoginBloc>().add(
-                      LoginEvent.loginEvent(
-                        emailController.text,
-                        passwordController.text,
-                      ),
-                    ),
-                isBig: false,
-                label: 'Acceder',
-                isActive: true,
+              child: BlocBuilder<LoginBloc, LoginState>(
+                builder: (_, state) {
+                  return PrimaryButton(
+                    onTap: () {
+                      context.read<LoginBloc>().add(
+                            LoginEvent.loginEvent(
+                              emailController.text,
+                              passwordController.text,
+                            ),
+                          );
+                    },
+                    isBig: false,
+                    label: 'Acceder',
+                    isActive: true,
+                  );
+                },
               ),
             ),
             SizedBox(height: context.sp(24)),

@@ -29,7 +29,7 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
         changeLoading: (_) => _changeLoading(emit),
         changeListBoolsTap: (event) => _changeListBoolTap(emit, event.index, event.controller),
         setLike: (event) => _setLike(emit, event.felicitupId, event.userId),
-        updateMatchList: (event) => _updateMatchList(event.currentUser),
+        updateMatchList: (event) => _updateMatchList(event.phones),
         startListening: (_) => _startListening(emit),
         recivedData: (event) => _recivedData(emit, event.listFelicitups),
         recivedPastData: (event) => _recivedPastData(emit, event.listFelicitups),
@@ -63,8 +63,8 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
     }
   }
 
-  _updateMatchList(UserModel currentUser) async {
-    List<String> phones = [...currentUser.friendsPhoneList ?? []];
+  _updateMatchList(List<String> phonesList) async {
+    List<String> phones = [...phonesList];
 
     final response = await _userRepository.getListUserDataByPhone(phones);
 

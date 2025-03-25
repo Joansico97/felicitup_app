@@ -1,6 +1,7 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 Future<void> showErrorModal(String error) async {
   return await showDialog<void>(
@@ -51,7 +52,7 @@ Future<void> showErrorModal(String error) async {
                     alignment: Alignment.center,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.of(rootNavigatorKey.currentContext!).pop();
+                        context.pop();
                       },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,

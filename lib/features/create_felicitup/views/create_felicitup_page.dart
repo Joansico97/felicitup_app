@@ -34,10 +34,11 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration.zero, () {
-      final currentUser = context.read<AppBloc>().state.currentUser;
-      context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.loadFriendsData(currentUser?.matchList ?? []));
-    });
+
+    List<String> listData = [...context.read<AppBloc>().state.currentUser?.matchList ?? []];
+    listData.removeWhere((element) => element == context.read<AppBloc>().state.currentUser?.id);
+    context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.loadFriendsData(listData));
+
     pages = [
       SelectContactsView(),
       SelectEventView(),
@@ -61,171 +62,181 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
         }
 
         if (state.status == CreateStatus.success) {
-          context.go(RouterPaths.felicitupsDashboard);
+          showFinishModal(
+            () {
+              context.read<CreateFelicitupBloc>().add(const CreateFelicitupEvent.deleteCurrentFelicitup());
+              context.go(RouterPaths.felicitupsDashboard);
+            },
+          );
         }
       },
-      child: Scaffold(
-        backgroundColor: context.colors.background,
-        drawer: const DrawerApp(),
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              CommonHeader(),
-              FadeInUp(
-                child: Container(
-                  width: context.sp(360),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: context.sp(8),
-                    // vertical: context.sp(8),
-                  ),
-                  margin: EdgeInsets.only(
-                    top: context.sp(20),
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(
-                      context.sp(20),
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        SizedBox(height: context.sp(5)),
-                        Container(
-                          width: context.fullWidth,
-                          height: context.sp(30),
-                          margin: EdgeInsets.only(
-                            bottom: context.sp(10),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: context.sp(5),
-                          ),
-                          child: Row(
-                            children: [
-                              Spacer(),
-                              GestureDetector(
-                                onTap: () => showConfirmModal(
-                                  title: '¿Quieres salir de la creación de tu felicitup?',
-                                  onAccept: () async {
-                                    context.go(RouterPaths.felicitupsDashboard);
-                                    context
-                                        .read<CreateFelicitupBloc>()
-                                        .add(CreateFelicitupEvent.deleteCurrentFelicitup());
-                                    // context.read<HomeBloc>().add(const HomeEvent.changeShowButton());
-                                    // ref.read(homeEventsProvider.notifier).toggleCreate();
-                                    // ref.read(homeEventsProvider.notifier).deleteCurrentFelicitup();
-                                  },
-                                ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: context.colors.orange,
-                                  ),
-                                  child: Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+      child: BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+        builder: (_, state) {
+          return Scaffold(
+            backgroundColor: context.colors.background,
+            drawer: const DrawerApp(),
+            body: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  CommonHeader(),
+                  FadeInUp(
+                    child: Container(
+                      width: context.sp(360),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: context.sp(8),
+                        // vertical: context.sp(8),
+                      ),
+                      margin: EdgeInsets.only(
+                        top: context.sp(20),
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(
+                          context.sp(20),
                         ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: context.sp(20),
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Column(
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            SizedBox(height: context.sp(5)),
+                            Container(
+                              width: context.fullWidth,
+                              height: context.sp(30),
+                              margin: EdgeInsets.only(
+                                bottom: context.sp(10),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: context.sp(5),
+                              ),
+                              child: Row(
                                 children: [
-                                  SizedBox(
-                                    height: context.sp(10),
-                                  ),
-                                  SizedBox(
-                                    width: context.sp(200),
-                                    child: Divider(
-                                      color: Color(0xFFE3E3E3),
+                                  Spacer(),
+                                  GestureDetector(
+                                    onTap: () => showConfirmModal(
+                                      title: '¿Quieres salir de la creación de tu felicitup?',
+                                      onAccept: () async {
+                                        context.go(RouterPaths.felicitupsDashboard);
+                                        context
+                                            .read<CreateFelicitupBloc>()
+                                            .add(CreateFelicitupEvent.deleteCurrentFelicitup());
+                                        // context.read<HomeBloc>().add(const HomeEvent.changeShowButton());
+                                        // ref.read(homeEventsProvider.notifier).toggleCreate();
+                                        // ref.read(homeEventsProvider.notifier).deleteCurrentFelicitup();
+                                      },
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: context.colors.orange,
+                                      ),
+                                      child: Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
-                                builder: (_, state) {
-                                  final currentStep = state.steperIndex;
-                                  return Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: context.sp(20),
+                              ),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Column(
                                     children: [
-                                      ...List.generate(
-                                        steps.length,
-                                        (index) => _HeaderStep(
-                                          title: steps[index],
-                                          step: (index + 1).toString(),
-                                          isActive: index == currentStep,
-                                          onTap: () => context
-                                              .read<CreateFelicitupBloc>()
-                                              .add(CreateFelicitupEvent.jumpToStep(index)),
+                                      SizedBox(
+                                        height: context.sp(10),
+                                      ),
+                                      SizedBox(
+                                        width: context.sp(200),
+                                        child: Divider(
+                                          color: Color(0xFFE3E3E3),
                                         ),
                                       ),
                                     ],
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: context.sp(20)),
-                        BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
-                          builder: (_, state) {
-                            return AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 300),
-                              transitionBuilder: (widget, animation) {
-                                final slideAnimation = Tween<Offset>(
-                                  begin: const Offset(1.0, 0.0),
-                                  end: Offset.zero,
-                                ).animate(animation);
-
-                                final fadeAnimation = Tween<double>(
-                                  begin: 0.0,
-                                  end: 1.0,
-                                ).animate(animation);
-                                return FadeTransition(
-                                  opacity: fadeAnimation,
-                                  child: SlideTransition(
-                                    position: slideAnimation,
-                                    child: widget,
                                   ),
+                                  BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                                    builder: (_, state) {
+                                      final currentStep = state.steperIndex;
+                                      return Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        children: [
+                                          ...List.generate(
+                                            steps.length,
+                                            (index) => _HeaderStep(
+                                              title: steps[index],
+                                              step: (index + 1).toString(),
+                                              isActive: index == currentStep,
+                                              onTap: () => context
+                                                  .read<CreateFelicitupBloc>()
+                                                  .add(CreateFelicitupEvent.jumpToStep(index)),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: context.sp(20)),
+                            BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                              builder: (_, state) {
+                                return AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  transitionBuilder: (widget, animation) {
+                                    final slideAnimation = Tween<Offset>(
+                                      begin: const Offset(1.0, 0.0),
+                                      end: Offset.zero,
+                                    ).animate(animation);
+
+                                    final fadeAnimation = Tween<double>(
+                                      begin: 0.0,
+                                      end: 1.0,
+                                    ).animate(animation);
+                                    return FadeTransition(
+                                      opacity: fadeAnimation,
+                                      child: SlideTransition(
+                                        position: slideAnimation,
+                                        child: widget,
+                                      ),
+                                    );
+                                  },
+                                  child: pages[state.steperIndex],
                                 );
                               },
-                              child: pages[state.steperIndex],
-                            );
-                          },
+                            ),
+                            SizedBox(height: context.sp(20)),
+                            BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                              builder: (_, state) {
+                                final currentStep = state.steperIndex;
+                                return BottomButtons(
+                                  showBack: currentStep > 0,
+                                  showNext: currentStep < steps.length - 1,
+                                  onBack: () => context
+                                      .read<CreateFelicitupBloc>()
+                                      .add(const CreateFelicitupEvent.previousStep()),
+                                  onNext: () => context
+                                      .read<CreateFelicitupBloc>()
+                                      .add(CreateFelicitupEvent.nextStep(steps.length - 1)),
+                                );
+                              },
+                            ),
+                            SizedBox(height: context.sp(16)),
+                          ],
                         ),
-                        SizedBox(height: context.sp(20)),
-                        BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
-                          builder: (_, state) {
-                            final currentStep = state.steperIndex;
-                            return BottomButtons(
-                              showBack: currentStep > 0,
-                              showNext: currentStep < steps.length - 1,
-                              onBack: () =>
-                                  context.read<CreateFelicitupBloc>().add(const CreateFelicitupEvent.previousStep()),
-                              onNext: () => context
-                                  .read<CreateFelicitupBloc>()
-                                  .add(CreateFelicitupEvent.nextStep(steps.length - 1)),
-                            );
-                          },
-                        ),
-                        SizedBox(height: context.sp(16)),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

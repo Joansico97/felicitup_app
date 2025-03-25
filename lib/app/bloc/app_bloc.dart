@@ -29,6 +29,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       (event, emit) => event.map(
         changeLoading: (_) => _changeLoading(emit),
         loadUserData: (_) => _loadUserData(emit),
+        updateMatchList: (event) => _updateMatchList(event.phoneList),
         initializeNotifications: (_) => _initializeNotifications(emit),
         handleRemoteMessage: (event) => handleRemoteMessage(event.message, emit),
         getFCMToken: (_) => _getFCMToken(),
@@ -67,6 +68,25 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+  }
+
+  _updateMatchList(List<String> phonesList) async {
+    List<String> phones = [...phonesList];
+
+    final response = await _userRepository.getListUserDataByPhone(phones);
+
+    response.fold(
+      (l) => logger.error(l),
+      (r) async {
+        List<String> ids = [];
+        for (final doc in r) {
+          if (doc.id != null) {
+            ids.add(doc.id!);
+          }
+        }
+        await _userRepository.updateMatchList(ids);
+      },
+    );
   }
 
   _initializeNotifications(Emitter<AppState> emit) async {
@@ -135,7 +155,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       data: message.data,
     );
 
-    emit(state.copyWith(notifications: [notification, ...state.notifications ?? []]));
+    // emit(state.copyWith(notifications: [notification, ...state.notifications ?? []]));
   }
 
   void _onForegroundMessage(Emitter<AppState> emit) {

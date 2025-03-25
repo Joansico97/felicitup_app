@@ -43,13 +43,8 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
         buildWhen: (previous, current) =>
             previous.showButton != current.showButton || previous.create != current.create,
         builder: (_, state) {
-          final currentUser = context.read<AppBloc>().state.currentUser;
-
           return FloatingActionButton(
             onPressed: () {
-              if (currentUser != null) {
-                context.read<FelicitupsDashboardBloc>().add(FelicitupsDashboardEvent.updateMatchList(currentUser));
-              }
               context.go(RouterPaths.createFelicitup);
             },
             backgroundColor: context.colors.lightGrey,

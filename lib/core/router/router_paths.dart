@@ -8,6 +8,7 @@ class RouterPaths {
   static const String login = '/login';
   static const String register = '/register';
   static const String federatedRegister = '/federatedRegister';
+  static const String forgotPassword = '/forgotPassword';
   static const String finishRegister = '/finishRegister';
   static const String resetPassword = '/resetPassword';
   static const String termsConditions = '/termsConditions';

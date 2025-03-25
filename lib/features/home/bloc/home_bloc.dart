@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:fast_contacts/fast_contacts.dart';
-import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -19,7 +18,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         changeLoading: (_) => _changeLoading(emit),
         changeCreate: (_) => _changeCreate(emit),
         changeShowButton: (_) => _changeShowButton(emit),
-        getAndUpdateContacts: (event) => _getAndUpdateContacts(event.currentUser),
+        getAndUpdateContacts: (event) => _getAndUpdateContacts(event.isoCode),
       ),
     );
   }
@@ -38,7 +37,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(state.copyWith(showButton: !state.showButton));
   }
 
-  _getAndUpdateContacts(UserModel currentUser) async {
+  _getAndUpdateContacts(String isoCode) async {
     final contacts = await getAllInfoContacts();
     List<Map<String, dynamic>> contactsMapList =
         contacts.where((e) => e.displayName.isNotEmpty && e.phones.isNotEmpty).map(
@@ -63,7 +62,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         element['phone'] = '+$number';
       } else if (element['phone'][0] != '+') {
         String number = element['phone'];
-        String isoCode = currentUser.isoCode ?? '';
         element['phone'] = isoCode + number;
       }
     }

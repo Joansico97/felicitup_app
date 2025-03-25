@@ -1,5 +1,6 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
+import 'package:felicitup_app/data/models/felicitup_models/felicitup_models.dart';
 import 'package:felicitup_app/data/models/user_models/user_models.dart';
 import 'package:felicitup_app/features/create_felicitup/bloc/create_felicitup_bloc.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
@@ -33,7 +34,7 @@ class SelectContactsView extends StatelessWidget {
                 BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                   builder: (_, state) {
                     final listOwner = state.felicitupOwner;
-                    return listOwner.isEmpty || listOwner[0]['userImg'] == ''
+                    return listOwner.isEmpty || listOwner[0].userImg == ''
                         ? SizedBox(
                             width: context.sp(120),
                             child: SvgPicture.asset(
@@ -58,7 +59,7 @@ class SelectContactsView extends StatelessWidget {
                                 context.sp(100),
                               ),
                               child: Image.network(
-                                listOwner[0]['userImg'],
+                                listOwner[0].userImg ?? '',
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -82,11 +83,11 @@ class SelectContactsView extends StatelessWidget {
                           final listOwner = state.felicitupOwner;
                           return Text(
                             listOwner.length > 2
-                                ? 'Felicitas a ${listOwner[0]['name']}, a ${listOwner[1]['name']} y a ${listOwner.length - 2} más'
+                                ? 'Felicitas a ${listOwner[0].name}, a ${listOwner[1].name} y a ${listOwner.length - 2} más'
                                 : listOwner.length == 2
-                                    ? 'Felicitas a ${listOwner[0]['name']} y a ${listOwner[1]['name']}'
+                                    ? 'Felicitas a ${listOwner[0].name} y a ${listOwner[1].name}'
                                     : listOwner.length == 1
-                                        ? 'Felicitas a ${listOwner[0]['name']}'
+                                        ? 'Felicitas a ${listOwner[0].name}'
                                         : '¿A quién felicitas?',
                             style: context.styles.smallText,
                           );
@@ -102,7 +103,7 @@ class SelectContactsView extends StatelessWidget {
                             selectedDate != null
                                 ? 'Fecha envío felicitUp:\n${DateFormat('dd·MM·yyyy').format(selectedDate)} - ${DateFormat('HH:mm').format(selectedDate)}'
                                 : listOwner.isNotEmpty
-                                    ? 'Fecha envío felicitUp:\n${DateFormat('dd·MM·yyyy').format(listOwner[0]['date'])} - ${DateFormat('HH:mm').format(listOwner[0]['date'])}'
+                                    ? 'Fecha envío felicitUp:\n${DateFormat('dd·MM·yyyy').format(listOwner[0].date)} - ${DateFormat('HH:mm').format(listOwner[0].date)}'
                                     : 'Selecciona la persona a la que irá destinada la Felicitup.',
                             style: context.styles.smallText.copyWith(
                               fontSize: context.sp(10),
@@ -144,19 +145,20 @@ class SelectContactsView extends StatelessWidget {
                                     friendList.length,
                                     (index) => GestureDetector(
                                       onTap: () {
+                                        final owner = OwnerModel(
+                                          id: friendList[index].id ?? '',
+                                          name: friendList[index].fullName ?? '',
+                                          date: friendList[index].birthDate ?? DateTime.now(),
+                                          userImg: friendList[index].userImg ?? '',
+                                        );
                                         context
                                             .read<CreateFelicitupBloc>()
-                                            .add(CreateFelicitupEvent.changeFelicitupOwner({
-                                              'id': friendList[index].id,
-                                              'name': friendList[index].fullName,
-                                              'userImg': friendList[index].userImg,
-                                              'date': friendList[index].birthDate,
-                                            }));
+                                            .add(CreateFelicitupEvent.changeFelicitupOwner(owner));
                                       },
                                       child: ContactCardRow(
                                         contact: friendList[index],
                                         isSelected:
-                                            state.felicitupOwner.any((owner) => owner['id'] == friendList[index].id),
+                                            state.felicitupOwner.any((owner) => owner.id == friendList[index].id),
                                       ),
                                     ),
                                   ),

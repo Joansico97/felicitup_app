@@ -42,7 +42,7 @@ class _SelectEventViewState extends State<SelectEventView> {
               BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;
-                  return listOwner.isEmpty || listOwner[0]['userImg'] == ''
+                  return listOwner.isEmpty || listOwner[0].userImg == ''
                       ? SizedBox(
                           width: context.sp(120),
                           child: SvgPicture.asset(
@@ -67,7 +67,7 @@ class _SelectEventViewState extends State<SelectEventView> {
                               context.sp(100),
                             ),
                             child: Image.network(
-                              listOwner[0]['userImg'],
+                              listOwner[0].userImg ?? '',
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -90,17 +90,17 @@ class _SelectEventViewState extends State<SelectEventView> {
                       builder: (_, state) {
                         final listOwner = state.felicitupOwner;
                         final reason = state.eventReason;
-                        final selectedDate = state.selectedDate ?? listOwner[0]['date'];
+                        final selectedDate = state.selectedDate ?? listOwner[0].date;
 
                         return RichText(
                           text: TextSpan(
                             text: reason.isEmpty
                                 ? 'Selecciona un evento'
                                 : listOwner.length > 2
-                                    ? '$reason de ${listOwner[0]['name']}, de ${listOwner[1]['name']} y de ${listOwner.length - 2} más'
+                                    ? '$reason de ${listOwner[0].name}, de ${listOwner[1].name} y de ${listOwner.length - 2} más'
                                     : listOwner.length == 2
-                                        ? '$reason de ${listOwner[0]['name']} y de ${listOwner[1]['name']}'
-                                        : '$reason de ${listOwner[0]['name']}',
+                                        ? '$reason de ${listOwner[0].name} y de ${listOwner[1].name}'
+                                        : '$reason de ${listOwner[0].name}',
                             style: context.styles.smallText,
                             children: [
                               reason.isNotEmpty

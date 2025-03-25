@@ -40,6 +40,7 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
         createFelicitup: (event) => _createFelicitup(emit, event.felicitupMessage),
         searchEvent: (event) => _searchEvent(emit, event.value),
+        sendNotification: (event) => _sendNotification(event.felicitupId),
       ),
     );
   }
@@ -208,9 +209,9 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
     emit(state.copyWith(boteQuantity: quantity));
   }
 
-  _changeFelicitupOwner(Emitter<CreateFelicitupState> emit, Map<String, dynamic> owner) {
-    final List<Map<String, dynamic>> owners = [...state.felicitupOwner];
-    bool exist = owners.any((element) => element['name'] == owner['name']);
+  _changeFelicitupOwner(Emitter<CreateFelicitupState> emit, OwnerModel owner) {
+    final List<OwnerModel> owners = [...state.felicitupOwner];
+    bool exist = owners.any((element) => element == owner);
     if (!exist) {
       owners.add(owner);
     } else {
@@ -219,9 +220,9 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
     emit(state.copyWith(felicitupOwner: owners));
   }
 
-  _addParticipant(Emitter<CreateFelicitupState> emit, Map<String, dynamic> participant) {
-    final List<Map<String, dynamic>> participants = [...state.invitedContacts];
-    logger.debug(participants);
+  _addParticipant(Emitter<CreateFelicitupState> emit, InvitedModel participant) {
+    final List<InvitedModel> participants = [...state.invitedContacts];
+
     if (participants.contains(participant)) {
       participants.remove(participant);
     } else {
@@ -232,6 +233,7 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
 
   _loadFriendsData(Emitter<CreateFelicitupState> emit, List<String> usersIds) async {
     emit(state.copyWith(isLoading: true));
+
     try {
       final response = await _userRepository.getListUserData(usersIds);
       response.fold(
@@ -256,7 +258,7 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
     emit(state.copyWith(isLoading: true));
     try {
       final now = DateTime.now();
-      DateTime felicitupDate = state.selectedDate ?? state.felicitupOwner.first['date'];
+      DateTime felicitupDate = state.selectedDate ?? state.felicitupOwner.first.date;
       int currentMonth = now.month;
       int currentDay = now.day;
       int otherMonth = felicitupDate.month;
@@ -281,6 +283,8 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
         );
       }
       final felicitupId = _databaseHelper.createId(AppConstants.feclitiupsCollection);
+      final listOwners = state.felicitupOwner.map((e) => e.toJson()).toList();
+      final participants = state.invitedContacts.map((e) => e.toJson()).toList();
 
       final response = await _felicitupRepository.createFelicitup(
         id: felicitupId,
@@ -290,8 +294,8 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
         hasVideo: state.hasVideo,
         hasBote: state.hasBote,
         felicitupDate: felicitupDate,
-        listOwners: state.felicitupOwner,
-        participants: state.invitedContacts,
+        listOwners: listOwners,
+        participants: participants,
       );
 
       response.fold(
@@ -299,35 +303,40 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
           emit(state.copyWith(isLoading: false));
           unawaited(showErrorModal(l.message));
         },
-        (r) async {
-          List participants = [...state.invitedContacts];
-          List<String> ids = participants.map((e) => e['id'] as String).toList();
-          ids.removeAt(0);
-          for (String id in ids) {
-            await _userRepository.sendNotification(
-              id,
-              'Nueva Felicitup',
-              'Has sido invitado a un felicitup',
-              '',
-              DataMessageModel(
-                type: enumToPushMessageType(PushMessageType.felicitup),
-                felicitupId: felicitupId,
-                chatId: '',
-                name: '',
-              ),
-            );
-          }
-
+        (r) {
+          add(CreateFelicitupEvent.sendNotification(felicitupId));
           emit(state.copyWith(
             isLoading: false,
             status: CreateStatus.success,
           ));
-          emit(CreateFelicitupState.initial());
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
       showErrorModal('Ocurrió un error al crear la felicitup');
+    }
+  }
+
+  _sendNotification(String felicitupId) async {
+    try {
+      List<InvitedModel> participants = [...state.invitedContacts];
+      List<String> ids = participants.map((e) => e.id as String).toList();
+      for (String id in ids) {
+        await _userRepository.sendNotification(
+          id,
+          'Nueva Felicitup',
+          'Has sido invitado a un felicitup',
+          '',
+          DataMessageModel(
+            type: enumToPushMessageType(PushMessageType.felicitup),
+            felicitupId: felicitupId,
+            chatId: '',
+            name: '',
+          ),
+        );
+      }
+    } catch (e) {
+      logger.error('Error al enviar notificaciones');
     }
   }
 

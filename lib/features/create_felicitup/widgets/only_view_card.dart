@@ -8,7 +8,6 @@ class OnlyViewCardRow extends StatelessWidget {
   const OnlyViewCardRow({
     super.key,
     required this.contactName,
-    required this.date,
     required this.userImg,
     required this.stepOne,
     required this.stepTwo,
@@ -17,7 +16,6 @@ class OnlyViewCardRow extends StatelessWidget {
 
   final String contactName;
   final String userImg;
-  final DateTime date;
   final bool stepOne;
   final bool stepTwo;
   final bool isSelected;
