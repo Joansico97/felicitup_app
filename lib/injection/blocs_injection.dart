@@ -70,6 +70,7 @@ void _initBlocsInjection() {
     ..registerFactory(
       () => PeopleFelicitupBloc(
         felicitupRepository: di(),
+        userRepository: di(),
         firebaseAuth: di(),
       ),
     )

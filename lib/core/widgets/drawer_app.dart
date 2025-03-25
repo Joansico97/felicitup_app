@@ -40,7 +40,7 @@ class DrawerApp extends StatelessWidget {
                 context.go(RouterPaths.listSingleChat);
                 Scaffold.of(context).closeDrawer();
               },
-              label: 'Mesnajes directos',
+              label: 'Mensajes directos',
               icon: Icons.mail_outline,
             ),
             SettingsButton(

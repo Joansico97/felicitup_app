@@ -16,8 +16,10 @@ part 'people_felicitup_bloc.freezed.dart';
 class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupState> {
   PeopleFelicitupBloc({
     required FelicitupRepository felicitupRepository,
+    required UserRepository userRepository,
     required FirebaseAuth firebaseAuth,
   })  : _felicitupRepository = felicitupRepository,
+        _userRepository = userRepository,
         _firebaseAuth = firebaseAuth,
         super(PeopleFelicitupState.initial()) {
     on<PeopleFelicitupEvent>(
@@ -27,6 +29,13 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
           emit,
           event.felicitupId,
           event.newStatus,
+          event.name,
+          event.felicitupOwnerId,
+        ),
+        sendNotification: (event) => _sendNotification(
+          event.userId,
+          event.name,
+          event.felicitupId,
         ),
         deleteParticipant: (event) => _deleteParticipant(
           emit,
@@ -41,6 +50,7 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
 
   StreamSubscription<Either<ApiException, List<InvitedModel>>>? _invitedUsersSubscription;
   final FelicitupRepository _felicitupRepository;
+  final UserRepository _userRepository;
   final FirebaseAuth _firebaseAuth;
 
   _changeLoading(Emitter<PeopleFelicitupState> emit) {
@@ -50,7 +60,9 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
   _informParticipation(
     Emitter<PeopleFelicitupState> emit,
     String felicitupId,
+    String felicitupOwnerId,
     String newStatus,
+    String name,
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
@@ -64,6 +76,11 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
           if (newStatus == enumToStringAssistance(AssistanceStatus.rejected)) {
             add(PeopleFelicitupEvent.deleteParticipant(felicitupId, _firebaseAuth.currentUser!.uid));
           } else {
+            add(PeopleFelicitupEvent.sendNotification(
+              felicitupOwnerId,
+              name,
+              felicitupId,
+            ));
             emit(state.copyWith(isLoading: false));
           }
         },
@@ -71,6 +88,21 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+  }
+
+  _sendNotification(String userId, String name, String felicitupId) async {
+    await _userRepository.sendNotification(
+      userId,
+      'Información de confirmación de asistencia',
+      '$name ha informado que participará en la felicitup',
+      '',
+      DataMessageModel(
+        type: enumToPushMessageType(PushMessageType.participation),
+        felicitupId: felicitupId,
+        chatId: '',
+        name: '',
+      ),
+    );
   }
 
   _deleteParticipant(Emitter<PeopleFelicitupState> emit, String felicitupId, String userId) async {

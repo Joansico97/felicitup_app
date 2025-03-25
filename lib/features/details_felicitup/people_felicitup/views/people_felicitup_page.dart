@@ -102,6 +102,8 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                           PeopleFelicitupEvent.informParticipation(
                                             felicitup.id,
                                             enumToStringAssistance(AssistanceStatus.accepted),
+                                            currentUser.firstName ?? '',
+                                            felicitup.createdBy,
                                           ),
                                         ),
                                 label2: 'Denegar',
@@ -110,6 +112,8 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                         PeopleFelicitupEvent.informParticipation(
                                           felicitup.id,
                                           enumToStringAssistance(AssistanceStatus.rejected),
+                                          currentUser.firstName ?? '',
+                                          felicitup.createdBy,
                                         ),
                                       );
                                   context.go(RouterPaths.felicitupsDashboard);
