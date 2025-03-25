@@ -33,9 +33,6 @@ class InfoFelicitupPage extends StatelessWidget {
                       FloatingActionButton(
                         heroTag: '1',
                         onPressed: () {},
-                        // onPressed: () => notifier.addNewContactModal(
-                        //   felicitup!: felicitup!,
-                        // ),
                         backgroundColor: context.colors.orange,
                         child: Icon(
                           Icons.person_add,
@@ -50,10 +47,37 @@ class InfoFelicitupPage extends StatelessWidget {
                     children: [
                       FloatingActionButton(
                         heroTag: '2',
-                        onPressed: () {},
-                        // onPressed: () => notifier.editDateModal(
-                        //   felicitup!: felicitup!,
-                        // ),
+                        onPressed: () async {
+                          final DateTime? pickedDate = await showGenericDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2100),
+                            helpText: 'Selecciona una fecha',
+                            cancelText: 'Cancelar',
+                            confirmText: 'OK',
+                            locale: const Locale('es', 'ES'),
+                          );
+
+                          if (pickedDate == null) return;
+
+                          final TimeOfDay? pickedTime = await showGenericTimePicker(
+                            context: context,
+                            helpText: 'Selecciona una hora',
+                            cancelText: 'Cancelar',
+                            confirmText: 'OK',
+                          );
+
+                          if (pickedTime == null) return;
+
+                          final DateTime? combinedDateTime = combineDateAndTime(pickedDate, pickedTime);
+                          context.read<InfoFelicitupBloc>().add(
+                                InfoFelicitupEvent.updateDateFelicitup(
+                                  felicitup.id,
+                                  combinedDateTime!,
+                                ),
+                              );
+                        },
                         backgroundColor: context.colors.orange,
                         child: Icon(
                           Icons.edit,

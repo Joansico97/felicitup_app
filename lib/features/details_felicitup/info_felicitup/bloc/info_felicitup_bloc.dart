@@ -15,6 +15,7 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
         sendFelicitup: (event) => _sendFelicitup(emit, event.felicitupId),
+        updateDateFelicitup: (event) => _updateDateFelicitup(emit, event.felicitupId, event.newDate),
       ),
     );
   }
@@ -29,6 +30,16 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
     emit(state.copyWith(isLoading: true));
     try {
       await _felicitupRepository.sendFelicitup(felicitupId);
+      emit(state.copyWith(isLoading: false));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _updateDateFelicitup(Emitter<InfoFelicitupState> emit, String felicitupId, DateTime newDate) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      await _felicitupRepository.updateDateFelicitup(felicitupId, newDate);
       emit(state.copyWith(isLoading: false));
     } catch (e) {
       emit(state.copyWith(isLoading: false));
