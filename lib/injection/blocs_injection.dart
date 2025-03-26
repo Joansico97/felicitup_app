@@ -101,7 +101,10 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(
-      () => NotificationsBloc(),
+      () => NotificationsBloc(
+        firebaseAuth: di(),
+        userRepository: di(),
+      ),
     )
     ..registerFactory(
       () => ProfileBloc(

@@ -45,7 +45,7 @@ PushMessageType pushMessageTypeToEnum(String value) {
   }
 }
 
-@freezed
+@Freezed(makeCollectionsUnmodifiable: false)
 class PushMessageModel with _$PushMessageModel {
   const factory PushMessageModel({
     required String messageId,

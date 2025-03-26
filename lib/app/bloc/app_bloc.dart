@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
@@ -148,12 +149,22 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       },
     );
 
-    showLocalNotification(
-      id: notification.messageId.hashCode,
-      title: notification.title,
-      body: notification.body,
-      data: message.data,
-    );
+    if (Platform.isAndroid) {
+      showLocalNotification(
+        id: notification.messageId.hashCode,
+        title: notification.title,
+        body: notification.body,
+        data: message.data,
+      );
+    }
+    if (Platform.isIOS) {
+      darwinShowNotification(
+        notification.messageId.hashCode,
+        notification.title,
+        notification.body,
+        message.data,
+      );
+    }
 
     // emit(state.copyWith(notifications: [notification, ...state.notifications ?? []]));
   }
@@ -188,9 +199,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   initializeLocalNotifications() async {
     final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     const initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
-    final initializationSettingsIos = DarwinInitializationSettings(
-        // onDidReceiveLocalNotification: darwinShowNotification,
-        );
+    final initializationSettingsIos = DarwinInitializationSettings();
 
     final initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,

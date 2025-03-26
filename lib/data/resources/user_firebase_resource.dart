@@ -508,9 +508,16 @@ class UserFirebaseResource implements UserRepository {
       if (uid == null) {
         return Left(ApiException(401, 'User not authenticated'));
       }
+      final notificationMap = {
+        'title': notification.title,
+        'body': notification.body,
+        'sentDate': notification.sentDate,
+        'data': notification.data!.toJson(),
+      };
       await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
-        'notifications': FieldValue.arrayUnion([notification.toJson()]),
+        'notifications': FieldValue.arrayUnion([notificationMap]),
       });
+
       return Right(null);
     } on FirebaseException catch (e) {
       return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
