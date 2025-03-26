@@ -454,6 +454,22 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> updateBoteFelicitup(String felicitupId, int newBoteQuantity) async {
+    try {
+      await _databaseHelper.update(
+        AppConstants.feclitiupsCollection,
+        document: felicitupId,
+        {'boteQuantity': newBoteQuantity},
+      );
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId) {
     try {
       return _firestore

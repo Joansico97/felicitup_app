@@ -19,6 +19,8 @@ class BoteFelicitupBloc extends Bloc<BoteFelicitupEvent, BoteFelicitupState> {
     on<BoteFelicitupEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
+        setBoteQuantity: (event) => _setBoteQuantity(emit, event.quantity),
+        updateFelicitupBote: (event) => _updateFelicitupBote(emit, event.felicitupId),
         startListening: (event) => _startListening(emit, event.felicitupId),
         recivedData: (event) => _recivedData(emit, event.invitedUsers),
       ),
@@ -30,6 +32,24 @@ class BoteFelicitupBloc extends Bloc<BoteFelicitupEvent, BoteFelicitupState> {
 
   _changeLoading(Emitter<BoteFelicitupState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
+  }
+
+  _setBoteQuantity(Emitter<BoteFelicitupState> emit, int quantity) {
+    emit(state.copyWith(boteQuantity: quantity));
+  }
+
+  _updateFelicitupBote(Emitter<BoteFelicitupState> emit, String felicitupId) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final response = await _felicitupRepository.updateBoteFelicitup(felicitupId, state.boteQuantity!);
+      response.fold(
+        (error) => emit(state.copyWith(isLoading: false)),
+        (_) => emit(state.copyWith(isLoading: false)),
+      );
+      emit(state.copyWith(isLoading: false));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
   }
 
   _startListening(Emitter<BoteFelicitupState> emit, String felicitupId) {

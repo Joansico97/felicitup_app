@@ -16,6 +16,144 @@ class BoteFelicitupPage extends StatefulWidget {
 }
 
 class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
+  void showBoteQuantity() {
+    showDialog(
+      context: context,
+      builder: (_) {
+        final controller = TextEditingController();
+
+        return AlertDialog(
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: context.sp(600),
+              maxWidth: context.sp(200),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: context.sp(20),
+                vertical: context.sp(10),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Text(
+                      'Bote de regalo',
+                      style: context.styles.header2,
+                    ),
+                    SizedBox(height: context.sp(12)),
+                    Text(
+                      'Selecciona la cantidad deseada para el bote regalo.',
+                      textAlign: TextAlign.center,
+                      style: context.styles.smallText,
+                    ),
+                    SizedBox(height: context.sp(12)),
+                    SizedBox(
+                      height: context.sp(250),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            ...List.generate(
+                              20,
+                              (index) => GestureDetector(
+                                onTap: () {
+                                  context
+                                      .read<BoteFelicitupBloc>()
+                                      .add(BoteFelicitupEvent.setBoteQuantity(5 * (index + 1)));
+                                  final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+                                  context
+                                      .read<BoteFelicitupBloc>()
+                                      .add(BoteFelicitupEvent.updateFelicitupBote(felicitup?.id ?? ''));
+                                  context.pop();
+                                },
+                                child: Container(
+                                  width: context.sp(320),
+                                  margin: EdgeInsets.only(
+                                    bottom: context.sp(10),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: context.sp(10),
+                                  ),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: context.colors.orange,
+                                    borderRadius: BorderRadius.circular(
+                                      context.sp(10),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '${5 * (index + 1)}€',
+                                    style: context.styles.subtitle.copyWith(
+                                      color: context.colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: context.sp(12)),
+                    SizedBox(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: context.sp(130),
+                            child: InputCommon(
+                              controller: controller,
+                              hintText: '0.00 €',
+                              titleText: 'Cantidad personalizada',
+                              isPrice: true,
+                              onchangeEditing: (value) {},
+                            ),
+                          ),
+                          Column(
+                            children: [
+                              SizedBox(height: context.sp(5)),
+                              GestureDetector(
+                                onTap: () {
+                                  context
+                                      .read<BoteFelicitupBloc>()
+                                      .add(BoteFelicitupEvent.setBoteQuantity(int.parse(controller.text)));
+                                  final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+                                  context
+                                      .read<BoteFelicitupBloc>()
+                                      .add(BoteFelicitupEvent.updateFelicitupBote(felicitup?.id ?? ''));
+                                  context.pop();
+                                },
+                                child: Icon(
+                                  Icons.check_box_outlined,
+                                  color: context.colors.orange,
+                                  size: context.sp(30),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // SizedBox(height: context.sp(12)),
+                    // SizedBox(
+                    //   width: context.sp(200),
+                    //   height: context.sp(40),
+                    //   child: PrimaryButton(
+                    //     onTap: () {},
+                    //     label: 'Actualizar',
+                    //     isActive: true,
+                    //   ),
+                    // )
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +194,11 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                   BlocBuilder<BoteFelicitupBloc, BoteFelicitupState>(
                     builder: (_, state) {
                       return GestureDetector(
-                        onTap: felicitup?.createdBy == currentUser?.id ? () {} : null,
+                        onTap: felicitup?.createdBy == currentUser?.id
+                            ? () {
+                                showBoteQuantity();
+                              }
+                            : null,
                         child: Container(
                           height: context.sp(40),
                           width: context.sp(55),

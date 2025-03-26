@@ -71,9 +71,6 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                   context
                                       .read<PeopleFelicitupBloc>()
                                       .add(PeopleFelicitupEvent.updateParticipantsList(felicitup.id));
-                                  // context.read<DetailsFelicitupDashboardBloc>().add(
-                                  //       DetailsFelicitupDashboardEvent.getFelicitupInfo(felicitup.id),
-                                  //     );
                                   context.pop();
                                 },
                                 body: Column(
