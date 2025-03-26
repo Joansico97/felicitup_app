@@ -2,10 +2,13 @@ import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
+import 'package:felicitup_app/data/models/models.dart';
+import 'package:felicitup_app/features/create_felicitup/widgets/contact_card_row.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class InfoFelicitupPage extends StatelessWidget {
   const InfoFelicitupPage({super.key});
@@ -30,14 +33,67 @@ class InfoFelicitupPage extends StatelessWidget {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      FloatingActionButton(
-                        heroTag: '1',
-                        onPressed: () {},
-                        backgroundColor: context.colors.orange,
-                        child: Icon(
-                          Icons.person_add,
-                          color: context.colors.white,
-                        ),
+                      BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
+                        builder: (_, state) {
+                          return FloatingActionButton(
+                            heroTag: '1',
+                            onPressed: () {
+                              final friendList = [...state.friendList];
+                              friendList.removeWhere(
+                                (friend) => felicitup.owner.any(
+                                  (owner) => owner.id == friend.id,
+                                ),
+                              );
+                              friendList.removeWhere(
+                                (friend) => felicitup.invitedUsers.any(
+                                  (invitedUser) => invitedUser == friend.id,
+                                ),
+                              );
+                              commoBottomModal(
+                                context: rootNavigatorKey.currentContext!,
+                                hasBottomButton: true,
+                                onTap: () {
+                                  context
+                                      .read<InfoFelicitupBloc>()
+                                      .add(InfoFelicitupEvent.updateFelicitupOwners(felicitup.id));
+                                  context.read<DetailsFelicitupDashboardBloc>().add(
+                                        DetailsFelicitupDashboardEvent.getFelicitupInfo(felicitup.id),
+                                      );
+                                  context.pop();
+                                },
+                                body: Column(
+                                  children: [
+                                    ...List.generate(
+                                      friendList.length,
+                                      (index) => GestureDetector(
+                                        onTap: () {
+                                          final owner = OwnerModel(
+                                            id: friendList[index].id ?? '',
+                                            name: friendList[index].fullName ?? '',
+                                            date: friendList[index].birthDate ?? DateTime.now(),
+                                            userImg: friendList[index].userImg ?? '',
+                                          );
+                                          context
+                                              .read<InfoFelicitupBloc>()
+                                              .add(InfoFelicitupEvent.addToOwnerList(owner));
+                                        },
+                                        child: ContactCardRow(
+                                          contact: friendList[index],
+                                          isSelected: state.ownersList.any((owner) => owner.id == friendList[index].id),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            backgroundColor: context.colors.orange,
+                            child: Icon(
+                              Icons.person_add,
+                              color: context.colors.white,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -77,6 +133,9 @@ class InfoFelicitupPage extends StatelessWidget {
                                   combinedDateTime!,
                                 ),
                               );
+                          context.read<DetailsFelicitupDashboardBloc>().add(
+                                DetailsFelicitupDashboardEvent.getFelicitupInfo(felicitup.id),
+                              );
                         },
                         backgroundColor: context.colors.orange,
                         child: Icon(
@@ -86,27 +145,28 @@ class InfoFelicitupPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    FloatingActionButton(
-                      onPressed: () => showConfirmModal(
-                        title: 'Estás seguro de querer enviar la felicitup?',
-                        onAccept: () async {
-                          context.read<InfoFelicitupBloc>().add(
-                                InfoFelicitupEvent.sendFelicitup(felicitup.id),
-                              );
-                          context.go(RouterPaths.felicitupsDashboard);
-                        },
+                if (felicitup.createdBy == currentUser.id)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      FloatingActionButton(
+                        onPressed: () => showConfirmModal(
+                          title: 'Estás seguro de querer enviar la felicitup?',
+                          onAccept: () async {
+                            context.read<InfoFelicitupBloc>().add(
+                                  InfoFelicitupEvent.sendFelicitup(felicitup.id),
+                                );
+                            context.go(RouterPaths.felicitupsDashboard);
+                          },
+                        ),
+                        backgroundColor: context.colors.orange,
+                        child: Icon(
+                          Icons.send,
+                          color: context.colors.white,
+                        ),
                       ),
-                      backgroundColor: context.colors.orange,
-                      child: Icon(
-                        Icons.send,
-                        color: context.colors.white,
-                      ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -136,18 +196,23 @@ class InfoFelicitupPage extends StatelessWidget {
                 onTap: () {
                   customModal(
                     title: 'Felicitados',
-                    child: Column(
-                      children: [
-                        ...List.generate(
-                          felicitup.owner.length,
-                          (index) => ListTile(
-                            title: Text(
-                              felicitup.owner[index].name,
-                              style: context.styles.subtitle,
-                            ),
-                          ),
-                        )
-                      ],
+                    child: SizedBox(
+                      height: context.sp(150),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            ...List.generate(
+                              felicitup.owner.length,
+                              (index) => ListTile(
+                                title: Text(
+                                  felicitup.owner[index].name,
+                                  style: context.styles.subtitle,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -169,18 +234,23 @@ class InfoFelicitupPage extends StatelessWidget {
                 onTap: () {
                   customModal(
                     title: 'Participantes',
-                    child: Column(
-                      children: [
-                        ...List.generate(
-                          felicitup.invitedUserDetails.length,
-                          (index) => ListTile(
-                            title: Text(
-                              felicitup.invitedUserDetails[index].name ?? '',
-                              style: context.styles.subtitle,
-                            ),
-                          ),
-                        )
-                      ],
+                    child: SizedBox(
+                      height: context.sp(150),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            ...List.generate(
+                              felicitup.invitedUserDetails.length,
+                              (index) => ListTile(
+                                title: Text(
+                                  felicitup.invitedUserDetails[index].name ?? '',
+                                  style: context.styles.subtitle,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -196,6 +266,45 @@ class InfoFelicitupPage extends StatelessWidget {
                     color: context.colors.text,
                   ),
                 ),
+              ),
+              SizedBox(height: context.sp(15)),
+              DetailsRow(
+                onTap: () {
+                  customModal(
+                    title: 'Información',
+                    child: Column(
+                      children: [
+                        ListTile(
+                          title: Text(
+                            'Fecha',
+                            style: context.styles.subtitle,
+                          ),
+                          subtitle: Text(
+                            DateFormat('dd·MM·yyyy').format(felicitup.date),
+                            style: context.styles.smallText,
+                          ),
+                        ),
+                        ListTile(
+                          title: Text(
+                            'Hora',
+                            style: context.styles.subtitle,
+                          ),
+                          subtitle: Text(
+                            DateFormat('HH:ss').format(felicitup.date),
+                            style: context.styles.smallText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                prefixChild: Text(
+                  'Información',
+                  style: context.styles.smallText.copyWith(
+                    color: context.colors.text,
+                  ),
+                ),
+                sufixChild: SizedBox(),
               ),
               SizedBox(height: context.sp(15)),
               DetailsRow(

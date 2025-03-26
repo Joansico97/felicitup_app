@@ -98,7 +98,6 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
           onTap: () {
             commoBottomModal(
               context: context,
-              onTap: () {},
               body: BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;

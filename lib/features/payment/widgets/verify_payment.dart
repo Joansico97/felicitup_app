@@ -226,22 +226,20 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                 ),
                 SizedBox(height: context.sp(14)),
                 SizedBox(
-                  width: context.sp(200),
-                  child: PrimaryButton(
-                    onTap: () => context.read<PaymentBloc>().add(
-                          PaymentEvent.confirmPaymentInfo(
-                            widget.felicitup.id,
-                            widget.felicitup.invitedUserDetails
-                                    .where(
-                                      (element) => element.idInformation == widget.userId,
-                                    )
-                                    .first
-                                    .id ??
-                                '',
-                          ),
-                        ),
-                    label: 'Confirmar pago',
-                    isActive: true,
+                  width: context.sp(300),
+                  child: BlocBuilder<PaymentBloc, PaymentState>(
+                    builder: (_, state) {
+                      return PrimaryButton(
+                        onTap: () => context.read<PaymentBloc>().add(
+                              PaymentEvent.confirmPaymentInfo(
+                                widget.felicitup.id,
+                                state.userInvitedInformationModel?.id ?? '',
+                              ),
+                            ),
+                        label: 'Confirmar pago',
+                        isActive: true,
+                      );
+                    },
                   ),
                 ),
               ],

@@ -29,6 +29,7 @@ void _initRepositoriesInjection() {
     ..registerLazySingleton<ChatRepository>(
       () => ChatFirebaseResource(
         firestore: di(),
+        databaseHelper: di(),
       ),
     );
 }

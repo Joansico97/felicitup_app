@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
@@ -27,6 +28,7 @@ class _DetailsFelicitupDashboardPageState extends State<DetailsFelicitupDashboar
   @override
   void initState() {
     super.initState();
+
     if (widget.fromNotification) {
       final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -35,6 +37,8 @@ class _DetailsFelicitupDashboardPageState extends State<DetailsFelicitupDashboar
             .add(DetailsFelicitupDashboardEvent.changeCurrentIndex((felicitup?.hasVideo ?? false) ? 3 : 4));
       });
     }
+    final currentUser = context.read<AppBloc>().state.currentUser;
+    context.read<InfoFelicitupBloc>().add(InfoFelicitupEvent.loadFriendsData(currentUser?.matchList ?? []));
   }
 
   final List<Widget> pagesComplete = [

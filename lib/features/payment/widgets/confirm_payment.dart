@@ -291,7 +291,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                 ),
                 SizedBox(height: context.sp(14)),
                 SizedBox(
-                  width: context.sp(200),
+                  width: context.sp(300),
                   child: PrimaryButton(
                     onTap: () {
                       context.read<PaymentBloc>().add(

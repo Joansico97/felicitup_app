@@ -99,15 +99,6 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                       'felicitup': felicitup,
                                     },
                                   );
-                                  //   context.read<BoteFelicitupBloc>().add(BoteFelicitupEvent.updatePayment(
-                                  //     invitedUsers?[index].id ?? '',
-                                  //     PaymentStatus.paid,
-                                  //   ));
-                                  // } else if (invitedUsers?[index].paid == enumToStringPayment(PaymentStatus.paid)) {
-                                  //   context.read<BoteFelicitupBloc>().add(BoteFelicitupEvent.updatePayment(
-                                  //     invitedUsers?[index].id ?? '',
-                                  //     PaymentStatus.waiting,
-                                  //   ));
                                 }
                                 if (invitedUsers?[index].paid == enumToStringPayment(PaymentStatus.waiting) &&
                                     felicitup?.createdBy == currentUser?.id) {

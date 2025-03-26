@@ -18,15 +18,18 @@ part 'felicitups_dashboard_bloc.freezed.dart';
 class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsDashboardState> {
   FelicitupsDashboardBloc({
     required FelicitupRepository felicitupRepository,
+    required ChatRepository chatRepository,
     required UserRepository userRepository,
     required FirebaseAuth firebaseAuth,
   })  : _felicitupRepository = felicitupRepository,
+        _chatRepository = chatRepository,
         _userRepository = userRepository,
         _firebaseAuth = firebaseAuth,
         super(FelicitupsDashboardState.initial()) {
     on<FelicitupsDashboardEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
+        deleteFelicitup: (event) => _deleteFelicitup(emit, event.felicitupId, event.chatId),
         changeListBoolsTap: (event) => _changeListBoolTap(emit, event.index, event.controller),
         setLike: (event) => _setLike(emit, event.felicitupId, event.userId),
         updateMatchList: (event) => _updateMatchList(event.phones),
@@ -40,6 +43,7 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
   StreamSubscription<Either<ApiException, List<FelicitupModel>>>? _felicitupSubscription;
   StreamSubscription<Either<ApiException, List<FelicitupModel>>>? _felicitupPastSubscription;
   final FelicitupRepository _felicitupRepository;
+  final ChatRepository _chatRepository;
   final UserRepository _userRepository;
   final FirebaseAuth _firebaseAuth;
 
@@ -50,6 +54,18 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
     listBoolsTap[index] = true;
     emit(state.copyWith(listBoolsTap: listBoolsTap));
     controller.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+  }
+
+  _deleteFelicitup(Emitter<FelicitupsDashboardState> emit, String felicitupId, String chatId) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      await _felicitupRepository.deleteFelicitup(felicitupId);
+      await _chatRepository.deleteChatDocument(chatId);
+
+      emit(state.copyWith(isLoading: false));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
   }
 
   _setLike(Emitter<FelicitupsDashboardState> emit, String felicitupId, String userId) async {

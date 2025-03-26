@@ -127,7 +127,6 @@ class SelectContactsView extends StatelessWidget {
                 child: PrimarySmallButton(
                   onTap: () => commoBottomModal(
                     context: context,
-                    onTap: () {},
                     body: BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                       builder: (_, state) {
                         List<UserModel> friendList = [...state.friendList];

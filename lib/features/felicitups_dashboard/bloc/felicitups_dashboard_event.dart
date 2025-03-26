@@ -3,6 +3,7 @@ part of 'felicitups_dashboard_bloc.dart';
 @freezed
 class FelicitupsDashboardEvent with _$FelicitupsDashboardEvent {
   const factory FelicitupsDashboardEvent.changeLoading() = _changeLoading;
+  const factory FelicitupsDashboardEvent.deleteFelicitup(String felicitupId, String chatId) = _deleteFelicitup;
   const factory FelicitupsDashboardEvent.changeListBoolsTap(int index, PageController controller) = _changeListBoolsTap;
   const factory FelicitupsDashboardEvent.setLike(String felicitupId, String userId) = _setLike;
   const factory FelicitupsDashboardEvent.updateMatchList(List<String> phones) = _updateMatchList;

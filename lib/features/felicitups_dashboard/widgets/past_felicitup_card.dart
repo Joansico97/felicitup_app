@@ -219,7 +219,6 @@ class PastFelicitupWidget extends StatelessWidget {
                             // ref.read(homeEventsProvider.notifier).toggleShowButton();
                             commoBottomModal(
                               context: context,
-                              onTap: () {},
                               body: Column(
                                 children: [
                                   Align(

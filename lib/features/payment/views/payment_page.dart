@@ -83,7 +83,10 @@ class PaymentPage extends StatelessWidget {
                             if (context.mounted) {
                               context.go(
                                 RouterPaths.boteFelicitup,
-                                extra: felicitup.id,
+                                extra: {
+                                  'felicitupId': felicitup.id,
+                                  'fromNotification': false,
+                                },
                               );
                             }
                           },

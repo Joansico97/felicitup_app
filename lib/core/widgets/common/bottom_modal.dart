@@ -1,12 +1,14 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 void commoBottomModal({
   required BuildContext context,
-  required VoidCallback onTap,
-  bool hasSearch = true,
   required Widget body,
+  bool hasSearch = true,
+  bool hasBottomButton = false,
+  void Function()? onTap,
 }) {
   showModalBottomSheet(
     context: context,
@@ -43,7 +45,6 @@ void commoBottomModal({
                 alignment: Alignment.centerRight,
                 child: IconButton(
                   onPressed: () {
-                    onTap();
                     context.pop();
                   },
                   icon: Container(
@@ -87,22 +88,31 @@ void commoBottomModal({
                       onEditingComplete: () {
                         FocusScope.of(context).unfocus();
                       },
-                      onChanged: (value) {
-                        // if (value.isEmpty) {
-                        //   firendsLocal = [...state.filledFriendList];
-                        // }
-                        // final listProv = firendsLocal.where((element) {
-                        //   return element.fullName!.toLowerCase().contains(value.toLowerCase());
-                        // }).toList();
-
-                        // firendsLocal = listProv;
-                      },
+                      onChanged: (value) {},
                     )
                   : SizedBox(),
               SizedBox(height: context.sp(12)),
               Expanded(
                 child: SingleChildScrollView(
                   child: body,
+                ),
+              ),
+              Visibility(
+                visible: hasBottomButton,
+                child: Column(
+                  children: [
+                    SizedBox(height: context.sp(12)),
+                    SizedBox(
+                      height: context.sp(50),
+                      width: context.sp(350),
+                      child: PrimaryButton(
+                        onTap: onTap!,
+                        label: 'Aceptar',
+                        isActive: true,
+                      ),
+                    ),
+                    SizedBox(height: context.sp(24)),
+                  ],
                 ),
               ),
             ],

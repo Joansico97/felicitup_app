@@ -14,6 +14,7 @@ abstract class FelicitupRepository {
     required List<Map<String, dynamic>> listOwners,
     required List<Map<String, dynamic>> participants,
   });
+  Future<Either<ApiException, void>> deleteFelicitup(String felicitupId);
   Future<Either<ApiException, void>> setLike(String felicitupId, String userId);
   Future<Either<ApiException, FelicitupModel>> getFelicitupById(String felicitupId);
   Future<Either<ApiException, void>> setParticipation(String felicitupId, String newStatus);
@@ -33,6 +34,7 @@ abstract class FelicitupRepository {
   Future<Either<ApiException, void>> mergeVideos(String felicitupId, List<String> listUrlVideos);
   Future<Either<ApiException, void>> sendFelicitup(String felicitupId);
   Future<Either<ApiException, void>> updateDateFelicitup(String felicitupId, DateTime newDate);
+  Future<Either<ApiException, void>> updateFelicitupOwner(String felicitupId, List<OwnerModel> newOwners);
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamPastFelicitups(String userId);
   Stream<Either<ApiException, List<InvitedModel>>> getInvitedStream(String felicitupId);

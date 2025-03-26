@@ -4,4 +4,5 @@ import 'package:felicitup_app/data/models/models.dart';
 
 abstract class ChatRepository {
   Future<Either<ApiException, void>> sendMessage(String chatId, ChatMessageModel message);
+  Future<Either<ApiException, void>> deleteChatDocument(String chatId);
 }
