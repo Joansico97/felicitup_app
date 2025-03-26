@@ -16,11 +16,13 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
       (event, emit) => event.map(
         changeLoading: (_) => _changeLoading(emit),
         generateListData: (event) => _generateListData(emit, event.contacts, event.ids),
+        getInfoContacts: (event) => _getInfoContacts(emit, event.phones),
       ),
     );
   }
 
   final UserRepository _userRepository;
+
   _changeLoading(Emitter<ContactsState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
@@ -35,12 +37,17 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
         },
         (r) {
           List<Map<String, dynamic>> dataList = [];
+          List<String> registeredContacts = [];
           List<String> listPhones = r.map((e) => e.phone ?? '').toList();
           for (ContactModel contact in contacts) {
+            bool isRegistered = listPhones.contains(contact.phone);
             dataList.add({
               'contact': contact,
-              'isRegistered': listPhones.contains(contact.phone),
+              'isRegistered': isRegistered,
             });
+            if (isRegistered) {
+              registeredContacts.add(contact.phone);
+            }
           }
           dataList.sort((a, b) {
             bool aIsRegistered = a['isRegistered'] as bool;
@@ -56,11 +63,30 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
               return aName.compareTo(bName);
             }
           });
+          add(ContactsEvent.getInfoContacts(registeredContacts));
           emit(state.copyWith(isLoading: false, dataList: dataList));
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false, dataList: []));
+    }
+  }
+
+  _getInfoContacts(Emitter<ContactsState> emit, List<String> phones) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final response = await _userRepository.getListUserDataByPhone(phones);
+
+      response.fold(
+        (l) {
+          emit(state.copyWith(isLoading: false, listDataUsers: []));
+        },
+        (r) {
+          emit(state.copyWith(isLoading: false, listDataUsers: r));
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, listDataUsers: []));
     }
   }
 }

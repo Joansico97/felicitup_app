@@ -14,10 +14,12 @@ class ElementCardRow extends StatelessWidget {
     super.key,
     required this.contact,
     required this.isRegistered,
+    this.giftcars,
   });
 
   final ContactModel contact;
   final bool isRegistered;
+  final List<GiftcarModel>? giftcars;
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +119,7 @@ class ElementCardRow extends StatelessWidget {
                 ),
           SizedBox(width: context.sp(8)),
           GestureDetector(
-            onTap: () => _showContactDetails(contact, isRegistered),
+            onTap: () => _showContactDetails(contact, isRegistered, giftcars),
             child: Icon(
               Icons.drag_indicator,
             ),
@@ -128,13 +130,14 @@ class ElementCardRow extends StatelessWidget {
   }
 }
 
-void _showContactDetails(ContactModel contact, bool isRegistered) {
+void _showContactDetails(ContactModel contact, bool isRegistered, List<GiftcarModel>? giftcars) {
   showDialog(
     context: rootNavigatorKey.currentContext!,
     useSafeArea: false,
     builder: (_) => DetailsContactPage(
       contact: contact,
       isRegistered: isRegistered,
+      giftcardList: giftcars,
     ),
   );
 }

@@ -29,6 +29,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         uploadUserVideo: (event) => _uploadUserVideo(emit, event.felicitupId, event.file),
         updateParticipantInfo: (event) => _updateParticipantInfo(event.felicitupId, event.url),
         generateThumbnail: (event) => _generateThumbnail(event.filePath),
+        changeFullScreen: (event) => _changeFullScreen(emit),
       ),
     );
   }
@@ -77,5 +78,9 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     } catch (e) {
       logger.error('Error updating participant info: $e');
     }
+  }
+
+  _changeFullScreen(Emitter<VideoEditorState> emit) {
+    emit(state.copyWith(isFullScreen: !state.isFullScreen));
   }
 }

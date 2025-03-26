@@ -15,10 +15,12 @@ class DetailsContactPage extends StatelessWidget {
     super.key,
     required this.contact,
     required this.isRegistered,
+    this.giftcardList,
   });
 
   final ContactModel contact;
   final bool isRegistered;
+  final List<GiftcarModel>? giftcardList;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,7 @@ class DetailsContactPage extends StatelessWidget {
         child: Column(
           children: [
             CollapsedHeader(
-              title: 'Detaille de contacto',
+              title: 'Detalle de contacto',
               onPressed: () async => context.pop(),
             ),
             SizedBox(height: context.sp(24)),
@@ -125,18 +127,18 @@ class DetailsContactPage extends StatelessWidget {
                         child: Column(
                           children: [
                             ...List.generate(
-                              user?.giftcardList?.length ?? 0,
+                              giftcardList?.length ?? 0,
                               (index) => ListTile(
                                 leading: Icon(
                                   Icons.card_giftcard,
                                   color: context.colors.orange,
                                 ),
                                 title: Text(
-                                  user?.giftcardList?[index].productName ?? '',
+                                  giftcardList?[index].productName ?? '',
                                   style: context.styles.paragraph,
                                 ),
                                 subtitle: Text(
-                                  '\$${user?.giftcardList?[index].productValue ?? 0}',
+                                  '\$${giftcardList?[index].productValue ?? 0}',
                                   style: context.styles.paragraph.copyWith(
                                     color: context.colors.text,
                                   ),

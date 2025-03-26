@@ -7,4 +7,5 @@ class ContactsEvent with _$ContactsEvent {
     List<ContactModel> contacts,
     List<String> ids,
   ) = _generateListData;
+  const factory ContactsEvent.getInfoContacts(List<String> phones) = _getInfoContacts;
 }

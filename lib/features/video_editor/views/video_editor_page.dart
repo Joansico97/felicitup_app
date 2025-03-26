@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
-import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/video_editor/bloc/video_editor_bloc.dart';
@@ -257,35 +256,42 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                   ),
                 ),
                 SizedBox(height: context.sp(12)),
-                Container(
-                  height: context.sp(100),
-                  width: context.sp(300),
-                  color: context.colors.grey,
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: widget.felicitup.invitedUserDetails.length,
-                    itemBuilder: (_, index) {
-                      final data = widget.felicitup.invitedUserDetails[index];
-                      return VideoSpace(
-                        label: data.videoData!.videoUrl!.isNotEmpty ? 'Espacio ya tomado' : '${index + 1}',
-                        screenshotImage: data.videoData!.videoThumbnail,
-                        name: data.name,
-                        id: data.id ?? '',
-                        hasVideo: data.videoData!.videoUrl!.isNotEmpty,
-                        setVideo: () {
-                          if (data.videoData!.videoUrl!.isEmpty) {
-                            context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
-                          } else {
-                            context
-                                .read<VideoEditorBloc>()
-                                .add(VideoEditorEvent.setUrlVideo(data.videoData!.videoUrl!));
-                            _initializeVideoPlayerFromUrl(data.videoData!.videoUrl!);
-                          }
-                        },
-                      );
-                    },
-                  ),
+                BlocBuilder<VideoEditorBloc, VideoEditorState>(
+                  builder: (_, state) {
+                    return Visibility(
+                      visible: !state.isFullScreen,
+                      child: Container(
+                        height: context.sp(100),
+                        width: context.sp(300),
+                        color: context.colors.grey,
+                        child: ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: widget.felicitup.invitedUserDetails.length,
+                          itemBuilder: (_, index) {
+                            final data = widget.felicitup.invitedUserDetails[index];
+                            return VideoSpace(
+                              label: data.videoData!.videoUrl!.isNotEmpty ? 'Espacio ya tomado' : '${index + 1}',
+                              screenshotImage: data.videoData!.videoThumbnail,
+                              name: data.name,
+                              id: data.id ?? '',
+                              hasVideo: data.videoData!.videoUrl!.isNotEmpty,
+                              setVideo: () {
+                                if (data.videoData!.videoUrl!.isEmpty) {
+                                  context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
+                                } else {
+                                  context
+                                      .read<VideoEditorBloc>()
+                                      .add(VideoEditorEvent.setUrlVideo(data.videoData!.videoUrl!));
+                                  _initializeVideoPlayerFromUrl(data.videoData!.videoUrl!);
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 SizedBox(height: context.sp(12)),
               ],
@@ -313,10 +319,22 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
       child: Stack(
         alignment: Alignment.center,
         children: [
-          AspectRatio(
-            aspectRatio: 9 / 16,
-            child: VideoPlayer(_controller!),
-          ),
+          if (Platform.isIOS)
+            AspectRatio(
+              aspectRatio: _controller!.value.aspectRatio,
+              child: VideoPlayer(_controller!),
+            ),
+          if (Platform.isAndroid)
+            Center(
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: SizedBox(
+                  width: _controller!.value.size.width,
+                  height: _controller!.value.size.height,
+                  child: VideoPlayer(_controller!),
+                ),
+              ),
+            ),
           Positioned(
             top: context.sp(10),
             left: 0,
@@ -358,7 +376,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
             right: context.sp(20),
             child: GestureDetector(
               onTap: () {
-                logger.debug('hola mundo');
+                context.read<VideoEditorBloc>().add(VideoEditorEvent.changeFullScreen());
               },
               child: Container(
                 height: context.sp(30),

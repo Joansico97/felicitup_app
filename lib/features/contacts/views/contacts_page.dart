@@ -62,6 +62,9 @@ class _ContactsPageState extends State<ContactsPage> {
                       itemBuilder: (_, index) => ElementCardRow(
                         contact: listData?[index]['contact'] as ContactModel,
                         isRegistered: listData?[index]['isRegistered'] as bool,
+                        giftcars: index <= (state.listDataUsers?.length ?? 0)
+                            ? (state.listDataUsers?[index].giftcardList)
+                            : null,
                       ),
                     );
                   },
