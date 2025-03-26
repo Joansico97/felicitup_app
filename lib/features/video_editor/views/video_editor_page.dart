@@ -156,19 +156,25 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
           persistentFooterButtons: [
             SizedBox(
               width: context.sp(300),
-              child: PrimaryButton(
-                onTap: () async {
-                  File? response = await pickVideoFromCamera(context);
+              child: BlocBuilder<VideoEditorBloc, VideoEditorState>(
+                builder: (_, state) {
+                  return PrimaryButton(
+                    onTap: () async {
+                      File? response = await pickVideoFromCamera(context);
 
-                  if (response != null) {
-                    context
-                        .read<VideoEditorBloc>()
-                        .add(VideoEditorEvent.uploadUserVideo(widget.felicitup.id, response));
-                    setState(() {});
-                  }
+                      if (response != null) {
+                        context
+                            .read<VideoEditorBloc>()
+                            .add(VideoEditorEvent.uploadUserVideo(widget.felicitup.id, response));
+                        setState(() {});
+                        initializeController(state.currentSelectedVideo);
+                        _initializeVideoPlayerFromUrl(state.currentSelectedVideo);
+                      }
+                    },
+                    label: 'Grabar Vídeo',
+                    isActive: true,
+                  );
                 },
-                label: 'Grabar Vídeo',
-                isActive: true,
               ),
             ),
           ],

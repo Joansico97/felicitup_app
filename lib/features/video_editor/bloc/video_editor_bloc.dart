@@ -56,6 +56,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         (url) {
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
           add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
+          add(VideoEditorEvent.setUrlVideo(url));
           emit(state.copyWith(isLoading: false, currentSelectedVideo: url));
         },
       );
