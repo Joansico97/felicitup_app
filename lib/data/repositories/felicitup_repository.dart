@@ -35,6 +35,8 @@ abstract class FelicitupRepository {
   Future<Either<ApiException, void>> sendFelicitup(String felicitupId);
   Future<Either<ApiException, void>> updateDateFelicitup(String felicitupId, DateTime newDate);
   Future<Either<ApiException, void>> updateFelicitupOwner(String felicitupId, List<OwnerModel> newOwners);
+  Future<Either<ApiException, void>> updateFelicitupParticipants(
+      String felicitupId, List<InvitedModel> newParticipants);
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamPastFelicitups(String userId);
   Stream<Either<ApiException, List<InvitedModel>>> getInvitedStream(String felicitupId);

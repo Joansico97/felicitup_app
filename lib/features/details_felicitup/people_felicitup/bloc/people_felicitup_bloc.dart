@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:either_dart/either.dart';
+import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
 import 'package:felicitup_app/data/models/models.dart';
@@ -25,6 +26,7 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
     on<PeopleFelicitupEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
+        loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
         informParticipation: (event) => _informParticipation(
           emit,
           event.felicitupId,
@@ -42,6 +44,8 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
           event.felicitupId,
           event.userId,
         ),
+        addParticipant: (event) => _addParticipant(emit, event.participant),
+        updateParticipantsList: (event) => _updateParticipantsList(emit, event.felicitupId),
         startListening: (event) => _startListening(emit, event.felicitupId),
         recivedData: (event) => _recivedData(emit, event.invitedUsers),
       ),
@@ -54,7 +58,7 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
   final FirebaseAuth _firebaseAuth;
 
   _changeLoading(Emitter<PeopleFelicitupState> emit) {
-    emit(PeopleFelicitupState(isLoading: !state.isLoading));
+    emit(state.copyWith(isLoading: !state.isLoading));
   }
 
   _informParticipation(
@@ -83,6 +87,60 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
             ));
             emit(state.copyWith(isLoading: false));
           }
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _addParticipant(Emitter<PeopleFelicitupState> emit, InvitedModel participant) {
+    final List<InvitedModel> participants = [...state.invitedContacts];
+
+    if (participants.contains(participant)) {
+      participants.remove(participant);
+    } else {
+      participants.add(participant);
+    }
+    emit(state.copyWith(invitedContacts: participants));
+  }
+
+  _updateParticipantsList(Emitter<PeopleFelicitupState> emit, String felicitupId) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final response = await _felicitupRepository.updateFelicitupParticipants(felicitupId, state.invitedContacts);
+
+      response.fold(
+        (error) {
+          emit(state.copyWith(isLoading: false));
+          logger.error(error);
+          // unawaited(showErrorModal(error.message));
+        },
+        (data) {
+          emit(state.copyWith(isLoading: false));
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _loadFriendsData(Emitter<PeopleFelicitupState> emit, List<String> usersIds) async {
+    emit(state.copyWith(isLoading: true));
+
+    try {
+      final response = await _userRepository.getListUserData(usersIds);
+      response.fold(
+        (error) {
+          logger.error(error);
+          emit(state.copyWith(isLoading: false));
+        },
+        (users) {
+          List<UserModel> usersList = [];
+          for (final data in users) {
+            usersList.add(UserModel.fromJson(data));
+          }
+          emit(state.copyWith(isLoading: false, friendList: usersList));
         },
       );
     } catch (e) {

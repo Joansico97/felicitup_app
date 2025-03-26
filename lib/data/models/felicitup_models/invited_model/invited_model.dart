@@ -37,7 +37,7 @@ String enumToStringPayment(PaymentStatus enumValue) {
   }
 }
 
-@freezed
+@Freezed(makeCollectionsUnmodifiable: false)
 class InvitedModel with _$InvitedModel {
   const factory InvitedModel({
     String? id,

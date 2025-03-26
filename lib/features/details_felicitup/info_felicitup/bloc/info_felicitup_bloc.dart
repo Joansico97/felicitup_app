@@ -22,7 +22,6 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
         updateDateFelicitup: (event) => _updateDateFelicitup(emit, event.felicitupId, event.newDate),
         addToOwnerList: (event) => _addToOwnerList(emit, event.felicitupOwner),
         updateFelicitupOwners: (event) => _updateFelicitupOwners(emit, event.felicitupId),
-        addParticipant: (event) => _addParticipant(emit, event.participant),
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
       ),
     );
@@ -74,17 +73,6 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
-  }
-
-  _addParticipant(Emitter<InfoFelicitupState> emit, InvitedModel participant) {
-    final List<InvitedModel> participants = [...state.invitedContacts];
-
-    if (participants.contains(participant)) {
-      participants.remove(participant);
-    } else {
-      participants.add(participant);
-    }
-    emit(state.copyWith(invitedContacts: participants));
   }
 
   _loadFriendsData(Emitter<InfoFelicitupState> emit, List<String> usersIds) async {

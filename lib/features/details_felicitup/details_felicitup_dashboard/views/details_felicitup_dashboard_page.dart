@@ -39,6 +39,7 @@ class _DetailsFelicitupDashboardPageState extends State<DetailsFelicitupDashboar
     }
     final currentUser = context.read<AppBloc>().state.currentUser;
     context.read<InfoFelicitupBloc>().add(InfoFelicitupEvent.loadFriendsData(currentUser?.matchList ?? []));
+    context.read<PeopleFelicitupBloc>().add(PeopleFelicitupEvent.loadFriendsData(currentUser?.matchList ?? []));
   }
 
   final List<Widget> pagesComplete = [

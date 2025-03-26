@@ -3,6 +3,7 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
+import 'package:felicitup_app/features/create_felicitup/widgets/contact_card_row.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
 
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class PeopleFelicitupPage extends StatefulWidget {
 }
 
 class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
+  List<bool> isSelected = [];
   @override
   void initState() {
     super.initState();
@@ -44,13 +46,78 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      FloatingActionButton(
-                        onPressed: () {},
-                        backgroundColor: context.colors.orange,
-                        child: Icon(
-                          Icons.person_add,
-                          color: context.colors.white,
-                        ),
+                      BlocBuilder<PeopleFelicitupBloc, PeopleFelicitupState>(
+                        buildWhen: (previous, current) => previous.invitedContacts != current.invitedContacts,
+                        builder: (_, state) {
+                          final friendList = [...state.friendList];
+                          friendList.removeWhere(
+                            (friend) => felicitup.owner.any(
+                              (owner) => owner.id == friend.id,
+                            ),
+                          );
+                          friendList.removeWhere(
+                            (friend) => felicitup.invitedUsers.any(
+                              (invitedUser) => invitedUser == friend.id,
+                            ),
+                          );
+                          isSelected = List.generate(friendList.length, (index) => false);
+
+                          return FloatingActionButton(
+                            onPressed: () {
+                              commoBottomModal(
+                                context: rootNavigatorKey.currentContext!,
+                                hasBottomButton: true,
+                                onTap: () {
+                                  context
+                                      .read<PeopleFelicitupBloc>()
+                                      .add(PeopleFelicitupEvent.updateParticipantsList(felicitup.id));
+                                  // context.read<DetailsFelicitupDashboardBloc>().add(
+                                  //       DetailsFelicitupDashboardEvent.getFelicitupInfo(felicitup.id),
+                                  //     );
+                                  context.pop();
+                                },
+                                body: Column(
+                                  children: [
+                                    ...List.generate(
+                                      friendList.length,
+                                      (index) => GestureDetector(
+                                        onTap: () {
+                                          isSelected[index] = !isSelected[index];
+                                          final participant = InvitedModel(
+                                            id: friendList[index].id ?? '',
+                                            name: friendList[index].fullName ?? '',
+                                            userImage: friendList[index].userImg ?? '',
+                                            assistanceStatus: enumToStringAssistance(AssistanceStatus.pending),
+                                            paid: enumToStringPayment(PaymentStatus.pending),
+                                            videoData: VideoDataModel(
+                                              videoUrl: '',
+                                              videoThumbnail: '',
+                                            ),
+                                            idInformation: '',
+                                          );
+                                          context
+                                              .read<PeopleFelicitupBloc>()
+                                              .add(PeopleFelicitupEvent.addParticipant(participant));
+                                        },
+                                        child: ContactCardRow(
+                                          contact: friendList[index],
+                                          isSelected: state.invitedContacts.any(
+                                            (user) => user.id == friendList[index].id,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            backgroundColor: context.colors.orange,
+                            child: Icon(
+                              Icons.person_add,
+                              color: context.colors.white,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

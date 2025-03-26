@@ -407,6 +407,53 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> updateFelicitupParticipants(
+    String felicitupId,
+    List<InvitedModel> newParticipants,
+  ) async {
+    try {
+      List<Map<String, dynamic>> collection = [];
+      for (var element in newParticipants) {
+        final data = {
+          'id': element.id,
+          'name': element.name,
+          'userImage': element.userImage,
+          'assistanceStatus': element.assistanceStatus,
+          'paid': element.paid,
+          'videoData': element.videoData?.toJson(),
+          'idInformation': element.idInformation,
+        };
+        collection.add(data);
+      }
+
+      final docRef = _firestore.collection(AppConstants.feclitiupsCollection).doc(felicitupId);
+      final felicitupDoc = await docRef.get();
+      if (!felicitupDoc.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+
+      final felicitupData = felicitupDoc.data() as Map<String, dynamic>;
+      final invitedUsersDataList = felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
+      final invitedUsersList = felicitupData['invitedUsers'] as List<dynamic>? ?? [];
+      final updatedInvitedUsersDataList = List<dynamic>.from(invitedUsersDataList);
+      final updatedInvitedUsersList = List<dynamic>.from(invitedUsersList);
+      updatedInvitedUsersDataList.addAll(collection);
+      updatedInvitedUsersList.addAll(newParticipants.map((e) => e.id).toList());
+
+      await docRef.update({
+        'invitedUserDetails': updatedInvitedUsersDataList,
+        'invitedUsers': updatedInvitedUsersList,
+      });
+
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId) {
     try {
       return _firestore
