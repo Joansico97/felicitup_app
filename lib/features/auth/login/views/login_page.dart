@@ -29,6 +29,7 @@ class LoginPage extends StatelessWidget {
 
         if (state.status == LoginStatus.error) {
           unawaited(showErrorModal(state.errorMessage));
+
           context.read<LoginBloc>().add(LoginEvent.changeEvent());
         }
 

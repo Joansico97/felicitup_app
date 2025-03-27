@@ -235,6 +235,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                           setState(() {
                             selectedImage = File(response.path);
                           });
+
                           context.read<PaymentBloc>().add(PaymentEvent.uploadPaymenFile(selectedImage!));
                         }
                       },
@@ -312,6 +313,8 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                               DataMessageModel(
                                 type: enumToPushMessageType(PushMessageType.payment),
                                 felicitupId: widget.felicitup.id,
+                                chatId: '',
+                                name: '',
                               ),
                             ),
                           );

@@ -80,7 +80,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
     final response = await _userRepository.getListUserDataByPhone(phones);
 
-    response.fold(
+    return response.fold(
       (l) => logger.error(l),
       (r) async {
         List<String> ids = [];
@@ -139,7 +139,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     if (message.notification == null) return;
 
     final notification = PushMessageModel(
-      messageId: message.messageId?.replaceAll(':', '').replaceAll('%', '') ?? '',
+      messageId: message.messageId?.replaceAll(':', '').replaceAll('%', '') ??
+          '${state.currentUser?.id}-${DateTime.now().millisecondsSinceEpoch}',
       title: message.notification!.title ?? '',
       body: message.notification!.body ?? '',
       sentDate: message.sentTime ?? DateTime.now(),

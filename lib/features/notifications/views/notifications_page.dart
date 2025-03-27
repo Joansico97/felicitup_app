@@ -86,23 +86,21 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       itemBuilder: (_, index) {
                         return ListTile(
                           title: Text(
-                            notifications[index].title ?? '',
+                            notifications[index].title,
                             style: context.styles.smallText,
                           ),
                           subtitle: Text(
-                            notifications[index].body ?? '',
+                            notifications[index].body,
                             style: context.styles.paragraph,
                           ),
                           trailing: Text(
-                            'id: ${notifications[index].messageId ?? ''}',
+                            'id: ${notifications[index].messageId}',
                             style: context.styles.smallText,
                           ),
                           onTap: () {
-                            if (notifications[index].data != null) {
-                              redirectHelper(
-                                data: notifications[index].data!.toJson(),
-                              );
-                            }
+                            redirectHelper(
+                              data: notifications[index].data.toJson(),
+                            );
                           },
                           onLongPress: () {
                             showConfirmModal(
@@ -110,7 +108,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               onAccept: () async {
                                 context.read<NotificationsBloc>().add(
                                       NotificationsEvent.deleteNotification(
-                                        notifications[index].messageId!,
+                                        notifications[index].messageId,
                                       ),
                                     );
                               },

@@ -24,7 +24,9 @@ class RegisterPage extends StatelessWidget {
         }
 
         if (state.status == RegisterStatus.finished) {
-          context.go(RouterPaths.login);
+          if (context.mounted) {
+            context.go(RouterPaths.login);
+          }
         }
 
         if (state.status == RegisterStatus.error) {

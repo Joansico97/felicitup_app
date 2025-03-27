@@ -53,9 +53,9 @@ class InfoFelicitupPage extends StatelessWidget {
                                 context: rootNavigatorKey.currentContext!,
                                 hasBottomButton: true,
                                 onTap: () {
-                                  context
-                                      .read<InfoFelicitupBloc>()
-                                      .add(InfoFelicitupEvent.updateFelicitupOwners(felicitup.id));
+                                  context.read<InfoFelicitupBloc>().add(
+                                        InfoFelicitupEvent.updateFelicitupOwners(felicitup.id),
+                                      );
                                   context.read<DetailsFelicitupDashboardBloc>().add(
                                         DetailsFelicitupDashboardEvent.getFelicitupInfo(felicitup.id),
                                       );

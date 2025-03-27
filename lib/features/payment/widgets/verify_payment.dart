@@ -230,12 +230,28 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                   child: BlocBuilder<PaymentBloc, PaymentState>(
                     builder: (_, state) {
                       return PrimaryButton(
-                        onTap: () => context.read<PaymentBloc>().add(
-                              PaymentEvent.confirmPaymentInfo(
-                                widget.felicitup.id,
-                                state.userInvitedInformationModel?.id ?? '',
-                              ),
-                            ),
+                        onTap: () {
+                          context.read<PaymentBloc>().add(
+                                PaymentEvent.confirmPaymentInfo(
+                                  widget.felicitup.id,
+                                  state.userInvitedInformationModel?.id ?? '',
+                                ),
+                              );
+                          context.read<PaymentBloc>().add(
+                                PaymentEvent.sendNotification(
+                                  widget.felicitup.createdBy,
+                                  'Informe de pago',
+                                  'Pago confirmado ',
+                                  '',
+                                  DataMessageModel(
+                                    type: enumToPushMessageType(PushMessageType.payment),
+                                    felicitupId: widget.felicitup.id,
+                                    chatId: '',
+                                    name: '',
+                                  ),
+                                ),
+                              );
+                        },
                         label: 'Confirmar pago',
                         isActive: true,
                       );

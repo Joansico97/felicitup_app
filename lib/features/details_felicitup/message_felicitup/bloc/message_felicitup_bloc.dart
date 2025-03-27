@@ -75,11 +75,11 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
 
           for (String id in ids) {
             await _userRepository.sendNotification(
-              id,
-              'Nuevo mensaje de $userName',
-              chatMessage.message,
-              felicitup.chatId,
-              DataMessageModel(
+              userId: id,
+              title: 'Nuevo mensaje de $userName',
+              message: chatMessage.message,
+              currentChat: felicitup.chatId,
+              data: DataMessageModel(
                 type: enumToPushMessageType(PushMessageType.chat),
                 felicitupId: felicitup.id,
                 chatId: felicitup.chatId,

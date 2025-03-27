@@ -71,7 +71,7 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _felicitupRepository.setParticipation(felicitupId, newStatus);
-      response.fold(
+      return response.fold(
         (error) {
           emit(state.copyWith(isLoading: false));
           unawaited(showErrorModal(error.message));
@@ -80,11 +80,18 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
           if (newStatus == enumToStringAssistance(AssistanceStatus.rejected)) {
             add(PeopleFelicitupEvent.deleteParticipant(felicitupId, _firebaseAuth.currentUser!.uid));
           } else {
-            add(PeopleFelicitupEvent.sendNotification(
-              felicitupOwnerId,
-              name,
-              felicitupId,
-            ));
+            await _userRepository.sendNotification(
+              userId: felicitupOwnerId,
+              title: 'Información de confirmación de asistencia',
+              message: '$name ha informado que participará en la felicitup',
+              currentChat: '',
+              data: DataMessageModel(
+                type: enumToPushMessageType(PushMessageType.participation),
+                felicitupId: felicitupId,
+                chatId: '',
+                name: '',
+              ),
+            );
             emit(state.copyWith(isLoading: false));
           }
         },
@@ -110,13 +117,27 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
     try {
       final response = await _felicitupRepository.updateFelicitupParticipants(felicitupId, state.invitedContacts);
 
-      response.fold(
+      return response.fold(
         (error) {
           emit(state.copyWith(isLoading: false));
           logger.error(error);
           // unawaited(showErrorModal(error.message));
         },
-        (data) {
+        (data) async {
+          for (final user in state.invitedContacts) {
+            await _userRepository.sendNotification(
+              userId: user.id ?? '',
+              title: 'Información de confirmación de asistencia',
+              message: 'has sido invitado a una nueva felicitup',
+              currentChat: '',
+              data: DataMessageModel(
+                type: enumToPushMessageType(PushMessageType.felicitup),
+                felicitupId: felicitupId,
+                chatId: '',
+                name: '',
+              ),
+            );
+          }
           emit(state.copyWith(isLoading: false));
         },
       );
@@ -148,20 +169,7 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
     }
   }
 
-  _sendNotification(String userId, String name, String felicitupId) async {
-    await _userRepository.sendNotification(
-      userId,
-      'Información de confirmación de asistencia',
-      '$name ha informado que participará en la felicitup',
-      '',
-      DataMessageModel(
-        type: enumToPushMessageType(PushMessageType.participation),
-        felicitupId: felicitupId,
-        chatId: '',
-        name: '',
-      ),
-    );
-  }
+  _sendNotification(String userId, String name, String felicitupId) async {}
 
   _deleteParticipant(Emitter<PeopleFelicitupState> emit, String felicitupId, String userId) async {
     emit(state.copyWith(isLoading: true));

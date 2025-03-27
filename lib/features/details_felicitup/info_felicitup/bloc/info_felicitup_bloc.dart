@@ -68,8 +68,17 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
   _updateFelicitupOwners(Emitter<InfoFelicitupState> emit, String felicitupId) async {
     emit(state.copyWith(isLoading: true));
     try {
-      await _felicitupRepository.updateFelicitupOwner(felicitupId, state.ownersList);
-      emit(state.copyWith(isLoading: false));
+      final response = await _felicitupRepository.updateFelicitupOwner(felicitupId, state.ownersList);
+
+      return response.fold(
+        (error) {
+          logger.error(error);
+          emit(state.copyWith(isLoading: false));
+        },
+        (data) {
+          emit(state.copyWith(isLoading: false));
+        },
+      );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }

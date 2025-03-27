@@ -11,13 +11,13 @@ abstract class UserRepository {
   Future<Either<ApiException, List<UserModel>>> getListUserDataByPhone(List<String> phones);
   Future<Either<ApiException, String>> uploadFile(File file, String destination);
   Future<Either<ApiException, String>> uploadVideoFile(File file, String destination);
-  Future<Either<ApiException, void>> sendNotification(
-    String userId,
-    String title,
-    String message,
-    String currentChat,
-    DataMessageModel data,
-  );
+  Future<Either<ApiException, void>> sendNotification({
+    required String userId,
+    required String title,
+    required String message,
+    required String currentChat,
+    required DataMessageModel data,
+  });
   Future<Either<ApiException, void>> sendNotificationToListUsers(
     List<String> ids,
     String title,

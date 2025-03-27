@@ -184,13 +184,13 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
-  Future<Either<ApiException, void>> sendNotification(
-    String userId,
-    String title,
-    String message,
-    String currentChat,
-    DataMessageModel data,
-  ) async {
+  Future<Either<ApiException, void>> sendNotification({
+    required String userId,
+    required String title,
+    required String message,
+    required String currentChat,
+    required DataMessageModel data,
+  }) async {
     try {
       await _firebaseFunctionsHelper.sendNotification(
         userId: userId,
@@ -512,7 +512,7 @@ class UserFirebaseResource implements UserRepository {
         'title': notification.title,
         'body': notification.body,
         'sentDate': notification.sentDate,
-        'data': notification.data!.toJson(),
+        'data': notification.data.toJson(),
       };
       await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
         'notifications': FieldValue.arrayUnion([notificationMap]),

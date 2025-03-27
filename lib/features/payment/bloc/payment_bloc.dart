@@ -168,7 +168,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
 
     try {
       final response = await _felicitupRepository.confirmPaymentData(felicitupId, userId);
-      response.fold(
+      return response.fold(
         (error) {
           emit(
             state.copyWith(
@@ -208,11 +208,11 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   ) async {
     try {
       await _userRepository.sendNotification(
-        userId,
-        title,
-        message,
-        currentChat,
-        data,
+        userId: userId,
+        title: title,
+        message: message,
+        currentChat: currentChat,
+        data: data,
       );
     } catch (e) {
       emit(state.copyWith(

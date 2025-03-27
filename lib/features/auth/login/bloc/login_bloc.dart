@@ -42,7 +42,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     try {
       final response = await _authRepository.login(email: email, password: password);
 
-      response.fold(
+      return response.fold(
         (l) {
           emit(
             state.copyWith(
@@ -71,7 +71,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     try {
       final response = await _authRepository.signInWithGoogle();
 
-      response.fold(
+      return response.fold(
         (l) {
           emit(
             state.copyWith(
@@ -150,7 +150,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     try {
       final response = await _authRepository.signInWithApple();
 
-      response.fold(
+      return response.fold(
         (l) {
           emit(
             state.copyWith(

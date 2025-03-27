@@ -84,7 +84,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   _setUserInfo(Emitter<RegisterState> emit, UserCredential userCredential) async {
     emit(state.copyWith(isLoading: true));
     try {
-      await _userRepository.setInitialUserInfo(
+      final response = await _userRepository.setInitialUserInfo(
         UserModel(
           id: userCredential.user!.uid,
           firstName: state.name!,
@@ -111,7 +111,15 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           registerDate: DateTime.now(),
         ),
       );
-      emit(state.copyWith(isLoading: false));
+
+      return response.fold(
+        (l) {
+          emit(state.copyWith(isLoading: false));
+        },
+        (r) {
+          emit(state.copyWith(isLoading: false));
+        },
+      );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
@@ -126,7 +134,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         password: state.password!,
       );
 
-      response.fold(
+      return response.fold(
         (l) {
           // Si hay un error en el registro
           emit(
@@ -148,7 +156,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         },
       );
     } catch (e) {
-      // Si hay un error en el proceso de registro
       emit(
         state.copyWith(
           isLoading: false,

@@ -323,11 +323,11 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
       List<String> ids = participants.map((e) => e.id as String).toList();
       for (String id in ids) {
         await _userRepository.sendNotification(
-          id,
-          'Nueva Felicitup',
-          'Has sido invitado a un felicitup',
-          '',
-          DataMessageModel(
+          userId: id,
+          title: 'Nueva Felicitup',
+          message: 'Has sido invitado a un felicitup',
+          currentChat: '',
+          data: DataMessageModel(
             type: enumToPushMessageType(PushMessageType.felicitup),
             felicitupId: felicitupId,
             chatId: '',

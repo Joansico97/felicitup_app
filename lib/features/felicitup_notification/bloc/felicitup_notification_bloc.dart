@@ -123,7 +123,8 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _felicitupRepository.setParticipation(felicitupId, newStatus);
-      response.fold(
+
+      return response.fold(
         (error) {
           emit(state.copyWith(isLoading: false));
           unawaited(showErrorModal(error.message));
@@ -132,13 +133,15 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
           if (newStatus == enumToStringAssistance(AssistanceStatus.rejected)) {
             add(FelicitupNotificationEvent.deleteParticipant(felicitupId, _firebaseAuth.currentUser!.uid));
             await _userRepository.sendNotification(
-              state.currentFelicitup?.createdBy ?? '',
-              'Rechazo de participación',
-              '$userNmae ha informado que no participará en la felicitup',
-              '',
-              DataMessageModel(
+              userId: state.currentFelicitup?.createdBy ?? '',
+              title: 'Rechazo de participación',
+              message: '$userNmae ha informado que no participará en la felicitup',
+              currentChat: '',
+              data: DataMessageModel(
                 type: enumToPushMessageType(PushMessageType.participation),
                 felicitupId: felicitupId,
+                chatId: '',
+                name: '',
               ),
             );
           } else {
@@ -148,13 +151,15 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
       );
     } catch (e) {
       await _userRepository.sendNotification(
-        state.currentFelicitup?.createdBy ?? '',
-        'Aviso de participación',
-        '$userNmae ha informado que si participará en la felicitup',
-        '',
-        DataMessageModel(
+        userId: state.currentFelicitup?.createdBy ?? '',
+        title: 'Aviso de participación',
+        message: '$userNmae ha informado que si participará en la felicitup',
+        currentChat: '',
+        data: DataMessageModel(
           type: enumToPushMessageType(PushMessageType.participation),
           felicitupId: felicitupId,
+          chatId: '',
+          name: '',
         ),
       );
       emit(state.copyWith(isLoading: false));
