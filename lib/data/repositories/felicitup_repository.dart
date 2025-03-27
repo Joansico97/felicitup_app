@@ -40,6 +40,7 @@ abstract class FelicitupRepository {
     List<InvitedModel> newParticipants,
   );
   Future<Either<ApiException, void>> updateBoteFelicitup(String felicitupId, int newBoteQuantity);
+  Stream<Either<ApiException, FelicitupModel>> streamSingleFelicitup(String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId);
   Stream<Either<ApiException, List<FelicitupModel>>> streamPastFelicitups(String userId);
   Stream<Either<ApiException, List<InvitedModel>>> getInvitedStream(String felicitupId);

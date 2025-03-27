@@ -470,6 +470,22 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   }
 
   @override
+  Stream<Either<ApiException, FelicitupModel>> streamSingleFelicitup(String userId) {
+    try {
+      return _firestore.collection(AppConstants.feclitiupsCollection).doc(userId).snapshots().map((event) {
+        final data = event.data();
+        if (data == null) {
+          return Left(ApiException(1000, 'Felicitup not found'));
+        }
+        final FelicitupModel felicitup = FelicitupModel.fromJson(data);
+        return Right(felicitup);
+      });
+    } catch (e) {
+      return Stream.value(Left(ApiException(1000, e.toString())));
+    }
+  }
+
+  @override
   Stream<Either<ApiException, List<FelicitupModel>>> streamFelicitups(String userId) {
     try {
       return _firestore

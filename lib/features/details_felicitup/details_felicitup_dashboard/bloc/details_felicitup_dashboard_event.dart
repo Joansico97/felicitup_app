@@ -5,5 +5,6 @@ class DetailsFelicitupDashboardEvent with _$DetailsFelicitupDashboardEvent {
   const factory DetailsFelicitupDashboardEvent.changeCurrentIndex(int index) = _changeCurrentIndex;
   const factory DetailsFelicitupDashboardEvent.noEvent() = _noEvent;
   const factory DetailsFelicitupDashboardEvent.asignCurrentChat(String chatId) = _asignCurrentChat;
-  const factory DetailsFelicitupDashboardEvent.getFelicitupInfo(String felicitupId) = _getFelicitupInfo;
+  const factory DetailsFelicitupDashboardEvent.startListening(String felicitupId) = _startListening;
+  const factory DetailsFelicitupDashboardEvent.recivedData(FelicitupModel felicitup) = _recivedData;
 }

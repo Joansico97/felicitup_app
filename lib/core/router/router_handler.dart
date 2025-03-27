@@ -175,7 +175,7 @@ Page<Widget> _detailsFelicitupDashboardHandler(
             ..add(
               data?['felicitupId'] == null
                   ? DetailsFelicitupDashboardEvent.noEvent()
-                  : DetailsFelicitupDashboardEvent.getFelicitupInfo(data!['felicitupId'] as String),
+                  : DetailsFelicitupDashboardEvent.startListening(data!['felicitupId'] as String),
             ),
         ),
         BlocProvider(create: (_) => injection.di<InfoFelicitupBloc>()),

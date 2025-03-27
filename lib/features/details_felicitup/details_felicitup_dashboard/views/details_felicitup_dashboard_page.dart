@@ -137,7 +137,7 @@ class _DetailsFelicitupDashboardPageState extends State<DetailsFelicitupDashboar
                     body: SafeArea(
                       child: Column(
                         children: [
-                          DetailsHeader(felicitup: felicitup),
+                          DetailsHeader(),
                           Expanded(
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: context.sp(24)),

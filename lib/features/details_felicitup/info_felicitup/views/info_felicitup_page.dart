@@ -10,23 +10,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-class InfoFelicitupPage extends StatelessWidget {
+class InfoFelicitupPage extends StatefulWidget {
   const InfoFelicitupPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
-      buildWhen: (previous, current) => previous.felicitup != current.felicitup,
-      builder: (_, state) {
-        final felicitup = state.felicitup;
-        final currentUser = context.read<AppBloc>().state.currentUser;
+  State<InfoFelicitupPage> createState() => _InfoFelicitupPageState();
+}
 
-        return Scaffold(
-          backgroundColor: context.colors.background,
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: Padding(
-            padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
-            child: Row(
+class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
+  @override
+  Widget build(BuildContext context) {
+    final currentUser = context.read<AppBloc>().state.currentUser;
+    return Scaffold(
+      backgroundColor: context.colors.background,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
+        child: BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+          buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+          builder: (_, state) {
+            final felicitup = state.felicitup;
+            return Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 if (felicitup!.createdBy == currentUser!.id)
@@ -56,9 +60,7 @@ class InfoFelicitupPage extends StatelessWidget {
                                   context.read<InfoFelicitupBloc>().add(
                                         InfoFelicitupEvent.updateFelicitupOwners(felicitup.id),
                                       );
-                                  context.read<DetailsFelicitupDashboardBloc>().add(
-                                        DetailsFelicitupDashboardEvent.getFelicitupInfo(felicitup.id),
-                                      );
+                                  setState(() {});
                                   WidgetsBinding.instance.addPostFrameCallback((_) {
                                     context.pop();
                                   });
@@ -143,9 +145,6 @@ class InfoFelicitupPage extends StatelessWidget {
                                   combinedDateTime!,
                                 ),
                               );
-                          context.read<DetailsFelicitupDashboardBloc>().add(
-                                DetailsFelicitupDashboardEvent.getFelicitupInfo(felicitup.id),
-                              );
                         },
                         backgroundColor: context.colors.orange,
                         child: Icon(
@@ -178,31 +177,37 @@ class InfoFelicitupPage extends StatelessWidget {
                     ],
                   ),
               ],
-            ),
-          ),
-          body: Column(
-            children: [
-              SizedBox(height: context.sp(26)),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  height: context.sp(40),
-                  width: context.sp(85),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(context.sp(20)),
-                    color: context.colors.white,
-                  ),
-                  child: Text(
-                    'Resumen',
-                    style: context.styles.smallText.copyWith(
-                      color: context.colors.primary,
-                    ),
-                  ),
+            );
+          },
+        ),
+      ),
+      body: Column(
+        children: [
+          SizedBox(height: context.sp(26)),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              height: context.sp(40),
+              width: context.sp(85),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(context.sp(20)),
+                color: context.colors.white,
+              ),
+              child: Text(
+                'Resumen',
+                style: context.styles.smallText.copyWith(
+                  color: context.colors.primary,
                 ),
               ),
-              SizedBox(height: context.sp(22)),
-              DetailsRow(
+            ),
+          ),
+          SizedBox(height: context.sp(22)),
+          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+            builder: (_, state) {
+              final thisFelicitup = state.felicitup;
+              return DetailsRow(
                 onTap: () {
                   customModal(
                     title: 'Felicitados',
@@ -212,10 +217,10 @@ class InfoFelicitupPage extends StatelessWidget {
                         child: Column(
                           children: [
                             ...List.generate(
-                              felicitup.owner.length,
+                              thisFelicitup?.owner.length ?? 0,
                               (index) => ListTile(
                                 title: Text(
-                                  felicitup.owner[index].name,
+                                  thisFelicitup?.owner[index].name ?? '',
                                   style: context.styles.subtitle,
                                 ),
                               ),
@@ -233,14 +238,20 @@ class InfoFelicitupPage extends StatelessWidget {
                   ),
                 ),
                 sufixChild: Text(
-                  felicitup.owner.length.toString(),
+                  thisFelicitup?.owner.length.toString() ?? '',
                   style: context.styles.smallText.copyWith(
                     color: context.colors.text,
                   ),
                 ),
-              ),
-              SizedBox(height: context.sp(15)),
-              DetailsRow(
+              );
+            },
+          ),
+          SizedBox(height: context.sp(15)),
+          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+            builder: (_, state) {
+              final felicitup = state.felicitup;
+              return DetailsRow(
                 onTap: () {
                   customModal(
                     title: 'Participantes',
@@ -250,10 +261,10 @@ class InfoFelicitupPage extends StatelessWidget {
                         child: Column(
                           children: [
                             ...List.generate(
-                              felicitup.invitedUserDetails.length,
+                              felicitup?.invitedUserDetails.length ?? 0,
                               (index) => ListTile(
                                 title: Text(
-                                  felicitup.invitedUserDetails[index].name ?? '',
+                                  felicitup?.invitedUserDetails[index].name ?? '',
                                   style: context.styles.subtitle,
                                 ),
                               ),
@@ -271,14 +282,20 @@ class InfoFelicitupPage extends StatelessWidget {
                   ),
                 ),
                 sufixChild: Text(
-                  felicitup.invitedUsers.length.toString(),
+                  felicitup?.invitedUsers.length.toString() ?? '',
                   style: context.styles.smallText.copyWith(
                     color: context.colors.text,
                   ),
                 ),
-              ),
-              SizedBox(height: context.sp(15)),
-              DetailsRow(
+              );
+            },
+          ),
+          SizedBox(height: context.sp(15)),
+          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+            builder: (_, state) {
+              final felicitup = state.felicitup;
+              return DetailsRow(
                 onTap: () {
                   customModal(
                     title: 'Información',
@@ -290,7 +307,7 @@ class InfoFelicitupPage extends StatelessWidget {
                             style: context.styles.subtitle,
                           ),
                           subtitle: Text(
-                            DateFormat('dd·MM·yyyy').format(felicitup.date),
+                            DateFormat('dd·MM·yyyy').format(felicitup?.date ?? DateTime.now()),
                             style: context.styles.smallText,
                           ),
                         ),
@@ -300,7 +317,7 @@ class InfoFelicitupPage extends StatelessWidget {
                             style: context.styles.subtitle,
                           ),
                           subtitle: Text(
-                            DateFormat('HH:ss').format(felicitup.date),
+                            DateFormat('HH:ss').format(felicitup?.date ?? DateTime.now()),
                             style: context.styles.smallText,
                           ),
                         ),
@@ -315,30 +332,36 @@ class InfoFelicitupPage extends StatelessWidget {
                   ),
                 ),
                 sufixChild: SizedBox(),
+              );
+            },
+          ),
+          SizedBox(height: context.sp(15)),
+          DetailsRow(
+            prefixChild: Text(
+              'Chat',
+              style: context.styles.smallText.copyWith(
+                color: context.colors.text,
               ),
-              SizedBox(height: context.sp(15)),
-              DetailsRow(
-                prefixChild: Text(
-                  'Chat',
-                  style: context.styles.smallText.copyWith(
-                    color: context.colors.text,
-                  ),
-                ),
-                sufixChild: Container(
-                  padding: EdgeInsets.all(context.sp(5)),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: context.colors.orange,
-                  ),
-                  child: Icon(
-                    Icons.check,
-                    color: context.colors.white,
-                    size: context.sp(11),
-                  ),
-                ),
+            ),
+            sufixChild: Container(
+              padding: EdgeInsets.all(context.sp(5)),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: context.colors.orange,
               ),
-              Visibility(
-                visible: felicitup.hasVideo,
+              child: Icon(
+                Icons.check,
+                color: context.colors.white,
+                size: context.sp(11),
+              ),
+            ),
+          ),
+          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+            builder: (_, state) {
+              final felicitup = state.felicitup;
+              return Visibility(
+                visible: felicitup?.hasVideo ?? false,
                 child: Column(
                   children: [
                     SizedBox(height: context.sp(15)),
@@ -364,9 +387,15 @@ class InfoFelicitupPage extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              Visibility(
-                visible: felicitup.hasBote,
+              );
+            },
+          ),
+          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+            builder: (_, state) {
+              final felicitup = state.felicitup;
+              return Visibility(
+                visible: felicitup?.hasBote ?? false,
                 child: Column(
                   children: [
                     SizedBox(height: context.sp(15)),
@@ -378,7 +407,7 @@ class InfoFelicitupPage extends StatelessWidget {
                         ),
                       ),
                       sufixChild: Text(
-                        '${felicitup.boteQuantity}€',
+                        '${felicitup?.boteQuantity}€',
                         style: context.styles.smallText.copyWith(
                           color: context.colors.text,
                         ),
@@ -386,11 +415,11 @@ class InfoFelicitupPage extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-            ],
+              );
+            },
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
