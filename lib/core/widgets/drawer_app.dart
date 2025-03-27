@@ -1,13 +1,45 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-class DrawerApp extends StatelessWidget {
+class DrawerApp extends StatefulWidget {
   const DrawerApp({super.key});
+
+  @override
+  State<DrawerApp> createState() => _DrawerAppState();
+}
+
+class _DrawerAppState extends State<DrawerApp> {
+  String _appVersion = 'Cargando...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersionInfo(); // Llama a la función para cargar la versión
+  }
+
+  Future<void> _loadVersionInfo() async {
+    try {
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      // La versión en pubspec.yaml suele ser "version: 1.0.0+1"
+      // packageInfo.version te da "1.0.0"
+      // packageInfo.buildNumber te da "1"
+      setState(() {
+        _appVersion = 'v${packageInfo.version}+${packageInfo.buildNumber}';
+      });
+    } catch (e) {
+      logger.info("Error al obtener la versión: $e");
+      setState(() {
+        _appVersion = 'Error al obtener versión';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +99,14 @@ class DrawerApp extends StatelessWidget {
               },
               label: 'Cerrar sesión',
               icon: Icons.logout,
+            ),
+            Spacer(),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
+              child: Text(
+                _appVersion,
+                style: context.styles.smallText,
+              ),
             ),
           ],
         ),
