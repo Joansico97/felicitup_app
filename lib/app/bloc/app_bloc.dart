@@ -60,13 +60,17 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           emit(state.copyWith(isLoading: false));
         },
         (data) {
-          emit(state.copyWith(
-            isLoading: false,
-            currentUser: UserModel.fromJson(data),
-          ));
+          logger.info('User data loaded: ${data.toString()}');
+          emit(
+            state.copyWith(
+              isLoading: false,
+              currentUser: UserModel.fromJson(data),
+            ),
+          );
         },
       );
     } catch (e) {
+      logger.error(e);
       emit(state.copyWith(isLoading: false));
     }
   }
@@ -144,8 +148,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
     Future.delayed(
       Duration.zero,
-      () {
-        _userRepository.syncNotifications(notification);
+      () async {
+        await _userRepository.syncNotifications(notification);
       },
     );
 

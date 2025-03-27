@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:felicitup_app/helpers/date_converter.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'push_message_model.freezed.dart';
@@ -45,13 +47,13 @@ PushMessageType pushMessageTypeToEnum(String value) {
   }
 }
 
-@Freezed(makeCollectionsUnmodifiable: false)
+@freezed
 class PushMessageModel with _$PushMessageModel {
   const factory PushMessageModel({
-    required String messageId,
-    required String title,
-    required String body,
-    required DateTime sentDate,
+    String? messageId,
+    String? title,
+    String? body,
+    @TimestampConverter() DateTime? sentDate,
     DataMessageModel? data,
   }) = _PushMessageModel;
 

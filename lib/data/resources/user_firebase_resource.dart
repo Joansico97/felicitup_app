@@ -578,6 +578,59 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> deleteNotification(String notificationId) async {
+    final uid = _firebaseAuth.currentUser?.uid;
+
+    if (uid == null) {
+      return Left(ApiException(401, "Usuario no autenticado"));
+    }
+
+    final userDocRef = _firestore.collection(AppConstants.usersCollection).doc(uid);
+
+    return FirebaseFirestore.instance.runTransaction<Either<ApiException, void>>((transaction) async {
+      try {
+        final userDoc = await transaction.get(userDocRef);
+
+        if (!userDoc.exists) {
+          return Left(ApiException(404, "Usuario no encontrado"));
+        }
+
+        final userData = userDoc.data();
+        if (userData == null) {
+          return Left(ApiException(404, "Error al obtener la información del usuario"));
+        }
+        final notificationsList = userData['notifications'] as List<dynamic>? ?? [];
+
+        final indexToRemove = notificationsList.indexWhere((item) {
+          if (item is String) {
+            return item == notificationId;
+          } else if (item is Map) {
+            return item['messageId'] == notificationId;
+          }
+          return false;
+        });
+
+        if (indexToRemove == -1) {
+          return Left(ApiException(404, "Elemento no encontrado en la lista"));
+        }
+
+        final updatedList = List<dynamic>.from(notificationsList);
+        final itemToRemove = updatedList.removeAt(indexToRemove);
+
+        transaction.update(userDocRef, {
+          'notifications': FieldValue.arrayRemove([itemToRemove]),
+        });
+
+        return Right(null);
+      } on FirebaseException catch (e) {
+        return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      } catch (e) {
+        return Left(ApiException(500, "Error desconocido: ${e.toString()}"));
+      }
+    });
+  }
+
+  @override
   Stream<Either<ApiException, List<GiftcarModel>>> getGiftcardListStream() {
     try {
       final uid = _firebaseAuth.currentUser?.uid;

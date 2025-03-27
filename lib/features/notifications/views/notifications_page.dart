@@ -4,6 +4,7 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/notifications/bloc/notifications_bloc.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -81,19 +82,43 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
                   return Expanded(
                     child: ListView.builder(
-                        itemCount: notifications.length,
-                        itemBuilder: (_, index) {
-                          return ListTile(
-                            title: Text(
-                              notifications[index].title,
-                              style: context.styles.smallText,
-                            ),
-                            subtitle: Text(
-                              notifications[index].body,
-                              style: context.styles.paragraph,
-                            ),
-                          );
-                        }),
+                      itemCount: notifications.length,
+                      itemBuilder: (_, index) {
+                        return ListTile(
+                          title: Text(
+                            notifications[index].title ?? '',
+                            style: context.styles.smallText,
+                          ),
+                          subtitle: Text(
+                            notifications[index].body ?? '',
+                            style: context.styles.paragraph,
+                          ),
+                          trailing: Text(
+                            'id: ${notifications[index].messageId ?? ''}',
+                            style: context.styles.smallText,
+                          ),
+                          onTap: () {
+                            if (notifications[index].data != null) {
+                              redirectHelper(
+                                data: notifications[index].data!.toJson(),
+                              );
+                            }
+                          },
+                          onLongPress: () {
+                            showConfirmModal(
+                              title: 'Deseas eliminar la notificación?',
+                              onAccept: () async {
+                                context.read<NotificationsBloc>().add(
+                                      NotificationsEvent.deleteNotification(
+                                        notifications[index].messageId!,
+                                      ),
+                                    );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
                   );
                 },
               )

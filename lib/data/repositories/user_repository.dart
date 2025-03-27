@@ -42,6 +42,7 @@ abstract class UserRepository {
   Future<Either<ApiException, void>> deleteGiftItem(String id);
   Future<Either<ApiException, void>> setFCMToken(String token);
   Future<Either<ApiException, void>> syncNotifications(PushMessageModel notification);
+  Future<Either<ApiException, void>> deleteNotification(String notificationId);
   Future<Either<ApiException, void>> setInitialUserInfo(UserModel user);
   Future<Either<ApiException, void>> setUserInfoRemaining(
     String name,

@@ -19,6 +19,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
         getNotifications: (_) => _getNotifications(emit),
+        deleteNotification: (event) => _deleteNotification(emit, event.notificationId),
       ),
     );
   }
@@ -47,6 +48,25 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
               notifications: user.notifications!,
             ),
           );
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _deleteNotification(Emitter<NotificationsState> emit, String notificationId) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final response = await _userRepository.deleteNotification(notificationId);
+
+      response.fold(
+        (l) {
+          emit(state.copyWith(isLoading: false));
+        },
+        (r) {
+          emit(state.copyWith(isLoading: false));
+          add(NotificationsEvent.getNotifications());
         },
       );
     } catch (e) {
