@@ -61,29 +61,37 @@ class InfoFelicitupPage extends StatelessWidget {
                                       );
                                   context.pop();
                                 },
-                                body: Column(
-                                  children: [
-                                    ...List.generate(
-                                      friendList.length,
-                                      (index) => GestureDetector(
-                                        onTap: () {
-                                          final owner = OwnerModel(
-                                            id: friendList[index].id ?? '',
-                                            name: friendList[index].fullName ?? '',
-                                            date: friendList[index].birthDate ?? DateTime.now(),
-                                            userImg: friendList[index].userImg ?? '',
-                                          );
-                                          context
-                                              .read<InfoFelicitupBloc>()
-                                              .add(InfoFelicitupEvent.addToOwnerList(owner));
-                                        },
-                                        child: ContactCardRow(
-                                          contact: friendList[index],
-                                          isSelected: state.ownersList.any((owner) => owner.id == friendList[index].id),
+                                body: BlocProvider.value(
+                                  value: context.read<InfoFelicitupBloc>(),
+                                  child: Column(
+                                    children: [
+                                      ...List.generate(
+                                        friendList.length,
+                                        (index) => GestureDetector(
+                                          onTap: () {
+                                            final owner = OwnerModel(
+                                              id: friendList[index].id ?? '',
+                                              name: friendList[index].fullName ?? '',
+                                              date: friendList[index].birthDate ?? DateTime.now(),
+                                              userImg: friendList[index].userImg ?? '',
+                                            );
+                                            context
+                                                .read<InfoFelicitupBloc>()
+                                                .add(InfoFelicitupEvent.addToOwnerList(owner));
+                                          },
+                                          child: BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
+                                            builder: (_, state) {
+                                              return ContactCardRow(
+                                                contact: friendList[index],
+                                                isSelected:
+                                                    state.ownersList.any((owner) => owner.id == friendList[index].id),
+                                              );
+                                            },
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               );
                             },

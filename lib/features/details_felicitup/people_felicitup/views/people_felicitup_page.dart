@@ -73,38 +73,45 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                       .add(PeopleFelicitupEvent.updateParticipantsList(felicitup.id));
                                   context.pop();
                                 },
-                                body: Column(
-                                  children: [
-                                    ...List.generate(
-                                      friendList.length,
-                                      (index) => GestureDetector(
-                                        onTap: () {
-                                          isSelected[index] = !isSelected[index];
-                                          final participant = InvitedModel(
-                                            id: friendList[index].id ?? '',
-                                            name: friendList[index].fullName ?? '',
-                                            userImage: friendList[index].userImg ?? '',
-                                            assistanceStatus: enumToStringAssistance(AssistanceStatus.pending),
-                                            paid: enumToStringPayment(PaymentStatus.pending),
-                                            videoData: VideoDataModel(
-                                              videoUrl: '',
-                                              videoThumbnail: '',
-                                            ),
-                                            idInformation: '',
-                                          );
-                                          context
-                                              .read<PeopleFelicitupBloc>()
-                                              .add(PeopleFelicitupEvent.addParticipant(participant));
-                                        },
-                                        child: ContactCardRow(
-                                          contact: friendList[index],
-                                          isSelected: state.invitedContacts.any(
-                                            (user) => user.id == friendList[index].id,
+                                body: BlocProvider.value(
+                                  value: context.read<PeopleFelicitupBloc>(),
+                                  child: Column(
+                                    children: [
+                                      ...List.generate(
+                                        friendList.length,
+                                        (index) => GestureDetector(
+                                          onTap: () {
+                                            isSelected[index] = !isSelected[index];
+                                            final participant = InvitedModel(
+                                              id: friendList[index].id ?? '',
+                                              name: friendList[index].fullName ?? '',
+                                              userImage: friendList[index].userImg ?? '',
+                                              assistanceStatus: enumToStringAssistance(AssistanceStatus.pending),
+                                              paid: enumToStringPayment(PaymentStatus.pending),
+                                              videoData: VideoDataModel(
+                                                videoUrl: '',
+                                                videoThumbnail: '',
+                                              ),
+                                              idInformation: '',
+                                            );
+                                            context
+                                                .read<PeopleFelicitupBloc>()
+                                                .add(PeopleFelicitupEvent.addParticipant(participant));
+                                          },
+                                          child: BlocBuilder<PeopleFelicitupBloc, PeopleFelicitupState>(
+                                            builder: (_, state) {
+                                              return ContactCardRow(
+                                                contact: friendList[index],
+                                                isSelected: state.invitedContacts.any(
+                                                  (user) => user.id == friendList[index].id,
+                                                ),
+                                              );
+                                            },
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               );
                             },
