@@ -50,11 +50,11 @@ PushMessageType pushMessageTypeToEnum(String value) {
 @freezed
 class PushMessageModel with _$PushMessageModel {
   const factory PushMessageModel({
-    required String messageId,
-    required String title,
-    required String body,
-    @TimestampConverter() required DateTime sentDate,
-    required DataMessageModel data,
+    String? messageId,
+    String? title,
+    String? body,
+    @TimestampConverter() DateTime? sentDate,
+    DataMessageModel? data,
   }) = _PushMessageModel;
 
   factory PushMessageModel.fromJson(Map<String, dynamic> json) => _$PushMessageModelFromJson(json);

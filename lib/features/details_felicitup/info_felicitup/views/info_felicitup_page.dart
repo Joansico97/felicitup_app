@@ -52,14 +52,16 @@ class InfoFelicitupPage extends StatelessWidget {
                               commoBottomModal(
                                 context: rootNavigatorKey.currentContext!,
                                 hasBottomButton: true,
-                                onTap: () {
+                                onTap: () async {
                                   context.read<InfoFelicitupBloc>().add(
                                         InfoFelicitupEvent.updateFelicitupOwners(felicitup.id),
                                       );
                                   context.read<DetailsFelicitupDashboardBloc>().add(
                                         DetailsFelicitupDashboardEvent.getFelicitupInfo(felicitup.id),
                                       );
-                                  context.pop();
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    context.pop();
+                                  });
                                 },
                                 body: BlocProvider.value(
                                   value: context.read<InfoFelicitupBloc>(),

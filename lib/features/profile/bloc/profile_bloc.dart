@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
+import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -15,6 +18,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       (events, emit) => events.map(
         changeLoading: (event) => _changeLoading(emit),
         updateUserImageFromUrl: (event) => _updateUserImageFromUrl(emit, event.url),
+        updateUserInfo: (event) => _updateUserInfo(emit, event.user),
+        updateUserImageFromFile: (event) => _updateUserImageFromFile(emit, event.file),
       ),
     );
   }
@@ -30,6 +35,32 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       final response = await _userRepository.updateUserImageFromUrl(url);
       response.fold(
+        (l) => emit(state.copyWith(isLoading: false)),
+        (r) => emit(state.copyWith(isLoading: false, status: ProfileStatus.success)),
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _updateUserImageFromFile(Emitter<ProfileState> emit, File file) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final response = await _userRepository.updateUserImageFromFile(file);
+      return response.fold(
+        (l) => emit(state.copyWith(isLoading: false)),
+        (r) => emit(state.copyWith(isLoading: false, status: ProfileStatus.success)),
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _updateUserInfo(Emitter<ProfileState> emit, UserModel user) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final response = await _userRepository.updateUserInfo(user);
+      return response.fold(
         (l) => emit(state.copyWith(isLoading: false)),
         (r) => emit(state.copyWith(isLoading: false, status: ProfileStatus.success)),
       );

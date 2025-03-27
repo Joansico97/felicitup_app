@@ -28,11 +28,11 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
         changeLoading: (_) => _changeLoading(emit),
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
         informParticipation: (event) => _informParticipation(
-          emit,
-          event.felicitupId,
-          event.newStatus,
-          event.name,
-          event.felicitupOwnerId,
+          emit: emit,
+          felicitupId: event.felicitupId,
+          newStatus: event.newStatus,
+          name: event.name,
+          felicitupOwnerId: event.felicitupOwnerId,
         ),
         sendNotification: (event) => _sendNotification(
           event.userId,
@@ -61,13 +61,13 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
     emit(state.copyWith(isLoading: !state.isLoading));
   }
 
-  _informParticipation(
-    Emitter<PeopleFelicitupState> emit,
-    String felicitupId,
-    String felicitupOwnerId,
-    String newStatus,
-    String name,
-  ) async {
+  _informParticipation({
+    required Emitter<PeopleFelicitupState> emit,
+    required String felicitupId,
+    required String felicitupOwnerId,
+    required String newStatus,
+    required String name,
+  }) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _felicitupRepository.setParticipation(felicitupId, newStatus);

@@ -171,20 +171,20 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                       }
                                     : () async => context.read<PeopleFelicitupBloc>().add(
                                           PeopleFelicitupEvent.informParticipation(
-                                            felicitup.id,
-                                            enumToStringAssistance(AssistanceStatus.accepted),
-                                            currentUser.firstName ?? '',
-                                            felicitup.createdBy,
+                                            felicitupId: felicitup.id,
+                                            felicitupOwnerId: felicitup.createdBy,
+                                            newStatus: enumToStringAssistance(AssistanceStatus.accepted),
+                                            name: currentUser.firstName ?? '',
                                           ),
                                         ),
                                 label2: 'Denegar',
                                 onAction2: () async {
                                   context.read<PeopleFelicitupBloc>().add(
                                         PeopleFelicitupEvent.informParticipation(
-                                          felicitup.id,
-                                          enumToStringAssistance(AssistanceStatus.rejected),
-                                          currentUser.firstName ?? '',
-                                          felicitup.createdBy,
+                                          felicitupId: felicitup.id,
+                                          felicitupOwnerId: felicitup.createdBy,
+                                          newStatus: enumToStringAssistance(AssistanceStatus.rejected),
+                                          name: currentUser.firstName ?? '',
                                         ),
                                       );
                                   context.go(RouterPaths.felicitupsDashboard);

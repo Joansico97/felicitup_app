@@ -254,6 +254,38 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> updateUserInfo(UserModel user) async {
+    try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+      final userDocRef = _firestore.collection(AppConstants.usersCollection).doc(uid);
+
+      await _firestore.runTransaction((transaction) async {
+        final userDoc = await transaction.get(userDocRef);
+
+        if (!userDoc.exists) {
+          throw ApiException(404, 'User not found');
+        }
+
+        transaction.update(userDocRef, {
+          'name': user.firstName,
+          'lastName': user.lastName,
+          'phone': user.phone,
+          'isoCode': user.isoCode,
+          'fullName': '${user.firstName} ${user.lastName}',
+        });
+      });
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Future<Either<ApiException, void>> updateContacts(
     List<Map<String, dynamic>> contacts,
     List<String> phones,
@@ -512,7 +544,7 @@ class UserFirebaseResource implements UserRepository {
         'title': notification.title,
         'body': notification.body,
         'sentDate': notification.sentDate,
-        'data': notification.data.toJson(),
+        'data': notification.data?.toJson(),
       };
       await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
         'notifications': FieldValue.arrayUnion([notificationMap]),

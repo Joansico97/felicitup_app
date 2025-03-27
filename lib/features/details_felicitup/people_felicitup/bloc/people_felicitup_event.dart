@@ -9,12 +9,12 @@ class PeopleFelicitupEvent with _$PeopleFelicitupEvent {
     String name,
     String felicitupId,
   ) = _sendNotification;
-  const factory PeopleFelicitupEvent.informParticipation(
-    String felicitupId,
-    String felicitupOwnerId,
-    String newStatus,
-    String name,
-  ) = _informParticipation;
+  const factory PeopleFelicitupEvent.informParticipation({
+    required String felicitupId,
+    required String felicitupOwnerId,
+    required String newStatus,
+    required String name,
+  }) = _informParticipation;
   const factory PeopleFelicitupEvent.addParticipant(InvitedModel participant) = _addParticipant;
   const factory PeopleFelicitupEvent.updateParticipantsList(String felicitupId) = _updateParticipantsList;
   const factory PeopleFelicitupEvent.deleteParticipant(String felicitupId, String userId) = _deleteParticipant;
