@@ -106,7 +106,7 @@ void commoBottomModal({
                       height: context.sp(50),
                       width: context.sp(350),
                       child: PrimaryButton(
-                        onTap: onTap!,
+                        onTap: onTap ?? () {},
                         label: 'Aceptar',
                         isActive: true,
                       ),
