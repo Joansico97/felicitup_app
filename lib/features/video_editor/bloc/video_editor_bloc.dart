@@ -51,13 +51,17 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     emit(state.copyWith(isLoading: true));
     try {
       final result = await _userRepository.uploadVideoFile(file, 'videos');
-      result.fold(
+      return result.fold(
         (error) => logger.error('Error uploading video: $error'),
         (url) {
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
-          add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
-          add(VideoEditorEvent.setUrlVideo(url));
-          emit(state.copyWith(isLoading: false, currentSelectedVideo: url));
+          // add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
+          emit(
+            state.copyWith(
+              isLoading: false,
+              currentSelectedVideo: url,
+            ),
+          );
         },
       );
     } catch (e) {

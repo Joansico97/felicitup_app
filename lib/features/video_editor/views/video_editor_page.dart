@@ -138,12 +138,16 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   Widget build(BuildContext context) {
     return BlocListener<VideoEditorBloc, VideoEditorState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading || previous.currentSelectedVideo != current.currentSelectedVideo,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
         } else {
           await stopLoadingModal();
+        }
+        if (state.currentSelectedVideo.isNotEmpty) {
+          _initializeVideoPlayerFromUrl(state.currentSelectedVideo);
         }
       },
       child: PopScope(
@@ -168,8 +172,6 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                         context
                             .read<VideoEditorBloc>()
                             .add(VideoEditorEvent.uploadUserVideo(widget.felicitup.id, response));
-                        setState(() {});
-                        _initializeVideoPlayerFromUrl(state.currentSelectedVideo);
                       }
                     },
                     label: 'Grabar Vídeo',
