@@ -55,7 +55,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         (error) => logger.error('Error uploading video: $error'),
         (url) {
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
-          // add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
+          add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
           emit(
             state.copyWith(
               isLoading: false,
