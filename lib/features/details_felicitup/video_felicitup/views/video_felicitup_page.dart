@@ -99,7 +99,10 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                               ? () {
                                   context.go(
                                     RouterPaths.videoEditor,
-                                    extra: felicitup,
+                                    extra: {
+                                      'felicitup': felicitup,
+                                      'videoUrl': felicitup.finalVideoUrl,
+                                    },
                                   );
                                 }
                               : null,
