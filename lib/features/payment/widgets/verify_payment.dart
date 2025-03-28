@@ -239,7 +239,7 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                               );
                           context.read<PaymentBloc>().add(
                                 PaymentEvent.sendNotification(
-                                  widget.felicitup.createdBy,
+                                  state.userInvitedInformationModel?.id ?? '',
                                   'Informe de pago',
                                   'Pago confirmado ',
                                   '',

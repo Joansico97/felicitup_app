@@ -66,7 +66,6 @@ void _initBlocsInjection() {
         felicitupRepository: di(),
         userRepository: di(),
         chatRepository: di(),
-        firebaseFunctions: di(),
       ),
     )
     ..registerFactory(

@@ -10,6 +10,7 @@ class MessageFelicitupEvent with _$MessageFelicitupEvent {
     String userId,
     String userName,
   ) = _sendMessage;
+  const factory MessageFelicitupEvent.setCurrentChatId(String chatId) = _setCurrentChatId;
   const factory MessageFelicitupEvent.startListening(String chatId) = _startListening;
   const factory MessageFelicitupEvent.recivedData(List<ChatMessageModel> listMessages) = _recivedData;
 }

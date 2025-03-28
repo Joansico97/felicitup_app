@@ -15,10 +15,12 @@ class DetailsFelicitupDashboardPage extends StatefulWidget {
     super.key,
     required this.childView,
     required this.fromNotification,
+    this.chatId,
   });
 
   final Widget childView;
   final bool fromNotification;
+  final String? chatId;
 
   @override
   State<DetailsFelicitupDashboardPage> createState() => _DetailsFelicitupDashboardPageState();
@@ -181,7 +183,10 @@ class _DetailsFelicitupDashboardPageState extends State<DetailsFelicitupDashboar
                                               .add(DetailsFelicitupDashboardEvent.asignCurrentChat(''));
                                           break;
                                         case 1:
-                                          detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.messageFelicitup);
+                                          detailsFelicitupNavigatorKey.currentContext!
+                                              .go(RouterPaths.messageFelicitup, extra: {
+                                            'chatId': '',
+                                          });
                                           context
                                               .read<DetailsFelicitupDashboardBloc>()
                                               .add(DetailsFelicitupDashboardEvent.asignCurrentChat(felicitup.chatId));

@@ -11,7 +11,12 @@ import 'package:go_router/go_router.dart';
 import '../../../../data/models/models.dart';
 
 class MessageFelicitupPage extends StatefulWidget {
-  const MessageFelicitupPage({super.key});
+  const MessageFelicitupPage({
+    super.key,
+    this.chatId,
+  });
+
+  final String? chatId;
 
   @override
   State<MessageFelicitupPage> createState() => _MessageFelicitupPageState();
@@ -30,7 +35,6 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage> with Widget
   void assignid() {
     if (context.mounted) {
       final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-      logger.debug('Assigning chat id: ${felicitup?.chatId}');
       context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.asignCurrentChat(felicitup?.chatId ?? ''));
     }
   }
@@ -63,7 +67,17 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage> with Widget
     WidgetsBinding.instance.addObserver(this);
     assignid();
     final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-    context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.startListening(felicitup?.chatId ?? ''));
+    final currentChatId = context.read<MessageFelicitupBloc>().state.currentChatId;
+    if (widget.chatId != null) {
+      if (widget.chatId != currentChatId) {
+        context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.setCurrentChatId(widget.chatId ?? ''));
+        context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.startListening(widget.chatId ?? ''));
+      } else {
+        context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.startListening(felicitup?.chatId ?? ''));
+      }
+    } else {
+      context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.startListening(felicitup?.chatId ?? ''));
+    }
   }
 
   @override
@@ -76,12 +90,10 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage> with Widget
 
   void _scrollToBottom() {
     if (scrollController.hasClients) {
-      // Verifica si el controlador está adjunto.
-      //Con esto le decimos que la animacion sea hasta el final
       scrollController.animateTo(
-        scrollController.position.maxScrollExtent, // El final de la lista.
-        duration: Duration(milliseconds: 300), // Duración de la animación.
-        curve: Curves.easeOut, // Curva de animación.
+        scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
       );
     }
   }

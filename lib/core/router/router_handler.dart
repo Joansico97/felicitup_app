@@ -185,6 +185,7 @@ Page<Widget> _detailsFelicitupDashboardHandler(
         BlocProvider(create: (_) => injection.di<BoteFelicitupBloc>()),
       ],
       child: DetailsFelicitupDashboardPage(
+        key: ValueKey('DetailsFelicitupDashboardPage${data?['chatId']}'),
         childView: child,
         fromNotification: data?['fromNotification'] ?? false,
       ),
@@ -208,7 +209,11 @@ Widget _infoFelicitupHandler(BuildContext context, GoRouterState state) {
 }
 
 Widget _messageFelicitupHandler(BuildContext context, GoRouterState state) {
-  return MessageFelicitupPage();
+  final data = state.extra as Map<String, dynamic>;
+  return MessageFelicitupPage(
+    key: ValueKey('MessageFelicitupPage_${data['chatId']}'),
+    chatId: data['chatId'] ?? '',
+  );
 }
 
 Widget _peopleFelicitupHandler(BuildContext context, GoRouterState state) {

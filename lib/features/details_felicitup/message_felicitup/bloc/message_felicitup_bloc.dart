@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
@@ -18,11 +17,9 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
     required FelicitupRepository felicitupRepository,
     required UserRepository userRepository,
     required ChatRepository chatRepository,
-    required FirebaseFunctions firebaseFunctions,
   })  : _felicitupRepository = felicitupRepository,
         _userRepository = userRepository,
         _chatRepository = chatRepository,
-        // _firebaseFunctions = firebaseFunctions,
         super(MessageFelicitupState.initial()) {
     on<MessageFelicitupEvent>(
       (events, emit) => events.map(
@@ -37,6 +34,7 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
         ),
         startListening: (event) => _startListening(emit, event.chatId),
         recivedData: (event) => _recivedData(emit, event.listMessages),
+        setCurrentChatId: (event) => _setCurrentChatId(emit, event.chatId),
       ),
     );
   }
@@ -45,7 +43,6 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
   final FelicitupRepository _felicitupRepository;
   final UserRepository _userRepository;
   final ChatRepository _chatRepository;
-  // final FirebaseFunctions _firebaseFunctions;
 
   _loadMessages(Emitter<MessageFelicitupState> emit) {}
 
@@ -55,6 +52,10 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
     } catch (e) {
       logger.error('Error asignando el chat actual, $e');
     }
+  }
+
+  _setCurrentChatId(Emitter<MessageFelicitupState> emit, String chatId) async {
+    emit(state.copyWith(currentChatId: chatId));
   }
 
   _sendMessage(
