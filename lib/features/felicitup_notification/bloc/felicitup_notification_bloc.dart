@@ -145,23 +145,23 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
               ),
             );
           } else {
+            await _userRepository.sendNotification(
+              userId: state.currentFelicitup?.createdBy ?? '',
+              title: 'Información de confirmación de asistencia',
+              message: '$userNmae ha informado que participará en la felicitup',
+              currentChat: '',
+              data: DataMessageModel(
+                type: enumToPushMessageType(PushMessageType.participation),
+                felicitupId: felicitupId,
+                chatId: '',
+                name: '',
+              ),
+            );
             emit(state.copyWith(isLoading: false));
           }
         },
       );
     } catch (e) {
-      await _userRepository.sendNotification(
-        userId: state.currentFelicitup?.createdBy ?? '',
-        title: 'Aviso de participación',
-        message: '$userNmae ha informado que si participará en la felicitup',
-        currentChat: '',
-        data: DataMessageModel(
-          type: enumToPushMessageType(PushMessageType.participation),
-          felicitupId: felicitupId,
-          chatId: '',
-          name: '',
-        ),
-      );
       emit(state.copyWith(isLoading: false));
     }
   }

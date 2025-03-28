@@ -100,8 +100,8 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                   context.go(
                                     RouterPaths.videoEditor,
                                     extra: {
-                                      'felicitup': felicitup,
-                                      'videoUrl': felicitup.finalVideoUrl,
+                                      'felicitupId': felicitup.id,
+                                      'videoUrl': felicitup.finalVideoUrl ?? '',
                                     },
                                   );
                                 }
@@ -155,8 +155,8 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                     context.go(
                                       RouterPaths.videoEditor,
                                       extra: {
-                                        'felicitup': felicitup,
-                                        'videoUrl': invitedUsers?[index].videoData?.videoUrl,
+                                        'felicitupId': felicitup.id,
+                                        'videoUrl': invitedUsers?[index].videoData?.videoUrl ?? '',
                                       },
                                     );
                                   },

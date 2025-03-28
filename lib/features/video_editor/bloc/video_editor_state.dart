@@ -6,6 +6,7 @@ class VideoEditorState with _$VideoEditorState {
     required bool isLoading,
     required bool isFullScreen,
     required String currentSelectedVideo,
+    FelicitupModel? currentFelicitup,
   }) = _VideoEditorState;
 
   factory VideoEditorState.initial() => VideoEditorState(

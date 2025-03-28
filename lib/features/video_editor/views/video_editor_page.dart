@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
-import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/video_editor/bloc/video_editor_bloc.dart';
 import 'package:felicitup_app/features/video_editor/widgets/widgets.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
@@ -17,11 +16,11 @@ import 'package:video_player/video_player.dart';
 class VideoEditorPage extends StatefulWidget {
   const VideoEditorPage({
     super.key,
-    required this.felicitup,
+    required this.felicitupId,
     required this.videoUrl,
   });
 
-  final FelicitupModel felicitup;
+  final String felicitupId;
   final String videoUrl;
 
   @override
@@ -29,8 +28,7 @@ class VideoEditorPage extends StatefulWidget {
 }
 
 class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingObserver, TickerProviderStateMixin {
-  File? selectedVideo;
-  late VideoPlayerController? _controller;
+  VideoPlayerController? _controller;
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
   bool _isPlaying = false;
@@ -40,24 +38,17 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
-    // if (widget.felicitup.finalVideoUrl != null) {
-    //   WidgetsBinding.instance.addPostFrameCallback((_) {
-    //     if (context.mounted) {
-    //       _initializeVideoPlayerFromUrl(widget.felicitup.finalVideoUrl!);
-    //       context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(widget.felicitup.finalVideoUrl!));
-    //     }
-    //   });
-    // }
+    context.read<VideoEditorBloc>().add(VideoEditorEvent.getFelicitupInfo(widget.felicitupId));
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    _startHideControlsTimer();
     if (widget.videoUrl.isNotEmpty) {
       context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(widget.videoUrl));
       _initializeVideoPlayerFromUrl(widget.videoUrl);
     } else {
       context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
     }
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
-    _startHideControlsTimer();
     super.initState();
   }
 
@@ -75,7 +66,6 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    selectedVideo?.delete();
     _controller?.dispose();
     super.dispose();
   }
@@ -138,16 +128,12 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   Widget build(BuildContext context) {
     return BlocListener<VideoEditorBloc, VideoEditorState>(
-      listenWhen: (previous, current) =>
-          previous.isLoading != current.isLoading || previous.currentSelectedVideo != current.currentSelectedVideo,
+      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
         } else {
           await stopLoadingModal();
-        }
-        if (state.currentSelectedVideo.isNotEmpty) {
-          _initializeVideoPlayerFromUrl(state.currentSelectedVideo);
         }
       },
       child: PopScope(
@@ -171,7 +157,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                       if (response != null) {
                         context
                             .read<VideoEditorBloc>()
-                            .add(VideoEditorEvent.uploadUserVideo(widget.felicitup.id, response));
+                            .add(VideoEditorEvent.uploadUserVideo(widget.felicitupId, response));
                       }
                     },
                     label: 'Grabar Vídeo',
@@ -185,53 +171,60 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
           body: SafeArea(
             child: Column(
               children: [
-                CollapsedHeader(
-                  title: '${widget.felicitup.reason} de ${widget.felicitup.owner[0].name.split(' ')[0]}',
-                  onPressed: () async {
-                    if (context.mounted) {
-                      context.go(
-                        RouterPaths.videoFelicitup,
-                        extra: {
-                          'felicitupId': widget.felicitup.id,
-                          'fromNotification': false,
-                        },
-                      );
-                    }
+                BlocBuilder<VideoEditorBloc, VideoEditorState>(
+                  builder: (_, state) {
+                    return CollapsedHeader(
+                      title:
+                          '${state.currentFelicitup?.reason} de ${state.currentFelicitup?.owner[0].name.split(' ')[0]}',
+                      onPressed: () async {
+                        if (context.mounted) {
+                          context.go(
+                            RouterPaths.videoFelicitup,
+                            extra: {
+                              'felicitupId': widget.felicitupId,
+                              'fromNotification': false,
+                            },
+                          );
+                        }
+                      },
+                    );
                   },
                 ),
                 SizedBox(height: context.sp(12)),
-                BlocBuilder<VideoEditorBloc, VideoEditorState>(
-                  builder: (_, state) {
-                    return Expanded(
-                      child: state.currentSelectedVideo.isEmpty
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  height: context.sp(80),
-                                  width: context.sp(80),
-                                  margin: EdgeInsets.only(bottom: context.sp(12)),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF313131),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Icon(
-                                    Icons.video_call_outlined,
-                                    size: context.sp(40),
-                                  ),
-                                ),
-                                Text(
-                                  'Añadir video',
-                                  style: context.styles.smallText.copyWith(
-                                    color: const Color(0xFF7A7A7A),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : _buildVideoPlayer(),
-                    );
-                  },
+                Expanded(
+                  child: BlocBuilder<VideoEditorBloc, VideoEditorState>(
+                    builder: (_, state) {
+                      if (state.currentSelectedVideo.isNotEmpty) {
+                        return _buildVideoPlayer();
+                      } else {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              height: context.sp(80),
+                              width: context.sp(80),
+                              margin: EdgeInsets.only(bottom: context.sp(12)),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF313131),
+                                shape: BoxShape.circle,
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.video_call_outlined,
+                                size: context.sp(40),
+                              ),
+                            ),
+                            Text(
+                              'Añadir video',
+                              style: context.styles.smallText.copyWith(
+                                color: const Color(0xFF7A7A7A),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                    },
+                  ),
                 ),
                 SizedBox(height: context.sp(12)),
                 SizedBox(
@@ -276,23 +269,29 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                         child: ListView.builder(
                           physics: const BouncingScrollPhysics(),
                           scrollDirection: Axis.horizontal,
-                          itemCount: widget.felicitup.invitedUserDetails.length,
+                          itemCount: state.currentFelicitup?.invitedUserDetails.length,
                           itemBuilder: (_, index) {
-                            final data = widget.felicitup.invitedUserDetails[index];
+                            final data = state.currentFelicitup?.invitedUserDetails[index];
+                            final videoData = data?.videoData;
+
                             return VideoSpace(
-                              label: data.videoData!.videoUrl!.isNotEmpty ? 'Espacio ya tomado' : '${index + 1}',
-                              screenshotImage: data.videoData!.videoThumbnail,
-                              name: data.name,
-                              id: data.id ?? '',
-                              hasVideo: data.videoData!.videoUrl!.isNotEmpty,
+                              label: (data?.videoData?.videoUrl?.isNotEmpty ?? false)
+                                  ? 'Espacio ya tomado'
+                                  : '${index + 1}',
+                              screenshotImage: data?.videoData?.videoThumbnail ?? '',
+                              name: data?.name ?? '',
+                              id: data?.id ?? '',
+                              hasVideo: data?.videoData?.videoUrl?.isNotEmpty ?? false,
                               setVideo: () {
-                                if (data.videoData!.videoUrl!.isEmpty) {
-                                  context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
+                                final url = videoData?.videoUrl;
+                                if (url != null && url.isNotEmpty) {
+                                  context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(url));
+                                  if (_controller != null && _controller!.value.isInitialized) {
+                                    _controller?.dispose();
+                                  }
+                                  _initializeVideoPlayerFromUrl(url);
                                 } else {
-                                  context
-                                      .read<VideoEditorBloc>()
-                                      .add(VideoEditorEvent.setUrlVideo(data.videoData!.videoUrl!));
-                                  _initializeVideoPlayerFromUrl(data.videoData!.videoUrl!);
+                                  context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
                                 }
                               },
                             );

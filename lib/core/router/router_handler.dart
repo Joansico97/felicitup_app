@@ -260,7 +260,7 @@ Page<Widget> _videoEditorHandler(BuildContext context, GoRouterState state) {
     child: BlocProvider(
       create: (_) => injection.di<VideoEditorBloc>(),
       child: VideoEditorPage(
-        felicitup: data['felicitup'],
+        felicitupId: data['felicitupId'],
         videoUrl: data['videoUrl'],
       ),
     ),

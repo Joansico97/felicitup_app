@@ -35,10 +35,6 @@ class FelicitupNotificationPage extends StatelessWidget {
           return Scaffold(
             body: SafeArea(
               child: SingleChildScrollView(
-                // padding: EdgeInsets.symmetric(
-                //   horizontal: context.sp(24),
-                //   vertical: context.sp(12),
-                // ),
                 child: felicitup != null
                     ? Column(
                         children: [
@@ -230,6 +226,7 @@ class FelicitupNotificationPage extends StatelessWidget {
                                         extra: {
                                           'felicitupId': felicitup.id,
                                           'fromNotification': false,
+                                          'chatId': felicitup.chatId,
                                         },
                                       );
                                     },

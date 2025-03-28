@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
+import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,6 +27,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
       (events, emit) => events.map(
         changeLoading: (event) => _changeLoading(emit),
         setUrlVideo: (event) => _setUrlVideo(emit, event.url),
+        getFelicitupInfo: (event) => _getFelicitupInfo(emit, event.felicitupId),
         uploadUserVideo: (event) => _uploadUserVideo(emit, event.felicitupId, event.file),
         updateParticipantInfo: (event) => _updateParticipantInfo(event.felicitupId, event.url),
         generateThumbnail: (event) => _generateThumbnail(event.filePath),
@@ -47,6 +49,26 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     emit(state.copyWith(currentSelectedVideo: url));
   }
 
+  _getFelicitupInfo(Emitter<VideoEditorState> emit, String felicitupId) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final result = await _felicitupRepository.getFelicitupById(felicitupId);
+      result.fold(
+        (error) => logger.error('Error fetching Felicitup info: $error'),
+        (felicitup) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              currentFelicitup: felicitup,
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
   _uploadUserVideo(Emitter<VideoEditorState> emit, String felicitupId, File file) async {
     emit(state.copyWith(isLoading: true));
     try {
@@ -55,7 +77,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         (error) => logger.error('Error uploading video: $error'),
         (url) {
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
-          add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
+          // add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
           emit(
             state.copyWith(
               isLoading: false,
