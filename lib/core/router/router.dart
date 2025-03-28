@@ -14,9 +14,6 @@ final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> detailsFelicitupNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> detailsPastFelicitupNavigatorKey = GlobalKey<NavigatorState>();
 
-// String? _previousRoute;
-// bool _isRefreshing = false;
-
 class CustomRouter {
   static final _router = GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -26,30 +23,12 @@ class CustomRouter {
         if (FirebaseAuth.instance.currentUser == null) {
           return RouterPaths.init;
         } else {
-          // final newRoute = state.uri.toString();
-          // if (_isRefreshing) {
-          //   _isRefreshing = false;
-          //   return newRoute;
-          // }
-          // if (_previousRoute == newRoute) {
-          //   _isRefreshing = true;
-          //   WidgetsBinding.instance.addPostFrameCallback((_) {
-          //     CustomRouter().router.go(newRoute, extra: state.extra);
-          //   });
-          //   return '/refresh';
-          // }
-          // _previousRoute = newRoute;
           return null;
         }
       }
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/refresh',
-        builder: (context, state) => const Scaffold(),
-        parentNavigatorKey: rootNavigatorKey,
-      ),
       GoRoute(
         path: RouterPaths.init,
         pageBuilder: _initHandler,

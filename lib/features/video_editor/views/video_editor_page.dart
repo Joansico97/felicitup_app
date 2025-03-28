@@ -18,9 +18,11 @@ class VideoEditorPage extends StatefulWidget {
   const VideoEditorPage({
     super.key,
     required this.felicitup,
+    required this.videoUrl,
   });
 
   final FelicitupModel felicitup;
+  final String videoUrl;
 
   @override
   State<VideoEditorPage> createState() => _VideoEditorPageState();
@@ -38,13 +40,19 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
-    if (widget.felicitup.finalVideoUrl != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          _initializeVideoPlayerFromUrl(widget.felicitup.finalVideoUrl!);
-          context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(widget.felicitup.finalVideoUrl!));
-        }
-      });
+    // if (widget.felicitup.finalVideoUrl != null) {
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //     if (context.mounted) {
+    //       _initializeVideoPlayerFromUrl(widget.felicitup.finalVideoUrl!);
+    //       context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(widget.felicitup.finalVideoUrl!));
+    //     }
+    //   });
+    // }
+    if (widget.videoUrl.isNotEmpty) {
+      context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(widget.videoUrl));
+      _initializeVideoPlayerFromUrl(widget.videoUrl);
+    } else {
+      context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
     }
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -81,12 +89,6 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
         _controller!.play();
       }
     }
-  }
-
-  Future<void> initializeController(String url) async {
-    _controller = VideoPlayerController.networkUrl(Uri.parse(url));
-    await _controller!.initialize();
-    _controller!.play();
   }
 
   Future<void> _initializeVideoPlayerFromUrl(String videoUrl) async {
@@ -167,7 +169,6 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                             .read<VideoEditorBloc>()
                             .add(VideoEditorEvent.uploadUserVideo(widget.felicitup.id, response));
                         setState(() {});
-                        initializeController(state.currentSelectedVideo);
                         _initializeVideoPlayerFromUrl(state.currentSelectedVideo);
                       }
                     },

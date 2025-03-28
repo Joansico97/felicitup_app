@@ -39,6 +39,11 @@ void redirectHelper({required Map<String, dynamic> data}) {
       break;
 
     case PushMessageType.payment:
+      if (CustomRouter().router.routerDelegate.state.matchedLocation == RouterPaths.boteFelicitup) {
+        detailsFelicitupNavigatorKey.currentContext!
+            .read<DetailsFelicitupDashboardBloc>()
+            .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
+      }
       CustomRouter().router.go(
         RouterPaths.boteFelicitup,
         extra: {
@@ -60,6 +65,11 @@ void redirectHelper({required Map<String, dynamic> data}) {
       break;
 
     case PushMessageType.participation:
+      if (CustomRouter().router.routerDelegate.state.matchedLocation == RouterPaths.peopleFelicitup) {
+        detailsFelicitupNavigatorKey.currentContext!
+            .read<DetailsFelicitupDashboardBloc>()
+            .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
+      }
       CustomRouter().router.go(
         RouterPaths.peopleFelicitup,
         extra: {
@@ -69,6 +79,11 @@ void redirectHelper({required Map<String, dynamic> data}) {
       );
       break;
     case PushMessageType.video:
+      if (CustomRouter().router.routerDelegate.state.matchedLocation == RouterPaths.videoFelicitup) {
+        detailsFelicitupNavigatorKey.currentContext!
+            .read<DetailsFelicitupDashboardBloc>()
+            .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
+      }
       CustomRouter().router.go(
         RouterPaths.videoFelicitup,
         extra: {

@@ -255,12 +255,13 @@ Page<Widget> _paymentHandler(BuildContext context, GoRouterState state) {
 }
 
 Page<Widget> _videoEditorHandler(BuildContext context, GoRouterState state) {
-  final data = state.extra as FelicitupModel;
+  final data = state.extra as Map<String, dynamic>;
   return CustomTransitionPage(
     child: BlocProvider(
       create: (_) => injection.di<VideoEditorBloc>(),
       child: VideoEditorPage(
-        felicitup: data,
+        felicitup: data['felicitup'],
+        videoUrl: data['videoUrl'],
       ),
     ),
     transitionDuration: Duration(milliseconds: 500),

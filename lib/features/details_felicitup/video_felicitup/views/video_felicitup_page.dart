@@ -151,7 +151,10 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                   onTap: () {
                                     context.go(
                                       RouterPaths.videoEditor,
-                                      extra: felicitup,
+                                      extra: {
+                                        'felicitup': felicitup,
+                                        'videoUrl': invitedUsers?[index].videoData?.videoUrl,
+                                      },
                                     );
                                   },
                                   child: DetailsRow(
