@@ -28,9 +28,8 @@ class VideoEditorPage extends StatefulWidget {
 }
 
 class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingObserver, TickerProviderStateMixin {
-  VideoPlayerController? _controller;
-  Duration _duration = Duration.zero;
-  Duration _position = Duration.zero;
+  // final Duration _duration = Duration.zero;
+  // final Duration _position = Duration.zero;
   bool _isPlaying = false;
   bool _showControls = true;
   Timer? _hideControlsTimer;
@@ -45,7 +44,6 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
     _startHideControlsTimer();
     if (widget.videoUrl.isNotEmpty) {
       context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(widget.videoUrl));
-      _initializeVideoPlayerFromUrl(widget.videoUrl);
     } else {
       context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
     }
@@ -66,50 +64,52 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller?.dispose();
+    // _controller?.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_controller != null) {
+    final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
+    if (controller != null) {
       if (state == AppLifecycleState.paused) {
-        _controller!.pause();
+        controller.pause();
       } else if (state == AppLifecycleState.resumed) {
-        _controller!.play();
+        controller.play();
       }
     }
   }
 
-  Future<void> _initializeVideoPlayerFromUrl(String videoUrl) async {
-    _controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl))
-      ..initialize().then((_) {
-        setState(() {});
-        _controller!.play();
-        setState(() {
-          _duration = _controller!.value.duration;
-          _position = _controller!.value.position;
-          _isPlaying = true;
-        });
-      });
+  // Future<void> _initializeVideoPlayerFromUrl(String videoUrl) async {
+  //   _controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl))
+  //     ..initialize().then((_) {
+  //       setState(() {});
+  //       _controller!.play();
+  //       setState(() {
+  //         _duration = _controller!.value.duration;
+  //         _position = _controller!.value.position;
+  //         _isPlaying = true;
+  //       });
+  //     });
 
-    _controller!.addListener(() {
-      if (mounted) {
-        setState(() {
-          _position = _controller!.value.position;
-        });
-      }
-    });
-  }
+  //   _controller!.addListener(() {
+  //     if (mounted) {
+  //       setState(() {
+  //         _position = _controller!.value.position;
+  //       });
+  //     }
+  //   });
+  // }
 
   void _togglePlay() {
-    if (_controller != null) {
+    final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
+    if (controller != null) {
       setState(() {
-        if (_controller!.value.isPlaying) {
-          _controller!.pause();
+        if (controller.value.isPlaying) {
+          controller.pause();
           _isPlaying = false;
         } else {
-          _controller!.play();
+          controller.play();
           _isPlaying = true;
         }
         _showControls = true;
@@ -139,7 +139,8 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) {
-            _controller?.dispose();
+            final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
+            controller?.dispose();
           }
         },
         child: Scaffold(
@@ -227,39 +228,44 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                   ),
                 ),
                 SizedBox(height: context.sp(12)),
-                SizedBox(
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                BlocBuilder<VideoEditorBloc, VideoEditorState>(
+                  builder: (_, state) {
+                    return SizedBox(
+                      child: Column(
                         children: [
-                          Text(
-                            _formatDuration(_position),
-                            style: context.styles.smallText,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _formatDuration(state.position),
+                                style: context.styles.smallText,
+                              ),
+                              Text(
+                                " / ",
+                                style: context.styles.header2,
+                              ),
+                              Text(
+                                _formatDuration(state.duration),
+                                style: context.styles.smallText,
+                              ),
+                            ],
                           ),
-                          Text(
-                            " / ",
-                            style: context.styles.header2,
-                          ),
-                          Text(
-                            _formatDuration(_duration),
-                            style: context.styles.smallText,
+                          SizedBox(height: context.sp(8)),
+                          GestureDetector(
+                            onTap: _togglePlay,
+                            child: Icon(
+                              _isPlaying ? Icons.pause : Icons.play_arrow,
+                            ),
                           ),
                         ],
                       ),
-                      SizedBox(height: context.sp(8)),
-                      GestureDetector(
-                        onTap: _togglePlay,
-                        child: Icon(
-                          _isPlaying ? Icons.pause : Icons.play_arrow,
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
                 SizedBox(height: context.sp(12)),
                 BlocBuilder<VideoEditorBloc, VideoEditorState>(
                   builder: (_, state) {
+                    final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
                     return Visibility(
                       visible: !state.isFullScreen,
                       child: Container(
@@ -286,10 +292,10 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                                 final url = videoData?.videoUrl;
                                 if (url != null && url.isNotEmpty) {
                                   context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(url));
-                                  if (_controller != null && _controller!.value.isInitialized) {
-                                    _controller?.dispose();
+                                  if (controller != null && controller.value.isInitialized) {
+                                    controller.dispose();
                                   }
-                                  _initializeVideoPlayerFromUrl(url);
+                                  // _initializeVideoPlayerFromUrl(url);
                                 } else {
                                   context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
                                 }
@@ -311,99 +317,104 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   }
 
   Widget _buildVideoPlayer() {
-    if (_controller == null || !_controller!.value.isInitialized) {
-      return Center(child: CircularProgressIndicator());
-    }
+    // if (controller == null || !controller.value.isInitialized) {
+    //   return Center(child: CircularProgressIndicator());
+    // }
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _showControls = !_showControls;
-        });
-        if (_showControls) {
-          _startHideControlsTimer();
-        }
-      },
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (Platform.isIOS)
-            AspectRatio(
-              aspectRatio: _controller!.value.aspectRatio,
-              child: VideoPlayer(_controller!),
-            ),
-          if (Platform.isAndroid)
-            Center(
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: SizedBox(
-                  width: _controller!.value.size.width,
-                  height: _controller!.value.size.height,
-                  child: VideoPlayer(_controller!),
+    return BlocBuilder<VideoEditorBloc, VideoEditorState>(
+      builder: (context, state) {
+        final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _showControls = !_showControls;
+            });
+            if (_showControls) {
+              _startHideControlsTimer();
+            }
+          },
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (Platform.isIOS)
+                AspectRatio(
+                  aspectRatio: controller?.value.aspectRatio ?? 9 / 16,
+                  child: VideoPlayer(controller ?? VideoPlayerController.networkUrl(Uri.parse(''))),
                 ),
-              ),
-            ),
-          Positioned(
-            top: context.sp(10),
-            left: 0,
-            right: 0,
-            child: SizedBox(
-              height: context.sp(5),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(context.sp(10)),
-                child: VideoProgressIndicator(
-                  _controller!,
-                  allowScrubbing: true,
-                  padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
-                  colors: VideoProgressColors(
-                    playedColor: context.colors.orange,
-                    bufferedColor: context.colors.lightGrey,
-                    backgroundColor: context.colors.darkGrey,
+              if (Platform.isAndroid)
+                Center(
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: SizedBox(
+                      width: controller?.value.size.width,
+                      height: controller?.value.size.height,
+                      child: VideoPlayer(controller ?? VideoPlayerController.networkUrl(Uri.parse(''))),
+                    ),
+                  ),
+                ),
+              Positioned(
+                top: context.sp(10),
+                left: 0,
+                right: 0,
+                child: SizedBox(
+                  height: context.sp(5),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(context.sp(10)),
+                    child: VideoProgressIndicator(
+                      controller ?? VideoPlayerController.networkUrl(Uri.parse('')),
+                      allowScrubbing: true,
+                      padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
+                      colors: VideoProgressColors(
+                        playedColor: context.colors.orange,
+                        bufferedColor: context.colors.lightGrey,
+                        backgroundColor: context.colors.darkGrey,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-          Positioned.fill(
-            child: AnimatedOpacity(
-              opacity: _showControls ? 1.0 : 0.0,
-              duration: Duration(milliseconds: 200),
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                iconSize: context.sp(50),
-                icon: Icon(
-                  _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-                  color: context.colors.white.valueOpacity(.8),
-                ),
-                onPressed: _togglePlay,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: context.sp(20),
-            right: context.sp(20),
-            child: GestureDetector(
-              onTap: () {
-                context.read<VideoEditorBloc>().add(VideoEditorEvent.changeFullScreen());
-              },
-              child: Container(
-                height: context.sp(30),
-                width: context.sp(30),
-                alignment: AlignmentDirectional.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: context.colors.grey,
-                ),
-                child: Icon(
-                  Icons.fullscreen,
-                  color: context.colors.orange,
-                  size: context.sp(20),
+              Positioned.fill(
+                child: AnimatedOpacity(
+                  opacity: _showControls ? 1.0 : 0.0,
+                  duration: Duration(milliseconds: 200),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    iconSize: context.sp(50),
+                    icon: Icon(
+                      _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                      color: context.colors.white.valueOpacity(.8),
+                    ),
+                    onPressed: _togglePlay,
+                  ),
                 ),
               ),
-            ),
+              Positioned(
+                bottom: context.sp(20),
+                right: context.sp(20),
+                child: GestureDetector(
+                  onTap: () {
+                    context.read<VideoEditorBloc>().add(VideoEditorEvent.changeFullScreen());
+                  },
+                  child: Container(
+                    height: context.sp(30),
+                    width: context.sp(30),
+                    alignment: AlignmentDirectional.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: context.colors.grey,
+                    ),
+                    child: Icon(
+                      Icons.fullscreen,
+                      color: context.colors.orange,
+                      size: context.sp(20),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

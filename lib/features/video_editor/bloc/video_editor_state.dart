@@ -6,6 +6,10 @@ class VideoEditorState with _$VideoEditorState {
     required bool isLoading,
     required bool isFullScreen,
     required String currentSelectedVideo,
+    required Duration duration,
+    required Duration position,
+    required bool isPlaying,
+    VideoPlayerController? videoPlayerController,
     FelicitupModel? currentFelicitup,
   }) = _VideoEditorState;
 
@@ -13,5 +17,8 @@ class VideoEditorState with _$VideoEditorState {
         isLoading: false,
         currentSelectedVideo: '',
         isFullScreen: false,
+        duration: Duration.zero,
+        position: Duration.zero,
+        isPlaying: false,
       );
 }

@@ -7,6 +7,7 @@ import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:video_player/video_player.dart';
 
 part 'video_editor_event.dart';
 part 'video_editor_state.dart';
@@ -30,7 +31,10 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         getFelicitupInfo: (event) => _getFelicitupInfo(emit, event.felicitupId),
         uploadUserVideo: (event) => _uploadUserVideo(emit, event.felicitupId, event.file),
         updateParticipantInfo: (event) => _updateParticipantInfo(event.felicitupId, event.url),
+        initializeVideoController: (event) => _initializeVideoController(emit, event.url),
         generateThumbnail: (event) => _generateThumbnail(event.filePath),
+        setDuraton: (event) => _setDuraton(emit, event.duration),
+        setPosition: (event) => _setPosition(emit, event.position),
         changeFullScreen: (event) => _changeFullScreen(emit),
       ),
     );
@@ -46,6 +50,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
   }
 
   _setUrlVideo(Emitter<VideoEditorState> emit, String url) {
+    add(VideoEditorEvent.initializeVideoController(url));
     emit(state.copyWith(currentSelectedVideo: url));
   }
 
@@ -77,6 +82,8 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         (error) => logger.error('Error uploading video: $error'),
         (url) {
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
+          add(VideoEditorEvent.initializeVideoController(url));
+          add(VideoEditorEvent.getFelicitupInfo(felicitupId));
           // add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
           emit(
             state.copyWith(
@@ -85,6 +92,36 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
             ),
           );
         },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _initializeVideoController(Emitter<VideoEditorState> emit, String url) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final videoPlayerController = VideoPlayerController.networkUrl(
+        Uri.parse(
+          url,
+        ),
+        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+      );
+      await videoPlayerController.initialize().then((_) {
+        videoPlayerController.play();
+        videoPlayerController.addListener(() {
+          if (videoPlayerController.value.isInitialized) {
+            add(VideoEditorEvent.setDuraton(videoPlayerController.value.duration));
+            add(VideoEditorEvent.setPosition(videoPlayerController.value.position));
+          }
+        });
+      });
+      emit(
+        state.copyWith(
+          isLoading: false,
+          videoPlayerController: videoPlayerController,
+          currentSelectedVideo: url,
+        ),
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
@@ -105,6 +142,14 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     } catch (e) {
       logger.error('Error updating participant info: $e');
     }
+  }
+
+  _setDuraton(Emitter<VideoEditorState> emit, Duration duration) {
+    emit(state.copyWith(duration: duration));
+  }
+
+  _setPosition(Emitter<VideoEditorState> emit, Duration position) {
+    emit(state.copyWith(position: position));
   }
 
   _changeFullScreen(Emitter<VideoEditorState> emit) {
