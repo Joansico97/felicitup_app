@@ -183,10 +183,12 @@ class _DetailsFelicitupDashboardPageState extends State<DetailsFelicitupDashboar
                                               .add(DetailsFelicitupDashboardEvent.asignCurrentChat(''));
                                           break;
                                         case 1:
-                                          detailsFelicitupNavigatorKey.currentContext!
-                                              .go(RouterPaths.messageFelicitup, extra: {
-                                            'chatId': '',
-                                          });
+                                          detailsFelicitupNavigatorKey.currentContext!.go(
+                                            RouterPaths.messageFelicitup,
+                                            extra: {
+                                              'chatId': '',
+                                            },
+                                          );
                                           context
                                               .read<DetailsFelicitupDashboardBloc>()
                                               .add(DetailsFelicitupDashboardEvent.asignCurrentChat(felicitup.chatId));
@@ -200,8 +202,9 @@ class _DetailsFelicitupDashboardPageState extends State<DetailsFelicitupDashboar
                                         case 3:
                                           if (!felicitup.hasVideo) {
                                             detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.boteFelicitup);
+                                          } else {
+                                            detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.videoFelicitup);
                                           }
-                                          detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.videoFelicitup);
                                           context
                                               .read<DetailsFelicitupDashboardBloc>()
                                               .add(DetailsFelicitupDashboardEvent.asignCurrentChat(''));

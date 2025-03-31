@@ -163,11 +163,11 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                               'fromNotification': false,
                             },
                           );
-                          detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
-                                DetailsFelicitupDashboardEvent.changeCurrentIndex(
-                                  (state.currentFelicitup?.hasBote ?? false) ? 4 : 3,
-                                ),
-                              );
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            detailsFelicitupNavigatorKey.currentContext?.read<DetailsFelicitupDashboardBloc>().add(
+                                  DetailsFelicitupDashboardEvent.changeCurrentIndex(3),
+                                );
+                          });
                         }
                       },
                     );
