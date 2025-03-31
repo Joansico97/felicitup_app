@@ -62,6 +62,9 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
 
   @override
   void dispose() {
+    if (context.mounted) {
+      context.read<VideoEditorBloc>().add(VideoEditorEvent.disposeVideoController());
+    }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -130,6 +133,8 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                 builder: (_, state) {
                   return PrimaryButton(
                     onTap: () async {
+                      context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
+                      context.read<VideoEditorBloc>().add(VideoEditorEvent.disposeVideoController());
                       File? response = await pickVideoFromCamera(context);
 
                       if (response != null) {
@@ -246,6 +251,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                 ),
                 SizedBox(height: context.sp(12)),
                 BlocBuilder<VideoEditorBloc, VideoEditorState>(
+                  buildWhen: (previous, current) => previous.currentFelicitup != current.currentFelicitup,
                   builder: (_, state) {
                     final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
                     return Visibility(

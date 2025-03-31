@@ -37,6 +37,8 @@ class VideoFelicitupBloc extends Bloc<VideoFelicitupEvent, VideoFelicitupState> 
 
   _mergeVideos(Emitter<VideoFelicitupState> emit, String felicitupId, List<String> listVideos) async {
     emit(state.copyWith(isLoading: true));
+    await Future.delayed(const Duration(seconds: 3), () {});
+    emit(state.copyWith(isLoading: false, showModal: true));
     try {
       List<String> listProv = [...listVideos];
       List<String> modifiedUrls = listProv.map((url) {
@@ -51,11 +53,8 @@ class VideoFelicitupBloc extends Bloc<VideoFelicitupEvent, VideoFelicitupState> 
       response.fold(
         (error) {
           logger.error('Error al mezclar videos: $error');
-          emit(state.copyWith(isLoading: false));
         },
-        (data) {
-          emit(state.copyWith(isLoading: false));
-        },
+        (data) {},
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));

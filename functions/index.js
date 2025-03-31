@@ -1,3 +1,4 @@
+/* eslint-disable require-jsdoc */
 /* eslint-disable max-len */
 const admin = require("firebase-admin");
 const serviceAccount = require("./serviceAccountMergeKey.json");
@@ -142,6 +143,119 @@ exports.sendNotificationToList = functions.https.onCall(
       }
     });
 
+async function getVideoMetadata(filePath) {
+  return new Promise((resolve, reject) => {
+    exec(`ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,width,height,rotation -of json ${filePath}`,
+        (error, stdout, stderr) => {
+          if (error) {
+            console.error(`Error en ffprobe: ${stderr}`);
+            return reject(error);
+          }
+          try {
+            const metadata = JSON.parse(stdout).streams[0];
+            resolve(metadata);
+          } catch (parseError) {
+            reject(parseError);
+          }
+        });
+  });
+}
+
+async function normalizeVideoCodec(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const command = [
+      "ffmpeg",
+      "-i", inputPath,
+      "-c:v", "libx264",
+      "-profile:v", "high",
+      "-preset", "slow",
+      "-crf", "23",
+      "-pix_fmt", "yuv420p",
+      "-movflags", "+faststart",
+      "-vf", "\"scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1\"",
+      "-c:a", "aac",
+      "-b:a", "128k",
+      "-r", "30",
+      "-y", outputPath,
+    ].join(" ");
+
+    exec(command, {timeout: 300000}, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error en normalización: ${stderr}`);
+        return reject(new Error(`FFmpeg error: ${stderr}`));
+      }
+      resolve();
+    });
+  });
+}
+
+async function convertHEVC(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const command = [
+      "ffmpeg",
+      "-i", inputPath,
+      "-c:v", "libx264",
+      "-profile:v", "high",
+      "-preset", "slower",
+      "-tag:v", "avc1",
+      "-vf", "\"scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black\"",
+      "-c:a", "aac",
+      "-b:a", "128k",
+      "-movflags", "+faststart",
+      "-y", outputPath,
+    ].join(" ");
+
+    exec(command, {timeout: 300000}, (error) => {
+      if (error) return reject(error);
+      resolve();
+    });
+  });
+}
+
+async function attemptFallbackConversion(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const command = [
+      "ffmpeg",
+      "-i", inputPath,
+      "-c:v", "libx264",
+      "-preset", "ultrafast",
+      "-vf", "\"scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black\"",
+      "-c:a", "copy",
+      "-y", outputPath,
+    ].join(" ");
+
+    exec(command, {timeout: 300000}, (error) => {
+      if (error) reject(new Error(`Fallback conversion failed`));
+      else resolve();
+    });
+  });
+}
+
+async function smartNormalize(inputPath, outputPath) {
+  try {
+    const metadata = await getVideoMetadata(inputPath);
+
+    if (metadata.codec_name === "hevc") {
+      console.log("Detectado video HEVC (iOS), aplicando conversión específica");
+      return await convertHEVC(inputPath, outputPath);
+    } else if (metadata.codec_name === "h264") {
+      console.log("Detectado video H.264 (Android), aplicando normalización estándar");
+      return await normalizeVideoCodec(inputPath, outputPath);
+    } else {
+      console.log("Códec no estándar detectado, aplicando normalización genérica");
+      return await normalizeVideoCodec(inputPath, outputPath);
+    }
+  } catch (error) {
+    console.warn(`No se pudieron leer metadatos, usando normalización genérica: ${error.message}`);
+    try {
+      return await normalizeVideoCodec(inputPath, outputPath);
+    } catch (normalizeError) {
+      console.error(`Normalización estándar falló, intentando fallback: ${normalizeError.message}`);
+      return await attemptFallbackConversion(inputPath, outputPath);
+    }
+  }
+}
+
 /**
  * Downloads a file from Firebase Storage to a temporary local path.
  * @param {string} filePath - The path of the file in the Firebase Storage bucket.
@@ -155,30 +269,6 @@ async function downloadFileToTemp(filePath, tempFilePath) {
 }
 
 /**
- * Normalizes a video by forcing aspect ratio 9/16, resolution 1080x1920, maintaining original rotation, and normalizing audio.
- * @param {string} inputPath - The path to the input video file.
- * @param {string} outputPath - The path to save the normalized video file.
- * @return {Promise<void>} - Resolves when the video is successfully normalized.
- */
-async function normalizeVideo(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    const ffmpegCommand = `ffmpeg -i ${inputPath} -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -c:v libx264 -c:a aac -strict experimental -r 30 ${outputPath}`;
-
-    exec(ffmpegCommand, (error, stdout, stderr) => {
-      if (error) {
-        console.error("Error al normalizar el video:", error);
-        console.error("Salida de error de FFmpeg:", stderr);
-        reject(new functions.https.HttpsError("internal", "Error al normalizar el video", error));
-        return;
-      }
-      console.log("Video normalizado exitosamente!");
-      console.log("Salida de FFmpeg:", stdout);
-      resolve();
-    });
-  });
-}
-
-/**
  * Merges multiple video files into one using the FFmpeg concat filter.
  * @param {string[]} videoPaths - Array of paths to the video files to be merged.
  * @param {string} outputFilePath - The path to save the merged video file.
@@ -186,21 +276,32 @@ async function normalizeVideo(inputPath, outputPath) {
  */
 async function mergeVideosWithConcatFilter(videoPaths, outputFilePath) {
   return new Promise((resolve, reject) => {
-    // Crear el comando de ffmpeg con el filtro concat
     const inputArgs = videoPaths.map((path) => `-i ${path}`).join(" ");
     const filterComplex = `"${videoPaths.map((_, i) => `[${i}:v][${i}:a]`).join("")}concat=n=${videoPaths.length}:v=1:a=1[outv][outa]"`;
 
-    const ffmpegCommand = `ffmpeg ${inputArgs} -filter_complex ${filterComplex} -map "[outv]" -map "[outa]" -c:v libx264 -c:a aac -strict experimental ${outputFilePath}`;
+    const command = [
+      "ffmpeg",
+      inputArgs,
+      "-filter_complex", filterComplex,
+      "-map", "\"[outv]\"",
+      "-map", "\"[outa]\"",
+      "-c:v", "libx264",
+      "-preset", "fast",
+      "-crf", "23",
+      "-c:a", "aac",
+      "-b:a", "128k",
+      "-movflags", "+faststart",
+      "-y", outputFilePath,
+    ].join(" ");
 
-    exec(ffmpegCommand, (error, stdout, stderr) => {
+    exec(command, {timeout: 300000}, (error, stdout, stderr) => {
       if (error) {
         console.error("Error al unir los videos:", error);
         console.error("Salida de error de FFmpeg:", stderr);
-        reject(new functions.https.HttpsError("internal", "Error al unir los videos", error));
+        reject(new functions.https.HttpsError("internal", "Error al unir los videos", stderr));
         return;
       }
       console.log("Videos unidos exitosamente!");
-      console.log("Salida de FFmpeg:", stdout);
       resolve();
     });
   });
@@ -212,88 +313,87 @@ exports.mergeVideos = functions.https.onCall({
   timeoutSeconds: 540,
   memory: "8GiB",
 }, async (data, context) => {
-  const videoUrls = data.data.videoUrls; // La lista de URLs que tu app envía
-  const outputFileName = `merged-${Date.now()}.mp4`;
-  const tempDir = os.tmpdir();
-  const outputFilePath = path.join(tempDir, outputFileName);
-  const userId = data.data.userId;
-  const felicitupId = data.data.felicitupId;
+  // Validación de entrada
+  // if (!context.auth) {
+  //   throw new functions.https.HttpsError("unauthenticated", "Debes estar autenticado");
+  // }
 
+  const {videoUrls, userId, felicitupId} = data.data;
   if (!videoUrls || !Array.isArray(videoUrls) || videoUrls.length === 0) {
-    throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Debe proporcionar una lista de URLs de videos.",
-    );
+    throw new functions.https.HttpsError("invalid-argument", "Debe proporcionar una lista de URLs de videos.");
   }
 
-  let tempFiles = [];
+  const tempDir = os.tmpdir();
+  const outputFileName = `merged-${Date.now()}.mp4`;
+  const outputFilePath = path.join(tempDir, outputFileName);
+  const tempFiles = [];
+  const normalizedFiles = [];
+
   try {
-    // 1. Descargar los videos a archivos temporales
-    tempFiles = [];
-    await Promise.all(
-        videoUrls.map(async (url, index) => {
-          const fileName = `temp-file.mp4`;
-          const tempFilePath = path.join(tempDir, fileName);
-          tempFiles.push(tempFilePath);
-          await downloadFileToTemp(url, tempFilePath);
-          console.log(`Video ${index} descargado a ${tempFilePath}`);
-        }),
-    );
+    // 1. Descargar y normalizar cada video
+    for (const [index, url] of videoUrls.entries()) {
+      const tempFilePath = path.join(tempDir, `source-${index}.mp4`);
+      const normalizedPath = path.join(tempDir, `normalized-${index}.mp4`);
 
-    // 2. Normalizar los videos (forzar aspect ratio 9/16, resolución 1080x1920, mantener rotación original y normalizar audio)
-    const normalizedFiles = [];
-    await Promise.all(
-        tempFiles.map(async (file, index) => {
-          const normalizedFileName = `normalized-${index}.mp4`;
-          const normalizedFilePath = path.join(tempDir, normalizedFileName);
-          await normalizeVideo(file, normalizedFilePath);
-          normalizedFiles.push(normalizedFilePath);
-        }),
-    );
+      console.log(`Procesando video ${index + 1}/${videoUrls.length}`);
 
-    // 3. Unir los videos usando el filtro concat de ffmpeg
+      await downloadFileToTemp(url, tempFilePath);
+      await smartNormalize(tempFilePath, normalizedPath);
+
+      tempFiles.push(tempFilePath);
+      normalizedFiles.push(normalizedPath);
+    }
+
+    // 2. Unir los videos normalizados
+    console.log("Uniendo videos...");
     await mergeVideosWithConcatFilter(normalizedFiles, outputFilePath);
 
-    // 4. Subir el video unido a Firebase Storage
+    // 3. Subir el video final a Storage
     const destinationPath = `videos/${felicitupId}/${outputFileName}`;
     await bucket.upload(outputFilePath, {destination: destinationPath});
     console.log(`Video subido a ${destinationPath}`);
 
-    // 5. Obtener la URL firmada del video unido
+    // 4. Obtener URL firmada
     const mergedFile = bucket.file(destinationPath);
     const [url] = await mergedFile.getSignedUrl({action: "read", expires: "03-01-2500"});
-    console.log(`URL del video unido: ${url}`);
 
-    // 6. Actualizar Firestore con la URL del video unido
-    const docRef = await getFelicitupRefById(felicitupId);
+    // 5. Actualizar Firestore
+    const docRef = admin.firestore().collection("Felicitups").doc(felicitupId);
     await docRef.update({finalVideoUrl: url});
-    console.log("Documento actualizado exitosamente!");
 
-    // 7. Enviar notificación push al usuario
-    const token = await getDeviceToken(userId);
-    const payload = {
-      token,
-      notification: {
-        title: "Felicitup lista",
-        body: "Tu felicitup está lista para ser vista!",
-      },
-    };
-    await sendPushNotification(payload);
-    console.log("Notificación push enviada.");
+    // 6. Enviar notificación (implementación básica)
+    const userDoc = await admin.firestore().collection("Users").doc(userId).get();
+    if (userDoc.exists && userDoc.data().fcmToken) {
+      await admin.messaging().send({
+        token: userDoc.data().fcmToken,
+        notification: {
+          title: "¡Tu video está listo!",
+          body: "La combinación de videos se ha completado exitosamente.",
+        },
+        data: {
+          "type": "video",
+          "felicitupId": felicitupId,
+          "chatId": "",
+          "name": "",
+        },
+      });
+    }
+
+    return {success: true, videoUrl: url};
   } catch (error) {
-    console.error("Error en la función:", error);
-    throw new functions.https.HttpsError("internal", "Error en la función", error);
+    console.error("Error en mergeVideos:", error);
+    throw new functions.https.HttpsError("internal", "Error al procesar los videos", error.message);
   } finally {
-    // 8. Eliminar archivos temporales
-    const filesToDelete = [outputFilePath, ...tempFiles];
+    // Limpieza de archivos temporales
+    const allTempFiles = [...tempFiles, ...normalizedFiles, outputFilePath];
     await Promise.all(
-        filesToDelete.map((file) => {
+        allTempFiles.map((file) => {
           if (fs.existsSync(file)) {
-            fs.unlinkSync(file);
-            console.log(`Archivo temporal ${file} eliminado`);
-          } else {
-            console.log(`El archivo temporal ${file} no existe`);
+            return fs.promises.unlink(file).catch((unlinkError) => {
+              console.error(`Error eliminando ${file}:`, unlinkError);
+            });
           }
+          return Promise.resolve();
         }),
     );
   }

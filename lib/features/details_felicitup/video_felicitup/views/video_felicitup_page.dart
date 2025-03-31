@@ -35,6 +35,15 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
         } else {
           await stopLoadingModal();
         }
+        if (state.showModal) {
+          unawaited(
+            showConfirmModal(
+              title: 'Tu video está siendo procesado',
+              content: 'Te avisaremos cuando esté listo para que puedas verlo',
+              onAccept: () async {},
+            ),
+          );
+        }
       },
       child: BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
         buildWhen: (previous, current) => previous.felicitup != current.felicitup,

@@ -32,6 +32,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         uploadUserVideo: (event) => _uploadUserVideo(emit, event.felicitupId, event.file),
         updateParticipantInfo: (event) => _updateParticipantInfo(event.felicitupId, event.url),
         initializeVideoController: (event) => _initializeVideoController(emit, event.url),
+        disposeVideoController: (event) => _disposeVideoController(emit),
         generateThumbnail: (event) => _generateThumbnail(event.filePath),
         setDuraton: (event) => _setDuraton(emit, event.duration),
         setPosition: (event) => _setPosition(emit, event.position),
@@ -128,6 +129,16 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
+  _disposeVideoController(Emitter<VideoEditorState> emit) {
+    emit(state.copyWith(isLoading: true));
+    try {
+      state.videoPlayerController?.dispose();
+      emit(state.copyWith(isLoading: false, videoPlayerController: null));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
   _generateThumbnail(String filePath) async {
     try {
       await _firebaseFunctionsHelper.generateThumbnail(filePath: filePath, userId: _firebaseAuth.currentUser!.uid);
@@ -154,5 +165,11 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
 
   _changeFullScreen(Emitter<VideoEditorState> emit) {
     emit(state.copyWith(isFullScreen: !state.isFullScreen));
+  }
+
+  @override
+  Future<void> close() {
+    state.videoPlayerController?.dispose();
+    return super.close();
   }
 }
