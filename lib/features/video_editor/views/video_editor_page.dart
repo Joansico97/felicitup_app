@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
+import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
 import 'package:felicitup_app/features/video_editor/bloc/video_editor_bloc.dart';
 import 'package:felicitup_app/features/video_editor/widgets/widgets.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
@@ -28,8 +29,6 @@ class VideoEditorPage extends StatefulWidget {
 }
 
 class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingObserver, TickerProviderStateMixin {
-  // final Duration _duration = Duration.zero;
-  // final Duration _position = Duration.zero;
   bool _isPlaying = false;
   bool _showControls = true;
   Timer? _hideControlsTimer;
@@ -64,7 +63,6 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    // _controller?.dispose();
     super.dispose();
   }
 
@@ -79,27 +77,6 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
       }
     }
   }
-
-  // Future<void> _initializeVideoPlayerFromUrl(String videoUrl) async {
-  //   _controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl))
-  //     ..initialize().then((_) {
-  //       setState(() {});
-  //       _controller!.play();
-  //       setState(() {
-  //         _duration = _controller!.value.duration;
-  //         _position = _controller!.value.position;
-  //         _isPlaying = true;
-  //       });
-  //     });
-
-  //   _controller!.addListener(() {
-  //     if (mounted) {
-  //       setState(() {
-  //         _position = _controller!.value.position;
-  //       });
-  //     }
-  //   });
-  // }
 
   void _togglePlay() {
     final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
@@ -186,6 +163,11 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                               'fromNotification': false,
                             },
                           );
+                          detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+                                DetailsFelicitupDashboardEvent.changeCurrentIndex(
+                                  (state.currentFelicitup?.hasBote ?? false) ? 4 : 3,
+                                ),
+                              );
                         }
                       },
                     );

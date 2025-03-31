@@ -51,6 +51,9 @@ void redirectHelper({required Map<String, dynamic> data}) {
           'fromNotification': true,
         },
       );
+      detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+            DetailsFelicitupDashboardEvent.changeCurrentIndex(3),
+          );
       break;
 
     case PushMessageType.singleChat:
@@ -77,6 +80,9 @@ void redirectHelper({required Map<String, dynamic> data}) {
           'fromNotification': true,
         },
       );
+      detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+            DetailsFelicitupDashboardEvent.changeCurrentIndex(2),
+          );
       break;
     case PushMessageType.video:
       if (CustomRouter().router.routerDelegate.state.matchedLocation == RouterPaths.videoFelicitup) {
@@ -91,6 +97,7 @@ void redirectHelper({required Map<String, dynamic> data}) {
           'fromNotification': true,
         },
       );
+
       break;
     case PushMessageType.past:
       CustomRouter().router.go(

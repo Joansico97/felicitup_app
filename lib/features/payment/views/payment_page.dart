@@ -4,6 +4,7 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
+import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/bloc/details_felicitup_dashboard_bloc.dart';
 import 'package:felicitup_app/features/payment/bloc/payment_bloc.dart';
 import 'package:felicitup_app/features/payment/widgets/widgets.dart';
 
@@ -43,6 +44,9 @@ class PaymentPage extends StatelessWidget {
               'fromNotification': false,
             },
           );
+          detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+                DetailsFelicitupDashboardEvent.changeCurrentIndex(3),
+              );
         } else if (state.updateStatus == UpdateStatus.error) {
           await showErrorModal(state.errorMessage);
         }
@@ -79,7 +83,6 @@ class PaymentPage extends StatelessWidget {
                             color: Colors.black,
                           ),
                           onPressed: () async {
-                            // await ref.read(userAuthProvider).updateCurrentChat(chatId: '');
                             if (context.mounted) {
                               context.go(
                                 RouterPaths.boteFelicitup,
@@ -88,6 +91,9 @@ class PaymentPage extends StatelessWidget {
                                   'fromNotification': false,
                                 },
                               );
+                              detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+                                    DetailsFelicitupDashboardEvent.changeCurrentIndex(3),
+                                  );
                             }
                           },
                         ),

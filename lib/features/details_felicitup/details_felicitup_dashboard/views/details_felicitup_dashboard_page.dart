@@ -198,6 +198,9 @@ class _DetailsFelicitupDashboardPageState extends State<DetailsFelicitupDashboar
                                               .add(DetailsFelicitupDashboardEvent.asignCurrentChat(''));
                                           break;
                                         case 3:
+                                          if (!felicitup.hasVideo) {
+                                            detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.boteFelicitup);
+                                          }
                                           detailsFelicitupNavigatorKey.currentContext!.go(RouterPaths.videoFelicitup);
                                           context
                                               .read<DetailsFelicitupDashboardBloc>()
