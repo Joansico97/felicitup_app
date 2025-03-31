@@ -468,7 +468,6 @@ Page<Widget> _detailsPastFelicitupDashboardHandler(
       ],
       child: DetailsPastFelicitupDashboardPage(
         childView: child,
-        fromNotification: data?['fromNotification'] ?? false,
       ),
     ),
     transitionDuration: Duration(milliseconds: 500),

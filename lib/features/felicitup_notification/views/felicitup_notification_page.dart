@@ -222,11 +222,9 @@ class FelicitupNotificationPage extends StatelessWidget {
                                             ),
                                           );
                                       context.go(
-                                        RouterPaths.messageFelicitup,
+                                        RouterPaths.peopleFelicitup,
                                         extra: {
                                           'felicitupId': felicitup.id,
-                                          'fromNotification': false,
-                                          'chatId': felicitup.chatId,
                                         },
                                       );
                                     },

@@ -126,7 +126,6 @@ class PastFelicitupWidget extends StatelessWidget {
                         : RouterPaths.mainPastFelicitup,
                     extra: {
                       'felicitupId': felicitup.id,
-                      'fromNotification': false,
                     },
                   ),
                   child: Container(
@@ -203,7 +202,6 @@ class PastFelicitupWidget extends StatelessWidget {
                         RouterPaths.chatPastFelicitup,
                         extra: {
                           'felicitupId': felicitup.id,
-                          'fromNotification': false,
                         },
                       ),
                       icon: Icon(
@@ -351,7 +349,6 @@ class PastFelicitupWidget extends StatelessWidget {
                     RouterPaths.mainPastFelicitup,
                     extra: {
                       'felicitupId': felicitup.id,
-                      'fromNotification': false,
                     },
                   ),
                   child: Row(

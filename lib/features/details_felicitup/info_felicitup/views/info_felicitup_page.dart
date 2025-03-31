@@ -19,6 +19,14 @@ class InfoFelicitupPage extends StatefulWidget {
 
 class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
   @override
+  void initState() {
+    super.initState();
+    detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+          DetailsFelicitupDashboardEvent.changeCurrentIndex(0),
+        );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final currentUser = context.read<AppBloc>().state.currentUser;
     return Scaffold(

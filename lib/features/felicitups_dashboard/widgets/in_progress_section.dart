@@ -48,7 +48,6 @@ class InProgressSection extends StatelessWidget {
                           RouterPaths.messageFelicitup,
                           extra: {
                             'felicitupId': listFelicitups[index].id,
-                            'fromNotification': false,
                           },
                         ),
                         onLongPress: () {

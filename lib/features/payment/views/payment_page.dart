@@ -41,7 +41,6 @@ class PaymentPage extends StatelessWidget {
             RouterPaths.boteFelicitup,
             extra: {
               'felicitupId': felicitup.id,
-              'fromNotification': false,
             },
           );
           detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
@@ -88,7 +87,6 @@ class PaymentPage extends StatelessWidget {
                                 RouterPaths.boteFelicitup,
                                 extra: {
                                   'felicitupId': felicitup.id,
-                                  'fromNotification': false,
                                 },
                               );
                               detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(

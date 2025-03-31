@@ -165,7 +165,6 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                             RouterPaths.videoFelicitup,
                             extra: {
                               'felicitupId': widget.felicitupId,
-                              'fromNotification': false,
                             },
                           );
                           WidgetsBinding.instance.addPostFrameCallback((_) {

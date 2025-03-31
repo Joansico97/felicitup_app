@@ -32,6 +32,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         loadUserData: (_) => _loadUserData(emit),
         updateMatchList: (event) => _updateMatchList(event.phoneList),
         initializeNotifications: (_) => _initializeNotifications(emit),
+        requestManualPermissions: (_) => _requestManualPermissions(emit),
+        deleterPermissions: (_) => _deleterPermissions(emit),
         handleRemoteMessage: (event) => handleRemoteMessage(event.message, emit),
         getFCMToken: (_) => _getFCMToken(),
         logout: (_) => _logout(emit),
@@ -92,6 +94,29 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         await _userRepository.updateMatchList(ids);
       },
     );
+  }
+
+  _requestManualPermissions(Emitter<AppState> emit) async {
+    final settings = await _firebaseMessaging.getNotificationSettings();
+
+    if (settings.authorizationStatus == AuthorizationStatus.notDetermined ||
+        settings.authorizationStatus == AuthorizationStatus.denied) {
+      await requestPermission(emit);
+    }
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      add(AppEvent.getFCMToken());
+      emit(state.copyWith(status: AuthorizationStatus.authorized));
+    }
+  }
+
+  _deleterPermissions(Emitter<AppState> emit) async {
+    final settings = await _firebaseMessaging.getNotificationSettings();
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      await _firebaseMessaging.deleteToken();
+      await _userRepository.setFCMToken('');
+      emit(state.copyWith(status: AuthorizationStatus.denied));
+    }
   }
 
   _initializeNotifications(Emitter<AppState> emit) async {

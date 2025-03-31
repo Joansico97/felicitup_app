@@ -134,16 +134,6 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                         ],
                       ),
                     ),
-                    // SizedBox(height: context.sp(12)),
-                    // SizedBox(
-                    //   width: context.sp(200),
-                    //   height: context.sp(40),
-                    //   child: PrimaryButton(
-                    //     onTap: () {},
-                    //     label: 'Actualizar',
-                    //     isActive: true,
-                    //   ),
-                    // )
                   ],
                 ),
               ),
@@ -157,6 +147,9 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
   @override
   void initState() {
     super.initState();
+    detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+          DetailsFelicitupDashboardEvent.changeCurrentIndex(4),
+        );
     final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
     context.read<BoteFelicitupBloc>().add(BoteFelicitupEvent.startListening(felicitup?.id ?? ''));
   }

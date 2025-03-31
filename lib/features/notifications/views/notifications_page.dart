@@ -83,6 +83,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   return Expanded(
                     child: ListView.builder(
                       itemCount: notifications.length,
+                      reverse: true,
                       itemBuilder: (_, index) {
                         return ListTile(
                           title: Text(

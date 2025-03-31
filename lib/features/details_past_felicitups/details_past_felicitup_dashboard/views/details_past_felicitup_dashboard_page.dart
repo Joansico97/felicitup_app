@@ -13,11 +13,9 @@ class DetailsPastFelicitupDashboardPage extends StatefulWidget {
   const DetailsPastFelicitupDashboardPage({
     super.key,
     required this.childView,
-    required this.fromNotification,
   });
 
   final Widget childView;
-  final bool fromNotification;
 
   @override
   State<DetailsPastFelicitupDashboardPage> createState() => _DetailsPastFelicitupDashboardPageState();
@@ -27,13 +25,6 @@ class _DetailsPastFelicitupDashboardPageState extends State<DetailsPastFelicitup
   @override
   void initState() {
     super.initState();
-    if (widget.fromNotification) {
-      final felicitup = context.read<DetailsPastFelicitupDashboardBloc>().state.felicitup;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<DetailsPastFelicitupDashboardBloc>().add(DetailsPastFelicitupDashboardEvent.changeCurrentIndex(
-            (felicitup?.finalVideoUrl?.isNotEmpty ?? false) ? 2 : 3));
-      });
-    }
   }
 
   final List<Widget> pagesComplete = [

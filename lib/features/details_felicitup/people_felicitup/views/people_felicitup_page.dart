@@ -22,6 +22,9 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
   @override
   void initState() {
     super.initState();
+    detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+          DetailsFelicitupDashboardEvent.changeCurrentIndex(2),
+        );
     final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
     context.read<PeopleFelicitupBloc>().add(PeopleFelicitupEvent.startListening(felicitup?.id ?? ''));
   }

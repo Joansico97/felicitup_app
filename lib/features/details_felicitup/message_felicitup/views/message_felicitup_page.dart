@@ -64,6 +64,9 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage> with Widget
   @override
   void initState() {
     super.initState();
+    detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+          DetailsFelicitupDashboardEvent.changeCurrentIndex(1),
+        );
     WidgetsBinding.instance.addObserver(this);
     assignid();
     final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;

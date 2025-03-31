@@ -22,6 +22,9 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
   void initState() {
     super.initState();
     final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+    detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
+          DetailsFelicitupDashboardEvent.changeCurrentIndex(3),
+        );
     context.read<VideoFelicitupBloc>().add(VideoFelicitupEvent.startListening(felicitup?.id ?? ''));
   }
 
