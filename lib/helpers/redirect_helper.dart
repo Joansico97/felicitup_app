@@ -10,7 +10,6 @@ void redirectHelper({required Map<String, dynamic> data}) {
   final felicitupId = data['felicitupId'] ?? '';
   final chatId = data['chatId'] ?? '';
   final name = data['name'] ?? '';
-  final ids = data['ids'] ?? [];
 
   switch (pushMessageType) {
     case PushMessageType.felicitup:
@@ -60,7 +59,6 @@ void redirectHelper({required Map<String, dynamic> data}) {
         extra: {
           'chatId': chatId,
           'name': name,
-          'ids': ids,
         },
       );
       break;

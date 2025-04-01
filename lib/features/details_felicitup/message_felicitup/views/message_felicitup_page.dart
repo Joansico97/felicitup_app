@@ -71,13 +71,11 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage> with Widget
     assignid();
     final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
     final currentChatId = context.read<MessageFelicitupBloc>().state.currentChatId;
-    if (widget.chatId != null) {
-      if (widget.chatId != currentChatId) {
-        context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.setCurrentChatId(widget.chatId ?? ''));
-        context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.startListening(widget.chatId ?? ''));
-      } else {
-        context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.startListening(felicitup?.chatId ?? ''));
-      }
+    if (currentChatId.isNotEmpty) {
+      context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.startListening(currentChatId));
+    } else if (widget.chatId != null && widget.chatId != currentChatId) {
+      context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.setCurrentChatId(widget.chatId ?? ''));
+      context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.startListening(widget.chatId ?? ''));
     } else {
       context.read<MessageFelicitupBloc>().add(MessageFelicitupEvent.startListening(felicitup?.chatId ?? ''));
     }

@@ -6,6 +6,7 @@ import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'message_felicitup_event.dart';
@@ -98,7 +99,13 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
   _startListening(Emitter<MessageFelicitupState> emit, String chatId) {
     _chatMessagesSubscription = _felicitupRepository.getChatMessages(chatId).listen((either) {
       either.fold(
-        (error) {},
+        (error) {
+          FirebaseCrashlytics.instance.recordError(
+            error,
+            StackTrace.current,
+            reason: 'Error al obtener los mensajes del chat',
+          );
+        },
         (feicitups) {
           add(MessageFelicitupEvent.recivedData(feicitups));
         },
