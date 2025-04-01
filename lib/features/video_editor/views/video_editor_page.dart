@@ -250,7 +250,9 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                 ),
                 SizedBox(height: context.sp(12)),
                 BlocBuilder<VideoEditorBloc, VideoEditorState>(
-                  buildWhen: (previous, current) => previous.currentFelicitup != current.currentFelicitup,
+                  buildWhen: (previous, current) =>
+                      previous.currentFelicitup != current.currentFelicitup ||
+                      previous.isFullScreen != current.isFullScreen,
                   builder: (_, state) {
                     final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
                     return Visibility(

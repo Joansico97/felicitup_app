@@ -49,7 +49,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final response = await _userRepository.updateUserImageFromFile(file);
       return response.fold(
         (l) => emit(state.copyWith(isLoading: false)),
-        (r) => emit(state.copyWith(isLoading: false, status: ProfileStatus.success)),
+        (r) => emit(
+          state.copyWith(
+            isLoading: false,
+          ),
+        ),
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));

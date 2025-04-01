@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 /* eslint-disable require-jsdoc */
 /* eslint-disable max-len */
 const admin = require("firebase-admin");
@@ -14,7 +15,7 @@ const {getDeviceToken, sendPushNotification, sendPushNotificationToListContacts}
 const {getUserDataById} = require("./users/users");
 const {deleteFelicitupTask} = require("./felicitups/send_felicitup_task");
 const {getFelicitupById, getFelicitupRefById} = require("./felicitups/felicitups");
-const {exec, spawn} = require("child_process");
+const {exec, spawn, execFile} = require("child_process");
 
 const fs = require("fs");
 const os = require("os");
@@ -256,53 +257,66 @@ async function smartNormalize(inputPath, outputPath) {
   }
 }
 
-/**
- * Downloads a file from Firebase Storage to a temporary local path.
- * @param {string} filePath - The path of the file in the Firebase Storage bucket.
- * @param {string} tempFilePath - The local temporary file path where the file will be downloaded.
- * @return {Promise<void>} - Resolves when the file is successfully downloaded.
- */
 async function downloadFileToTemp(filePath, tempFilePath) {
   const file = bucket.file(filePath);
   await file.download({destination: tempFilePath});
   console.log(`Archivo descargado a: ${tempFilePath}`);
 }
 
-/**
- * Merges multiple video files into one using the FFmpeg concat filter.
- * @param {string[]} videoPaths - Array of paths to the video files to be merged.
- * @param {string} outputFilePath - The path to save the merged video file.
- * @return {Promise<void>} - Resolves when the videos are successfully merged.
- */
 async function mergeVideosWithConcatFilter(videoPaths, outputFilePath) {
   return new Promise((resolve, reject) => {
-    const inputArgs = videoPaths.map((path) => `-i ${path}`).join(" ");
-    const filterComplex = `"${videoPaths.map((_, i) => `[${i}:v][${i}:a]`).join("")}concat=n=${videoPaths.length}:v=1:a=1[outv][outa]"`;
-
-    const command = [
-      "ffmpeg",
-      inputArgs,
-      "-filter_complex", filterComplex,
-      "-map", "\"[outv]\"",
-      "-map", "\"[outa]\"",
-      "-c:v", "libx264",
-      "-preset", "fast",
-      "-crf", "23",
-      "-c:a", "aac",
-      "-b:a", "128k",
-      "-movflags", "+faststart",
-      "-y", outputFilePath,
-    ].join(" ");
-
-    exec(command, {timeout: 300000}, (error, stdout, stderr) => {
-      if (error) {
-        console.error("Error al unir los videos:", error);
-        console.error("Salida de error de FFmpeg:", stderr);
-        reject(new functions.https.HttpsError("internal", "Error al unir los videos", stderr));
-        return;
+    // Verificar que los archivos existen
+    videoPaths.forEach((path) => {
+      if (!fs.existsSync(path)) {
+        return reject(new Error(`Archivo ${path} no existe`));
       }
-      console.log("Videos unidos exitosamente!");
-      resolve();
+    });
+
+    // Construir el comando como ARRAY (evitando problemas de escapado)
+    const args = [
+      ...videoPaths.flatMap((path) => ['-i', path]),
+      // ... agregar más inputs si es necesario
+      '-filter_complex',
+      // Filtros de escala/pad para cada input
+      `[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,` +
+      `pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];` +
+      `[1:v]scale=1080:1920:force_original_aspect_ratio=decrease,` +
+      `pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v1];` +
+      // Concatenación
+      `[v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]`,
+      '-map', '[outv]',
+      '-map', '[outa]',
+      '-c:v', 'libx264',
+      '-preset', 'fast',
+      '-crf', '23',
+      '-c:a', 'aac',
+      '-b:a', '128k',
+      '-movflags', '+faststart',
+      '-y', outputFilePath,
+    ];
+
+    console.log('Ejecutando ffmpeg con args:', ['ffmpeg', ...args].join(' '));
+
+    const ffmpegProcess = execFile(
+        'ffmpeg',
+        args, // Array de argumentos (escapado automático)
+        {timeout: 600000, maxBuffer: 1024 * 1024 * 64},
+        (error, stdout, stderr) => {
+          if (error) {
+            console.error('Error FFmpeg:', {error, stdout, stderr});
+            reject(new Error(`FFmpeg falló: ${stderr}`));
+            return;
+          }
+          resolve();
+        },
+    );
+
+    ffmpegProcess.stdout.on('data', (data) => {
+      console.log('FFmpeg stdout:', data.toString());
+    });
+
+    ffmpegProcess.stderr.on('data', (data) => {
+      console.error('FFmpeg stderr:', data.toString());
     });
   });
 }

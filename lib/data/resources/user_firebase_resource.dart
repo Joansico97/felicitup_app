@@ -336,6 +336,26 @@ class UserFirebaseResource implements UserRepository {
   @override
   Future<Either<ApiException, void>> updateUserImageFromFile(File file) async {
     try {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        return Left(ApiException(401, 'User not authenticated'));
+      }
+
+      final response = await uploadFile(file, 'profile');
+
+      response.fold(
+        (l) => Left(l),
+        (url) async {
+          await _client.update(
+            AppConstants.usersCollection,
+            document: uid,
+            {
+              'userImg': url,
+            },
+          );
+        },
+      );
+
       return Right(null);
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
