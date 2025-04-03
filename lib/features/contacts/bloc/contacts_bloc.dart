@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -17,6 +18,7 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
         changeLoading: (_) => _changeLoading(emit),
         generateListData: (event) => _generateListData(emit, event.contacts, event.ids),
         getInfoContacts: (event) => _getInfoContacts(emit, event.phones),
+        getInfoSingleContact: (event) => _getInfoSingleContact(emit, event.phone),
       ),
     );
   }
@@ -63,12 +65,30 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
               return aName.compareTo(bName);
             }
           });
-          add(ContactsEvent.getInfoContacts(registeredContacts));
+
           emit(state.copyWith(isLoading: false, dataList: dataList));
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false, dataList: []));
+    }
+  }
+
+  _getInfoSingleContact(Emitter<ContactsState> emit, String phone) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final response = await _userRepository.getUserDataByPhone(phone);
+      response.fold(
+        (l) {
+          logger.error('Error al obtener el usuario: $l');
+          emit(state.copyWith(isLoading: false, dataSingleUsers: null));
+        },
+        (r) {
+          emit(state.copyWith(isLoading: false, dataSingleUsers: UserModel.fromJson(r)));
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, dataSingleUsers: null));
     }
   }
 

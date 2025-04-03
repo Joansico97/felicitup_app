@@ -1,8 +1,8 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
-import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
+import 'package:felicitup_app/features/contacts/contacts.dart';
 import 'package:felicitup_app/features/contacts/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -119,7 +119,16 @@ class ElementCardRow extends StatelessWidget {
                 ),
           SizedBox(width: context.sp(8)),
           GestureDetector(
-            onTap: () => _showContactDetails(contact, isRegistered, giftcars),
+            onTap: () {
+              if (isRegistered) {
+                context.read<ContactsBloc>().add(ContactsEvent.getInfoSingleContact(contact.phone));
+              }
+              _showContactDetails(
+                contact,
+                isRegistered,
+                context,
+              );
+            },
             child: Icon(
               Icons.drag_indicator,
             ),
@@ -130,14 +139,25 @@ class ElementCardRow extends StatelessWidget {
   }
 }
 
-void _showContactDetails(ContactModel contact, bool isRegistered, List<GiftcarModel>? giftcars) {
+void _showContactDetails(
+  ContactModel contact,
+  bool isRegistered,
+  BuildContext context,
+) {
   showDialog(
-    context: rootNavigatorKey.currentContext!,
+    context: context,
     useSafeArea: false,
-    builder: (_) => DetailsContactPage(
-      contact: contact,
-      isRegistered: isRegistered,
-      giftcardList: giftcars,
+    builder: (_) => BlocProvider.value(
+      value: context.read<ContactsBloc>(),
+      child: BlocBuilder<ContactsBloc, ContactsState>(
+        builder: (_, state) {
+          return DetailsContactView(
+            contact: contact,
+            isRegistered: isRegistered,
+            giftcardList: isRegistered ? state.dataSingleUsers?.giftcardList : [],
+          );
+        },
+      ),
     ),
   );
 }

@@ -116,7 +116,10 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(
-      () => SingleChatBloc(),
+      () => SingleChatBloc(
+        chatRepository: di(),
+        userRepository: di(),
+      ),
     )
     ..registerFactory(
       () => ListSingleChatBloc(),

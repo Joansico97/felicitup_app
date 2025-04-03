@@ -363,10 +363,13 @@ Page<Widget> _wishListEditHandler(BuildContext context, GoRouterState state) {
 }
 
 Page<Widget> _singleChatHandler(BuildContext context, GoRouterState state) {
+  final data = state.extra as SingleChatModel;
   return CustomTransitionPage(
     child: BlocProvider(
       create: (_) => injection.di<SingleChatBloc>(),
-      child: SingleChatPage(),
+      child: SingleChatPage(
+        data: data,
+      ),
     ),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

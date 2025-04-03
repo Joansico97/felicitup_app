@@ -8,9 +8,11 @@ class RememberCard extends StatelessWidget {
     required this.name,
     required this.date,
     required this.onTap,
+    this.image,
   });
 
   final String name;
+  final String? image;
   final DateTime date;
   final VoidCallback onTap;
 
@@ -45,6 +47,21 @@ class RememberCard extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: context.colors.grey,
                   ),
+                  child: image != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            context.sp(20),
+                          ),
+                          child: Image.network(
+                            image!,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Icon(
+                          Icons.person,
+                          color: context.colors.white,
+                          size: context.sp(20),
+                        ),
                 ),
                 SizedBox(width: context.sp(10)),
                 Column(
@@ -52,7 +69,7 @@ class RememberCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Jorge Silva',
+                      name,
                       style: context.styles.smallText.copyWith(
                         color: context.colors.grey,
                         fontSize: context.sp(14),
@@ -64,7 +81,6 @@ class RememberCard extends StatelessWidget {
                       style: context.styles.smallText.copyWith(
                         color: context.colors.grey,
                         fontSize: context.sp(10),
-                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],

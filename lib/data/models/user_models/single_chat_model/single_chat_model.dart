@@ -8,7 +8,8 @@ class SingleChatModel with _$SingleChatModel {
   const factory SingleChatModel({
     String? chatId,
     String? userName,
-    List<String>? ids,
+    String? friendId,
+    String? userImage,
   }) = _SingleChatModel;
 
   factory SingleChatModel.fromJson(Map<String, dynamic> json) => _$SingleChatModelFromJson(json);

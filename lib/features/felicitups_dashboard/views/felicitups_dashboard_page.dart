@@ -140,6 +140,10 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                 ),
               ),
             ),
+            Container(
+              height: context.sp(85),
+              color: context.colors.orange,
+            ),
           ],
         ),
       ),

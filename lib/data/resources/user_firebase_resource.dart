@@ -55,12 +55,12 @@ class UserFirebaseResource implements UserRepository {
         AppConstants.usersCollection,
       );
       if (response != null) {
-        final user = response.firstWhere((user) => user['phone'] == phone, orElse: () => null);
-        if (user != null) {
-          return Right(user);
-        } else {
-          return Left(ApiException(404, 'User not found'));
+        for (final user in response) {
+          if (user['phone'] == phone) {
+            return Right(user);
+          }
         }
+        return Left(ApiException(404, 'User not found'));
       } else {
         return Left(ApiException(404, 'No users found in collection'));
       }

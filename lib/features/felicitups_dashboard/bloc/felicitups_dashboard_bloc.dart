@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:either_dart/either.dart';
+import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
@@ -10,6 +11,7 @@ import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:go_router/go_router.dart';
 
 part 'felicitups_dashboard_event.dart';
 part 'felicitups_dashboard_state.dart';
@@ -33,6 +35,7 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
         changeListBoolsTap: (event) => _changeListBoolTap(emit, event.index, event.controller),
         setLike: (event) => _setLike(emit, event.felicitupId, event.userId),
         updateMatchList: (event) => _updateMatchList(event.phones),
+        createSingleChat: (event) => _createSingleChat(emit, event.singleChatData),
         startListening: (_) => _startListening(emit),
         recivedData: (event) => _recivedData(emit, event.listFelicitups),
         recivedPastData: (event) => _recivedPastData(emit, event.listFelicitups),
@@ -96,6 +99,38 @@ class FelicitupsDashboardBloc extends Bloc<FelicitupsDashboardEvent, FelicitupsD
         await _userRepository.updateMatchList(ids);
       },
     );
+  }
+
+  _createSingleChat(
+    Emitter<FelicitupsDashboardState> emit,
+    SingleChatModel singleChatData,
+  ) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final response = await _chatRepository.createSingleChat(singleChatData);
+      return response.fold(
+        (l) {
+          logger.error(l);
+          emit(state.copyWith(isLoading: false));
+        },
+        (r) {
+          emit(state.copyWith(isLoading: false));
+          if (rootNavigatorKey.currentContext!.mounted) {
+            rootNavigatorKey.currentContext!.go(
+              RouterPaths.singleChat,
+              extra: SingleChatModel(
+                chatId: r,
+                userName: singleChatData.userName,
+                userImage: singleChatData.userImage,
+                friendId: singleChatData.friendId,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
   }
 
   _startListening(Emitter<FelicitupsDashboardState> emit) {
