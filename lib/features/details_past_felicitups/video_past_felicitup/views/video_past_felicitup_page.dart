@@ -236,29 +236,6 @@ class _VideoPastFelicitupPageState extends State<VideoPastFelicitupPage>
               ),
             ),
           ),
-          Positioned(
-            bottom: context.sp(20),
-            right: context.sp(20),
-            child: GestureDetector(
-              onTap: () {
-                logger.debug('hola mundo');
-              },
-              child: Container(
-                height: context.sp(30),
-                width: context.sp(30),
-                alignment: AlignmentDirectional.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: context.colors.grey,
-                ),
-                child: Icon(
-                  Icons.fullscreen,
-                  color: context.colors.orange,
-                  size: context.sp(20),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
