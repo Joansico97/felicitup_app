@@ -265,123 +265,136 @@ async function downloadFileToTemp(filePath, tempFilePath) {
 
 async function mergeVideosWithConcatFilter(videoPaths, outputFilePath) {
   return new Promise((resolve, reject) => {
-    // Verificar que los archivos existen
-    videoPaths.forEach((path) => {
-      if (!fs.existsSync(path)) {
-        return reject(new Error(`Archivo ${path} no existe`));
-      }
-    });
-
-    // Crear un archivo temporal con la lista de videos
-    const listFilePath = `${outputFilePath}.txt`;
-    const fileList = videoPaths.map((path) => `file '${path}'`).join('\n');
-
+    // 1. Validación mejorada de los archivos de entrada
+    const inputStats = [];
     try {
-      fs.writeFileSync(listFilePath, fileList);
+      videoPaths.forEach((path) => {
+        if (!fs.existsSync(path)) {
+          throw new Error(`Archivo ${path} no existe`);
+        }
+        const stats = fs.statSync(path);
+        if (stats.size === 0) {
+          throw new Error(`Archivo ${path} está vacío`);
+        }
+        inputStats.push(stats);
+      });
     } catch (err) {
-      return reject(new Error(`Error al crear archivo de lista: ${err.message}`));
+      return reject(err);
     }
 
-    // Argumentos para ffmpeg (concatenación simple)
+    // 2. Creación del archivo temporal con manejo de errores mejorado
+    const listFilePath = `${outputFilePath}.txt`;
+    const tempDir = path.dirname(outputFilePath);
+
+    try {
+      // Asegurar que el directorio temporal existe
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, {recursive: true});
+      }
+
+      // Crear lista con rutas absolutas para mayor seguridad
+      const absolutePaths = videoPaths.map((p) => path.resolve(p));
+      const fileList = absolutePaths.map((p) => `file '${p}'`).join('\n');
+      fs.writeFileSync(listFilePath, fileList);
+    } catch (err) {
+      return reject(new Error(`Error al preparar archivos temporales: ${err.message}`));
+    }
+
+    // 3. Configuración de FFmpeg con algunas opciones adicionales
     const args = [
       '-f', 'concat',
       '-safe', '0',
       '-i', listFilePath,
-      '-c', 'copy', // Copiar los streams sin re-codificar
-      '-movflags', '+faststart',
-      '-y', outputFilePath,
+      '-c:v', 'libx264', // Codificar video en lugar de copiar
+      '-preset', 'fast', // Balance entre velocidad y compresión
+      '-crf', '23', // Calidad estándar
+      '-c:a', 'aac', // Codificar audio
+      '-b:a', '128k', // Bitrate de audio
+      '-movflags', '+faststart', // Para streaming
+      '-y', // Sobrescribir sin preguntar
+      outputFilePath,
     ];
 
-    console.log('Ejecutando ffmpeg con args:', ['ffmpeg', ...args].join(' '));
+    console.log('Ejecutando ffmpeg para concatenar videos:',
+        `Inputs: ${videoPaths.length} (${inputStats.reduce((acc, s) => acc + s.size, 0) / 1024 / 1024} MB total)`,
+        `Output: ${outputFilePath}`,
+    );
 
+    // 4. Ejecución de FFmpeg con manejo mejorado
     const ffmpegProcess = execFile(
         'ffmpeg',
         args,
-        {timeout: 600000, maxBuffer: 1024 * 1024 * 64},
+        {
+          timeout: 600000, // 10 minutos
+          maxBuffer: 1024 * 1024 * 64, // 64MB
+          killSignal: 'SIGKILL', // Asegurar terminación
+        },
         (error, stdout, stderr) => {
-        // Eliminar el archivo de lista temporal
+        // Limpieza siempre se ejecuta
           try {
-            fs.unlinkSync(listFilePath);
+            if (fs.existsSync(listFilePath)) {
+              fs.unlinkSync(listFilePath);
+            }
           } catch (err) {
-            console.warn('No se pudo eliminar el archivo temporal', listFilePath);
+            console.warn('Error limpiando archivos temporales:', err.message);
           }
 
           if (error) {
-            console.error('Error FFmpeg:', {error, stdout, stderr});
-            reject(new Error(`FFmpeg falló: ${stderr}`));
+            const errorMsg = stderr.split('\n').filter((l) => l.trim().length > 0).slice(-5).join('\n');
+            reject(new Error(`Error FFmpeg: ${errorMsg}`));
             return;
           }
-          resolve();
+
+          // Verificar que el archivo de salida existe y no está vacío
+          try {
+            const outStats = fs.statSync(outputFilePath);
+            if (outStats.size === 0) {
+              reject(new Error('El archivo de salida está vacío'));
+              return;
+            }
+            console.log('Proceso completado:',
+                `Tamaño de salida: ${outStats.size / 1024 / 1024} MB`);
+            resolve();
+          } catch (err) {
+            reject(new Error('No se pudo verificar el archivo de salida'));
+          }
         },
     );
 
-    ffmpegProcess.stdout.on('data', (data) => {
-      console.log('FFmpeg stdout:', data.toString());
-    });
+    // 5. Logging mejorado del progreso
+    let durationEstablished = false;
+    let totalDuration = 0;
 
     ffmpegProcess.stderr.on('data', (data) => {
-      console.error('FFmpeg stderr:', data.toString());
+      const output = data.toString();
+
+      // Capturar duración total (solo una vez)
+      if (!durationEstablished && output.includes('Duration:')) {
+        const durationMatch = output.match(/Duration: (\d{2}):(\d{2}):(\d{2})\.\d{2}/);
+        if (durationMatch) {
+          totalDuration = (+durationMatch[1]) * 3600 + (+durationMatch[2]) * 60 + (+durationMatch[3]);
+          console.log(`Duración total estimada: ${totalDuration} segundos`);
+          durationEstablished = true;
+        }
+      }
+
+      // Mostrar progreso si hay información de tiempo
+      const timeMatch = output.match(/time=(\d{2}):(\d{2}):(\d{2})\.\d{2}/);
+      if (timeMatch && totalDuration > 0) {
+        const currentTime = (+timeMatch[1]) * 3600 + (+timeMatch[2]) * 60 + (+timeMatch[3]);
+        const progress = Math.round((currentTime / totalDuration) * 100);
+        console.log(`Progreso: ${progress}%`);
+      }
+    });
+
+    // Manejar cierre inesperado
+    ffmpegProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.warn(`FFmpeg terminó con código ${code}`);
+      }
     });
   });
 }
-
-// async function mergeVideosWithConcatFilter(videoPaths, outputFilePath) {
-//   return new Promise((resolve, reject) => {
-//     // Verificar que los archivos existen
-//     videoPaths.forEach((path) => {
-//       if (!fs.existsSync(path)) {
-//         return reject(new Error(`Archivo ${path} no existe`));
-//       }
-//     });
-
-//     // Construir el comando como ARRAY (evitando problemas de escapado)
-//     const args = [
-//       ...videoPaths.flatMap((path) => ['-i', path]),
-//       // ... agregar más inputs si es necesario
-//       '-filter_complex',
-//       // Filtros de escala/pad para cada input
-//       `[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,` +
-//       `pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];` +
-//       `[1:v]scale=1080:1920:force_original_aspect_ratio=decrease,` +
-//       `pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v1];` +
-//       // Concatenación
-//       `[v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]`,
-//       '-map', '[outv]',
-//       '-map', '[outa]',
-//       '-c:v', 'libx264',
-//       '-preset', 'fast',
-//       '-crf', '23',
-//       '-c:a', 'aac',
-//       '-b:a', '128k',
-//       '-movflags', '+faststart',
-//       '-y', outputFilePath,
-//     ];
-
-//     console.log('Ejecutando ffmpeg con args:', ['ffmpeg', ...args].join(' '));
-
-//     const ffmpegProcess = execFile(
-//         'ffmpeg',
-//         args, // Array de argumentos (escapado automático)
-//         {timeout: 600000, maxBuffer: 1024 * 1024 * 64},
-//         (error, stdout, stderr) => {
-//           if (error) {
-//             console.error('Error FFmpeg:', {error, stdout, stderr});
-//             reject(new Error(`FFmpeg falló: ${stderr}`));
-//             return;
-//           }
-//           resolve();
-//         },
-//     );
-
-//     ffmpegProcess.stdout.on('data', (data) => {
-//       console.log('FFmpeg stdout:', data.toString());
-//     });
-
-//     ffmpegProcess.stderr.on('data', (data) => {
-//       console.error('FFmpeg stderr:', data.toString());
-//     });
-//   });
-// }
 
 // Función principal
 exports.mergeVideos = functions.https.onCall({
