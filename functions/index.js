@@ -15,12 +15,12 @@ const {getDeviceToken, sendPushNotification, sendPushNotificationToListContacts}
 const {getUserDataById} = require("./users/users");
 const {deleteFelicitupTask} = require("./felicitups/send_felicitup_task");
 const {getFelicitupById, getFelicitupRefById} = require("./felicitups/felicitups");
-const {exec, spawn, execFile} = require("child_process");
+const {execFile} = require("child_process");
 
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const {ffmpegPath} = require("ffmpeg-static");
+// const {ffmpegPath} = require("ffmpeg-static");
 const constants = require("./constants/constants");
 
 const bucket = admin.storage().bucket();
@@ -144,350 +144,6 @@ exports.sendNotificationToList = functions.https.onCall(
       }
     });
 
-async function getVideoMetadata(filePath) {
-  return new Promise((resolve, reject) => {
-    exec(`ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,width,height,rotation -of json ${filePath}`,
-        (error, stdout, stderr) => {
-          if (error) {
-            console.error(`Error en ffprobe: ${stderr}`);
-            return reject(error);
-          }
-          try {
-            const metadata = JSON.parse(stdout).streams[0];
-            resolve(metadata);
-          } catch (parseError) {
-            reject(parseError);
-          }
-        });
-  });
-}
-
-async function normalizeVideoCodec(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    const command = [
-      "ffmpeg",
-      "-i", inputPath,
-      "-c:v", "libx264",
-      "-profile:v", "high",
-      "-preset", "slow",
-      "-crf", "23",
-      "-pix_fmt", "yuv420p",
-      "-movflags", "+faststart",
-      "-vf", "\"scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1\"",
-      "-c:a", "aac",
-      "-b:a", "128k",
-      "-r", "30",
-      "-y", outputPath,
-    ].join(" ");
-
-    exec(command, {timeout: 300000}, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error en normalización: ${stderr}`);
-        return reject(new Error(`FFmpeg error: ${stderr}`));
-      }
-      resolve();
-    });
-  });
-}
-
-async function convertHEVC(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    const command = [
-      "ffmpeg",
-      "-i", inputPath,
-      "-c:v", "libx264",
-      "-profile:v", "high",
-      "-preset", "slower",
-      "-tag:v", "avc1",
-      "-vf", "\"scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black\"",
-      "-c:a", "aac",
-      "-b:a", "128k",
-      "-movflags", "+faststart",
-      "-y", outputPath,
-    ].join(" ");
-
-    exec(command, {timeout: 300000}, (error) => {
-      if (error) return reject(error);
-      resolve();
-    });
-  });
-}
-
-async function attemptFallbackConversion(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    const command = [
-      "ffmpeg",
-      "-i", inputPath,
-      "-c:v", "libx264",
-      "-preset", "ultrafast",
-      "-vf", "\"scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black\"",
-      "-c:a", "copy",
-      "-y", outputPath,
-    ].join(" ");
-
-    exec(command, {timeout: 300000}, (error) => {
-      if (error) reject(new Error(`Fallback conversion failed`));
-      else resolve();
-    });
-  });
-}
-
-async function smartNormalize(inputPath, outputPath) {
-  try {
-    const metadata = await getVideoMetadata(inputPath);
-
-    if (metadata.codec_name === "hevc") {
-      console.log("Detectado video HEVC (iOS), aplicando conversión específica");
-      return await convertHEVC(inputPath, outputPath);
-    } else if (metadata.codec_name === "h264") {
-      console.log("Detectado video H.264 (Android), aplicando normalización estándar");
-      return await normalizeVideoCodec(inputPath, outputPath);
-    } else {
-      console.log("Códec no estándar detectado, aplicando normalización genérica");
-      return await normalizeVideoCodec(inputPath, outputPath);
-    }
-  } catch (error) {
-    console.warn(`No se pudieron leer metadatos, usando normalización genérica: ${error.message}`);
-    try {
-      return await normalizeVideoCodec(inputPath, outputPath);
-    } catch (normalizeError) {
-      console.error(`Normalización estándar falló, intentando fallback: ${normalizeError.message}`);
-      return await attemptFallbackConversion(inputPath, outputPath);
-    }
-  }
-}
-
-async function downloadFileToTemp(filePath, tempFilePath) {
-  const file = bucket.file(filePath);
-  await file.download({destination: tempFilePath});
-  console.log(`Archivo descargado a: ${tempFilePath}`);
-}
-
-async function mergeVideosWithConcatFilter(videoPaths, outputFilePath) {
-  return new Promise((resolve, reject) => {
-    // 1. Validación mejorada de los archivos de entrada
-    const inputStats = [];
-    try {
-      videoPaths.forEach((path) => {
-        if (!fs.existsSync(path)) {
-          throw new Error(`Archivo ${path} no existe`);
-        }
-        const stats = fs.statSync(path);
-        if (stats.size === 0) {
-          throw new Error(`Archivo ${path} está vacío`);
-        }
-        inputStats.push(stats);
-      });
-    } catch (err) {
-      return reject(err);
-    }
-
-    // 2. Creación del archivo temporal con manejo de errores mejorado
-    const listFilePath = `${outputFilePath}.txt`;
-    const tempDir = path.dirname(outputFilePath);
-
-    try {
-      // Asegurar que el directorio temporal existe
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, {recursive: true});
-      }
-
-      // Crear lista con rutas absolutas para mayor seguridad
-      const absolutePaths = videoPaths.map((p) => path.resolve(p));
-      const fileList = absolutePaths.map((p) => `file '${p}'`).join('\n');
-      fs.writeFileSync(listFilePath, fileList);
-    } catch (err) {
-      return reject(new Error(`Error al preparar archivos temporales: ${err.message}`));
-    }
-
-    // 3. Configuración de FFmpeg con algunas opciones adicionales
-    const args = [
-      '-f', 'concat',
-      '-safe', '0',
-      '-i', listFilePath,
-      '-c:v', 'libx264', // Codificar video en lugar de copiar
-      '-preset', 'fast', // Balance entre velocidad y compresión
-      '-crf', '23', // Calidad estándar
-      '-c:a', 'aac', // Codificar audio
-      '-b:a', '128k', // Bitrate de audio
-      '-movflags', '+faststart', // Para streaming
-      '-y', // Sobrescribir sin preguntar
-      outputFilePath,
-    ];
-
-    console.log('Ejecutando ffmpeg para concatenar videos:',
-        `Inputs: ${videoPaths.length} (${inputStats.reduce((acc, s) => acc + s.size, 0) / 1024 / 1024} MB total)`,
-        `Output: ${outputFilePath}`,
-    );
-
-    // 4. Ejecución de FFmpeg con manejo mejorado
-    const ffmpegProcess = execFile(
-        'ffmpeg',
-        args,
-        {
-          timeout: 600000, // 10 minutos
-          maxBuffer: 1024 * 1024 * 64, // 64MB
-          killSignal: 'SIGKILL', // Asegurar terminación
-        },
-        (error, stdout, stderr) => {
-        // Limpieza siempre se ejecuta
-          try {
-            if (fs.existsSync(listFilePath)) {
-              fs.unlinkSync(listFilePath);
-            }
-          } catch (err) {
-            console.warn('Error limpiando archivos temporales:', err.message);
-          }
-
-          if (error) {
-            const errorMsg = stderr.split('\n').filter((l) => l.trim().length > 0).slice(-5).join('\n');
-            reject(new Error(`Error FFmpeg: ${errorMsg}`));
-            return;
-          }
-
-          // Verificar que el archivo de salida existe y no está vacío
-          try {
-            const outStats = fs.statSync(outputFilePath);
-            if (outStats.size === 0) {
-              reject(new Error('El archivo de salida está vacío'));
-              return;
-            }
-            console.log('Proceso completado:',
-                `Tamaño de salida: ${outStats.size / 1024 / 1024} MB`);
-            resolve();
-          } catch (err) {
-            reject(new Error('No se pudo verificar el archivo de salida'));
-          }
-        },
-    );
-
-    // 5. Logging mejorado del progreso
-    let durationEstablished = false;
-    let totalDuration = 0;
-
-    ffmpegProcess.stderr.on('data', (data) => {
-      const output = data.toString();
-
-      // Capturar duración total (solo una vez)
-      if (!durationEstablished && output.includes('Duration:')) {
-        const durationMatch = output.match(/Duration: (\d{2}):(\d{2}):(\d{2})\.\d{2}/);
-        if (durationMatch) {
-          totalDuration = (+durationMatch[1]) * 3600 + (+durationMatch[2]) * 60 + (+durationMatch[3]);
-          console.log(`Duración total estimada: ${totalDuration} segundos`);
-          durationEstablished = true;
-        }
-      }
-
-      // Mostrar progreso si hay información de tiempo
-      const timeMatch = output.match(/time=(\d{2}):(\d{2}):(\d{2})\.\d{2}/);
-      if (timeMatch && totalDuration > 0) {
-        const currentTime = (+timeMatch[1]) * 3600 + (+timeMatch[2]) * 60 + (+timeMatch[3]);
-        const progress = Math.round((currentTime / totalDuration) * 100);
-        console.log(`Progreso: ${progress}%`);
-      }
-    });
-
-    // Manejar cierre inesperado
-    ffmpegProcess.on('close', (code) => {
-      if (code !== 0) {
-        console.warn(`FFmpeg terminó con código ${code}`);
-      }
-    });
-  });
-}
-
-// Función principal
-exports.mergeVideos = functions.https.onCall({
-  region: "us-central1",
-  timeoutSeconds: 540,
-  memory: "8GiB",
-}, async (data, context) => {
-  // Validación de entrada
-  // if (!context.auth) {
-  //   throw new functions.https.HttpsError("unauthenticated", "Debes estar autenticado");
-  // }
-
-  const {videoUrls, userId, felicitupId} = data.data;
-  if (!videoUrls || !Array.isArray(videoUrls) || videoUrls.length === 0) {
-    throw new functions.https.HttpsError("invalid-argument", "Debe proporcionar una lista de URLs de videos.");
-  }
-
-  const tempDir = os.tmpdir();
-  const outputFileName = `merged-${Date.now()}.mp4`;
-  const outputFilePath = path.join(tempDir, outputFileName);
-  const tempFiles = [];
-  const normalizedFiles = [];
-
-  try {
-    // 1. Descargar y normalizar cada video
-    for (const [index, url] of videoUrls.entries()) {
-      const tempFilePath = path.join(tempDir, `source-${index}.mp4`);
-      const normalizedPath = path.join(tempDir, `normalized-${index}.mp4`);
-
-      console.log(`Procesando video ${index + 1}/${videoUrls.length}`);
-
-      await downloadFileToTemp(url, tempFilePath);
-      await smartNormalize(tempFilePath, normalizedPath);
-
-      tempFiles.push(tempFilePath);
-      normalizedFiles.push(normalizedPath);
-    }
-
-    // 2. Unir los videos normalizados
-    console.log("Uniendo videos...");
-    await mergeVideosWithConcatFilter(normalizedFiles, outputFilePath);
-
-    // 3. Subir el video final a Storage
-    const destinationPath = `videos/${felicitupId}/${outputFileName}`;
-    await bucket.upload(outputFilePath, {destination: destinationPath});
-    console.log(`Video subido a ${destinationPath}`);
-
-    // 4. Obtener URL firmada
-    const mergedFile = bucket.file(destinationPath);
-    const [url] = await mergedFile.getSignedUrl({action: "read", expires: "03-01-2500"});
-
-    // 5. Actualizar Firestore
-    const docRef = admin.firestore().collection("Felicitups").doc(felicitupId);
-    await docRef.update({finalVideoUrl: url});
-
-    // 6. Enviar notificación (implementación básica)
-    const userDoc = await admin.firestore().collection("Users").doc(userId).get();
-    if (userDoc.exists && userDoc.data().fcmToken) {
-      await admin.messaging().send({
-        token: userDoc.data().fcmToken,
-        notification: {
-          title: "¡Tu video está listo!",
-          body: "La combinación de videos se ha completado exitosamente.",
-        },
-        data: {
-          "type": "video",
-          "felicitupId": felicitupId,
-          "chatId": "",
-          "name": "",
-        },
-      });
-    }
-
-    return {success: true, videoUrl: url};
-  } catch (error) {
-    console.error("Error en mergeVideos:", error);
-    throw new functions.https.HttpsError("internal", "Error al procesar los videos", error.message);
-  } finally {
-    // Limpieza de archivos temporales
-    const allTempFiles = [...tempFiles, ...normalizedFiles, outputFilePath];
-    await Promise.all(
-        allTempFiles.map((file) => {
-          if (fs.existsSync(file)) {
-            return fs.promises.unlink(file).catch((unlinkError) => {
-              console.error(`Error eliminando ${file}:`, unlinkError);
-            });
-          }
-          return Promise.resolve();
-        }),
-    );
-  }
-});
-
 exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
   try {
     const felicitupId = data.data.felicitupId;
@@ -559,77 +215,315 @@ exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
   }
 });
 
-exports.generateThumbnail = functions.https.onCall(async (data) => {
-  const filePath = data.data.filePath;
-  const file = bucket.file(filePath);
-  const tempDir = os.tmpdir();
-
-  const fileName = `temp-temp_file.mp4`;
-  const tempFilePath = path.join(tempDir, fileName);
-
-  try {
-    await downloadFileToTemp(file, tempFilePath);
-  } catch (error) {
-    throw new functions.https.HttpsError("Error de descarga", "Error en la función", error);
+// Función principal con mejor manejo de errores
+exports.mergeVideos = functions.https.onCall({
+  region: "us-central1",
+  timeoutSeconds: 540,
+  memory: "8GiB",
+}, async (data, context) => {
+  const {videoUrls, userId, felicitupId} = data.data;
+  if (!videoUrls || !Array.isArray(videoUrls)) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid video URLs");
   }
 
-  const thumbFileName = `thumb_${fileName.substring(0, fileName.lastIndexOf("."))}.jpg`;
-  const tempThumbPath = path.join(os.tmpdir(), thumbFileName);
+  const tempDir = os.tmpdir();
+  const outputFileName = `merged-${Date.now()}.mp4`;
+  const outputFilePath = path.join(tempDir, outputFileName);
+  const tempFiles = [];
+  const processedFiles = [];
 
   try {
-    spawn(ffmpegPath, [
-      "-i",
-      tempFilePath,
-      "-ss",
-      "00:00:01",
-      "-vframes",
-      "1",
-      "-q:v",
-      "2",
-      tempThumbPath,
-      "-y",
-    ]);
-    const felicitupId = data.felicitupId;
+    // 1. Descargar y normalizar cada video
+    for (const [index, url] of videoUrls.entries()) {
+      const tempFilePath = path.join(tempDir, `source-${index}.mp4`);
+      const processedPath = path.join(tempDir, `processed-${index}.mp4`);
 
-    if (!felicitupId) {
-      throw new functions.https.HttpsError("invalid-argument", "El ID de la felicitup es requerido.");
-    }
+      console.log(`Processing video ${index + 1}/${videoUrls.length}`);
 
-    const docRef = await getFelicitupRefById(felicitupId);
-    const felicitup = await docRef.get();
+      // Descargar el video
+      const file = bucket.file(url);
+      await file.download({destination: tempFilePath});
 
-    if (!felicitup.exists) {
-      throw new functions.https.HttpsError("not-found", "No se encontró la felicitup.");
-    }
+      // Normalizar TODOS los videos para consistencia
+      console.log(`Normalizing video ${index + 1}`);
+      await normalizeVideo(tempFilePath, processedPath);
 
-    const invitedUserDetails = felicitup.data().invitedUserDetails || [];
-    const userId = data.data.userId;
+      processedFiles.push(processedPath);
+      tempFiles.push(tempFilePath);
 
-    const updatedDetails = invitedUserDetails.map((user) => {
-      if (user.id === userId) {
-        return {
-          ...user,
-          videoData: {
-            ...user.videoData,
-            videoThumbnail: tempThumbPath,
-          },
-        };
+      // Verificar metadatos del video normalizado
+      try {
+        const meta = await getVideoMetadata(processedPath);
+        console.log(`Video ${index + 1} metadata:`, {
+          codec: meta.codec_name,
+          width: meta.width,
+          height: meta.height,
+          fps: meta.fps,
+          duration: meta.duration,
+        });
+      } catch (metaError) {
+        console.warn(`Could not get metadata for video ${index + 1}:`, metaError);
       }
-      return user;
-    });
-
-    await docRef.update({invitedUserDetails: updatedDetails});
-    console.log("Miniatura asignada correctamente en la felicitup.");
-    console.log("Miniatura generada en:", tempThumbPath);
-  } catch (error) {
-    console.error("Error al generar la miniatura:", error);
-    fs.unlinkSync(tempFilePath);
-    if (fs.existsSync(tempThumbPath)) {
-      fs.unlinkSync(tempThumbPath);
     }
-    return;
+
+    // 2. Concatenar los videos normalizados
+    console.log("Concatenating normalized videos...");
+    await concatVideos(processedFiles, outputFilePath);
+
+    // 3. Subir el resultado
+    const destinationPath = `videos/${felicitupId}/${outputFileName}`;
+    await bucket.upload(outputFilePath, {destination: destinationPath});
+
+    // 4. Obtener URL y actualizar Firestore
+    const mergedFile = bucket.file(destinationPath);
+    const [url] = await mergedFile.getSignedUrl({action: "read", expires: "03-01-2500"});
+
+    await admin.firestore().collection("Felicitups").doc(felicitupId)
+        .update({finalVideoUrl: url});
+
+    // 6. Enviar notificación (implementación básica)
+    const userDoc = await admin.firestore().collection("Users").doc(userId).get();
+    if (userDoc.exists && userDoc.data().fcmToken) {
+      await admin.messaging().send({
+        token: userDoc.data().fcmToken,
+        notification: {
+          title: "¡Tu video está listo!",
+          body: "La combinación de videos se ha completado exitosamente.",
+        },
+        data: {
+          "type": "video",
+          "felicitupId": felicitupId,
+          "chatId": "",
+          "name": "",
+        },
+      });
+    }
+
+    return {success: true, videoUrl: url};
+  } catch (error) {
+    console.error("Error in mergeVideos:", error);
+    throw new functions.https.HttpsError("internal", "Video processing failed", error.message);
+  } finally {
+    // Limpieza más robusta
+    const allTempFiles = [...tempFiles, ...processedFiles, outputFilePath];
+    for (const file of allTempFiles) {
+      try {
+        if (fs.existsSync(file)) {
+          fs.unlinkSync(file);
+          console.log(`Deleted temp file: ${file}`);
+        }
+      } catch (e) {
+        console.warn(`Could not delete temp file ${file}:`, e);
+      }
+    }
   }
 });
+
+// Función para obtener metadatos (versión segura)
+async function getVideoMetadata(filePath) {
+  return new Promise((resolve, reject) => {
+    execFile('ffprobe', [
+      '-v', 'error',
+      '-select_streams', 'v:0',
+      '-show_entries', 'stream=codec_name,width,height,r_frame_rate,duration',
+      '-of', 'json',
+      filePath,
+    ], (error, stdout, stderr) => {
+      if (error) return reject(new Error(`FFprobe error: ${stderr}`));
+      try {
+        const metadata = JSON.parse(stdout).streams[0];
+        const [numerator, denominator] = metadata.r_frame_rate.split('/');
+        metadata.fps = numerator / denominator;
+        resolve(metadata);
+      } catch (e) {
+        reject(new Error('Invalid metadata'));
+      }
+    });
+  });
+}
+
+// Función para concatenar videos (versión corregida)
+async function concatVideos(videoPaths, outputFilePath) {
+  return new Promise((resolve, reject) => {
+    const listFilePath = `${outputFilePath}.txt`;
+
+    try {
+      // Eliminé el 'outpoint 1' que causaba el problema de duración
+      const fileList = videoPaths.map((p) => `file '${p}'`).join('\n');
+      fs.writeFileSync(listFilePath, fileList);
+    } catch (err) {
+      return reject(new Error(`Error creating file list: ${err.message}`));
+    }
+
+    execFile('ffmpeg', [
+      '-f', 'concat',
+      '-safe', '0',
+      '-i', listFilePath,
+      '-c:v', 'libx264',
+      '-profile:v', 'high',
+      '-preset', 'fast',
+      '-r', '30',
+      '-g', '60',
+      '-keyint_min', '60',
+      '-sc_threshold', '0',
+      '-movflags', '+faststart',
+      '-c:a', 'aac',
+      '-b:a', '128k',
+      '-ar', '44100',
+      '-ac', '2',
+      '-vsync', 'cfr',
+      '-async', '1',
+      '-filter_complex', 'apad',
+      '-shortest',
+      '-y',
+      outputFilePath,
+    ], {timeout: 600000}, (error, stdout, stderr) => {
+      // Limpieza del archivo temporal
+      try {
+        fs.unlinkSync(listFilePath);
+      } catch (e) {
+        console.warn('Could not delete temp list file:', e);
+      }
+
+      if (error) {
+        console.error('FFmpeg stderr:', stderr);
+        return reject(new Error(`FFmpeg concat failed: ${error.message}`));
+      }
+
+      if (!fs.existsSync(outputFilePath)) {
+        return reject(new Error('Output file not created'));
+      }
+
+      // Verificar la duración del video resultante
+      getVideoMetadata(outputFilePath)
+          .then((metadata) => {
+            console.log('Merged video duration:', metadata.duration);
+            resolve();
+          })
+          .catch((e) => {
+            console.warn('Could not verify output duration:', e);
+            resolve(); // Resolvemos igual aunque no podamos verificar
+          });
+    });
+  });
+}
+
+// Función para normalizar videos (versión optimizada)
+async function normalizeVideo(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    execFile('ffmpeg', [
+      '-i', inputPath,
+      '-c:v', 'libx264',
+      '-profile:v', 'high',
+      '-preset', 'fast',
+      '-r', '30',
+      '-g', '60',
+      '-keyint_min', '60',
+      '-sc_threshold', '0',
+      '-movflags', '+faststart',
+      '-c:a', 'aac',
+      '-b:a', '128k',
+      '-ar', '44100',
+      '-ac', '2',
+      '-filter_complex',
+      '[0:v]scale=w=1080:h=1920:force_original_aspect_ratio=decrease,' +
+      'pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[outv]',
+      '-map', '[outv]',
+      '-map', '0:a?',
+      '-af', 'aresample=async=1000',
+      '-y',
+      outputPath,
+    ], {timeout: 300000}, (error, stdout, stderr) => {
+      if (error) {
+        console.error('FFmpeg error details:', stderr);
+        return reject(new Error(`FFmpeg error: ${stderr}`));
+      }
+
+      // Verificar que el video normalizado tenga la duración correcta
+      getVideoMetadata(outputPath)
+          .then((metadata) => {
+            console.log(`Normalized video duration: ${metadata.duration}s`);
+            resolve();
+          })
+          .catch((e) => {
+            console.warn('Could not verify normalized video duration:', e);
+            resolve(); // Continuamos aunque no podamos verificar
+          });
+    });
+  });
+}
+
+// exports.generateThumbnail = functions.https.onCall(async (data) => {
+//   const filePath = data.data.filePath;
+//   const file = bucket.file(filePath);
+//   const tempDir = os.tmpdir();
+
+//   const fileName = `temp-temp_file.mp4`;
+//   const tempFilePath = path.join(tempDir, fileName);
+
+//   try {
+//     await downloadFileToTemp(file, tempFilePath);
+//   } catch (error) {
+//     throw new functions.https.HttpsError("Error de descarga", "Error en la función", error);
+//   }
+
+//   const thumbFileName = `thumb_${fileName.substring(0, fileName.lastIndexOf("."))}.jpg`;
+//   const tempThumbPath = path.join(os.tmpdir(), thumbFileName);
+
+//   try {
+//     spawn(ffmpegPath, [
+//       "-i",
+//       tempFilePath,
+//       "-ss",
+//       "00:00:01",
+//       "-vframes",
+//       "1",
+//       "-q:v",
+//       "2",
+//       tempThumbPath,
+//       "-y",
+//     ]);
+//     const felicitupId = data.felicitupId;
+
+//     if (!felicitupId) {
+//       throw new functions.https.HttpsError("invalid-argument", "El ID de la felicitup es requerido.");
+//     }
+
+//     const docRef = await getFelicitupRefById(felicitupId);
+//     const felicitup = await docRef.get();
+
+//     if (!felicitup.exists) {
+//       throw new functions.https.HttpsError("not-found", "No se encontró la felicitup.");
+//     }
+
+//     const invitedUserDetails = felicitup.data().invitedUserDetails || [];
+//     const userId = data.data.userId;
+
+//     const updatedDetails = invitedUserDetails.map((user) => {
+//       if (user.id === userId) {
+//         return {
+//           ...user,
+//           videoData: {
+//             ...user.videoData,
+//             videoThumbnail: tempThumbPath,
+//           },
+//         };
+//       }
+//       return user;
+//     });
+
+//     await docRef.update({invitedUserDetails: updatedDetails});
+//     console.log("Miniatura asignada correctamente en la felicitup.");
+//     console.log("Miniatura generada en:", tempThumbPath);
+//   } catch (error) {
+//     console.error("Error al generar la miniatura:", error);
+//     fs.unlinkSync(tempFilePath);
+//     if (fs.existsSync(tempThumbPath)) {
+//       fs.unlinkSync(tempThumbPath);
+//     }
+//     return;
+//   }
+// });
 
 const deleterBirthdayAlert = async (userId, id) => {
   if (!userId) {
