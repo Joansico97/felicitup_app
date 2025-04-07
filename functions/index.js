@@ -274,12 +274,23 @@ exports.mergeVideos = functions.https.onCall({
     const destinationPath = `videos/${felicitupId}/${outputFileName}`;
     await bucket.upload(outputFilePath, {destination: destinationPath});
 
-    // 4. Obtener URL y actualizar Firestore
+    // 4. Generar y subir thumbnail
+    const thumbnailFileName = `thumbnail-${Date.now()}.jpg`;
+    const thumbnailTempPath = path.join(tempDir, thumbnailFileName);
+    const thumbnailDestinationPath = `thumbnails/${felicitupId}/${thumbnailFileName}`;
+
+    console.log("Generating thumbnail...");
+    await generateThumbnail(outputFilePath, thumbnailTempPath);
+    await bucket.upload(thumbnailTempPath, {destination: thumbnailDestinationPath});
+
+    // 5. Obtener URL y actualizar Firestore
     const mergedFile = bucket.file(destinationPath);
+    const thumbnailFile = bucket.file(thumbnailDestinationPath);
     const [url] = await mergedFile.getSignedUrl({action: "read", expires: "03-01-2500"});
+    const [thumbnailUrl] = await thumbnailFile.getSignedUrl({action: "read", expires: "03-01-2500"});
 
     await admin.firestore().collection("Felicitups").doc(felicitupId)
-        .update({finalVideoUrl: url});
+        .update({finalVideoUrl: url, thumbnailUrl: thumbnailUrl});
 
     // 6. Enviar notificación (implementación básica)
     const userDoc = await admin.firestore().collection("Users").doc(userId).get();
@@ -453,77 +464,22 @@ async function normalizeVideo(inputPath, outputPath) {
   });
 }
 
-// exports.generateThumbnail = functions.https.onCall(async (data) => {
-//   const filePath = data.data.filePath;
-//   const file = bucket.file(filePath);
-//   const tempDir = os.tmpdir();
-
-//   const fileName = `temp-temp_file.mp4`;
-//   const tempFilePath = path.join(tempDir, fileName);
-
-//   try {
-//     await downloadFileToTemp(file, tempFilePath);
-//   } catch (error) {
-//     throw new functions.https.HttpsError("Error de descarga", "Error en la función", error);
-//   }
-
-//   const thumbFileName = `thumb_${fileName.substring(0, fileName.lastIndexOf("."))}.jpg`;
-//   const tempThumbPath = path.join(os.tmpdir(), thumbFileName);
-
-//   try {
-//     spawn(ffmpegPath, [
-//       "-i",
-//       tempFilePath,
-//       "-ss",
-//       "00:00:01",
-//       "-vframes",
-//       "1",
-//       "-q:v",
-//       "2",
-//       tempThumbPath,
-//       "-y",
-//     ]);
-//     const felicitupId = data.felicitupId;
-
-//     if (!felicitupId) {
-//       throw new functions.https.HttpsError("invalid-argument", "El ID de la felicitup es requerido.");
-//     }
-
-//     const docRef = await getFelicitupRefById(felicitupId);
-//     const felicitup = await docRef.get();
-
-//     if (!felicitup.exists) {
-//       throw new functions.https.HttpsError("not-found", "No se encontró la felicitup.");
-//     }
-
-//     const invitedUserDetails = felicitup.data().invitedUserDetails || [];
-//     const userId = data.data.userId;
-
-//     const updatedDetails = invitedUserDetails.map((user) => {
-//       if (user.id === userId) {
-//         return {
-//           ...user,
-//           videoData: {
-//             ...user.videoData,
-//             videoThumbnail: tempThumbPath,
-//           },
-//         };
-//       }
-//       return user;
-//     });
-
-//     await docRef.update({invitedUserDetails: updatedDetails});
-//     console.log("Miniatura asignada correctamente en la felicitup.");
-//     console.log("Miniatura generada en:", tempThumbPath);
-//   } catch (error) {
-//     console.error("Error al generar la miniatura:", error);
-//     fs.unlinkSync(tempFilePath);
-//     if (fs.existsSync(tempThumbPath)) {
-//       fs.unlinkSync(tempThumbPath);
-//     }
-//     return;
-//   }
-// });
+async function generateThumbnail(videoPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    execFile('ffmpeg', [
+      '-i', videoPath,
+      '-ss', '00:00:01', // Captura en el segundo 1
+      '-vframes', '1', // Solo 1 frame
+      '-q:v', '2', // Calidad del thumbnail (2 es alta calidad)
+      '-vf', 'scale=540:960', // Tamaño reducido para thumbnail
+      '-y',
+      outputPath,
+    ], {timeout: 30000}, (error, stdout, stderr) => {
+      if (error) return reject(new Error(`FFmpeg thumbnail error: ${stderr}`));
+      resolve();
+    });
+  });
+}
 
 const deleterBirthdayAlert = async (userId, id) => {
   if (!userId) {
@@ -556,19 +512,19 @@ const deleterBirthdayAlert = async (userId, id) => {
   }
 };
 
-exports.checkBirthdays = functions.https.onRequest( // Cambio a https.onRequest
+exports.checkBirthdays = functions.https.onRequest(
     {
-      schedule: "0 0 * * *", //  Cron schedule.
-      region: "us-central1", //  ¡SIEMPRE especifica la región!  Cambia a tu región.
-      timeZone: "UTC", //  ¡SIEMPRE especifica la zona horaria!
-      timeoutSeconds: 300, //  Opcional:  Aumenta el timeout si es necesario (máximo 540s para onRequest)
-      memory: "256MiB", //  Opcional:  Ajusta la memoria si es necesario.
+      schedule: "0 0 * * *",
+      region: "us-central1",
+      timeZone: "UTC",
+      timeoutSeconds: 300,
+      memory: "256MiB",
     },
-    async (req, res) => { //  onRun cambia a onRequest, y recibe req, res.
+    async (req, res) => {
       const now = new Date();
       const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
       const db = admin.firestore();
-      const usersRef = db.collection(constants.usersPath); //  Asegúrate de que 'constants' esté definido.
+      const usersRef = db.collection(constants.usersPath);
 
       try {
         const snapshot = await usersRef
@@ -577,8 +533,9 @@ exports.checkBirthdays = functions.https.onRequest( // Cambio a https.onRequest
             .get();
 
         if (snapshot.empty) {
-          functions.logger.info("No hay usuarios que cumplan años hoy."); // Usa functions.logger
-          res.status(200).send("No birthdays today"); // Respuesta en lugar de return null
+          console.log("No hay usuarios que cumplan años hoy.");
+          functions.logger.info("No hay usuarios que cumplan años hoy.");
+          res.status(200).send("No birthdays today");
           return;
         }
 
@@ -588,11 +545,11 @@ exports.checkBirthdays = functions.https.onRequest( // Cambio a https.onRequest
           const userName = userData.name || "Un usuario";
           const friendProfilePic = userData.userImg || "";
 
-          functions.logger.info(`Cumpleaños de ${userName} (${userId})`); // Usa functions.logger
+          functions.logger.info(`Cumpleaños de ${userName} (${userId})`);
 
           const friends = userData.friends;
           if (!friends || friends.length === 0) {
-            functions.logger.info(`${userName} no tiene amigos.`); // Usa functions.logger
+            functions.logger.info(`${userName} no tiene amigos.`);
             continue;
           }
 
@@ -600,9 +557,8 @@ exports.checkBirthdays = functions.https.onRequest( // Cambio a https.onRequest
             const friendDocRef = usersRef.doc(friendId);
 
             try {
-              // Verificamos que exista
               const friendDoc = await friendDocRef.get();
-              if (friendDoc.exists) { // Si existe
+              if (friendDoc.exists) {
                 const id = admin.firestore.FieldValue.serverTimestamp().toMillis().toString() + "-" + friendId;
                 await friendDocRef.update({
                   birthdayAlerts: admin.firestore.FieldValue.arrayUnion({
@@ -613,15 +569,14 @@ exports.checkBirthdays = functions.https.onRequest( // Cambio a https.onRequest
                     timestamp: admin.firestore.FieldValue.serverTimestamp(),
                   }),
                 });
-                // Llama a la función auxiliar *después* de actualizar Firestore.
+
                 await deleterBirthdayAlert(userId, id);
                 functions.logger.info(`Información de cumpleaños agregada al documento de ${friendId}`);
               } else {
                 functions.logger.info(`El amigo con id ${friendId} no existe`);
               }
             } catch (error) {
-              functions.logger.error("Error al actualizar el documento del amigo:", error, {userId, friendId}); // Log estructurado.
-              //  NO uses 'return' aquí. Continúa con los otros amigos.
+              functions.logger.error("Error al actualizar el documento del amigo:", error, {userId, friendId});
             }
           }
         }

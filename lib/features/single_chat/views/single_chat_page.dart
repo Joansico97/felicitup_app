@@ -151,24 +151,10 @@ class _SingleChatPageState extends State<SingleChatPage> with WidgetsBindingObse
                                     chatMessage: chatMessage,
                                     chatId: widget.data.chatId ?? '',
                                     userId: widget.data.friendId ?? '',
-                                    userName: currentUser?.firstName ?? '',
+                                    userName: widget.data.userName ?? '',
+                                    userImage: widget.data.userImage ?? '',
                                   ),
                                 );
-                            // context.read<MessageFelicitupBloc>().add(
-                            //       MessageFelicitupEvent.sendMessage(
-                            //         ChatMessageModel(
-                            //           id: '${felicitup?.id}-${currentUser?.id}',
-                            //           message: textValue,
-                            //           sendedBy: currentUser?.id ?? '',
-                            //           userName: currentUser?.firstName ?? '',
-                            //           sendedAt: DateTime.now(),
-                            //           userImg: currentUser?.userImg,
-                            //         ),
-                            //         felicitup!,
-                            //         currentUser?.id ?? '',
-                            //         currentUser?.firstName ?? '',
-                            //       ),
-                            //     );
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               _scrollToBottom();
                             });

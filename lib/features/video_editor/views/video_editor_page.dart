@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
 import 'package:felicitup_app/features/video_editor/bloc/video_editor_bloc.dart';
@@ -35,6 +36,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
 
   @override
   void initState() {
+    logger.debug('el id es: ${widget.felicitupId}');
     WidgetsBinding.instance.addObserver(this);
     context.read<VideoEditorBloc>().add(VideoEditorEvent.getFelicitupInfo(widget.felicitupId));
     SystemChrome.setPreferredOrientations([

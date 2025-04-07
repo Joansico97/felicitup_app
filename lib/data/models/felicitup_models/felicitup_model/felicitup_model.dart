@@ -23,6 +23,7 @@ class FelicitupModel with _$FelicitupModel {
     required int boteQuantity,
     String? message,
     String? status,
+    String? thumbnailUrl,
     List<String>? likes,
     @TimestampConverter() required DateTime limitDate,
     required String chatId,

@@ -23,7 +23,14 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
       (events, emit) => events.map(
         changeIsLoading: (_) => _changeIsLoading(emit),
         setCurrentChatId: (event) => _setCurrentChatId(emit, event.chatId),
-        sendMessage: (event) => _sendMessage(emit, event.chatMessage, event.chatId, event.userId, event.userName),
+        sendMessage: (event) => _sendMessage(
+          emit,
+          event.chatMessage,
+          event.chatId,
+          event.userId,
+          event.userName,
+          event.userImage,
+        ),
         startListening: (event) => _startListening(emit, event.chatId),
         recivedData: (event) => _recivedData(emit, event.listMessages),
       ),
@@ -42,8 +49,14 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
     emit(state.copyWith(currentChatId: chatId));
   }
 
-  _sendMessage(Emitter<SingleChatState> emit, ChatMessageModel chatMessage, String chatId, String userId,
-      String userName) async {
+  _sendMessage(
+    Emitter<SingleChatState> emit,
+    ChatMessageModel chatMessage,
+    String chatId,
+    String userId,
+    String userName,
+    String userImage,
+  ) async {
     final response = await _chatRepository.sendMessageSingleChat(chatId, chatMessage);
 
     response.fold(
@@ -59,6 +72,8 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
             felicitupId: '',
             chatId: chatId,
             name: userName,
+            friendId: userId,
+            userImage: userImage,
           ),
         );
       },

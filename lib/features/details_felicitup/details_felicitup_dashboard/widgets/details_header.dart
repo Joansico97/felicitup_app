@@ -70,6 +70,14 @@ class DetailsHeader extends StatelessWidget {
                                   child: Image.network(
                                     felicitup.owner[0].userImg ?? '',
                                     fit: BoxFit.cover,
+                                    errorBuilder: (_, error, stackTrace) => Center(
+                                      child: Text(
+                                        felicitup.owner[0].name.split(' ')[0].substring(0, 1).toUpperCase(),
+                                        style: context.styles.header2.copyWith(
+                                          color: context.colors.orange,
+                                        ),
+                                      ),
+                                    ),
                                     loadingBuilder: (_, child, loadingProgress) {
                                       if (loadingProgress == null) {
                                         return child;

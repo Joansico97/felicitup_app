@@ -10,6 +10,8 @@ void redirectHelper({required Map<String, dynamic> data}) {
   final felicitupId = data['felicitupId'] ?? '';
   final chatId = data['chatId'] ?? '';
   final name = data['name'] ?? '';
+  final friendId = data['friendId'] ?? '';
+  final userImage = data['userImage'] ?? '';
 
   switch (pushMessageType) {
     case PushMessageType.felicitup:
@@ -52,11 +54,16 @@ void redirectHelper({required Map<String, dynamic> data}) {
       break;
 
     case PushMessageType.singleChat:
+      final chatModel = SingleChatModel(
+        chatId: chatId,
+        userName: name,
+        friendId: friendId,
+        userImage: userImage,
+      );
       CustomRouter().router.go(
         RouterPaths.singleChat,
         extra: {
-          'chatId': chatId,
-          'name': name,
+          'data': chatModel,
         },
       );
       break;

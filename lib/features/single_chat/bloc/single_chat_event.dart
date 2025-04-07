@@ -9,6 +9,7 @@ class SingleChatEvent with _$SingleChatEvent {
     required String chatId,
     required String userId,
     required String userName,
+    required String userImage,
   }) = _sendMessage;
   const factory SingleChatEvent.startListening(String chatId) = _startListening;
   const factory SingleChatEvent.recivedData(List<ChatMessageModel> listMessages) = _recivedData;
