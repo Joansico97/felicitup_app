@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:felicitup_app/core/extensions/extensions.dart';
-import 'package:felicitup_app/core/utils/logger.dart';
 import 'package:felicitup_app/features/features.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

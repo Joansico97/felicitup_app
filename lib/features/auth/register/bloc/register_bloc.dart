@@ -109,6 +109,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           singleChats: [],
           birthDate: state.birthDate!,
           registerDate: DateTime.now(),
+          birthDay: state.birthDate!.day,
+          birthMonth: state.birthDate!.month,
         ),
       );
 

@@ -22,6 +22,7 @@ const os = require("os");
 const path = require("path");
 // const {ffmpegPath} = require("ffmpeg-static");
 const constants = require("./constants/constants");
+const {onSchedule} = require("firebase-functions/scheduler");
 
 const bucket = admin.storage().bucket();
 
@@ -86,7 +87,7 @@ exports.sendNotification = functions.https.onCall(
           return {success: true};
         }
       } catch (error) {
-        functions.logger.error("Error en sendNotification:", error, {userId: data && data.data ? data.data.userId : undefined}); // Log estructurado.
+        functions.console.error("Error en sendNotification:", error, {userId: data && data.data ? data.data.userId : undefined}); // Log estructurado.
         if (error instanceof functions.https.HttpsError) {
           throw error;
         }
@@ -496,12 +497,12 @@ const deleterBirthdayAlert = async (userId, id) => {
   }
 
   try {
-    const alertsToRemove = userDoc.data().birthdayAlerts.filter((alert) => alert.id === id); // Filtra las alertas
+    const alertsToRemove = userDoc.data().birthdateAlerts.filter((alert) => alert.id === id); // Filtra las alertas
 
     // Usa Promise all para ejecutar las promesas al tiempo
     await Promise.all(alertsToRemove.map((alert) =>
       db.collection(constants.usersPath).doc(userId).update({
-        birthdayAlerts: admin.firestore.FieldValue.arrayRemove(alert),
+        birthdateAlerts: admin.firestore.FieldValue.arrayRemove(alert),
       }),
     ));
     console.log(`Alertas de cumpleaños eliminada para el usuario ${userId}`);
@@ -512,111 +513,85 @@ const deleterBirthdayAlert = async (userId, id) => {
   }
 };
 
-exports.checkBirthdays = functions.https.onRequest(
-    {
-      schedule: "0 0 * * *",
-      region: "us-central1",
-      timeZone: "UTC",
-      timeoutSeconds: 300,
-      memory: "256MiB",
-    },
-    async (req, res) => {
-      const now = new Date();
-      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-      const db = admin.firestore();
-      const usersRef = db.collection(constants.usersPath);
+exports.checkBirthdays = onSchedule({
+  schedule: 'every 2 hours',
+  timeZone: 'UTC',
+  timeoutSeconds: 300,
+  memory: '256MiB',
+}, async (event) => {
+  const today = new Date();
+  const currentMonth = today.getUTCMonth() + 1;
+  const currentDay = today.getUTCDate();
+  const db = admin.firestore();
+  const usersRef = db.collection(constants.usersPath);
 
-      try {
-        const snapshot = await usersRef
-            .where("birthDate.month", "==", today.getUTCMonth() + 1)
-            .where("birthDate.day", "==", today.getUTCDate())
-            .get();
+  try {
+    const snapshot = await usersRef
+        .where("birthMonth", "==", currentMonth)
+        .where("birthDay", "==", currentDay)
+        .get();
 
-        if (snapshot.empty) {
-          console.log("No hay usuarios que cumplan años hoy.");
-          functions.logger.info("No hay usuarios que cumplan años hoy.");
-          res.status(200).send("No birthdays today");
-          return;
-        }
+    if (snapshot.empty) {
+      console.log("No hay usuarios que cumplan años hoy.");
+      return;
+    }
 
-        for (const userDoc of snapshot.docs) {
-          const userData = userDoc.data();
-          const userId = userDoc.id;
-          const userName = userData.name || "Un usuario";
-          const friendProfilePic = userData.userImg || "";
+    for (const userDoc of snapshot.docs) {
+      const userData = userDoc.data();
+      const userId = userDoc.id;
+      const userName = userData.name || "Un usuario";
+      const friendProfilePic = userData.userImg || "";
 
-          functions.logger.info(`Cumpleaños de ${userName} (${userId})`);
+      console.log(`Cumpleaños de ${userName} (${userId})`);
 
-          const friends = userData.friends;
-          if (!friends || friends.length === 0) {
-            functions.logger.info(`${userName} no tiene amigos.`);
-            continue;
-          }
-
-          for (const friendId of friends) {
-            const friendDocRef = usersRef.doc(friendId);
-
-            try {
-              const friendDoc = await friendDocRef.get();
-              if (friendDoc.exists) {
-                const id = admin.firestore.FieldValue.serverTimestamp().toMillis().toString() + "-" + friendId;
-                await friendDocRef.update({
-                  birthdayAlerts: admin.firestore.FieldValue.arrayUnion({
-                    id: id,
-                    friendId: userId,
-                    friendName: userName,
-                    friendProfilePic: friendProfilePic,
-                    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-                  }),
-                });
-
-                await deleterBirthdayAlert(userId, id);
-                functions.logger.info(`Información de cumpleaños agregada al documento de ${friendId}`);
-              } else {
-                functions.logger.info(`El amigo con id ${friendId} no existe`);
-              }
-            } catch (error) {
-              functions.logger.error("Error al actualizar el documento del amigo:", error, {userId, friendId});
-            }
-          }
-        }
-
-        res.status(200).send("Birthday check completed"); // Responde
-      } catch (error) {
-        functions.logger.error("Error en checkBirthdays", error);
-        res.status(500).send("Internal Server Error");
+      const friends = userData.matchList || [];
+      if (friends.length === 0) {
+        console.log(`${userName} no tiene amigos.`);
+        continue;
       }
-    },
-);
 
-// exports.deleterBirthdayAlert = functions.region("us-central1").https.onCall(async (data) => {
-//   const userId = data.userId;
-//   const id = data.id;
+      for (const friendId of friends) {
+        const friendDocRef = usersRef.doc(friendId);
 
-//   if (!userId) {
-//     throw new functions.https.HttpsError("invalid-argument", "El ID del usuario es requerido.");
-//   }
+        try {
+          const friendDoc = await friendDocRef.get();
+          if (friendDoc.exists) {
+            // Verificar si ya existe una alerta para este usuario
+            const existingAlerts = friendDoc.data().birthdateAlerts || [];
+            const alreadyExists = existingAlerts.some(
+                (alert) => alert.friendId === userId,
+            );
 
-//   const db = admin.firestore();
-//   const usersRef = db.collection(constants.usersPath);
-//   const userDoc = await usersRef.doc(userId).get();
-//   try {
-//     const now = admin.firestore.Timestamp.now();
-//     const executionTime = new Date(now.toDate().getTime() + 24 * 60 * 60 * 1000); // 24 horas después
-//     userDoc.data().birthdayAlerts.forEach(async (alert) => {
-//       if (alert.id === id) {
-//         await db.collection(constants.usersPath).doc(userId).update({
-//           birthdayAlerts: admin.firestore.FieldValue.arrayRemove(alert),
-//         });
-//         console.log(`Alerta de cumpleaños eliminada para el usuario ${userId}`);
-//       }
-//     },
-//     );
+            if (alreadyExists) {
+              console.log(`Alerta de cumpleaños para ${userName} ya existe en ${friendId}`);
+              continue;
+            }
 
-//     console.log(`Tarea programada para el usuario ${userId} a las ${executionTime}`);
-//     return {message: "Tarea programada exitosamente."};
-//   } catch (error) {
-//     console.error("Error al programar la tarea:", error);
-//     throw new functions.https.HttpsError("internal", "Error al programar la tarea.", error);
-//   }
-// });
+            // Generar ID único
+            const id = `${userId}-${friendId}-${Date.now()}`;
+
+            await friendDocRef.update({
+              birthdateAlerts: admin.firestore.FieldValue.arrayUnion({
+                id: id,
+                friendId: userId,
+                friendName: userName,
+                friendProfilePic: friendProfilePic,
+              }),
+            });
+
+            await deleterBirthdayAlert(userId, id);
+            console.log(`Información de cumpleaños agregada al documento de ${friendId}`);
+          } else {
+            console.log(`El amigo con id ${friendId} no existe`);
+          }
+        } catch (error) {
+          console.error("Error al actualizar el documento del amigo:", error, {userId, friendId});
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error en checkBirthdays", error);
+    throw error;
+  }
+});
+

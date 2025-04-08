@@ -19,6 +19,8 @@ class UserModel with _$UserModel {
     String? userImg,
     String? fcmToken,
     String? currentChat,
+    int? birthMonth,
+    int? birthDay,
     List<ContactModel>? friendList,
     List<BirthdateAlertsModel>? birthdateAlerts,
     List<String>? matchList,
