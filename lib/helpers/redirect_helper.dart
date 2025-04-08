@@ -103,5 +103,7 @@ void redirectHelper({required Map<String, dynamic> data}) {
         },
       );
       break;
+    case PushMessageType.reminder:
+      break;
   }
 }

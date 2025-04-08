@@ -579,6 +579,20 @@ exports.checkBirthdays = onSchedule({
               }),
             });
 
+            await admin.messaging().send({
+              token: friendDoc.data().fcmToken,
+              notification: {
+                title: "Recordatorio de cumpleaños",
+                body: `${userDoc.data().firstName} cumpleaños hoy!`,
+              },
+              data: {
+                "type": "reminder",
+                "felicitupId": "",
+                "chatId": "",
+                "name": "",
+              },
+            });
+
             await deleterBirthdayAlert(userId, id);
             console.log(`Información de cumpleaños agregada al documento de ${friendId}`);
           } else {
