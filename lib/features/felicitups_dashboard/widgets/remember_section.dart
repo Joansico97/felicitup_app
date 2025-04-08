@@ -100,6 +100,16 @@ class RememberSection extends StatelessWidget {
                                   userName: data?.friendName ?? '',
                                   userImage: data?.friendProfilePic,
                                 );
+                                if (currentUser?.singleChats?.any((alert) => alert.friendId == data?.friendId) ??
+                                    false) {
+                                  final alert =
+                                      currentUser?.singleChats?.firstWhere((alert) => alert.friendId == data?.friendId);
+                                  context.go(
+                                    RouterPaths.singleChat,
+                                    extra: alert,
+                                  );
+                                  return;
+                                }
                                 context.read<FelicitupsDashboardBloc>().add(
                                       FelicitupsDashboardEvent.createSingleChat(singleChat),
                                     );
