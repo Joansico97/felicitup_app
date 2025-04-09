@@ -142,6 +142,8 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
                 felicitupId: felicitupId,
                 chatId: '',
                 name: '',
+                friendId: '',
+                userImage: '',
               ),
             );
           } else {
@@ -155,6 +157,8 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
                 felicitupId: felicitupId,
                 chatId: '',
                 name: '',
+                friendId: '',
+                userImage: '',
               ),
             );
             emit(state.copyWith(isLoading: false));

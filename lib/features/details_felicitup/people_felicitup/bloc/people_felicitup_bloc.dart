@@ -90,6 +90,8 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
                 felicitupId: felicitupId,
                 chatId: '',
                 name: '',
+                friendId: '',
+                userImage: '',
               ),
             );
             emit(state.copyWith(isLoading: false));
@@ -135,6 +137,8 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
                 felicitupId: felicitupId,
                 chatId: '',
                 name: '',
+                friendId: '',
+                userImage: '',
               ),
             );
           }

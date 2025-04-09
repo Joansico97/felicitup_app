@@ -307,6 +307,8 @@ exports.mergeVideos = functions.https.onCall({
           "felicitupId": felicitupId,
           "chatId": "",
           "name": "",
+          "friendId": "",
+          "userImage": "",
         },
       });
     }
@@ -590,6 +592,8 @@ exports.checkBirthdays = onSchedule({
                 "felicitupId": "",
                 "chatId": "",
                 "name": "",
+                "friendId": "",
+                "userImage": "",
               },
             });
 

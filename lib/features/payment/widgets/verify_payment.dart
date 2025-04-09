@@ -248,6 +248,8 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                                     felicitupId: widget.felicitup.id,
                                     chatId: '',
                                     name: '',
+                                    friendId: '',
+                                    userImage: '',
                                   ),
                                 ),
                               );

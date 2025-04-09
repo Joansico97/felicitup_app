@@ -86,6 +86,8 @@ class MessageFelicitupBloc extends Bloc<MessageFelicitupEvent, MessageFelicitupS
                 felicitupId: felicitup.id,
                 chatId: felicitup.chatId,
                 name: '',
+                friendId: '',
+                userImage: '',
               ),
             );
           }

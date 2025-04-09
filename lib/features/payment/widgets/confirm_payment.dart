@@ -315,6 +315,8 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                                 felicitupId: widget.felicitup.id,
                                 chatId: '',
                                 name: '',
+                                friendId: '',
+                                userImage: '',
                               ),
                             ),
                           );

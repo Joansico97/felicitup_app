@@ -332,6 +332,8 @@ class CreateFelicitupBloc extends Bloc<CreateFelicitupEvent, CreateFelicitupStat
             felicitupId: felicitupId,
             chatId: '',
             name: '',
+            friendId: '',
+            userImage: '',
           ),
         );
       }

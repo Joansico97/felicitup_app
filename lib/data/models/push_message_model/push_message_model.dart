@@ -80,9 +80,8 @@ class DataMessageModel with _$DataMessageModel {
     required String felicitupId,
     required String chatId,
     required String name,
-    String? friendId,
-    String? userImage,
-    // List<String>? ids,
+    required String friendId,
+    required String userImage,
   }) = _DataMessageModel;
 
   factory DataMessageModel.fromJson(Map<String, dynamic> json) => _$DataMessageModelFromJson(json);
