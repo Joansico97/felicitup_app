@@ -614,57 +614,73 @@ exports.checkBirthdays = onSchedule({
 });
 
 exports.createBirthdayReminders = onSchedule({
-  // schedule: 'every 2 hours', // Ejecutar diariamente
-  schedule: 'every 5 minutes', // Ejecutar diariamente
+  schedule: 'every 24 hours', // Ejecutar diariamente
   timeZone: 'UTC',
   timeoutSeconds: 300,
 }, async () => {
   try {
     const today = new Date();
-    const remindersToCreate = [];
+    // const currentYear = today.getUTCFullYear();
+    const db = admin.firestore();
 
     // Evaluar los próximos 3 días
-    for (let i = 1; i <= 3; i++) {
+    for (let daysToAdd = 1; daysToAdd <= 3; daysToAdd++) {
       const targetDate = new Date(today);
-      targetDate.setDate(today.getDate() + i);
+      targetDate.setDate(today.getDate() + daysToAdd);
 
       const targetMonth = targetDate.getUTCMonth() + 1;
       const targetDay = targetDate.getUTCDate();
+      const formattedTargetDate = formatDate(targetDate);
 
-      // Buscar usuarios con cumpleaños en esta fecha
-      const usersSnapshot = await admin.firestore().collection('users')
+      // Buscar usuarios que cumplen años en esta fecha
+      const birthdayUsers = await db.collection('Users')
           .where('birthMonth', '==', targetMonth)
           .where('birthDay', '==', targetDay)
           .get();
 
-      if (!usersSnapshot.empty) {
-        for (const userDoc of usersSnapshot.docs) {
-          const userData = userDoc.data();
-          const userId = userDoc.id;
+      if (!birthdayUsers.empty) {
+        for (const birthdayUserDoc of birthdayUsers.docs) {
+          const birthdayUser = birthdayUserDoc.data();
+          const birthdayUserId = birthdayUserDoc.id;
 
           // Verificar si el usuario tiene amigos
-          if (userData.friends && userData.friends.length > 0) {
-            for (const friendId of userData.friends) {
-              // Verificar si ya existe un recordatorio
-              const existingReminder = await admin.firestore().collection('reminders')
-                  .where('friendId', '==', friendId)
-                  .where('birthdayUserId', '==', userId)
-                  .where('reminderDate', '==', formatDate(today)) // Recordatorio para hoy
-                  .where('targetBirthdayDate', '==', formatDate(targetDate))
-                  .limit(1)
-                  .get();
+          if (birthdayUser.friends && birthdayUser.friends.length > 0) {
+            for (const friendId of birthdayUser.friends) {
+              try {
+                const friendRef = db.collection('Users').doc(friendId);
+                const friendDoc = await friendRef.get();
 
-              if (existingReminder.empty) {
-                remindersToCreate.push({
-                  birthdayUserId: userId,
-                  birthdayUserName: userData.name || 'A friend',
-                  friendId: friendId,
-                  reminderDate: formatDate(today), // Fecha cuando se crea el recordatorio
-                  targetBirthdayDate: formatDate(targetDate), // Fecha del cumpleaños
-                  status: 'pending',
-                  createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                  profileImage: userData.userImg || '',
-                });
+                if (friendDoc.exists) {
+                  const friendData = friendDoc.data();
+                  const existingReminders = friendData.reminders || [];
+
+                  // Verificar si ya existe un recordatorio para este cumpleaños
+                  const reminderExists = existingReminders.some((reminder) =>
+                    reminder.birthdayUserId === birthdayUserId &&
+                    reminder.targetDate === formattedTargetDate,
+                  );
+
+                  if (!reminderExists) {
+                    const newReminder = {
+                      birthdayUserId: birthdayUserId,
+                      birthdayUserName: birthdayUser.name || 'A friend',
+                      targetDate: formattedTargetDate,
+                      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                      status: 'pending',
+                      profileImage: birthdayUser.userImg || '',
+                      notificationSent: false,
+                    };
+
+                    // Actualizar el array de reminders del amigo
+                    await friendRef.update({
+                      reminders: admin.firestore.FieldValue.arrayUnion(newReminder),
+                    });
+
+                    console.log(`Reminder created for friend ${friendId} about ${birthdayUser.name}'s birthday on ${formattedTargetDate}`);
+                  }
+                }
+              } catch (error) {
+                console.error(`Error processing friend ${friendId} for user ${birthdayUserId}:`, error);
               }
             }
           }
@@ -672,19 +688,9 @@ exports.createBirthdayReminders = onSchedule({
       }
     }
 
-    // Crear todos los recordatorios en lote
-    const batch = admin.firestore().batch();
-    const remindersRef = admin.firestore().collection('reminders');
-
-    remindersToCreate.forEach((reminder) => {
-      const newReminderRef = remindersRef.doc();
-      batch.set(newReminderRef, reminder);
-    });
-
-    await batch.commit();
-    console.log(`Created ${remindersToCreate.length} birthday reminders`);
+    console.log('Birthday reminders creation process completed');
   } catch (error) {
-    console.error('Error creating birthday reminders:', error);
+    console.error('Error in createBirthdayReminders:', error);
     throw error;
   }
 });
