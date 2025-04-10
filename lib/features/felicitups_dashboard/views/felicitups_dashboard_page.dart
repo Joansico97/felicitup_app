@@ -12,9 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class FelicitupsDashboardPage extends StatefulWidget {
-  const FelicitupsDashboardPage({
-    super.key,
-  });
+  const FelicitupsDashboardPage({super.key});
 
   @override
   State<FelicitupsDashboardPage> createState() => _FelicitupsDashboardPageState();
@@ -29,10 +27,7 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      InProgressSection(),
-      PastSection(),
-    ];
+    final List<Widget> pages = [InProgressSection(), PastSection()];
     final PageController felicitupsDashboardPageController = PageController();
 
     return Scaffold(
@@ -40,8 +35,8 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
       drawer: const DrawerApp(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: BlocBuilder<HomeBloc, HomeState>(
-        buildWhen: (previous, current) =>
-            previous.showButton != current.showButton || previous.create != current.create,
+        buildWhen:
+            (previous, current) => previous.showButton != current.showButton || previous.create != current.create,
         builder: (_, state) {
           return FloatingActionButton(
             onPressed: () {
@@ -49,13 +44,8 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
             },
             backgroundColor: context.colors.lightGrey,
             elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(context.sp(50)),
-            ),
-            child: Image.asset(
-              Assets.images.logo.path,
-              scale: context.sp(11),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.sp(50))),
+            child: Image.asset(Assets.images.logo.path, scale: context.sp(11)),
           );
         },
       ),
@@ -79,19 +69,14 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [
-                        context.colors.orange,
-                        context.colors.background,
-                      ],
+                      colors: [context.colors.orange, context.colors.background],
                     ),
                   ),
                   child: Column(
                     children: [
                       SizedBox(height: context.sp(12)),
                       Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: context.sp(24),
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
                         child: BlocBuilder<FelicitupsDashboardBloc, FelicitupsDashboardState>(
                           builder: (_, state) {
                             return Row(
@@ -102,9 +87,13 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                                   isActive: state.listBoolsTap[0],
                                   textColor: context.colors.orange,
                                   activeColor: context.colors.orange,
-                                  onActive: () => context.read<FelicitupsDashboardBloc>().add(
-                                      FelicitupsDashboardEvent.changeListBoolsTap(
-                                          0, felicitupsDashboardPageController)),
+                                  onActive:
+                                      () => context.read<FelicitupsDashboardBloc>().add(
+                                        FelicitupsDashboardEvent.changeListBoolsTap(
+                                          0,
+                                          felicitupsDashboardPageController,
+                                        ),
+                                      ),
                                 ),
                                 SizedBox(width: context.sp(14)),
                                 _FelicitupsDashboardHeaderOption(
@@ -112,9 +101,13 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                                   isActive: state.listBoolsTap[1],
                                   textColor: context.colors.orange,
                                   activeColor: context.colors.orange,
-                                  onActive: () => context.read<FelicitupsDashboardBloc>().add(
-                                      FelicitupsDashboardEvent.changeListBoolsTap(
-                                          1, felicitupsDashboardPageController)),
+                                  onActive:
+                                      () => context.read<FelicitupsDashboardBloc>().add(
+                                        FelicitupsDashboardEvent.changeListBoolsTap(
+                                          1,
+                                          felicitupsDashboardPageController,
+                                        ),
+                                      ),
                                 ),
                               ],
                             );
@@ -131,7 +124,8 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                           },
                           onPageChanged: (index) async {
                             context.read<FelicitupsDashboardBloc>().add(
-                                FelicitupsDashboardEvent.changeListBoolsTap(index, felicitupsDashboardPageController));
+                              FelicitupsDashboardEvent.changeListBoolsTap(index, felicitupsDashboardPageController),
+                            );
                           },
                         ),
                       ),
@@ -140,10 +134,7 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                 ),
               ),
             ),
-            Container(
-              height: context.sp(85),
-              color: context.colors.orange,
-            ),
+            Container(height: context.sp(85), color: context.colors.orange),
           ],
         ),
       ),
@@ -177,9 +168,7 @@ class _FelicitupsDashboardHeaderOption extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(context.sp(20)),
           color: context.colors.ligthOrange.valueOpacity(.6),
-          border: Border.all(
-            color: context.colors.white,
-          ),
+          border: Border.all(color: context.colors.white),
         ),
         child: Text(
           label,

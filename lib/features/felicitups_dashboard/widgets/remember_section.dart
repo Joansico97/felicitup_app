@@ -12,29 +12,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class RememberSection extends StatelessWidget {
-  const RememberSection({
-    super.key,
-  });
+  const RememberSection({super.key});
 
   @override
   Widget build(BuildContext context) {
     return FadeInDownBig(
       child: Container(
-        constraints: BoxConstraints(
-          maxHeight: context.sp(192),
-          minHeight: context.sp(50),
-        ),
-        padding: EdgeInsets.symmetric(
-          horizontal: context.sp(26),
-          vertical: context.sp(22),
-        ),
+        constraints: BoxConstraints(maxHeight: context.sp(192), minHeight: context.sp(50)),
+        padding: EdgeInsets.symmetric(horizontal: context.sp(26), vertical: context.sp(22)),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(context.sp(20)),
           color: Colors.white.withAlpha((.4 * 255).toInt()),
-          border: Border.all(
-            color: Colors.white,
-            width: context.sp(2),
-          ),
+          border: Border.all(color: Colors.white, width: context.sp(2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,16 +32,8 @@ class RememberSection extends StatelessWidget {
               height: context.sp(28),
               width: context.sp(119),
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(context.sp(20)),
-                color: Colors.white,
-              ),
-              child: Text(
-                'Cumpleaños',
-                style: context.styles.smallText.copyWith(
-                  color: context.colors.softOrange,
-                ),
-              ),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(context.sp(20)), color: Colors.white),
+              child: Text('Cumpleaños', style: context.styles.smallText.copyWith(color: context.colors.softOrange)),
             ),
             SizedBox(height: context.sp(8)),
             BlocBuilder<AppBloc, AppState>(
@@ -61,64 +42,54 @@ class RememberSection extends StatelessWidget {
 
                 return Column(
                   children: [
-                    ...List.generate(
-                      currentUser?.birthdateAlerts?.length ?? 0,
-                      (index) {
-                        final data = currentUser?.birthdateAlerts?[index];
+                    ...List.generate(currentUser?.birthdateAlerts?.length ?? 0, (index) {
+                      final data = currentUser?.birthdateAlerts?[index];
 
-                        return RememberCard(
-                          name: data?.friendName ?? '',
-                          date: DateTime.now(),
-                          image: data?.friendProfilePic,
-                          onTap: () {
-                            showConfirDoublemModal(
-                              title: 'Qué acción deseas realizar?',
-                              label1: 'Crear felicitup para este usuario',
-                              label2: 'Enviar mensaje directo',
-                              onAction1: () async {
-                                final OwnerModel owner = OwnerModel(
-                                  id: data?.friendId ?? '',
-                                  name: data?.friendName ?? '',
-                                  userImg: data?.friendProfilePic,
-                                  date: DateTime.now(),
+                      return RememberCard(
+                        name: data?.friendName ?? '',
+                        date: DateTime.now(),
+                        image: data?.friendProfilePic,
+                        onTap: () {
+                          showConfirDoublemModal(
+                            title: 'Qué acción deseas realizar?',
+                            label1: 'Crear felicitup para este usuario',
+                            label2: 'Enviar mensaje directo',
+                            onAction1: () async {
+                              final OwnerModel owner = OwnerModel(
+                                id: data?.friendId ?? '',
+                                name: data?.friendName ?? '',
+                                userImg: data?.friendProfilePic,
+                                date: DateTime.now(),
+                              );
+                              context.go(RouterPaths.createFelicitup);
+                              context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.changeFelicitupOwner(owner));
+                              context.read<CreateFelicitupBloc>().add(
+                                CreateFelicitupEvent.changeEventReason('Cumpleaños'),
+                              );
+                              context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.jumpToStep(2));
+                            },
+                            onAction2: () async {
+                              final SingleChatModel singleChat = SingleChatModel(
+                                chatId: data?.friendId ?? '',
+                                friendId: data?.friendId ?? '',
+                                userName: data?.friendName ?? '',
+                                userImage: data?.friendProfilePic,
+                              );
+                              if (currentUser?.singleChats?.any((alert) => alert.friendId == data?.friendId) ?? false) {
+                                final alert = currentUser?.singleChats?.firstWhere(
+                                  (alert) => alert.friendId == data?.friendId,
                                 );
-                                context.go(RouterPaths.createFelicitup);
-                                context.read<CreateFelicitupBloc>().add(
-                                      CreateFelicitupEvent.changeFelicitupOwner(owner),
-                                    );
-                                context.read<CreateFelicitupBloc>().add(
-                                      CreateFelicitupEvent.changeEventReason(
-                                        'Cumpleaños',
-                                      ),
-                                    );
-                                context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.jumpToStep(2));
-                              },
-                              onAction2: () async {
-                                final SingleChatModel singleChat = SingleChatModel(
-                                  chatId: data?.friendId ?? '',
-                                  friendId: data?.friendId ?? '',
-                                  userName: data?.friendName ?? '',
-                                  userImage: data?.friendProfilePic,
-                                );
-                                if (currentUser?.singleChats?.any((alert) => alert.friendId == data?.friendId) ??
-                                    false) {
-                                  final alert =
-                                      currentUser?.singleChats?.firstWhere((alert) => alert.friendId == data?.friendId);
-                                  context.go(
-                                    RouterPaths.singleChat,
-                                    extra: alert,
-                                  );
-                                  return;
-                                }
-                                context.read<FelicitupsDashboardBloc>().add(
-                                      FelicitupsDashboardEvent.createSingleChat(singleChat),
-                                    );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
+                                context.go(RouterPaths.singleChat, extra: alert);
+                                return;
+                              }
+                              context.read<FelicitupsDashboardBloc>().add(
+                                FelicitupsDashboardEvent.createSingleChat(singleChat),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    }),
                   ],
                 );
               },

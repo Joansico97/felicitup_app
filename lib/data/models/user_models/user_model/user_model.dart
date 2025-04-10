@@ -23,6 +23,7 @@ class UserModel with _$UserModel {
     int? birthDay,
     List<ContactModel>? friendList,
     List<BirthdateAlertsModel>? birthdateAlerts,
+    List<RemainderModel>? remainders,
     List<String>? matchList,
     List<String>? friendsPhoneList,
     List<GiftcarModel>? giftcardList,
