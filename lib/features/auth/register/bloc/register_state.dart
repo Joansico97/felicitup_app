@@ -16,6 +16,7 @@ class RegisterState with _$RegisterState {
     String? genre,
     String? phone,
     String? isoCode,
+    String? verificationId,
     DateTime? birthDate,
   }) = _RegisterState;
 

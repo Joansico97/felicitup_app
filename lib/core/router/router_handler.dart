@@ -1,47 +1,41 @@
 part of 'router.dart';
 
 Page<Widget> _initHandler(BuildContext context, GoRouterState state) => CustomTransitionPage(
-      key: state.pageKey,
-      child: const InitPage(),
-      transitionDuration: Duration(milliseconds: 500),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOut;
+  key: state.pageKey,
+  child: const InitPage(),
+  transitionDuration: Duration(milliseconds: 500),
+  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    const begin = Offset(1.0, 0.0);
+    const end = Offset.zero;
+    const curve = Curves.easeInOut;
 
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
+    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+    var offsetAnimation = animation.drive(tween);
 
-        return SlideTransition(position: offsetAnimation, child: child);
-      },
-    );
+    return SlideTransition(position: offsetAnimation, child: child);
+  },
+);
 
 Page<Widget> _loginHandler(BuildContext context, GoRouterState state) => CustomTransitionPage(
-      key: state.pageKey,
-      child: BlocProvider(
-        create: (_) => injection.di<LoginBloc>(),
-        child: const LoginPage(),
-      ),
-      transitionDuration: Duration(milliseconds: 500),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOut;
+  key: state.pageKey,
+  child: BlocProvider(create: (_) => injection.di<LoginBloc>(), child: const LoginPage()),
+  transitionDuration: Duration(milliseconds: 500),
+  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    const begin = Offset(1.0, 0.0);
+    const end = Offset.zero;
+    const curve = Curves.easeInOut;
 
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
+    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+    var offsetAnimation = animation.drive(tween);
 
-        return SlideTransition(position: offsetAnimation, child: child);
-      },
-    );
+    return SlideTransition(position: offsetAnimation, child: child);
+  },
+);
 
 Page<Widget> _forgotPasswordHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
     key: state.pageKey,
-    child: BlocProvider(
-      create: (_) => injection.di<ForgotPasswordBloc>(),
-      child: const ForgotPasswordPage(),
-    ),
+    child: BlocProvider(create: (_) => injection.di<ForgotPasswordBloc>(), child: const ForgotPasswordPage()),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
@@ -57,30 +51,24 @@ Page<Widget> _forgotPasswordHandler(BuildContext context, GoRouterState state) {
 }
 
 Page<Widget> _registerHandler(BuildContext context, GoRouterState state) => CustomTransitionPage(
-      key: state.pageKey,
-      child: BlocProvider(
-        create: (_) => injection.di<RegisterBloc>(),
-        child: const RegisterPage(),
-      ),
-      transitionDuration: Duration(milliseconds: 500),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOut;
+  key: state.pageKey,
+  child: BlocProvider(create: (_) => injection.di<RegisterBloc>(), child: const RegisterPage()),
+  transitionDuration: Duration(milliseconds: 500),
+  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+    const begin = Offset(1.0, 0.0);
+    const end = Offset.zero;
+    const curve = Curves.easeInOut;
 
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
+    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+    var offsetAnimation = animation.drive(tween);
 
-        return SlideTransition(position: offsetAnimation, child: child);
-      },
-    );
+    return SlideTransition(position: offsetAnimation, child: child);
+  },
+);
 Page<Widget> _federatedRegisterHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
     key: state.pageKey,
-    child: BlocProvider(
-      create: (_) => injection.di<FederatedRegisterBloc>(),
-      child: const FederatedRegisterPage(),
-    ),
+    child: BlocProvider(create: (_) => injection.di<FederatedRegisterBloc>(), child: const FederatedRegisterPage()),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
@@ -95,11 +83,7 @@ Page<Widget> _federatedRegisterHandler(BuildContext context, GoRouterState state
   );
 }
 
-Page<Widget> _homeHandler(
-  BuildContext context,
-  GoRouterState state,
-  Widget child,
-) {
+Page<Widget> _homeHandler(BuildContext context, GoRouterState state, Widget child) {
   return CustomTransitionPage(
     key: state.pageKey,
     child: MultiBlocProvider(
@@ -108,9 +92,7 @@ Page<Widget> _homeHandler(
         BlocProvider(create: (_) => injection.di<CreateFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<FelicitupsDashboardBloc>()),
       ],
-      child: HomePage(
-        childView: child,
-      ),
+      child: HomePage(childView: child),
     ),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -134,10 +116,7 @@ Widget _felicitupsDashboardHandler(BuildContext context, GoRouterState state) {
   return FelicitupsDashboardPage();
 }
 
-Page<Widget> _felicitupNotificationHandler(
-  BuildContext context,
-  GoRouterState state,
-) {
+Page<Widget> _felicitupNotificationHandler(BuildContext context, GoRouterState state) {
   final data = state.extra as String;
 
   return CustomTransitionPage(
@@ -159,11 +138,7 @@ Page<Widget> _felicitupNotificationHandler(
   );
 }
 
-Page<Widget> _detailsFelicitupDashboardHandler(
-  BuildContext context,
-  GoRouterState state,
-  Widget child,
-) {
+Page<Widget> _detailsFelicitupDashboardHandler(BuildContext context, GoRouterState state, Widget child) {
   final data = state.extra as Map<String, dynamic>?;
 
   return CustomTransitionPage(
@@ -171,12 +146,13 @@ Page<Widget> _detailsFelicitupDashboardHandler(
     child: MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => injection.di<DetailsFelicitupDashboardBloc>()
-            ..add(
-              data?['felicitupId'] == null
-                  ? DetailsFelicitupDashboardEvent.noEvent()
-                  : DetailsFelicitupDashboardEvent.startListening(data!['felicitupId'] as String),
-            ),
+          create:
+              (_) =>
+                  injection.di<DetailsFelicitupDashboardBloc>()..add(
+                    data?['felicitupId'] == null
+                        ? DetailsFelicitupDashboardEvent.noEvent()
+                        : DetailsFelicitupDashboardEvent.startListening(data!['felicitupId'] as String),
+                  ),
         ),
         BlocProvider(create: (_) => injection.di<InfoFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<MessageFelicitupBloc>()),
@@ -210,10 +186,7 @@ Widget _infoFelicitupHandler(BuildContext context, GoRouterState state) {
 
 Widget _messageFelicitupHandler(BuildContext context, GoRouterState state) {
   final data = state.extra as Map<String, dynamic>;
-  return MessageFelicitupPage(
-    key: ValueKey('MessageFelicitupPage_${data['chatId']}'),
-    chatId: data['chatId'] ?? '',
-  );
+  return MessageFelicitupPage(key: ValueKey('MessageFelicitupPage_${data['chatId']}'), chatId: data['chatId'] ?? '');
 }
 
 Widget _peopleFelicitupHandler(BuildContext context, GoRouterState state) {
@@ -234,11 +207,7 @@ Page<Widget> _paymentHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
     child: BlocProvider(
       create: (_) => injection.di<PaymentBloc>(),
-      child: PaymentPage(
-        isVerify: data['isVerify'],
-        felicitup: data['felicitup'],
-        userId: data['userId'] ?? '',
-      ),
+      child: PaymentPage(isVerify: data['isVerify'], felicitup: data['felicitup'], userId: data['userId'] ?? ''),
     ),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -259,10 +228,7 @@ Page<Widget> _videoEditorHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
     child: BlocProvider(
       create: (_) => injection.di<VideoEditorBloc>(),
-      child: VideoEditorPage(
-        felicitupId: data['felicitupId'],
-        videoUrl: data['videoUrl'],
-      ),
+      child: VideoEditorPage(felicitupId: data['felicitupId'], videoUrl: data['videoUrl']),
     ),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -280,10 +246,7 @@ Page<Widget> _videoEditorHandler(BuildContext context, GoRouterState state) {
 
 Page<Widget> _notificationsHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
-    child: BlocProvider(
-      create: (_) => injection.di<NotificationsBloc>(),
-      child: NotificationsPage(),
-    ),
+    child: BlocProvider(create: (_) => injection.di<NotificationsBloc>(), child: NotificationsPage()),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
@@ -300,10 +263,7 @@ Page<Widget> _notificationsHandler(BuildContext context, GoRouterState state) {
 
 Page<Widget> _profileHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
-    child: BlocProvider(
-      create: (_) => injection.di<ProfileBloc>(),
-      child: ProfilePage(),
-    ),
+    child: BlocProvider(create: (_) => injection.di<ProfileBloc>(), child: ProfilePage()),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
@@ -344,9 +304,7 @@ Page<Widget> _wishListEditHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
     child: BlocProvider(
       create: (_) => injection.di<WishListBloc>()..add(WishListEvent.startListening()),
-      child: WishListEditPage(
-        wishListItem: data,
-      ),
+      child: WishListEditPage(wishListItem: data),
     ),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -365,12 +323,7 @@ Page<Widget> _wishListEditHandler(BuildContext context, GoRouterState state) {
 Page<Widget> _singleChatHandler(BuildContext context, GoRouterState state) {
   final data = state.extra as SingleChatModel;
   return CustomTransitionPage(
-    child: BlocProvider(
-      create: (_) => injection.di<SingleChatBloc>(),
-      child: SingleChatPage(
-        data: data,
-      ),
-    ),
+    child: BlocProvider(create: (_) => injection.di<SingleChatBloc>(), child: SingleChatPage(data: data)),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
@@ -387,10 +340,7 @@ Page<Widget> _singleChatHandler(BuildContext context, GoRouterState state) {
 
 Page<Widget> _listSingleChatHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
-    child: BlocProvider(
-      create: (_) => injection.di<ListSingleChatBloc>(),
-      child: ListSingleChatPage(),
-    ),
+    child: BlocProvider(create: (_) => injection.di<ListSingleChatBloc>(), child: ListSingleChatPage()),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
@@ -407,10 +357,7 @@ Page<Widget> _listSingleChatHandler(BuildContext context, GoRouterState state) {
 
 Page<Widget> _contactsHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
-    child: BlocProvider(
-      create: (_) => injection.di<ContactsBloc>(),
-      child: ContactsPage(),
-    ),
+    child: BlocProvider(create: (_) => injection.di<ContactsBloc>(), child: ContactsPage()),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
@@ -427,10 +374,7 @@ Page<Widget> _contactsHandler(BuildContext context, GoRouterState state) {
 
 Page<Widget> _notificationsSettingsHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
-    child: BlocProvider(
-      create: (_) => injection.di<NotificationsSettingsBloc>(),
-      child: NotificationsSettingsPage(),
-    ),
+    child: BlocProvider(create: (_) => injection.di<NotificationsSettingsBloc>(), child: NotificationsSettingsPage()),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
@@ -445,11 +389,24 @@ Page<Widget> _notificationsSettingsHandler(BuildContext context, GoRouterState s
   );
 }
 
-Page<Widget> _detailsPastFelicitupDashboardHandler(
-  BuildContext context,
-  GoRouterState state,
-  Widget child,
-) {
+Page<Widget> _remindersHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: BlocProvider(create: (_) => injection.di<RemindersBloc>(), child: RemindersPage()),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Page<Widget> _detailsPastFelicitupDashboardHandler(BuildContext context, GoRouterState state, Widget child) {
   final data = state.extra as Map<String, dynamic>?;
 
   return CustomTransitionPage(
@@ -457,21 +414,20 @@ Page<Widget> _detailsPastFelicitupDashboardHandler(
     child: MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => injection.di<DetailsPastFelicitupDashboardBloc>()
-            ..add(
-              data?['felicitupId'] == null
-                  ? DetailsPastFelicitupDashboardEvent.noEvent()
-                  : DetailsPastFelicitupDashboardEvent.getFelicitupInfo(data!['felicitupId'] as String),
-            ),
+          create:
+              (_) =>
+                  injection.di<DetailsPastFelicitupDashboardBloc>()..add(
+                    data?['felicitupId'] == null
+                        ? DetailsPastFelicitupDashboardEvent.noEvent()
+                        : DetailsPastFelicitupDashboardEvent.getFelicitupInfo(data!['felicitupId'] as String),
+                  ),
         ),
         BlocProvider(create: (_) => injection.di<MainPastFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<ChatPastFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<PeoplePastFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<VideoPastFelicitupBloc>()),
       ],
-      child: DetailsPastFelicitupDashboardPage(
-        childView: child,
-      ),
+      child: DetailsPastFelicitupDashboardPage(childView: child),
     ),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

@@ -27,9 +27,6 @@ class _DrawerAppState extends State<DrawerApp> {
   Future<void> _loadVersionInfo() async {
     try {
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      // La versión en pubspec.yaml suele ser "version: 1.0.0+1"
-      // packageInfo.version te da "1.0.0"
-      // packageInfo.buildNumber te da "1"
       setState(() {
         _appVersion = 'v${packageInfo.version}+${packageInfo.buildNumber}';
       });
@@ -85,6 +82,14 @@ class _DrawerAppState extends State<DrawerApp> {
             ),
             SettingsButton(
               onTap: () {
+                context.go(RouterPaths.reminders);
+                Scaffold.of(context).closeDrawer();
+              },
+              label: 'Recordatorios',
+              icon: Icons.calendar_month_outlined,
+            ),
+            SettingsButton(
+              onTap: () {
                 context.go(RouterPaths.notificationsSettings);
                 Scaffold.of(context).closeDrawer();
               },
@@ -103,10 +108,7 @@ class _DrawerAppState extends State<DrawerApp> {
             Spacer(),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
-              child: Text(
-                _appVersion,
-                style: context.styles.smallText,
-              ),
+              child: Text(_appVersion, style: context.styles.smallText),
             ),
           ],
         ),

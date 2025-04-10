@@ -147,4 +147,52 @@ class AuthFirebaseResource implements AuthRepository {
       return Left(ApiException(400, e.toString()));
     }
   }
+
+  @override
+  Future<Either<ApiException, String>> verifyPhone({
+    required String phone,
+    required Function(String) onCodeSent,
+    required Function(String) onError,
+  }) async {
+    try {
+      await _firebaseAuth.verifyPhoneNumber(
+        verificationCompleted: (_) {},
+        verificationFailed: (e) => onError(e.message ?? 'Error'),
+        codeSent: (verificationId, _) => onCodeSent(verificationId),
+        codeAutoRetrievalTimeout: (_) {},
+      );
+      return Right('response');
+    } on FirebaseAuthException catch (e) {
+      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
+      return Left(ApiException(400, e.message ?? ''));
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
+      return Left(ApiException(400, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, bool>> confirmVerification({
+    required String verificationId,
+    required String smsCode,
+    required String userId,
+    required String phoneNumber,
+  }) async {
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+      );
+      await _firebaseAuth.signInWithCredential(credential);
+      await _firebaseAuth.signOut(); // Cierra la sesión temporal
+
+      return const Right(true);
+    } on FirebaseAuthException catch (e) {
+      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
+      return Left(ApiException(400, e.message ?? ''));
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
+      return Left(ApiException(400, e.toString()));
+    }
+  }
 }

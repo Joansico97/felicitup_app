@@ -1,10 +1,10 @@
 name: felicitup_app
 description: 'A new Flutter project.'
 
-version: 1.0.0+20
+version: 1.0.0+21
 
 environment:
-  sdk: ^3.6.1
+  sdk: ^3.7.2
 
 dependencies:
   flutter:
@@ -46,6 +46,7 @@ dependencies:
   json_annotation: ^4.9.0
   envied: ^1.1.0
   sign_in_with_apple: ^6.1.4
+  sms_autofill: ^2.4.1
   package_info_plus: ^8.3.0
 
   # Utils

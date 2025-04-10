@@ -44,16 +44,17 @@ class RouterPaths {
   static const String wishListEdit = '/wishListEdit';
   static const String felicitupNotification = '/felicitupNotification';
   static const String termsPolicies = '/termsPolicies';
+  static const String reminders = '/reminders';
 
   List<String> get noAuthenticated => [
-        init,
-        login,
-        register,
-        termsConditions,
-        verification,
-        inviteContacts,
-        resetPassword,
-        notificationInfo,
-        termsPolicies,
-      ];
+    init,
+    login,
+    register,
+    termsConditions,
+    verification,
+    inviteContacts,
+    resetPassword,
+    notificationInfo,
+    termsPolicies,
+  ];
 }

@@ -16,4 +16,15 @@ abstract class AuthRepository {
   Future<Either<ApiException, UserCredential>> signInWithApple();
   Future<Either<ApiException, String>> setFCMToken({required String token});
   Future<Either<ApiException, String>> updateCurrentChat({required String chatId});
+  Future<Either<ApiException, String>> verifyPhone({
+    required String phone,
+    required Function(String) onCodeSent,
+    required Function(String) onError,
+  });
+  Future<Either<ApiException, bool>> confirmVerification({
+    required String verificationId,
+    required String smsCode,
+    required String userId,
+    required String phoneNumber,
+  });
 }

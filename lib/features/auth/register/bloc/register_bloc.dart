@@ -77,8 +77,37 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
   _initValidation(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
-    await Future.delayed(Duration(seconds: 3), () {});
-    emit(state.copyWith(isLoading: false, status: RegisterStatus.validateCode));
+    try {
+      await _authRepository.verifyPhone(
+        phone: state.phone!,
+        onCodeSent: (verificationId) {
+          emit(
+            state.copyWith(
+              verificationId: verificationId,
+              isLoading: false,
+              status: RegisterStatus.validateCode,
+            ),
+          );
+        },
+        onError: (error) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              status: RegisterStatus.error,
+              errorMessage: error.toString(),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          status: RegisterStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
   }
 
   _setUserInfo(Emitter<RegisterState> emit, UserCredential userCredential) async {
