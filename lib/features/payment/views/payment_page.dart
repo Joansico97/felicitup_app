@@ -33,12 +33,7 @@ class PaymentPage extends StatelessWidget {
         }
 
         if (state.updateStatus == UpdateStatus.success) {
-          if (detailsFelicitupNavigatorKey.currentContext!.mounted) {
-            detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
-              DetailsFelicitupDashboardEvent.changeCurrentIndex(3),
-            );
-            context.go(RouterPaths.boteFelicitup, extra: {'felicitupId': felicitup.id});
-          }
+          context.go(RouterPaths.boteFelicitup, extra: {'felicitupId': felicitup.id});
         } else if (state.updateStatus == UpdateStatus.error) {
           await showErrorModal(state.errorMessage);
         }

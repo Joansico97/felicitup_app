@@ -11,10 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ConfirmPayment extends StatefulWidget {
-  const ConfirmPayment({
-    super.key,
-    required this.felicitup,
-  });
+  const ConfirmPayment({super.key, required this.felicitup});
 
   final FelicitupModel felicitup;
 
@@ -27,11 +24,9 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
   String selectedPaymentMethod = 'Medio de pago';
   DateTime? selectedDate;
   File? selectedImage;
+  bool isFormValid = false;
 
-  final List<String> paymentStatusList = [
-    'Estado del pago',
-    'Pagado',
-  ];
+  final List<String> paymentStatusList = ['Estado del pago', 'Pagado'];
   final List<String> paymentMethodList = [
     'Medio de pago',
     'Bizum',
@@ -47,9 +42,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
     final currentUser = context.read<AppBloc>().state.currentUser;
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.sp(24),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
       child: Column(
         children: [
           Row(
@@ -62,12 +55,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                   borderRadius: BorderRadius.circular(context.sp(20)),
                   color: context.colors.white,
                 ),
-                child: Text(
-                  'Bote regalo',
-                  style: context.styles.smallText.copyWith(
-                    color: context.colors.softOrange,
-                  ),
-                ),
+                child: Text('Bote regalo', style: context.styles.smallText.copyWith(color: context.colors.softOrange)),
               ),
               Spacer(),
               Container(
@@ -80,9 +68,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                 ),
                 child: Text(
                   '${widget.felicitup.boteQuantity}€',
-                  style: context.styles.smallText.copyWith(
-                    color: context.colors.softOrange,
-                  ),
+                  style: context.styles.smallText.copyWith(color: context.colors.softOrange),
                 ),
               ),
             ],
@@ -90,10 +76,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
           SizedBox(height: context.sp(24)),
           Container(
             padding: EdgeInsets.all(context.sp(24)),
-            decoration: BoxDecoration(
-              color: context.colors.white,
-              borderRadius: BorderRadius.circular(context.sp(20)),
-            ),
+            decoration: BoxDecoration(color: context.colors.white, borderRadius: BorderRadius.circular(context.sp(20))),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -104,31 +87,26 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                   padding: EdgeInsets.all(context.sp(10)),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(context.sp(30)),
-                    border: Border.all(
-                      color: context.colors.darkGrey,
-                      width: context.sp(1),
-                    ),
+                    border: Border.all(color: context.colors.darkGrey, width: context.sp(1)),
                     color: context.colors.white,
                   ),
                   child: DropdownButton<String>(
                     value: selectedPaymentStatus,
                     style: context.styles.paragraph,
                     isExpanded: true,
-                    items: paymentStatusList.map<DropdownMenuItem<String>>(
-                      (String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            style: context.styles.paragraph,
-                          ),
-                        );
-                      },
-                    ).toList(),
+                    items:
+                        paymentStatusList.map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value, style: context.styles.paragraph),
+                          );
+                        }).toList(),
                     onChanged: (String? newValue) {
-                      setState(() {
-                        selectedPaymentStatus = newValue!;
-                      });
+                      if (newValue != null) {
+                        setState(() {
+                          selectedPaymentStatus = newValue;
+                        });
+                      }
                     },
                   ),
                 ),
@@ -156,17 +134,11 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                   child: Container(
                     height: context.sp(40),
                     width: context.fullWidth,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: context.sp(10),
-                      vertical: context.sp(8),
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: context.sp(10), vertical: context.sp(8)),
                     alignment: Alignment.centerLeft,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(context.sp(30)),
-                      border: Border.all(
-                        color: context.colors.darkGrey,
-                        width: context.sp(1),
-                      ),
+                      border: Border.all(color: context.colors.darkGrey, width: context.sp(1)),
                       color: context.colors.white,
                     ),
                     child: Row(
@@ -178,10 +150,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                           style: context.styles.paragraph,
                         ),
                         Spacer(),
-                        Icon(
-                          Icons.arrow_drop_down,
-                          color: context.colors.black,
-                        ),
+                        Icon(Icons.arrow_drop_down, color: context.colors.black),
                       ],
                     ),
                   ),
@@ -193,27 +162,20 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                   padding: EdgeInsets.all(context.sp(10)),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(context.sp(30)),
-                    border: Border.all(
-                      color: context.colors.darkGrey,
-                      width: context.sp(1),
-                    ),
+                    border: Border.all(color: context.colors.darkGrey, width: context.sp(1)),
                     color: context.colors.white,
                   ),
                   child: DropdownButton<String>(
                     value: selectedPaymentMethod,
                     style: context.styles.paragraph,
                     isExpanded: true,
-                    items: paymentMethodList.map<DropdownMenuItem<String>>(
-                      (String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            style: context.styles.paragraph,
-                          ),
-                        );
-                      },
-                    ).toList(),
+                    items:
+                        paymentMethodList.map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value, style: context.styles.paragraph),
+                          );
+                        }).toList(),
                     onChanged: (String? newValue) {
                       setState(() {
                         selectedPaymentMethod = newValue!;
@@ -259,35 +221,25 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                     padding: EdgeInsets.all(context.sp(10)),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(context.sp(30)),
-                      border: Border.all(
-                        color: context.colors.darkGrey,
-                        width: context.sp(1),
-                      ),
+                      border: Border.all(color: context.colors.darkGrey, width: context.sp(1)),
                       color: context.colors.white,
                     ),
-                    child: selectedImage != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(context.sp(30)),
-                            child: Image.file(
-                              selectedImage!,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.camera_alt_outlined,
-                                color: context.colors.darkGrey,
-                              ),
-                              Text(
-                                'Subir comprobante',
-                                style: context.styles.paragraph.copyWith(
-                                  color: context.colors.darkGrey,
+                    child:
+                        selectedImage != null
+                            ? ClipRRect(
+                              borderRadius: BorderRadius.circular(context.sp(30)),
+                              child: Image.file(selectedImage!, fit: BoxFit.cover),
+                            )
+                            : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.camera_alt_outlined, color: context.colors.darkGrey),
+                                Text(
+                                  'Subir comprobante',
+                                  style: context.styles.paragraph.copyWith(color: context.colors.darkGrey),
                                 ),
-                              )
-                            ],
-                          ),
+                              ],
+                            ),
                   ),
                 ),
                 SizedBox(height: context.sp(14)),
@@ -295,31 +247,33 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                   width: context.sp(300),
                   child: PrimaryButton(
                     onTap: () {
+                      if (selectedDate != null) {
+                        context.read<PaymentBloc>().add(
+                          PaymentEvent.updatePaymentInfo(
+                            widget.felicitup.id,
+                            selectedPaymentMethod,
+                            selectedPaymentStatus,
+                            selectedDate!,
+                            '',
+                          ),
+                        );
+                      }
                       context.read<PaymentBloc>().add(
-                            PaymentEvent.updatePaymentInfo(
-                              widget.felicitup.id,
-                              selectedPaymentMethod,
-                              selectedPaymentStatus,
-                              selectedDate!,
-                              '',
-                            ),
-                          );
-                      context.read<PaymentBloc>().add(
-                            PaymentEvent.sendNotification(
-                              widget.felicitup.createdBy,
-                              'Pago realizado',
-                              '${currentUser?.firstName ?? ''} ha realizado el pago de la felicitup de ${widget.felicitup.owner.first.name.split(' ')[0]}',
-                              '',
-                              DataMessageModel(
-                                type: enumToPushMessageType(PushMessageType.payment),
-                                felicitupId: widget.felicitup.id,
-                                chatId: '',
-                                name: '',
-                                friendId: '',
-                                userImage: '',
-                              ),
-                            ),
-                          );
+                        PaymentEvent.sendNotification(
+                          widget.felicitup.createdBy,
+                          'Pago realizado',
+                          '${currentUser?.firstName ?? ''} ha realizado el pago de la felicitup de ${widget.felicitup.owner.first.name.split(' ')[0]}',
+                          '',
+                          DataMessageModel(
+                            type: enumToPushMessageType(PushMessageType.payment),
+                            felicitupId: widget.felicitup.id,
+                            chatId: '',
+                            name: '',
+                            friendId: '',
+                            userImage: '',
+                          ),
+                        ),
+                      );
                     },
                     label: 'Enviar Pago',
                     isActive: true,

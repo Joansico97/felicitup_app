@@ -1,0 +1,2 @@
+/Users/jorgeantoniosilvacortes/Desktop/Felicitup/felicitup_app/android/app/.cxx/RelWithDebInfo/35d5x3m1/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/jorgeantoniosilvacortes/Desktop/Felicitup/felicitup_app/android/app/.cxx/RelWithDebInfo/35d5x3m1/armeabi-v7a/CMakeFiles/rebuild_cache.dir

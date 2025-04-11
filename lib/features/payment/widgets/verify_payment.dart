@@ -7,11 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class VerifyPayment extends StatefulWidget {
-  const VerifyPayment({
-    super.key,
-    required this.felicitup,
-    required this.userId,
-  });
+  const VerifyPayment({super.key, required this.felicitup, required this.userId});
 
   final FelicitupModel felicitup;
   final String userId;
@@ -30,9 +26,7 @@ class _VerifyPaymentState extends State<VerifyPayment> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.sp(24),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
       child: Column(
         children: [
           Row(
@@ -45,12 +39,7 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                   borderRadius: BorderRadius.circular(context.sp(20)),
                   color: context.colors.white,
                 ),
-                child: Text(
-                  'Bote regalo',
-                  style: context.styles.smallText.copyWith(
-                    color: context.colors.softOrange,
-                  ),
-                ),
+                child: Text('Bote regalo', style: context.styles.smallText.copyWith(color: context.colors.softOrange)),
               ),
               Spacer(),
               Container(
@@ -63,9 +52,7 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                 ),
                 child: Text(
                   '${widget.felicitup.boteQuantity}€',
-                  style: context.styles.smallText.copyWith(
-                    color: context.colors.softOrange,
-                  ),
+                  style: context.styles.smallText.copyWith(color: context.colors.softOrange),
                 ),
               ),
             ],
@@ -73,40 +60,24 @@ class _VerifyPaymentState extends State<VerifyPayment> {
           SizedBox(height: context.sp(24)),
           Container(
             padding: EdgeInsets.all(context.sp(24)),
-            decoration: BoxDecoration(
-              color: context.colors.white,
-              borderRadius: BorderRadius.circular(context.sp(20)),
-            ),
+            decoration: BoxDecoration(color: context.colors.white, borderRadius: BorderRadius.circular(context.sp(20))),
             child: Column(
               children: [
                 Container(
                   height: context.sp(40),
                   width: context.fullWidth,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: context.sp(10),
-                    vertical: context.sp(8),
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: context.sp(10), vertical: context.sp(8)),
                   alignment: Alignment.centerLeft,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(context.sp(30)),
-                    border: Border.all(
-                      color: context.colors.darkGrey,
-                      width: context.sp(1),
-                    ),
+                    border: Border.all(color: context.colors.darkGrey, width: context.sp(1)),
                     color: context.colors.white,
                   ),
                   child: RichText(
                     text: TextSpan(
                       text: 'Estado de pago: ',
-                      style: context.styles.paragraph.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: 'A la espera',
-                          style: context.styles.paragraph,
-                        )
-                      ],
+                      style: context.styles.paragraph.copyWith(fontWeight: FontWeight.bold),
+                      children: [TextSpan(text: 'A la espera', style: context.styles.paragraph)],
                     ),
                   ),
                 ),
@@ -114,17 +85,11 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                 Container(
                   height: context.sp(40),
                   width: context.fullWidth,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: context.sp(10),
-                    vertical: context.sp(8),
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: context.sp(10), vertical: context.sp(8)),
                   alignment: Alignment.centerLeft,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(context.sp(30)),
-                    border: Border.all(
-                      color: context.colors.darkGrey,
-                      width: context.sp(1),
-                    ),
+                    border: Border.all(color: context.colors.darkGrey, width: context.sp(1)),
                     color: context.colors.white,
                   ),
                   child: BlocBuilder<PaymentBloc, PaymentState>(
@@ -132,16 +97,15 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                       return RichText(
                         text: TextSpan(
                           text: 'Fecha de pago: ',
-                          style: context.styles.paragraph.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: context.styles.paragraph.copyWith(fontWeight: FontWeight.bold),
                           children: [
                             TextSpan(
-                              text: DateFormat('dd/MM/yyyy').format(
-                                state.userInvitedInformationModel?.paymentDate ?? DateTime.now(),
-                              ),
+                              text:
+                                  state.userInvitedInformationModel?.paymentDate != null
+                                      ? DateFormat('dd/MM/yyyy').format(state.userInvitedInformationModel!.paymentDate!)
+                                      : 'No especificada',
                               style: context.styles.paragraph,
-                            )
+                            ),
                           ],
                         ),
                       );
@@ -152,17 +116,11 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                 Container(
                   height: context.sp(40),
                   width: context.fullWidth,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: context.sp(10),
-                    vertical: context.sp(8),
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: context.sp(10), vertical: context.sp(8)),
                   alignment: Alignment.centerLeft,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(context.sp(30)),
-                    border: Border.all(
-                      color: context.colors.darkGrey,
-                      width: context.sp(1),
-                    ),
+                    border: Border.all(color: context.colors.darkGrey, width: context.sp(1)),
                     color: context.colors.white,
                   ),
                   child: BlocBuilder<PaymentBloc, PaymentState>(
@@ -170,14 +128,12 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                       return RichText(
                         text: TextSpan(
                           text: 'Medio de pago: ',
-                          style: context.styles.paragraph.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: context.styles.paragraph.copyWith(fontWeight: FontWeight.bold),
                           children: [
                             TextSpan(
                               text: state.userInvitedInformationModel?.paymentMethod ?? 'No disponible',
                               style: context.styles.paragraph,
-                            )
+                            ),
                           ],
                         ),
                       );
@@ -186,20 +142,18 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                 ),
                 SizedBox(height: context.sp(14)),
                 GestureDetector(
-                  onTap: () => showImageModal(
-                    context,
-                    context.read<PaymentBloc>().state.userInvitedInformationModel?.photoUrl ?? '',
-                  ),
+                  onTap:
+                      () => showImageModal(
+                        context,
+                        context.read<PaymentBloc>().state.userInvitedInformationModel?.photoUrl ?? '',
+                      ),
                   child: Container(
                     height: context.sp(350),
                     width: context.fullWidth,
                     padding: EdgeInsets.all(context.sp(10)),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(context.sp(30)),
-                      border: Border.all(
-                        color: context.colors.darkGrey,
-                        width: context.sp(1),
-                      ),
+                      border: Border.all(color: context.colors.darkGrey, width: context.sp(1)),
                       color: context.colors.white,
                     ),
                     child: BlocBuilder<PaymentBloc, PaymentState>(
@@ -213,10 +167,11 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                               if (loadingProgress == null) {
                                 return child;
                               } else {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
+                                return Center(child: CircularProgressIndicator());
                               }
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(child: Text('Cargando imagen...', style: context.styles.paragraph));
                             },
                           ),
                         );
@@ -231,28 +186,36 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                     builder: (_, state) {
                       return PrimaryButton(
                         onTap: () {
-                          context.read<PaymentBloc>().add(
-                                PaymentEvent.confirmPaymentInfo(
-                                  widget.felicitup.id,
-                                  state.userInvitedInformationModel?.id ?? '',
+                          if (state.userInvitedInformationModel?.id != null) {
+                            context.read<PaymentBloc>().add(
+                              PaymentEvent.confirmPaymentInfo(
+                                widget.felicitup.id,
+                                state.userInvitedInformationModel!.id,
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(SnackBar(content: Text('Datos incompletos para confirmar el pago')));
+                          }
+                          if (state.userInvitedInformationModel != null) {
+                            context.read<PaymentBloc>().add(
+                              PaymentEvent.sendNotification(
+                                state.userInvitedInformationModel!.userId,
+                                'Informe de pago',
+                                'Pago confirmado ',
+                                '',
+                                DataMessageModel(
+                                  type: enumToPushMessageType(PushMessageType.payment),
+                                  felicitupId: widget.felicitup.id,
+                                  chatId: '',
+                                  name: '',
+                                  friendId: '',
+                                  userImage: '',
                                 ),
-                              );
-                          context.read<PaymentBloc>().add(
-                                PaymentEvent.sendNotification(
-                                  state.userInvitedInformationModel?.id ?? '',
-                                  'Informe de pago',
-                                  'Pago confirmado ',
-                                  '',
-                                  DataMessageModel(
-                                    type: enumToPushMessageType(PushMessageType.payment),
-                                    felicitupId: widget.felicitup.id,
-                                    chatId: '',
-                                    name: '',
-                                    friendId: '',
-                                    userImage: '',
-                                  ),
-                                ),
-                              );
+                              ),
+                            );
+                          }
                         },
                         label: 'Confirmar pago',
                         isActive: true,
