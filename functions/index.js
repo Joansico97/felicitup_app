@@ -145,6 +145,26 @@ exports.sendNotificationToList = functions.https.onCall(
       }
     });
 
+exports.sendFelicitup = functions.https.onCall(async (data, context) => {
+  try {
+    const felicitupId = data.data.felicitupId;
+
+    if (!felicitupId) {
+      throw new functions.https.HttpsError("invalid-argument", "El ID de la felicitup es requerido.");
+    }
+
+    const felicitup = await getFelicitupById(felicitupId);
+    // const docRef = await getFelicitupRefById(felicitupId);
+
+    const atLeastOneVideo = felicitup.invitedUserDetails.some((user) => user.videoData && user.videoData.videoUrl && user.videoData.videoUrl.trim() !== "");
+
+    console.log("atLeastOneVideo", atLeastOneVideo);
+
+    // if (atLeastOneVideo) {
+    // }
+  } catch (error) {/* empty */}
+});
+
 exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
   try {
     const felicitupId = data.data.felicitupId;
@@ -614,7 +634,7 @@ exports.checkBirthdays = onSchedule({
 });
 
 exports.createBirthdayReminders = onSchedule({
-  schedule: 'every 24 hours', // Ejecutar diariamente
+  schedule: 'every 24 hours',
   timeZone: 'UTC',
   timeoutSeconds: 300,
 }, async () => {

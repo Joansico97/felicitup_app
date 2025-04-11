@@ -2,9 +2,8 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 
 class FirebaseFunctionsHelper {
-  FirebaseFunctionsHelper({
-    required FirebaseFunctions firebaseFunctions,
-  }) : _firebaseFunctions = firebaseFunctions;
+  FirebaseFunctionsHelper({required FirebaseFunctions firebaseFunctions})
+    : _firebaseFunctions = firebaseFunctions;
 
   final FirebaseFunctions _firebaseFunctions;
 
@@ -61,14 +60,14 @@ class FirebaseFunctionsHelper {
     );
   }
 
-  Future<void> sendManualFelicitup({
-    required String felicitupId,
-  }) async {
+  Future<void> sendFelicitup({required String felicitupId}) async {
+    await _call('sendFelicitup', parameters: {'felicitupId': felicitupId});
+  }
+
+  Future<void> sendManualFelicitup({required String felicitupId}) async {
     await _call(
       'sendManualFelicitup',
-      parameters: {
-        'felicitupId': felicitupId,
-      },
+      parameters: {'felicitupId': felicitupId},
     );
   }
 
@@ -78,10 +77,7 @@ class FirebaseFunctionsHelper {
   }) async {
     await _call(
       'generateThumbnail',
-      parameters: {
-        'filePath': filePath,
-        'userId': userId,
-      },
+      parameters: {'filePath': filePath, 'userId': userId},
     );
   }
 
@@ -91,7 +87,9 @@ class FirebaseFunctionsHelper {
   }) async {
     try {
       final callable = _firebaseFunctions.httpsCallable(functionName);
-      final HttpsCallableResult<dynamic> result = await callable.call(parameters);
+      final HttpsCallableResult<dynamic> result = await callable.call(
+        parameters,
+      );
       return result.data as T;
     } catch (e) {
       logger.error('Error calling $functionName $e');

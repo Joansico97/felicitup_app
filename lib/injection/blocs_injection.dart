@@ -10,26 +10,15 @@ void _initBlocsInjection() {
         firebaseMessaging: di(),
       ),
     )
+    ..registerFactory(() => LoginBloc(authRepository: di(), firestore: di()))
     ..registerFactory(
-      () => LoginBloc(
-        authRepository: di(),
-        firestore: di(),
-      ),
+      () => RegisterBloc(authRepository: di(), userRepository: di()),
     )
-    ..registerFactory(
-      () => RegisterBloc(
-        authRepository: di(),
-        userRepository: di(),
-      ),
-    )
-    ..registerFactory(
-      () => HomeBloc(
-        userRepository: di(),
-      ),
-    )
+    ..registerFactory(() => HomeBloc(userRepository: di()))
     ..registerFactory(
       () => CreateFelicitupBloc(
         databaseHelper: di(),
+        firebaseFunctionsHelper: di(),
         userRepository: di(),
         felicitupRepository: di(),
       ),
@@ -56,10 +45,7 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(
-      () => InfoFelicitupBloc(
-        felicitupRepository: di(),
-        userRepository: di(),
-      ),
+      () => InfoFelicitupBloc(felicitupRepository: di(), userRepository: di()),
     )
     ..registerFactory(
       () => MessageFelicitupBloc(
@@ -75,21 +61,10 @@ void _initBlocsInjection() {
         firebaseAuth: di(),
       ),
     )
+    ..registerFactory(() => VideoFelicitupBloc(felicitupRepository: di()))
+    ..registerFactory(() => BoteFelicitupBloc(felicitupRepository: di()))
     ..registerFactory(
-      () => VideoFelicitupBloc(
-        felicitupRepository: di(),
-      ),
-    )
-    ..registerFactory(
-      () => BoteFelicitupBloc(
-        felicitupRepository: di(),
-      ),
-    )
-    ..registerFactory(
-      () => PaymentBloc(
-        felicitupRepository: di(),
-        userRepository: di(),
-      ),
+      () => PaymentBloc(felicitupRepository: di(), userRepository: di()),
     )
     ..registerFactory(
       () => VideoEditorBloc(
@@ -100,55 +75,25 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(
-      () => NotificationsBloc(
-        firebaseAuth: di(),
-        userRepository: di(),
-      ),
+      () => NotificationsBloc(firebaseAuth: di(), userRepository: di()),
     )
+    ..registerFactory(() => ProfileBloc(userRepository: di()))
+    ..registerFactory(() => WishListBloc(userRepository: di()))
     ..registerFactory(
-      () => ProfileBloc(
-        userRepository: di(),
-      ),
+      () => SingleChatBloc(chatRepository: di(), userRepository: di()),
     )
-    ..registerFactory(
-      () => WishListBloc(
-        userRepository: di(),
-      ),
-    )
-    ..registerFactory(
-      () => SingleChatBloc(
-        chatRepository: di(),
-        userRepository: di(),
-      ),
-    )
-    ..registerFactory(
-      () => ListSingleChatBloc(),
-    )
-    ..registerFactory(
-      () => ContactsBloc(
-        userRepository: di(),
-      ),
-    )
-    ..registerFactory(
-      () => NotificationsSettingsBloc(),
-    )
-    ..registerFactory(
-      () => FederatedRegisterBloc(
-        userRepository: di(),
-      ),
-    )
-    ..registerFactory(
-      () => TermsPoliciesBloc(),
-    )
+    ..registerFactory(() => ListSingleChatBloc())
+    ..registerFactory(() => ContactsBloc(userRepository: di()))
+    ..registerFactory(() => NotificationsSettingsBloc())
+    ..registerFactory(() => FederatedRegisterBloc(userRepository: di()))
+    ..registerFactory(() => TermsPoliciesBloc())
     ..registerFactory(
       () => DetailsPastFelicitupDashboardBloc(
         felicitupRepository: di(),
         userRepository: di(),
       ),
     )
-    ..registerFactory(
-      () => MainPastFelicitupBloc(),
-    )
+    ..registerFactory(() => MainPastFelicitupBloc())
     ..registerFactory(
       () => ChatPastFelicitupBloc(
         felicitupRepository: di(),
@@ -156,12 +101,6 @@ void _initBlocsInjection() {
         chatRepository: di(),
       ),
     )
-    ..registerFactory(
-      () => PeoplePastFelicitupBloc(
-        felicitupRepository: di(),
-      ),
-    )
-    ..registerFactory(
-      () => VideoPastFelicitupBloc(),
-    );
+    ..registerFactory(() => PeoplePastFelicitupBloc(felicitupRepository: di()))
+    ..registerFactory(() => VideoPastFelicitupBloc());
 }
