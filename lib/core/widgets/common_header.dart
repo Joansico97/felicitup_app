@@ -14,12 +14,8 @@ class CommonHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: context.fullWidth,
-      padding: EdgeInsets.symmetric(
-        horizontal: context.sp(20),
-      ),
-      margin: EdgeInsets.only(
-        bottom: context.sp(20),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
+      margin: EdgeInsets.only(bottom: context.sp(20)),
       child: Stack(
         children: [
           Row(
@@ -57,12 +53,16 @@ class CommonHeader extends StatelessWidget {
                             }
                             return CircularProgressIndicator();
                           },
-                          errorBuilder: (_, error, stackTrace) => Text(
-                            state.currentUser?.firstName?.substring(0, 1).toUpperCase() ?? '',
-                            style: context.styles.header2.copyWith(
-                              color: context.colors.orange,
-                            ),
-                          ),
+                          errorBuilder:
+                              (_, error, stackTrace) => Text(
+                                state.currentUser?.firstName
+                                        ?.substring(0, 1)
+                                        .toUpperCase() ??
+                                    '',
+                                style: context.styles.header2.copyWith(
+                                  color: context.colors.orange,
+                                ),
+                              ),
                         ),
                       );
                     },
@@ -73,27 +73,15 @@ class CommonHeader extends StatelessWidget {
               Container(
                 margin: EdgeInsets.only(
                   top: context.sp(15),
-                  right: context.sp(13),
+                  right: context.sp(10),
                 ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => context.go(RouterPaths.notifications),
-                      icon: Icon(
-                        Icons.notifications,
-                        color: context.colors.darkGrey,
-                        size: context.sp(28),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(
-                        Icons.search,
-                        color: context.colors.darkGrey,
-                        size: context.sp(28),
-                      ),
-                    ),
-                  ],
+                child: IconButton(
+                  onPressed: () => context.go(RouterPaths.notifications),
+                  icon: Icon(
+                    Icons.notifications,
+                    color: context.colors.darkGrey,
+                    size: context.sp(28),
+                  ),
                 ),
               ),
             ],

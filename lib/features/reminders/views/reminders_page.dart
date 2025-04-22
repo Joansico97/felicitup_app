@@ -18,21 +18,31 @@ class RemindersPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            CollapsedHeader(title: 'Recordatorios', onPressed: () async => context.go(RouterPaths.felicitupsDashboard)),
+            CollapsedHeader(
+              title: 'Recordatorios',
+              onPressed:
+                  () async => context.go(RouterPaths.felicitupsDashboard),
+            ),
             SizedBox(height: context.sp(12)),
             Expanded(
               child: ListView.builder(
-                itemCount: currentUser?.remainders?.length ?? 0,
+                itemCount: currentUser?.birthdateAlerts?.length ?? 0,
                 itemBuilder: (_, index) {
-                  final data = currentUser?.remainders?[index];
+                  final data = currentUser?.birthdateAlerts?[index];
 
                   return ListTile(
-                    title: Text('Cumpleaños de ${data?.birthdayUserName ?? ''}', style: context.styles.header2),
+                    title: Text(
+                      'Cumpleaños de ${data?.friendName ?? ''}',
+                      style: context.styles.header2,
+                    ),
                     subtitle: Text(
-                      'El cumpleaños de ${data?.birthdayUserName ?? ''} será el ${DateFormat('dd·MM·yyyy').format(data?.reminderDate ?? DateTime.now())}',
+                      'El cumpleaños de ${data?.friendName ?? ''} será el ${DateFormat('dd·MM·yyyy').format(data?.targetDate ?? DateTime.now())}',
                       style: context.styles.subtitle,
                     ),
-                    trailing: Icon(Icons.calendar_month_outlined, color: context.colors.orange),
+                    trailing: Icon(
+                      Icons.calendar_month_outlined,
+                      color: context.colors.orange,
+                    ),
                     onTap:
                         () => showConfirDoublemModal(
                           title: 'Qué acción deseas realizar?',
@@ -47,30 +57,6 @@ class RemindersPage extends StatelessWidget {
                   );
                 },
               ),
-              // child: Column(
-              //   children: [
-              //     ...List.generate(
-              //       5,
-              // (index) => ListTile(
-              //   title: Text('Recordatorio ${index + 1}'),
-              //   subtitle: Text('Descripción del recordatorio ${index + 1}'),
-              //   trailing: Icon(Icons.calendar_month_outlined, color: context.colors.orange),
-              //   onTap:
-              //       () => showConfirDoublemModal(
-              //         title: 'Qué acción deseas realizar?',
-              //         needOtherButton: true,
-              //         label1: 'Crear felicitup',
-              //         label2: 'Enviar mensaje directo',
-              //         label3: 'Eliminar recordatorio',
-              //         onAction1: () async {},
-              //         onAction2: () async {},
-              //         onAction3: () async {},
-              //       ),
-              //   // onTap: () => context.go(RouterPaths.reminderDetails),
-              // ),
-              //     ),
-              //   ],
-              // ),
             ),
           ],
         ),

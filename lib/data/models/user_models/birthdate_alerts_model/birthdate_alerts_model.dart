@@ -1,4 +1,6 @@
+import 'package:felicitup_app/helpers/date_converter.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 part 'birthdate_alerts_model.freezed.dart';
 part 'birthdate_alerts_model.g.dart';
@@ -10,7 +12,9 @@ class BirthdateAlertsModel with _$BirthdateAlertsModel {
     String? friendId,
     String? friendName,
     String? friendProfilePic,
+    @TimestampConverter() DateTime? targetDate,
   }) = _BirthdateAlertsModel;
 
-  factory BirthdateAlertsModel.fromJson(Map<String, dynamic> json) => _$BirthdateAlertsModelFromJson(json);
+  factory BirthdateAlertsModel.fromJson(Map<String, dynamic> json) =>
+      _$BirthdateAlertsModelFromJson(json);
 }

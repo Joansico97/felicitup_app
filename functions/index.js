@@ -16,15 +16,21 @@ const {getUserDataById} = require("./users/users");
 const {deleteFelicitupTask} = require("./felicitups/send_felicitup_task");
 const {getFelicitupById, getFelicitupRefById} = require("./felicitups/felicitups");
 const {execFile} = require("child_process");
+const {defineSecret} = require('firebase-functions/params');
+const {getFirestore, Timestamp} = require('firebase-admin/firestore');
+const {onCall} = require('firebase-functions/v2/https');
+const {HttpsError} = require('firebase-functions/v2/https');
 
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-// const {ffmpegPath} = require("ffmpeg-static");
+
 const constants = require("./constants/constants");
 const {onSchedule} = require("firebase-functions/scheduler");
 
 const bucket = admin.storage().bucket();
+
+const taskQueueSecret = defineSecret('TASK_QUEUE_SECRET');
 
 exports.testFunction = functions.https.onCall(
     {region: "us-central1"}, // ¡Siempre especifica la región!
@@ -145,25 +151,191 @@ exports.sendNotificationToList = functions.https.onCall(
       }
     });
 
-exports.sendFelicitup = functions.https.onCall(async (data, context) => {
-  try {
-    const felicitupId = data.data.felicitupId;
+exports.sendFelicitup = onCall(
+    {
+      secrets: [taskQueueSecret],
+      timeoutSeconds: 120,
+      memory: '512MiB',
+      region: 'us-central1',
+    },
+    async (request) => {
+    // 1. Verificación de autenticación
+      if (!request.auth) {
+        throw new HttpsError(
+            'unauthenticated',
+            'Debes iniciar sesión para enviar una Felicitup',
+        );
+      }
 
-    if (!felicitupId) {
-      throw new functions.https.HttpsError("invalid-argument", "El ID de la felicitup es requerido.");
+      console.log('Solicitud recibida', {
+        auth: request.auth,
+        data: request.data,
+      });
+
+      // 2. Validación de parámetros
+      const felicitupId = request.data.felicitupId;
+
+      if (!felicitupId || typeof felicitupId !== 'string') {
+        throw new HttpsError(
+            'invalid-argument',
+            'El parámetro felicitupId es requerido y debe ser un string',
+        );
+      }
+
+      try {
+        const db = getFirestore();
+        // 3. Obtener la Felicitup de Firestore
+        const felicitupRef = db.collection('Felicitups').doc(felicitupId);
+        const felicitupDoc = await felicitupRef.get();
+
+        if (!felicitupDoc.exists) {
+          throw new HttpsError(
+              'not-found',
+              'No se encontró la Felicitup con el ID proporcionado',
+          );
+        }
+
+        const felicitupData = felicitupDoc.data();
+        const eventDate = felicitupData.date.toDate();
+        const now = new Date();
+
+        // 4. Verificar si la fecha ya pasó
+        if (eventDate <= now) {
+          await completeFelicitup(felicitupId);
+          return {
+            success: true,
+            message: 'Felicitup completada inmediatamente',
+            executedImmediately: true,
+          };
+        }
+
+        // 5. Programar la tarea con Cloud Tasks
+        const delaySeconds = Math.floor((eventDate - now) / 1000);
+
+        const {CloudTasksClient} = require('@google-cloud/tasks');
+        const client = new CloudTasksClient();
+
+        const parent = client.queuePath(
+            process.env.GCLOUD_PROJECT,
+            'us-central1',
+            'felicitup-completion-queue',
+        );
+
+        const task = {
+          httpRequest: {
+            httpMethod: 'POST',
+            url: `https://${request.rawRequest.headers.host}/executeFelicitupCompletion`,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${taskQueueSecret.value()}`,
+            },
+            body: Buffer.from(JSON.stringify({
+              felicitupId,
+              userId: request.auth.uid,
+            })).toString('base64'),
+            scheduleTime: {
+              seconds: delaySeconds + Math.floor(Date.now() / 1000),
+            },
+          },
+        };
+
+        await client.createTask({parent, task});
+
+        // 6. Actualizar estado en Firestore
+        await felicitupRef.update({
+          status: 'scheduled',
+          scheduledCompletionTime: felicitupData.date,
+          lastUpdated: Timestamp.now(),
+          scheduledBy: request.auth.uid,
+        });
+
+        console.log(`Felicitup programada para ${eventDate.toISOString()}`);
+
+        return {
+          success: true,
+          scheduledTime: eventDate.toISOString(),
+          message: `Felicitup programada para completarse el ${eventDate.toLocaleString()}`,
+        };
+      } catch (error) {
+        console.error('Error en sendFelicitup:', error);
+
+        if (error instanceof HttpsError) {
+          throw error; // Reenviar errores ya tipados
+        }
+
+        throw new HttpsError(
+            'internal',
+            'Ocurrió un error al programar la Felicitup',
+            error.message,
+        );
+      }
+    },
+);
+
+async function completeFelicitup(felicitupId) {
+  const db = admin.firestore();
+  const felicitupRef = db.collection('Felicitups').doc(felicitupId);
+
+  try {
+    const felicitupDoc = await felicitupRef.get();
+    if (!felicitupDoc.exists) {
+      console.error(`Felicitup ${felicitupId} no encontrada`);
+      return;
     }
 
-    const felicitup = await getFelicitupById(felicitupId);
-    // const docRef = await getFelicitupRefById(felicitupId);
+    const felicitup = felicitupDoc.data();
 
-    const atLeastOneVideo = felicitup.invitedUserDetails.some((user) => user.videoData && user.videoData.videoUrl && user.videoData.videoUrl.trim() !== "");
+    // Aquí colocas tu lógica original para completar la Felicitup
+    // (similar a tu función sendManualFelicitup pero sin la parte HTTP)
 
-    console.log("atLeastOneVideo", atLeastOneVideo);
+    const atLeastOneVideo = felicitup.invitedUserDetails.some((user) =>
+      user.videoData && user.videoData.videoUrl && user.videoData.videoUrl.trim(),
+    );
 
-    // if (atLeastOneVideo) {
-    // }
-  } catch (error) {/* empty */}
-});
+    if (atLeastOneVideo) {
+      for (const owner of felicitup.owner) {
+        const ownerData = await getUserDataById(owner.id);
+
+        const newElement = {
+          assistanceStatus: "accepted",
+          id: ownerData.id,
+          idInformation: "",
+          paid: "paid",
+          name: ownerData.fullName,
+          userImage: ownerData.userImg,
+          videoData: {videoUrl: "", videoThumbnail: ""},
+        };
+
+        await felicitupRef.update({
+          invitedUserDetails: admin.firestore.FieldValue.arrayUnion(newElement),
+          invitedUsers: admin.firestore.FieldValue.arrayUnion(ownerData.id),
+        });
+
+        // Enviar notificación push
+        const payload = {
+          token: ownerData.fcmToken,
+          notification: {
+            title: "Hola, " + ownerData.firstName,
+            body: "¡Tienes una nueva Felicitup lista para ver!",
+          },
+        };
+        await sendPushNotification(payload);
+      }
+    }
+
+    // Marcar como completada
+    await felicitupRef.update({
+      status: "Finished",
+      completedAt: Timestamp.now(),
+    });
+
+    console.log(`Felicitup ${felicitupId} completada exitosamente`);
+  } catch (error) {
+    console.error(`Error al completar la Felicitup ${felicitupId}:`, error);
+    await felicitupRef.update({status: "failed"});
+    throw error;
+  }
+}
 
 exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
   try {
@@ -218,6 +390,14 @@ exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
 
         const payload = {
           token: ownerToken,
+          data: {
+            type: "past",
+            felicitupId: felicitupId,
+            chatId: "",
+            name: ownerName,
+            friendId: "",
+            userImage: "",
+          },
           notification: {
             title: "Hola, " + ownerName,
             body: "Tienes una nueva felicitup lista para ser vista!",
@@ -536,102 +716,247 @@ const deleterBirthdayAlert = async (userId, id) => {
 };
 
 exports.checkBirthdays = onSchedule({
-  schedule: 'every 12 hours',
+  schedule: 'every 24 hours',
   timeZone: 'UTC',
   timeoutSeconds: 300,
-  memory: '256MiB',
+  memory: '512MiB',
 }, async (event) => {
-  const today = new Date();
-  const currentMonth = today.getUTCMonth() + 1;
-  const currentDay = today.getUTCDate();
   const db = admin.firestore();
   const usersRef = db.collection(constants.usersPath);
+  const today = new Date();
 
   try {
-    const snapshot = await usersRef
-        .where("birthMonth", "==", currentMonth)
-        .where("birthDay", "==", currentDay)
-        .get();
+    // Procesar para hoy + 4 días siguientes
+    for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + dayOffset);
 
-    if (snapshot.empty) {
-      console.log("No hay usuarios que cumplan años hoy.");
-      return;
-    }
+      const targetMonth = targetDate.getUTCMonth() + 1;
+      const targetDay = targetDate.getUTCDate();
 
-    for (const userDoc of snapshot.docs) {
-      const userData = userDoc.data();
-      const userId = userDoc.id;
-      const userName = userData.name || "Un usuario";
-      const friendProfilePic = userData.userImg || "";
+      const birthdayUsers = await usersRef
+          .where("birthMonth", "==", targetMonth)
+          .where("birthDay", "==", targetDay)
+          .get();
 
-      console.log(`Cumpleaños de ${userName} (${userId})`);
-
-      const friends = userData.matchList || [];
-      if (friends.length === 0) {
-        console.log(`${userName} no tiene amigos.`);
-        continue;
-      }
-
-      for (const friendId of friends) {
-        const friendDocRef = usersRef.doc(friendId);
-
-        try {
-          const friendDoc = await friendDocRef.get();
-          if (friendDoc.exists) {
-            // Verificar si ya existe una alerta para este usuario
-            const existingAlerts = friendDoc.data().birthdateAlerts || [];
-            const alreadyExists = existingAlerts.some(
-                (alert) => alert.friendId === userId,
-            );
-
-            if (alreadyExists) {
-              console.log(`Alerta de cumpleaños para ${userName} ya existe en ${friendId}`);
-              continue;
-            }
-
-            // Generar ID único
-            const id = `${userId}-${friendId}-${Date.now()}`;
-
-            await friendDocRef.update({
-              birthdateAlerts: admin.firestore.FieldValue.arrayUnion({
-                id: id,
-                friendId: userId,
-                friendName: userName,
-                friendProfilePic: friendProfilePic,
-              }),
-            });
-
-            await admin.messaging().send({
-              token: friendDoc.data().fcmToken,
-              notification: {
-                title: "Recordatorio de cumpleaños",
-                body: `${userDoc.data().firstName} cumpleaños hoy!`,
-              },
-              data: {
-                "type": "reminder",
-                "felicitupId": "",
-                "chatId": "",
-                "name": "",
-                "friendId": "",
-                "userImage": "",
-              },
-            });
-
-            await deleterBirthdayAlert(userId, id);
-            console.log(`Información de cumpleaños agregada al documento de ${friendId}`);
-          } else {
-            console.log(`El amigo con id ${friendId} no existe`);
-          }
-        } catch (error) {
-          console.error("Error al actualizar el documento del amigo:", error, {userId, friendId});
-        }
+      for (const userDoc of birthdayUsers.docs) {
+        await processBirthdayUser(userDoc, dayOffset, db);
       }
     }
   } catch (error) {
-    console.error("Error en checkBirthdays", error);
+    console.error("Error en checkBirthdays:", error);
     throw error;
   }
 });
+
+async function processBirthdayUser(userDoc, dayOffset, db) {
+  const birthdayUser = userDoc.data();
+  const birthdayUserId = userDoc.id;
+  const usersRef = db.collection(constants.usersPath);
+
+  // Verificar si el usuario tiene matchList
+  if (!birthdayUser.matchList || birthdayUser.matchList.length === 0) {
+    console.log(`Usuario ${birthdayUserId} no tiene matchList`);
+    return;
+  }
+
+  // Procesar cada amigo en matchList
+  for (const friendId of birthdayUser.matchList) {
+    await verifyAndCreateAlert(birthdayUser, birthdayUserId, friendId, dayOffset, usersRef);
+  }
+}
+
+async function verifyAndCreateAlert(birthdayUser, birthdayUserId, friendId, dayOffset, usersRef) {
+  try {
+    const friendDoc = await usersRef.doc(friendId).get();
+
+    // Verificar existencia del amigo y su matchList
+    if (!friendDoc.exists) {
+      console.log(`Amigo ${friendId} no encontrado`);
+      return;
+    }
+
+    const friendData = friendDoc.data();
+
+    // Validación bidireccional: ¿El amigo también tiene al usuario en su matchList?
+    if (!friendData.matchList || !friendData.matchList.includes(birthdayUserId)) {
+      console.log(`Relación no recíproca entre ${birthdayUserId} y ${friendId}`);
+      return;
+    }
+
+    // Verificar si ya existe alerta
+    const existingAlerts = friendData.birthdateAlerts || [];
+    const alertExists = existingAlerts.some((alert) =>
+      alert.friendId === birthdayUserId &&
+      alert.daysOffset === dayOffset,
+    );
+
+    if (alertExists) {
+      console.log(`Alerta ya existe para ${birthdayUserId} en ${friendId}`);
+      return;
+    }
+
+    // Crear nueva alerta
+    const newAlert = {
+      id: `${birthdayUserId}-${friendId}-${Date.now()}`,
+      friendId: birthdayUserId,
+      friendName: birthdayUser.name || `Usuario ${birthdayUserId}`,
+      friendProfilePic: birthdayUser.userImg || "",
+      daysOffset: dayOffset,
+      targetDate: formatDate(addDays(new Date(), dayOffset)),
+    };
+
+    await usersRef.doc(friendId).update({
+      birthdateAlerts: admin.firestore.FieldValue.arrayUnion(newAlert),
+    });
+
+    await deleterBirthdayAlert(friendId, `${birthdayUserId}-${friendId}-${Date.now()}`);
+
+    // Enviar notificación si tiene token
+    if (friendData.fcmToken) {
+      await sendBirthdayNotification(
+          friendData.fcmToken,
+          birthdayUser.name,
+          dayOffset,
+      );
+    }
+
+    console.log(`Alerta creada para ${friendId} sobre cumpleaños de ${birthdayUserId}`);
+  } catch (error) {
+    console.error(`Error procesando amigo ${friendId}:`, error);
+  }
+}
+
+async function sendBirthdayNotification(friendData, userName, dayOffset) {
+  if (!friendData.fcmToken) return;
+
+  const daysText = dayOffset === 0 ? "hoy" : `en ${dayOffset} día(s)`;
+  const notification = {
+    token: friendData.fcmToken,
+    notification: {
+      title: "🎉 Recordatorio de cumpleaños",
+      body: `${userName} cumple años ${daysText}!`,
+    },
+    data: {
+      "type": "reminder",
+      "felicitupId": "",
+      "chatId": "",
+      "name": "",
+      "friendId": "",
+      "userImage": "",
+    },
+  };
+
+  try {
+    await admin.messaging().send(notification);
+  } catch (error) {
+    console.error("Error enviando notificación FCM:", error);
+  }
+}
+
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+// exports.checkBirthdays = onSchedule({
+//   schedule: 'every 24 hours',
+//   timeZone: 'UTC',
+//   timeoutSeconds: 300,
+//   memory: '256MiB',
+// }, async (event) => {
+//   const today = new Date();
+//   const currentMonth = today.getUTCMonth() + 1;
+//   const currentDay = today.getUTCDate();
+//   const db = admin.firestore();
+//   const usersRef = db.collection(constants.usersPath);
+
+//   try {
+//     const snapshot = await usersRef
+//         .where("birthMonth", "==", currentMonth)
+//         .where("birthDay", "==", currentDay)
+//         .get();
+
+//     if (snapshot.empty) {
+//       console.log("No hay usuarios que cumplan años hoy.");
+//       return;
+//     }
+
+//     for (const userDoc of snapshot.docs) {
+//       const userData = userDoc.data();
+//       const userId = userDoc.id;
+//       const userName = userData.name || "Un usuario";
+//       const friendProfilePic = userData.userImg || "";
+
+//       console.log(`Cumpleaños de ${userName} (${userId})`);
+
+//       const friends = userData.matchList || [];
+//       if (friends.length === 0) {
+//         console.log(`${userName} no tiene amigos.`);
+//         continue;
+//       }
+
+//       for (const friendId of friends) {
+//         const friendDocRef = usersRef.doc(friendId);
+
+//         try {
+//           const friendDoc = await friendDocRef.get();
+//           if (friendDoc.exists) {
+//             // Verificar si ya existe una alerta para este usuario
+//             const existingAlerts = friendDoc.data().birthdateAlerts || [];
+//             const alreadyExists = existingAlerts.some(
+//                 (alert) => alert.friendId === userId,
+//             );
+
+//             if (alreadyExists) {
+//               console.log(`Alerta de cumpleaños para ${userName} ya existe en ${friendId}`);
+//               continue;
+//             }
+
+//             // Generar ID único
+//             const id = `${userId}-${friendId}-${Date.now()}`;
+
+//             await friendDocRef.update({
+//               birthdateAlerts: admin.firestore.FieldValue.arrayUnion({
+//                 id: id,
+//                 friendId: userId,
+//                 friendName: userName,
+//                 friendProfilePic: friendProfilePic,
+//               }),
+//             });
+
+//             await admin.messaging().send({
+//               token: friendDoc.data().fcmToken,
+//               notification: {
+//                 title: "Recordatorio de cumpleaños",
+//                 body: `${userDoc.data().firstName} cumpleaños hoy!`,
+//               },
+//               data: {
+//                 "type": "reminder",
+//                 "felicitupId": "",
+//                 "chatId": "",
+//                 "name": "",
+//                 "friendId": "",
+//                 "userImage": "",
+//               },
+//             });
+
+//             await deleterBirthdayAlert(userId, id);
+//             console.log(`Información de cumpleaños agregada al documento de ${friendId}`);
+//           } else {
+//             console.log(`El amigo con id ${friendId} no existe`);
+//           }
+//         } catch (error) {
+//           console.error("Error al actualizar el documento del amigo:", error, {userId, friendId});
+//         }
+//       }
+//     }
+//   } catch (error) {
+//     console.error("Error en checkBirthdays", error);
+//     throw error;
+//   }
+// });
 
 exports.createBirthdayReminders = onSchedule({
   schedule: 'every 24 hours',

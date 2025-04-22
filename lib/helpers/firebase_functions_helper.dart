@@ -61,7 +61,20 @@ class FirebaseFunctionsHelper {
   }
 
   Future<void> sendFelicitup({required String felicitupId}) async {
-    await _call('sendFelicitup', parameters: {'felicitupId': felicitupId});
+    try {
+      final response = await _call<Map<String, dynamic>>(
+        'sendFelicitup',
+        parameters: {
+          'felicitupId': felicitupId,
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+      );
+
+      logger.info('Respuesta de sendFelicitup: $response');
+    } catch (e) {
+      logger.error('Error al enviar Felicitup, error: $e');
+      rethrow;
+    }
   }
 
   Future<void> sendManualFelicitup({required String felicitupId}) async {
@@ -86,13 +99,27 @@ class FirebaseFunctionsHelper {
     Map<String, dynamic>? parameters,
   }) async {
     try {
-      final callable = _firebaseFunctions.httpsCallable(functionName);
+      final callable = _firebaseFunctions.httpsCallable(
+        functionName,
+        options: HttpsCallableOptions(timeout: const Duration(seconds: 30)),
+      );
       final HttpsCallableResult<dynamic> result = await callable.call(
-        parameters,
+        parameters ?? {},
       );
       return result.data as T;
-    } catch (e) {
-      logger.error('Error calling $functionName $e');
+    } on FirebaseFunctionsException catch (e) {
+      logger.error('''
+Firebase Functions Error:
+  Function: $functionName
+  Code: ${e.code}
+  Details: ${e.details}
+  Message: ${e.message}
+''');
+      rethrow;
+    } catch (e, stack) {
+      logger.error(
+        'Unexpected error calling $functionName\n\nerror: $e\n\nstackTrace: $stack',
+      );
       rethrow;
     }
   }
