@@ -7,10 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EditWishListItemView extends StatefulWidget {
-  const EditWishListItemView({
-    super.key,
-    required this.wishListItem,
-  });
+  const EditWishListItemView({super.key, required this.wishListItem});
 
   final GiftcarModel wishListItem;
 
@@ -43,9 +40,7 @@ class _EditWishListItemViewState extends State<EditWishListItemView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.sp(40),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: context.sp(40)),
       child: GestureDetector(
         onTap: () {
           _focusNode.unfocus();
@@ -53,151 +48,152 @@ class _EditWishListItemViewState extends State<EditWishListItemView> {
           _focusNode2.unfocus();
           _focusNode3.unfocus();
         },
-        child: Column(
-          children: [
-            SizedBox(height: context.sp(32)),
-            InputCommon(
-              focusNode: _focusNode,
-              controller: nameController,
-              hintText: 'Ingresa el nombre del producto',
-              titleText: 'Nombre del producto',
-              onchangeEditing: (value) => context.read<WishListBloc>().add(
-                    WishListEvent.setProductName(value),
-                  ),
-            ),
-            SizedBox(height: context.sp(16)),
-            InputCommon(
-              focusNode: _focusNode1,
-              controller: priceController,
-              hintText: 'Ingresa el precio del producto',
-              titleText: 'Precio del producto',
-              isPrice: true,
-              onchangeEditing: (value) => context.read<WishListBloc>().add(
-                    WishListEvent.setProductPrice(value),
-                  ),
-            ),
-            SizedBox(height: context.sp(16)),
-            InputCommon(
-              focusNode: _focusNode2,
-              controller: descriptionController,
-              hintText: 'Ingresa la descripción del producto',
-              titleText: 'Descripción del producto',
-              onchangeEditing: (value) => context.read<WishListBloc>().add(
-                    WishListEvent.setProductDescription(value),
-                  ),
-            ),
-            SizedBox(height: context.sp(16)),
-            Text(
-              'Links',
-              style: context.styles.subtitle.copyWith(
-                fontSize: context.sp(10),
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: context.sp(links.isEmpty ? 8 : 16)),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ...List.generate(
-                    links.length,
-                    (index) => Row(
-                      children: [
-                        SizedBox(
-                          width: context.sp(200),
-                          child: Text(
-                            links[index],
-                            overflow: TextOverflow.ellipsis,
-                            style: context.styles.paragraph,
-                          ),
-                        ),
-                        Spacer(),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              links.removeAt(index);
-                            });
-                          },
-                          icon: Icon(
-                            Icons.delete_forever_outlined,
-                            color: context.colors.orange,
-                          ),
-                        ),
-                      ],
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: context.sp(32)),
+              InputCommon(
+                focusNode: _focusNode,
+                controller: nameController,
+                hintText: 'Ingresa el nombre del producto',
+                titleText: 'Nombre del producto',
+                onchangeEditing:
+                    (value) => context.read<WishListBloc>().add(
+                      WishListEvent.setProductName(value),
                     ),
-                  ),
-                ],
               ),
-            ),
-            SizedBox(height: context.sp(links.isEmpty ? 8 : 16)),
-            Align(
-              alignment: Alignment.center,
-              child: PrimaryButton(
-                label: 'Añadir link',
-                onTap: () {
-                  setState(() {
-                    showLink = true;
-                    _focusNode2.unfocus();
-                    _focusNode3.requestFocus();
-                  });
-                },
-                isActive: true,
-                isCollapsed: true,
+              SizedBox(height: context.sp(16)),
+              InputCommon(
+                focusNode: _focusNode1,
+                controller: priceController,
+                hintText: 'Ingresa el precio del producto',
+                titleText: 'Precio del producto',
+                isPrice: true,
+                onchangeEditing:
+                    (value) => context.read<WishListBloc>().add(
+                      WishListEvent.setProductPrice(value),
+                    ),
               ),
-            ),
-            Visibility(
-              visible: showLink,
-              child: Column(
-                children: [
-                  SizedBox(height: context.sp(16)),
-                  InputCommon(
-                    focusNode: _focusNode3,
-                    controller: linkController,
-                    hintText: 'Ingresa el link del producto',
-                    titleText: 'Link del producto',
-                  ),
-                  SizedBox(
-                    width: context.sp(100),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            if (linkController.text.isNotEmpty) {
-                              context.read<WishListBloc>().add(
-                                    WishListEvent.setLinks(links),
-                                  );
+              SizedBox(height: context.sp(16)),
+              InputCommon(
+                focusNode: _focusNode2,
+                controller: descriptionController,
+                hintText: 'Ingresa la descripción del producto',
+                titleText: 'Descripción del producto',
+                onchangeEditing:
+                    (value) => context.read<WishListBloc>().add(
+                      WishListEvent.setProductDescription(value),
+                    ),
+              ),
+              SizedBox(height: context.sp(16)),
+              Text(
+                'Links',
+                style: context.styles.subtitle.copyWith(
+                  fontSize: context.sp(10),
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(height: context.sp(links.isEmpty ? 8 : 16)),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...List.generate(
+                      links.length,
+                      (index) => Row(
+                        children: [
+                          SizedBox(
+                            width: context.sp(200),
+                            child: Text(
+                              links[index],
+                              overflow: TextOverflow.ellipsis,
+                              style: context.styles.paragraph,
+                            ),
+                          ),
+                          Spacer(),
+                          IconButton(
+                            onPressed: () {
                               setState(() {
-                                links.add(linkController.text);
-                                linkController.clear();
+                                links.removeAt(index);
+                              });
+                            },
+                            icon: Icon(
+                              Icons.delete_forever_outlined,
+                              color: context.colors.orange,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: context.sp(links.isEmpty ? 8 : 16)),
+              Align(
+                alignment: Alignment.center,
+                child: PrimaryButton(
+                  label: 'Añadir link',
+                  onTap: () {
+                    setState(() {
+                      showLink = true;
+                      _focusNode2.unfocus();
+                      _focusNode3.requestFocus();
+                    });
+                  },
+                  isActive: true,
+                  isCollapsed: true,
+                ),
+              ),
+              Visibility(
+                visible: showLink,
+                child: Column(
+                  children: [
+                    SizedBox(height: context.sp(16)),
+                    InputCommon(
+                      focusNode: _focusNode3,
+                      controller: linkController,
+                      hintText: 'Ingresa el link del producto',
+                      titleText: 'Link del producto',
+                    ),
+                    SizedBox(
+                      width: context.sp(100),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              if (linkController.text.isNotEmpty) {
+                                context.read<WishListBloc>().add(
+                                  WishListEvent.setLinks(links),
+                                );
+                                setState(() {
+                                  links.add(linkController.text);
+                                  linkController.clear();
+                                  showLink = false;
+                                });
+                              }
+                            },
+                            icon: Icon(Icons.check_box_outlined),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
                                 showLink = false;
                               });
-                            }
-                          },
-                          icon: Icon(
-                            Icons.check_box_outlined,
+                            },
+                            icon: Icon(Icons.cancel_outlined),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              showLink = false;
-                            });
-                          },
-                          icon: Icon(
-                            Icons.cancel_outlined,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: context.sp(16)),
-                ],
+                    SizedBox(height: context.sp(16)),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

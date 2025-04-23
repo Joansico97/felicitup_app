@@ -29,6 +29,7 @@ void _initBlocsInjection() {
         chatRepository: di(),
         userRepository: di(),
         firebaseAuth: di(),
+        localStorageHelper: di(),
       ),
     )
     ..registerFactory(

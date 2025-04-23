@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:felicitup_app/app/app_observer.dart';
 import 'package:felicitup_app/core/config/firebase_options.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -10,14 +11,9 @@ Future<void> initConfig() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // await Hive.initFlutter();
-  // await _openBoxesLocalStorage();
 }
 
 Future<void> initObservers() async {
@@ -30,7 +26,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 }
 
-// Future<void> _openBoxesLocalStorage() async {
-//   await Hive.openBox(LocalStorageConstants.sessionBox);
-//   await Hive.openBox(LocalStorageConstants.chatBox);
-// }
+Future<void> initStorage() async {
+  final localStorage = LocalStorageHelper();
+  await localStorage.init();
+}

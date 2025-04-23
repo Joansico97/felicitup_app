@@ -18,8 +18,15 @@ class RememberSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return FadeInDownBig(
       child: Container(
-        constraints: BoxConstraints(maxHeight: context.sp(192), minHeight: context.sp(50)),
-        padding: EdgeInsets.symmetric(horizontal: context.sp(26), vertical: context.sp(22)),
+        constraints: BoxConstraints(
+          maxHeight: context.sp(192),
+          minHeight: context.sp(50),
+          maxWidth: context.sp(310),
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: context.sp(26),
+          vertical: context.sp(22),
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(context.sp(20)),
           color: Colors.white.withAlpha((.4 * 255).toInt()),
@@ -28,12 +35,46 @@ class RememberSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: context.sp(28),
-              width: context.sp(119),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(context.sp(20)), color: Colors.white),
-              child: Text('Cumpleaños', style: context.styles.smallText.copyWith(color: context.colors.softOrange)),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Container(
+                  height: context.sp(28),
+                  width: context.sp(119),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(context.sp(20)),
+                    color: Colors.white,
+                  ),
+                  child: Text(
+                    'Cumpleaños',
+                    style: context.styles.smallText.copyWith(
+                      color: context.colors.softOrange,
+                    ),
+                  ),
+                ),
+                Spacer(),
+                GestureDetector(
+                  onTap:
+                      () => context.read<FelicitupsDashboardBloc>().add(
+                        FelicitupsDashboardEvent.closeRememberSection(),
+                      ),
+                  child: Container(
+                    padding: EdgeInsets.all(context.sp(4)),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: context.colors.white,
+                    ),
+                    child: Icon(
+                      Icons.close,
+                      color: context.colors.orange,
+                      size: context.sp(18),
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: context.sp(8)),
             BlocBuilder<AppBloc, AppState>(
@@ -42,54 +83,77 @@ class RememberSection extends StatelessWidget {
 
                 return Column(
                   children: [
-                    ...List.generate(currentUser?.birthdateAlerts?.length ?? 0, (index) {
-                      final data = currentUser?.birthdateAlerts?[index];
+                    ...List.generate(
+                      currentUser?.birthdateAlerts?.length ?? 0,
+                      (index) {
+                        final data = currentUser?.birthdateAlerts?[index];
 
-                      return RememberCard(
-                        name: data?.friendName ?? '',
-                        date: DateTime.now(),
-                        image: data?.friendProfilePic,
-                        onTap: () {
-                          showConfirDoublemModal(
-                            title: 'Qué acción deseas realizar?',
-                            label1: 'Crear felicitup para este usuario',
-                            label2: 'Enviar mensaje directo',
-                            onAction1: () async {
-                              final OwnerModel owner = OwnerModel(
-                                id: data?.friendId ?? '',
-                                name: data?.friendName ?? '',
-                                userImg: data?.friendProfilePic,
-                                date: DateTime.now(),
-                              );
-                              context.go(RouterPaths.createFelicitup);
-                              context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.changeFelicitupOwner(owner));
-                              context.read<CreateFelicitupBloc>().add(
-                                CreateFelicitupEvent.changeEventReason('Cumpleaños'),
-                              );
-                              context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.jumpToStep(2));
-                            },
-                            onAction2: () async {
-                              final SingleChatModel singleChat = SingleChatModel(
-                                chatId: data?.friendId ?? '',
-                                friendId: data?.friendId ?? '',
-                                userName: data?.friendName ?? '',
-                                userImage: data?.friendProfilePic,
-                              );
-                              if (currentUser?.singleChats?.any((alert) => alert.friendId == data?.friendId) ?? false) {
-                                final alert = currentUser?.singleChats?.firstWhere(
-                                  (alert) => alert.friendId == data?.friendId,
+                        return RememberCard(
+                          name: data?.friendName ?? '',
+                          date: DateTime.now(),
+                          image: data?.friendProfilePic,
+                          onTap: () {
+                            showConfirDoublemModal(
+                              title: 'Qué acción deseas realizar?',
+                              label1: 'Crear felicitup para este usuario',
+                              label2: 'Enviar mensaje directo',
+                              onAction1: () async {
+                                final OwnerModel owner = OwnerModel(
+                                  id: data?.friendId ?? '',
+                                  name: data?.friendName ?? '',
+                                  userImg: data?.friendProfilePic,
+                                  date: DateTime.now(),
                                 );
-                                context.go(RouterPaths.singleChat, extra: alert);
-                                return;
-                              }
-                              context.read<FelicitupsDashboardBloc>().add(
-                                FelicitupsDashboardEvent.createSingleChat(singleChat),
-                              );
-                            },
-                          );
-                        },
-                      );
-                    }),
+                                context.go(RouterPaths.createFelicitup);
+                                context.read<CreateFelicitupBloc>().add(
+                                  CreateFelicitupEvent.changeFelicitupOwner(
+                                    owner,
+                                  ),
+                                );
+                                context.read<CreateFelicitupBloc>().add(
+                                  CreateFelicitupEvent.changeEventReason(
+                                    'Cumpleaños',
+                                  ),
+                                );
+                                context.read<CreateFelicitupBloc>().add(
+                                  CreateFelicitupEvent.jumpToStep(2),
+                                );
+                              },
+                              onAction2: () async {
+                                final SingleChatModel singleChat =
+                                    SingleChatModel(
+                                      chatId: data?.friendId ?? '',
+                                      friendId: data?.friendId ?? '',
+                                      userName: data?.friendName ?? '',
+                                      userImage: data?.friendProfilePic,
+                                    );
+                                if (currentUser?.singleChats?.any(
+                                      (alert) =>
+                                          alert.friendId == data?.friendId,
+                                    ) ??
+                                    false) {
+                                  final alert = currentUser?.singleChats
+                                      ?.firstWhere(
+                                        (alert) =>
+                                            alert.friendId == data?.friendId,
+                                      );
+                                  context.go(
+                                    RouterPaths.singleChat,
+                                    extra: alert,
+                                  );
+                                  return;
+                                }
+                                context.read<FelicitupsDashboardBloc>().add(
+                                  FelicitupsDashboardEvent.createSingleChat(
+                                    singleChat,
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ],
                 );
               },

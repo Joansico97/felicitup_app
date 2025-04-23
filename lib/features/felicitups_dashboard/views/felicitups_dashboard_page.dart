@@ -15,14 +15,20 @@ class FelicitupsDashboardPage extends StatefulWidget {
   const FelicitupsDashboardPage({super.key});
 
   @override
-  State<FelicitupsDashboardPage> createState() => _FelicitupsDashboardPageState();
+  State<FelicitupsDashboardPage> createState() =>
+      _FelicitupsDashboardPageState();
 }
 
 class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
   @override
   void initState() {
     super.initState();
-    context.read<FelicitupsDashboardBloc>().add(const FelicitupsDashboardEvent.startListening());
+    context.read<FelicitupsDashboardBloc>().add(
+      const FelicitupsDashboardEvent.startListening(),
+    );
+    context.read<FelicitupsDashboardBloc>().add(
+      const FelicitupsDashboardEvent.getRememberStatus(),
+    );
   }
 
   @override
@@ -36,7 +42,9 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: BlocBuilder<HomeBloc, HomeState>(
         buildWhen:
-            (previous, current) => previous.showButton != current.showButton || previous.create != current.create,
+            (previous, current) =>
+                previous.showButton != current.showButton ||
+                previous.create != current.create,
         builder: (_, state) {
           return FloatingActionButton(
             onPressed: () {
@@ -44,7 +52,9 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
             },
             backgroundColor: context.colors.lightGrey,
             elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(context.sp(50))),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(context.sp(50)),
+            ),
             child: Image.asset(Assets.images.logo.path, scale: context.sp(11)),
           );
         },
@@ -55,10 +65,20 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
           children: [
             CommonHeader(),
             BlocBuilder<AppBloc, AppState>(
-              builder: (_, state) {
-                return Visibility(
-                  visible: state.currentUser?.birthdateAlerts?.isNotEmpty ?? false,
-                  child: RememberSection(),
+              builder: (_, stateApp) {
+                return BlocBuilder<
+                  FelicitupsDashboardBloc,
+                  FelicitupsDashboardState
+                >(
+                  builder: (_, state) {
+                    return Visibility(
+                      visible:
+                          (stateApp.currentUser?.birthdateAlerts?.isNotEmpty ??
+                              false) &&
+                          state.showSection,
+                      child: RememberSection(),
+                    );
+                  },
                 );
               },
             ),
@@ -69,15 +89,23 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [context.colors.orange, context.colors.background],
+                      colors: [
+                        context.colors.orange,
+                        context.colors.background,
+                      ],
                     ),
                   ),
                   child: Column(
                     children: [
                       SizedBox(height: context.sp(12)),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
-                        child: BlocBuilder<FelicitupsDashboardBloc, FelicitupsDashboardState>(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: context.sp(24),
+                        ),
+                        child: BlocBuilder<
+                          FelicitupsDashboardBloc,
+                          FelicitupsDashboardState
+                        >(
                           builder: (_, state) {
                             return Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -88,12 +116,14 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                                   textColor: context.colors.orange,
                                   activeColor: context.colors.orange,
                                   onActive:
-                                      () => context.read<FelicitupsDashboardBloc>().add(
-                                        FelicitupsDashboardEvent.changeListBoolsTap(
-                                          0,
-                                          felicitupsDashboardPageController,
-                                        ),
-                                      ),
+                                      () => context
+                                          .read<FelicitupsDashboardBloc>()
+                                          .add(
+                                            FelicitupsDashboardEvent.changeListBoolsTap(
+                                              0,
+                                              felicitupsDashboardPageController,
+                                            ),
+                                          ),
                                 ),
                                 SizedBox(width: context.sp(14)),
                                 _FelicitupsDashboardHeaderOption(
@@ -102,12 +132,14 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                                   textColor: context.colors.orange,
                                   activeColor: context.colors.orange,
                                   onActive:
-                                      () => context.read<FelicitupsDashboardBloc>().add(
-                                        FelicitupsDashboardEvent.changeListBoolsTap(
-                                          1,
-                                          felicitupsDashboardPageController,
-                                        ),
-                                      ),
+                                      () => context
+                                          .read<FelicitupsDashboardBloc>()
+                                          .add(
+                                            FelicitupsDashboardEvent.changeListBoolsTap(
+                                              1,
+                                              felicitupsDashboardPageController,
+                                            ),
+                                          ),
                                 ),
                               ],
                             );
@@ -124,7 +156,10 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                           },
                           onPageChanged: (index) async {
                             context.read<FelicitupsDashboardBloc>().add(
-                              FelicitupsDashboardEvent.changeListBoolsTap(index, felicitupsDashboardPageController),
+                              FelicitupsDashboardEvent.changeListBoolsTap(
+                                index,
+                                felicitupsDashboardPageController,
+                              ),
                             );
                           },
                         ),

@@ -3,28 +3,15 @@ part of './injection_container.dart';
 void _initNetworkInjection() {
   di
     ..registerLazySingleton<DatabaseHelper>(
-      () => DatabaseHelper(
-        firestore: di(),
-      ),
+      () => DatabaseHelper(firestore: di()),
     )
     ..registerLazySingleton<FirebaseFunctionsHelper>(
-      () => FirebaseFunctionsHelper(
-        firebaseFunctions: di(),
-      ),
+      () => FirebaseFunctionsHelper(firebaseFunctions: di()),
     )
-    ..registerLazySingleton<FirebaseAuth>(
-      () => FirebaseAuth.instance,
-    )
-    ..registerLazySingleton<FirebaseFirestore>(
-      () => FirebaseFirestore.instance,
-    )
-    ..registerLazySingleton<FirebaseMessaging>(
-      () => FirebaseMessaging.instance,
-    )
-    ..registerLazySingleton<FirebaseFunctions>(
-      () => FirebaseFunctions.instance,
-    )
-    ..registerLazySingleton<FirebaseStorage>(
-      () => FirebaseStorage.instance,
-    );
+    ..registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance)
+    ..registerLazySingleton<FirebaseFirestore>(() => FirebaseFirestore.instance)
+    ..registerLazySingleton<FirebaseMessaging>(() => FirebaseMessaging.instance)
+    ..registerLazySingleton<FirebaseFunctions>(() => FirebaseFunctions.instance)
+    ..registerLazySingleton<FirebaseStorage>(() => FirebaseStorage.instance)
+    ..registerLazySingleton<LocalStorageHelper>(() => LocalStorageHelper());
 }

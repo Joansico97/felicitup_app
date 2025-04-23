@@ -6,6 +6,7 @@ import 'package:felicitup_app/injection/injection_container.dart' as injection;
 Future<void> main() async {
   await initConfig();
   await initObservers();
+  await initStorage();
   await injection.initInjections();
   runApp(const FelicitupApp());
 }
