@@ -118,6 +118,12 @@ class RememberSection extends StatelessWidget {
                                 context.read<CreateFelicitupBloc>().add(
                                   CreateFelicitupEvent.jumpToStep(2),
                                 );
+
+                                context.read<FelicitupsDashboardBloc>().add(
+                                  FelicitupsDashboardEvent.deleteBirthdateAlert(
+                                    data?.id ?? '',
+                                  ),
+                                );
                               },
                               onAction2: () async {
                                 final SingleChatModel singleChat =
@@ -146,6 +152,12 @@ class RememberSection extends StatelessWidget {
                                 context.read<FelicitupsDashboardBloc>().add(
                                   FelicitupsDashboardEvent.createSingleChat(
                                     singleChat,
+                                  ),
+                                );
+
+                                context.read<FelicitupsDashboardBloc>().add(
+                                  FelicitupsDashboardEvent.deleteBirthdateAlert(
+                                    data?.id ?? '',
                                   ),
                                 );
                               },

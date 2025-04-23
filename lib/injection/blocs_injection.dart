@@ -103,5 +103,8 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(() => PeoplePastFelicitupBloc(felicitupRepository: di()))
-    ..registerFactory(() => VideoPastFelicitupBloc());
+    ..registerFactory(() => VideoPastFelicitupBloc())
+    ..registerFactory(
+      () => RemindersBloc(userRepository: di(), chatRepository: di()),
+    );
 }

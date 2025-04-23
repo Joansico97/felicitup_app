@@ -69,6 +69,12 @@ class RemindersPage extends StatelessWidget {
                             rootNavigatorKey.currentContext!
                                 .read<CreateFelicitupBloc>()
                                 .add(CreateFelicitupEvent.jumpToStep(2));
+
+                            context.read<RemindersBloc>().add(
+                              RemindersEvent.deleteBirthdateAlert(
+                                data?.id ?? '',
+                              ),
+                            );
                           },
                           onAction2: () async {
                             final SingleChatModel singleChat = SingleChatModel(
@@ -91,6 +97,11 @@ class RemindersPage extends StatelessWidget {
 
                             context.read<RemindersBloc>().add(
                               RemindersEvent.createSingleChat(singleChat),
+                            );
+                            context.read<RemindersBloc>().add(
+                              RemindersEvent.deleteBirthdateAlert(
+                                data?.id ?? '',
+                              ),
                             );
                           },
                         ),

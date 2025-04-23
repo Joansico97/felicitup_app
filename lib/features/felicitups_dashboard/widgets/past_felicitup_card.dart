@@ -33,9 +33,7 @@ class PastFelicitupWidget extends StatelessWidget {
         children: [
           Container(
             width: context.sp(95),
-            padding: EdgeInsets.all(
-              context.sp(10),
-            ),
+            padding: EdgeInsets.all(context.sp(10)),
             child: Column(
               children: [
                 SizedBox(height: context.sp(12)),
@@ -43,8 +41,8 @@ class PastFelicitupWidget extends StatelessWidget {
                   felicitup.owner.length > 2
                       ? '${felicitup.owner[0].name.split(' ')[0]} y ${felicitup.owner.length - 1} más'
                       : felicitup.owner.length == 2
-                          ? '${felicitup.owner[0].name.split(' ')[0]} y ${felicitup.owner[1].name.split(' ')[0]}'
-                          : felicitup.owner[0].name.split(' ')[0],
+                      ? '${felicitup.owner[0].name.split(' ')[0]} y ${felicitup.owner[1].name.split(' ')[0]}'
+                      : felicitup.owner[0].name.split(' ')[0],
                   style: context.styles.subtitle,
                 ),
                 SizedBox(height: context.sp(8)),
@@ -71,38 +69,26 @@ class PastFelicitupWidget extends StatelessWidget {
                   width: context.fullWidth,
                   child: Stack(
                     children: [
-                      CircleIcon(
-                        color: context.colors.orange,
-                      ),
+                      CircleIcon(color: context.colors.orange),
                       Row(
                         children: [
                           SizedBox(
                             // width: context.sizer.width(.03),
                             width: context.sp(15),
                           ),
-                          CircleIcon(
-                            color: context.colors.orange,
-                          ),
+                          CircleIcon(color: context.colors.orange),
                         ],
                       ),
                       Row(
                         children: [
-                          SizedBox(
-                            width: context.sp(30),
-                          ),
-                          CircleIcon(
-                            color: context.colors.orange,
-                          ),
+                          SizedBox(width: context.sp(30)),
+                          CircleIcon(color: context.colors.orange),
                         ],
                       ),
                       Row(
                         children: [
-                          SizedBox(
-                            width: context.sp(45),
-                          ),
-                          CircleIcon(
-                            color: context.colors.orange,
-                          ),
+                          SizedBox(width: context.sp(45)),
+                          CircleIcon(color: context.colors.orange),
                         ],
                       ),
                     ],
@@ -113,21 +99,18 @@ class PastFelicitupWidget extends StatelessWidget {
           ),
           Container(
             width: context.sp(200),
-            padding: EdgeInsets.all(
-              context.sp(10),
-            ),
+            padding: EdgeInsets.all(context.sp(10)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: () => context.go(
-                    (felicitup.finalVideoUrl?.isNotEmpty ?? false)
-                        ? RouterPaths.videoPastFelicitup
-                        : RouterPaths.mainPastFelicitup,
-                    extra: {
-                      'felicitupId': felicitup.id,
-                    },
-                  ),
+                  onTap:
+                      () => context.go(
+                        (felicitup.finalVideoUrl?.isNotEmpty ?? false)
+                            ? RouterPaths.videoPastFelicitup
+                            : RouterPaths.mainPastFelicitup,
+                        extra: {'felicitupId': felicitup.id},
+                      ),
                   child: Container(
                     height: context.sp(240),
                     width: context.sp(200),
@@ -145,7 +128,8 @@ class PastFelicitupWidget extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(context.sp(10)),
                             child: Image.network(
-                              felicitup.thumbnailUrl ?? 'https://picsum.photos/450/600',
+                              felicitup.thumbnailUrl ??
+                                  'https://picsum.photos/450/600',
                               fit: BoxFit.fitWidth,
                             ),
                           ),
@@ -177,33 +161,39 @@ class PastFelicitupWidget extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    BlocBuilder<FelicitupsDashboardBloc, FelicitupsDashboardState>(
+                    BlocBuilder<
+                      FelicitupsDashboardBloc,
+                      FelicitupsDashboardState
+                    >(
                       builder: (_, state) {
                         final user = context.read<AppBloc>().state.currentUser;
                         return IconButton(
-                          onPressed: () => context.read<FelicitupsDashboardBloc>().add(
+                          onPressed:
+                              () => context.read<FelicitupsDashboardBloc>().add(
                                 FelicitupsDashboardEvent.setLike(
                                   felicitup.id,
                                   user?.id ?? '',
                                 ),
                               ),
                           icon: Icon(
-                            felicitup.likes!.contains(user?.id ?? '') ? Icons.favorite : Icons.favorite_outline,
-                            color: felicitup.likes!.contains(user?.id ?? '')
-                                ? context.colors.error
-                                : context.colors.black.valueOpacity(.5),
+                            felicitup.likes!.contains(user?.id ?? '')
+                                ? Icons.favorite
+                                : Icons.favorite_outline,
+                            color:
+                                felicitup.likes!.contains(user?.id ?? '')
+                                    ? context.colors.error
+                                    : context.colors.black.valueOpacity(.5),
                             size: context.sp(20),
                           ),
                         );
                       },
                     ),
                     IconButton(
-                      onPressed: () => context.go(
-                        RouterPaths.chatPastFelicitup,
-                        extra: {
-                          'felicitupId': felicitup.id,
-                        },
-                      ),
+                      onPressed:
+                          () => context.go(
+                            RouterPaths.chatPastFelicitup,
+                            extra: {'felicitupId': felicitup.id},
+                          ),
                       icon: Icon(
                         Icons.message_outlined,
                         color: Colors.black.withAlpha((.5 * 255).toInt()),
@@ -211,129 +201,150 @@ class PastFelicitupWidget extends StatelessWidget {
                       ),
                     ),
                     Visibility(
-                        visible: true,
-                        child: IconButton(
-                          onPressed: () {
-                            // ref.read(homeEventsProvider.notifier).toggleShowButton();
-                            commoBottomModal(
-                              context: context,
-                              body: Column(
-                                children: [
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      'Elige a donde deseas compartir tu felicitup',
-                                      style: context.styles.paragraph,
-                                    ),
+                      visible: false,
+                      child: IconButton(
+                        onPressed: () {
+                          // ref.read(homeEventsProvider.notifier).toggleShowButton();
+                          commoBottomModal(
+                            context: context,
+                            body: Column(
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Elige a donde deseas compartir tu felicitup',
+                                    style: context.styles.paragraph,
                                   ),
-                                  SizedBox(height: context.sp(20)),
-                                  Row(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () async {
-                                          final whatsAppUrl =
-                                              Uri.parse("whatsapp://send?text=${Uri.encodeComponent('text')}");
-                                          if (await canLaunchUrl(whatsAppUrl)) {
-                                            await launchUrl(whatsAppUrl);
-                                          } else {
-                                            ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  'No se pudo lanzar WhatsApp',
-                                                  style: context.styles.paragraph.copyWith(
-                                                    color: context.colors.white,
-                                                  ),
-                                                ),
-                                                duration: const Duration(seconds: 2),
+                                ),
+                                SizedBox(height: context.sp(20)),
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () async {
+                                        final whatsAppUrl = Uri.parse(
+                                          "whatsapp://send?text=${Uri.encodeComponent('text')}",
+                                        );
+                                        if (await canLaunchUrl(whatsAppUrl)) {
+                                          await launchUrl(whatsAppUrl);
+                                        } else {
+                                          ScaffoldMessenger.of(
+                                            rootNavigatorKey.currentContext!,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'No se pudo lanzar WhatsApp',
+                                                style: context.styles.paragraph
+                                                    .copyWith(
+                                                      color:
+                                                          context.colors.white,
+                                                    ),
                                               ),
-                                            );
-                                          }
-                                        },
-                                        child: Container(
-                                          height: context.sp(50),
-                                          width: context.sp(50),
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: context.sp(10),
-                                          ),
-                                          margin: EdgeInsets.only(
-                                            right: context.sp(10),
-                                          ),
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: context.colors.primary,
+                                              duration: const Duration(
+                                                seconds: 2,
+                                              ),
                                             ),
-                                            color: Colors.white.withAlpha((.5 * 255).toInt()),
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        height: context.sp(50),
+                                        width: context.sp(50),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: context.sp(10),
+                                        ),
+                                        margin: EdgeInsets.only(
+                                          right: context.sp(10),
+                                        ),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: context.colors.primary,
+                                          ),
+                                          color: Colors.white.withAlpha(
+                                            (.5 * 255).toInt(),
                                           ),
                                         ),
                                       ),
-                                      GestureDetector(
-                                        onTap: () async {
-                                          final Uri url = Uri.parse(
-                                              'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent('https://felicitup.com/video-section/https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/videos%2Fraj4iPOUV9QeRYUYEFCb%2F3nppj2XmKJUfhCxp8ROfXKxsC1I2.mp4?alt=media&token=e6774836-5719-41b3-94c3-4c211a4d48c8&fbclid=IwY2xjawIyoCBleHRuA2FlbQIxMAABHTdRNmlIzDd5xyk_oBez5YsXcNljHpx7p93TYakjcDn3mxJjI9FNUnbD7g_aem_2W2Yutt3E_7yJc7udAp79w')}');
+                                    ),
+                                    GestureDetector(
+                                      onTap: () async {
+                                        final Uri url = Uri.parse(
+                                          'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent('https://felicitup.com/video-section/https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/videos%2Fraj4iPOUV9QeRYUYEFCb%2F3nppj2XmKJUfhCxp8ROfXKxsC1I2.mp4?alt=media&token=e6774836-5719-41b3-94c3-4c211a4d48c8&fbclid=IwY2xjawIyoCBleHRuA2FlbQIxMAABHTdRNmlIzDd5xyk_oBez5YsXcNljHpx7p93TYakjcDn3mxJjI9FNUnbD7g_aem_2W2Yutt3E_7yJc7udAp79w')}',
+                                        );
 
-                                          if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-                                            throw Exception('Could not launch $url');
-                                          }
-                                        },
-                                        child: Container(
-                                          height: context.sp(50),
-                                          width: context.sp(50),
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: context.sp(10),
+                                        if (!await launchUrl(
+                                          url,
+                                          mode: LaunchMode.externalApplication,
+                                        )) {
+                                          throw Exception(
+                                            'Could not launch $url',
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        height: context.sp(50),
+                                        width: context.sp(50),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: context.sp(10),
+                                        ),
+                                        margin: EdgeInsets.only(
+                                          right: context.sp(10),
+                                        ),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: context.colors.primary,
                                           ),
-                                          margin: EdgeInsets.only(
-                                            right: context.sp(10),
-                                          ),
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: context.colors.primary,
-                                            ),
-                                            color: Colors.white.withAlpha((.5 * 255).toInt()),
+                                          color: Colors.white.withAlpha(
+                                            (.5 * 255).toInt(),
                                           ),
                                         ),
                                       ),
-                                      GestureDetector(
-                                        onTap: () {},
-                                        child: Container(
-                                          height: context.sp(50),
-                                          width: context.sp(50),
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: context.sp(10),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {},
+                                      child: Container(
+                                        height: context.sp(50),
+                                        width: context.sp(50),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: context.sp(10),
+                                        ),
+                                        margin: EdgeInsets.only(
+                                          right: context.sp(10),
+                                        ),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: context.colors.primary,
                                           ),
-                                          margin: EdgeInsets.only(
-                                            right: context.sp(10),
-                                          ),
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: context.colors.primary,
-                                            ),
-                                            color: Colors.white.withAlpha((.5 * 255).toInt()),
+                                          color: Colors.white.withAlpha(
+                                            (.5 * 255).toInt(),
                                           ),
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                  SizedBox(height: context.sp(20)),
-                                ],
-                              ),
-                            );
-                          },
-                          icon: Icon(
-                            Icons.share,
-                            color: Colors.black.withAlpha((.5 * 255).toInt()),
-                            size: context.sp(20),
-                          ),
-                        )),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: context.sp(20)),
+                              ],
+                            ),
+                          );
+                        },
+                        icon: Icon(
+                          Icons.share,
+                          color: Colors.black.withAlpha((.5 * 255).toInt()),
+                          size: context.sp(20),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 RichText(
                   text: TextSpan(
-                    text: felicitup.owner.length > 2
-                        ? '#felicitup${felicitup.owner[0].name.split(' ')[0]}${felicitup.owner.length - 1}'
-                        : '#felicitup${felicitup.owner[0].name.split(' ')[0]}',
+                    text:
+                        felicitup.owner.length > 2
+                            ? '#felicitup${felicitup.owner[0].name.split(' ')[0]}${felicitup.owner.length - 1}'
+                            : '#felicitup${felicitup.owner[0].name.split(' ')[0]}',
                     style: context.styles.smallText,
                     children: [
                       TextSpan(
@@ -345,20 +356,16 @@ class PastFelicitupWidget extends StatelessWidget {
                 ),
                 SizedBox(height: context.sp(8)),
                 GestureDetector(
-                  onTap: () => context.go(
-                    RouterPaths.mainPastFelicitup,
-                    extra: {
-                      'felicitupId': felicitup.id,
-                    },
-                  ),
+                  onTap:
+                      () => context.go(
+                        RouterPaths.mainPastFelicitup,
+                        extra: {'felicitupId': felicitup.id},
+                      ),
                   child: Row(
                     children: [
                       Column(
                         children: [
-                          Text(
-                            'Ver más',
-                            style: context.styles.smallText,
-                          ),
+                          Text('Ver más', style: context.styles.smallText),
                           Container(
                             height: context.sp(1),
                             width: context.sp(45),

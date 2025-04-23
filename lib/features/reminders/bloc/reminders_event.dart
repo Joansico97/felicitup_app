@@ -6,4 +6,6 @@ class RemindersEvent with _$RemindersEvent {
   const factory RemindersEvent.createSingleChat(
     SingleChatModel singleChatData,
   ) = _createSingleChat;
+  const factory RemindersEvent.deleteBirthdateAlert(String id) =
+      _deleteBirthdateAlert;
 }

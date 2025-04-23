@@ -17,6 +17,8 @@ class FelicitupsDashboardEvent with _$FelicitupsDashboardEvent {
   ) = _setLike;
   const factory FelicitupsDashboardEvent.updateMatchList(List<String> phones) =
       _updateMatchList;
+  const factory FelicitupsDashboardEvent.deleteBirthdateAlert(String id) =
+      _deleteBirthdateAlert;
   const factory FelicitupsDashboardEvent.createSingleChat(
     SingleChatModel singleChatData,
   ) = _createSingleChat;

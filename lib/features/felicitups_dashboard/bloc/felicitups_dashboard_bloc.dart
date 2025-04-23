@@ -47,6 +47,7 @@ class FelicitupsDashboardBloc
             (event) => _createSingleChat(emit, event.singleChatData),
         getRememberStatus: (_) => _getRememberStatus(emit),
         closeRememberSection: (_) => _closeRememberSection(emit),
+        deleteBirthdateAlert: (event) => _deleteBirthdateAlert(emit, event.id),
         startListening: (_) => _startListening(emit),
         recivedData: (event) => _recivedData(emit, event.listFelicitups),
         recivedPastData:
@@ -156,6 +157,19 @@ class FelicitupsDashboardBloc
           }
         },
       );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _deleteBirthdateAlert(
+    Emitter<FelicitupsDashboardState> emit,
+    String id,
+  ) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      await _userRepository.deleteReminder(id);
+      emit(state.copyWith(isLoading: false));
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }

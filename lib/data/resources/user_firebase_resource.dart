@@ -17,11 +17,11 @@ class UserFirebaseResource implements UserRepository {
     required FirebaseStorage firebaseStorage,
     required FirebaseFunctionsHelper firebaseFunctionsHelper,
     required FirebaseFirestore firestore,
-  })  : _client = client,
-        _firebaseAuth = firebaseAuth,
-        _firebaseStorage = firebaseStorage,
-        _firebaseFunctionsHelper = firebaseFunctionsHelper,
-        _firestore = firestore;
+  }) : _client = client,
+       _firebaseAuth = firebaseAuth,
+       _firebaseStorage = firebaseStorage,
+       _firebaseFunctionsHelper = firebaseFunctionsHelper,
+       _firestore = firestore;
 
   final DatabaseHelper _client;
   final FirebaseAuth _firebaseAuth;
@@ -30,7 +30,9 @@ class UserFirebaseResource implements UserRepository {
   final FirebaseFirestore _firestore;
 
   @override
-  Future<Either<ApiException, Map<String, dynamic>>> getUserData(String userId) async {
+  Future<Either<ApiException, Map<String, dynamic>>> getUserData(
+    String userId,
+  ) async {
     try {
       final response = await _client.get(
         AppConstants.usersCollection,
@@ -42,18 +44,20 @@ class UserFirebaseResource implements UserRepository {
         return Left(ApiException(404, 'User not found'));
       }
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
   }
 
   @override
-  Future<Either<ApiException, Map<String, dynamic>>> getUserDataByPhone(String phone) async {
+  Future<Either<ApiException, Map<String, dynamic>>> getUserDataByPhone(
+    String phone,
+  ) async {
     try {
-      final response = await _client.get(
-        AppConstants.usersCollection,
-      );
+      final response = await _client.get(AppConstants.usersCollection);
       if (response != null) {
         for (final user in response) {
           if (user['phone'] == phone) {
@@ -65,32 +69,41 @@ class UserFirebaseResource implements UserRepository {
         return Left(ApiException(404, 'No users found in collection'));
       }
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
   }
 
   @override
-  Future<Either<ApiException, List<Map<String, dynamic>>>> getListUserData(List<String> usersIds) async {
+  Future<Either<ApiException, List<Map<String, dynamic>>>> getListUserData(
+    List<String> usersIds,
+  ) async {
     try {
       final response = await _client.get(AppConstants.usersCollection);
       if (response != null) {
         final users = response as List<Map<String, dynamic>>;
-        final usersData = users.where((user) => usersIds.contains(user['id'])).toList();
+        final usersData =
+            users.where((user) => usersIds.contains(user['id'])).toList();
         return Right(usersData);
       } else {
         return Left(ApiException(404, 'Users not found'));
       }
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
   }
 
   @override
-  Future<Either<ApiException, List<UserModel>>> getListUserDataByPhone(List<String> phones) async {
+  Future<Either<ApiException, List<UserModel>>> getListUserDataByPhone(
+    List<String> phones,
+  ) async {
     try {
       final List<UserModel> users = [];
       final List<Map<String, dynamic>> firebaseUsers = [];
@@ -102,23 +115,30 @@ class UserFirebaseResource implements UserRepository {
       }
 
       firebaseUsers.addAll(response);
-      final Set<Map<String, dynamic>> usersSet = firebaseUsers.map((e) => e).toSet();
-      List<Map<String, dynamic>> matchingUsers = usersSet.where((user) {
-        return phones.any((phone) => user['phone'] == phone);
-      }).toList();
+      final Set<Map<String, dynamic>> usersSet =
+          firebaseUsers.map((e) => e).toSet();
+      List<Map<String, dynamic>> matchingUsers =
+          usersSet.where((user) {
+            return phones.any((phone) => user['phone'] == phone);
+          }).toList();
       for (final user in matchingUsers) {
         users.add(UserModel.fromJson(user));
       }
       return Right(users);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
   }
 
   @override
-  Future<Either<ApiException, String>> uploadFile(File file, String destination) async {
+  Future<Either<ApiException, String>> uploadFile(
+    File file,
+    String destination,
+  ) async {
     try {
       final uid = _firebaseAuth.currentUser?.uid;
       if (uid == null) {
@@ -134,14 +154,19 @@ class UserFirebaseResource implements UserRepository {
       final String imageUrl = await storageRef.getDownloadURL();
       return Right(imageUrl);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
   }
 
   @override
-  Future<Either<ApiException, String>> uploadVideoFile(File file, String destination) async {
+  Future<Either<ApiException, String>> uploadVideoFile(
+    File file,
+    String destination,
+  ) async {
     try {
       final uid = _firebaseAuth.currentUser?.uid;
       if (uid == null) {
@@ -157,14 +182,17 @@ class UserFirebaseResource implements UserRepository {
       final String videoUrl = await storageRef.getDownloadURL();
       return Right(videoUrl);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
   }
 
   @override
-  Future<Either<ApiException, UserInvitedInformationModel>> getUserInvitedInformation(String id) async {
+  Future<Either<ApiException, UserInvitedInformationModel>>
+  getUserInvitedInformation(String id) async {
     try {
       final response = await _client.get(
         AppConstants.usersInvitedInformationCollection,
@@ -177,7 +205,9 @@ class UserFirebaseResource implements UserRepository {
         return Left(ApiException(404, 'User not found'));
       }
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -202,7 +232,9 @@ class UserFirebaseResource implements UserRepository {
 
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -227,7 +259,9 @@ class UserFirebaseResource implements UserRepository {
 
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -240,14 +274,14 @@ class UserFirebaseResource implements UserRepository {
       if (uid == null) {
         return Left(ApiException(401, 'User not authenticated'));
       }
-      await _client.update(
-        AppConstants.usersCollection,
-        document: uid,
-        {'currentChat': id},
-      );
+      await _client.update(AppConstants.usersCollection, document: uid, {
+        'currentChat': id,
+      });
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -260,7 +294,9 @@ class UserFirebaseResource implements UserRepository {
       if (uid == null) {
         return Left(ApiException(401, 'User not authenticated'));
       }
-      final userDocRef = _firestore.collection(AppConstants.usersCollection).doc(uid);
+      final userDocRef = _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(uid);
 
       await _firestore.runTransaction((transaction) async {
         final userDoc = await transaction.get(userDocRef);
@@ -279,7 +315,9 @@ class UserFirebaseResource implements UserRepository {
       });
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -295,17 +333,15 @@ class UserFirebaseResource implements UserRepository {
       if (uid == null) {
         return Left(ApiException(401, 'User not authenticated'));
       }
-      await _client.update(
-        AppConstants.usersCollection,
-        document: uid,
-        {
-          'friendList': contacts,
-          'friendsPhoneList': phones,
-        },
-      );
+      await _client.update(AppConstants.usersCollection, document: uid, {
+        'friendList': contacts,
+        'friendsPhoneList': phones,
+      });
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -318,16 +354,14 @@ class UserFirebaseResource implements UserRepository {
       if (uid == null) {
         return Left(ApiException(401, 'User not authenticated'));
       }
-      await _client.update(
-        AppConstants.usersCollection,
-        document: uid,
-        {
-          'matchList': ids,
-        },
-      );
+      await _client.update(AppConstants.usersCollection, document: uid, {
+        'matchList': ids,
+      });
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -343,18 +377,11 @@ class UserFirebaseResource implements UserRepository {
 
       final response = await uploadFile(file, 'profile');
 
-      response.fold(
-        (l) => Left(l),
-        (url) async {
-          await _client.update(
-            AppConstants.usersCollection,
-            document: uid,
-            {
-              'userImg': url,
-            },
-          );
-        },
-      );
+      response.fold((l) => Left(l), (url) async {
+        await _client.update(AppConstants.usersCollection, document: uid, {
+          'userImg': url,
+        });
+      });
 
       return Right(null);
     } catch (e) {
@@ -369,16 +396,14 @@ class UserFirebaseResource implements UserRepository {
       if (uid == null) {
         return Left(ApiException(401, 'User not authenticated'));
       }
-      await _client.update(
-        AppConstants.usersCollection,
-        document: uid,
-        {
-          'userImg': url,
-        },
-      );
+      await _client.update(AppConstants.usersCollection, document: uid, {
+        'userImg': url,
+      });
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -389,13 +414,17 @@ class UserFirebaseResource implements UserRepository {
     try {
       final uid = _firebaseAuth.currentUser?.uid;
 
-      await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
-        'giftcardList': FieldValue.arrayUnion([item.toJson()]),
-      });
+      await _firestore.collection(AppConstants.usersCollection).doc(uid).update(
+        {
+          'giftcardList': FieldValue.arrayUnion([item.toJson()]),
+        },
+      );
 
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -409,9 +438,13 @@ class UserFirebaseResource implements UserRepository {
       return Left(ApiException(401, "Usuario no autenticado"));
     }
 
-    final userDocRef = _firestore.collection(AppConstants.usersCollection).doc(uid);
+    final userDocRef = _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(uid);
 
-    return FirebaseFirestore.instance.runTransaction<Either<ApiException, void>>((transaction) async {
+    return FirebaseFirestore.instance.runTransaction<
+      Either<ApiException, void>
+    >((transaction) async {
       try {
         final userDoc = await transaction.get(userDocRef);
 
@@ -421,7 +454,9 @@ class UserFirebaseResource implements UserRepository {
 
         final userData = userDoc.data();
         if (userData == null) {
-          return Left(ApiException(404, "Error al obtener la información del usuario"));
+          return Left(
+            ApiException(404, "Error al obtener la información del usuario"),
+          );
         }
         final giftcardList = userData['giftcardList'] as List<dynamic>? ?? [];
 
@@ -447,7 +482,71 @@ class UserFirebaseResource implements UserRepository {
 
         return Right(null);
       } on FirebaseException catch (e) {
-        return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+        return Left(
+          ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+        );
+      } catch (e) {
+        return Left(ApiException(500, "Error desconocido: ${e.toString()}"));
+      }
+    });
+  }
+
+  @override
+  Future<Either<ApiException, void>> deleteReminder(String id) async {
+    final uid = _firebaseAuth.currentUser?.uid;
+
+    if (uid == null) {
+      return Left(ApiException(401, "Usuario no autenticado"));
+    }
+
+    final userDocRef = _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(uid);
+
+    return FirebaseFirestore.instance.runTransaction<
+      Either<ApiException, void>
+    >((transaction) async {
+      try {
+        final userDoc = await transaction.get(userDocRef);
+
+        if (!userDoc.exists) {
+          return Left(ApiException(404, "Usuario no encontrado"));
+        }
+
+        final userData = userDoc.data();
+        if (userData == null) {
+          return Left(
+            ApiException(404, "Error al obtener la información del usuario"),
+          );
+        }
+        final birthdateAlerts =
+            userData['birthdateAlerts'] as List<dynamic>? ?? [];
+
+        final indexToRemove = birthdateAlerts.indexWhere((item) {
+          if (item is String) {
+            return item == id;
+          } else if (item is Map) {
+            return item['id'] == id;
+          }
+          return false;
+        });
+
+        if (indexToRemove == -1) {
+          return Left(ApiException(404, "Elemento no encontrado en la lista"));
+        }
+
+        final updatedList = List<dynamic>.from(birthdateAlerts);
+        final itemToRemove = updatedList.removeAt(indexToRemove);
+
+        transaction.update(userDocRef, {
+          'birthdateAlerts': FieldValue.arrayRemove([itemToRemove]),
+        });
+
+        return Right(null);
+      } on FirebaseException catch (e) {
+        return Left(
+          ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+        );
       } catch (e) {
         return Left(ApiException(500, "Error desconocido: ${e.toString()}"));
       }
@@ -468,22 +567,34 @@ class UserFirebaseResource implements UserRepository {
       return Left(ApiException(401, "Usuario no autenticado"));
     }
 
-    final userDocRef = _firestore.collection(AppConstants.usersCollection).doc(uid);
+    final userDocRef = _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(uid);
 
-    return FirebaseFirestore.instance.runTransaction<Either<ApiException, void>>((transaction) async {
+    return FirebaseFirestore.instance.runTransaction<
+      Either<ApiException, void>
+    >((transaction) async {
       try {
-        final userDoc = await transaction.get(userDocRef); //Obtener documento actual
+        final userDoc = await transaction.get(
+          userDocRef,
+        ); //Obtener documento actual
 
         if (!userDoc.exists) {
-          return Left(ApiException(404, "Usuario no encontrado")); // 404 Not Found
+          return Left(
+            ApiException(404, "Usuario no encontrado"),
+          ); // 404 Not Found
         }
 
         final userData = userDoc.data();
         if (userData == null) {
-          return Left(ApiException(404, "No se pudieron obtener los datos del usuario."));
+          return Left(
+            ApiException(404, "No se pudieron obtener los datos del usuario."),
+          );
         }
 
-        final giftcardList = userData['giftcardList'] as List<dynamic>? ?? []; //Obtener lista, o lista vacía
+        final giftcardList =
+            userData['giftcardList'] as List<dynamic>? ??
+            []; //Obtener lista, o lista vacía
 
         final itemIndex = giftcardList.indexWhere((item) {
           if (item is Map<String, dynamic>) {
@@ -500,8 +611,9 @@ class UserFirebaseResource implements UserRepository {
         final updatedList = List<dynamic>.from(giftcardList);
 
         // 1.  Crea un mapa con los *nuevos* valores, solo si se proporcionaron.
-        final Map<String, dynamic> updatedItem =
-            Map.from(updatedList[itemIndex] as Map<String, dynamic>); //Crea una copia del elemento a actualizar
+        final Map<String, dynamic> updatedItem = Map.from(
+          updatedList[itemIndex] as Map<String, dynamic>,
+        ); //Crea una copia del elemento a actualizar
 
         if (newProductName != null) {
           updatedItem['productName'] = newProductName;
@@ -524,7 +636,9 @@ class UserFirebaseResource implements UserRepository {
 
         return Right(null); // Éxito
       } on FirebaseException catch (e) {
-        return Left(ApiException(int.parse(e.code), e.message ?? "Error de firebase"));
+        return Left(
+          ApiException(int.parse(e.code), e.message ?? "Error de firebase"),
+        );
       } catch (e) {
         return Left(ApiException(500, "Error desconocido: ${e.toString()}"));
       }
@@ -538,23 +652,23 @@ class UserFirebaseResource implements UserRepository {
       if (uid == null) {
         return Left(ApiException(401, 'User not authenticated'));
       }
-      await _client.update(
-        AppConstants.usersCollection,
-        document: uid,
-        {
-          'fcmToken': token,
-        },
-      );
+      await _client.update(AppConstants.usersCollection, document: uid, {
+        'fcmToken': token,
+      });
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
   }
 
   @override
-  Future<Either<ApiException, void>> syncNotifications(PushMessageModel notification) async {
+  Future<Either<ApiException, void>> syncNotifications(
+    PushMessageModel notification,
+  ) async {
     try {
       final uid = _firebaseAuth.currentUser?.uid;
       if (uid == null) {
@@ -566,13 +680,17 @@ class UserFirebaseResource implements UserRepository {
         'sentDate': notification.sentDate,
         'data': notification.data?.toJson(),
       };
-      await _firestore.collection(AppConstants.usersCollection).doc(uid).update({
-        'notifications': FieldValue.arrayUnion([notificationMap]),
-      });
+      await _firestore.collection(AppConstants.usersCollection).doc(uid).update(
+        {
+          'notifications': FieldValue.arrayUnion([notificationMap]),
+        },
+      );
 
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -589,7 +707,9 @@ class UserFirebaseResource implements UserRepository {
       );
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -609,37 +729,41 @@ class UserFirebaseResource implements UserRepository {
       if (uid == null) {
         return Left(ApiException(401, 'User not authenticated'));
       }
-      await _client.update(
-        AppConstants.usersCollection,
-        document: uid,
-        {
-          'name': name,
-          'lastName': lastName,
-          'phone': phone,
-          'isoCode': isoCode,
-          'genre': genre,
-          'birthDate': birthDate,
-        },
-      );
+      await _client.update(AppConstants.usersCollection, document: uid, {
+        'name': name,
+        'lastName': lastName,
+        'phone': phone,
+        'isoCode': isoCode,
+        'genre': genre,
+        'birthDate': birthDate,
+      });
       return Right(null);
     } on FirebaseException catch (e) {
-      return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
   }
 
   @override
-  Future<Either<ApiException, void>> deleteNotification(String notificationId) async {
+  Future<Either<ApiException, void>> deleteNotification(
+    String notificationId,
+  ) async {
     final uid = _firebaseAuth.currentUser?.uid;
 
     if (uid == null) {
       return Left(ApiException(401, "Usuario no autenticado"));
     }
 
-    final userDocRef = _firestore.collection(AppConstants.usersCollection).doc(uid);
+    final userDocRef = _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(uid);
 
-    return FirebaseFirestore.instance.runTransaction<Either<ApiException, void>>((transaction) async {
+    return FirebaseFirestore.instance.runTransaction<
+      Either<ApiException, void>
+    >((transaction) async {
       try {
         final userDoc = await transaction.get(userDocRef);
 
@@ -649,9 +773,12 @@ class UserFirebaseResource implements UserRepository {
 
         final userData = userDoc.data();
         if (userData == null) {
-          return Left(ApiException(404, "Error al obtener la información del usuario"));
+          return Left(
+            ApiException(404, "Error al obtener la información del usuario"),
+          );
         }
-        final notificationsList = userData['notifications'] as List<dynamic>? ?? [];
+        final notificationsList =
+            userData['notifications'] as List<dynamic>? ?? [];
 
         final indexToRemove = notificationsList.indexWhere((item) {
           if (item is String) {
@@ -675,7 +802,9 @@ class UserFirebaseResource implements UserRepository {
 
         return Right(null);
       } on FirebaseException catch (e) {
-        return Left(ApiException(int.parse(e.code), e.message ?? "Error de Firebase"));
+        return Left(
+          ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+        );
       } catch (e) {
         return Left(ApiException(500, "Error desconocido: ${e.toString()}"));
       }
@@ -686,15 +815,22 @@ class UserFirebaseResource implements UserRepository {
   Stream<Either<ApiException, List<GiftcarModel>>> getGiftcardListStream() {
     try {
       final uid = _firebaseAuth.currentUser?.uid;
-      return _firestore.collection(AppConstants.usersCollection).doc(uid).snapshots().map((event) {
-        final data = event.data();
-        if (data == null) {
-          return Left(ApiException(1000, 'User not found'));
-        }
-        final List<Map<String, dynamic>> listData = List.from(data['giftcardList']);
-        final List<GiftcarModel> listGiftcard = listData.map((e) => GiftcarModel.fromJson(e)).toList();
-        return Right(listGiftcard);
-      });
+      return _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(uid)
+          .snapshots()
+          .map((event) {
+            final data = event.data();
+            if (data == null) {
+              return Left(ApiException(1000, 'User not found'));
+            }
+            final List<Map<String, dynamic>> listData = List.from(
+              data['giftcardList'],
+            );
+            final List<GiftcarModel> listGiftcard =
+                listData.map((e) => GiftcarModel.fromJson(e)).toList();
+            return Right(listGiftcard);
+          });
     } catch (e) {
       return Stream.value(Left(ApiException(1000, e.toString())));
     }
