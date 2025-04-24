@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
@@ -15,7 +16,8 @@ class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<RegisterBloc, RegisterState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen:
+          (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -31,6 +33,17 @@ class RegisterPage extends StatelessWidget {
 
         if (state.status == RegisterStatus.error) {
           unawaited(showErrorModal(state.errorMessage));
+        }
+
+        if (state.status == RegisterStatus.federated) {
+          context.go(RouterPaths.federatedRegister);
+        }
+
+        if (state.status == RegisterStatus.federatedFinished) {
+          if (context.mounted) {
+            context.read<AppBloc>().add(AppEvent.loadUserData());
+            context.go(RouterPaths.felicitupsDashboard);
+          }
         }
       },
       child: Scaffold(

@@ -1,4 +1,6 @@
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,23 +14,29 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   RegisterBloc({
     required AuthRepository authRepository,
     required UserRepository userRepository,
-  })  : _authRepository = authRepository,
-        _userRepository = userRepository,
-        super(RegisterState.initial()) {
+    required FirebaseFirestore firestore,
+  }) : _authRepository = authRepository,
+       _userRepository = userRepository,
+       _firestore = firestore,
+       super(RegisterState.initial()) {
     on<RegisterEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
-        initRegister: (event) => _initRegister(
-          emit,
-          event.name,
-          event.lastName,
-          event.email,
-          event.password,
-          event.confirmPassword,
-          event.genre,
-          event.birthDate,
-        ),
-        savePhoneInfo: (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
+        googleLoginEvent: (_) => _googleLoginEvent(emit),
+        appleLoginEvent: (_) => _appleLoginEvent(emit),
+        initRegister:
+            (event) => _initRegister(
+              emit,
+              event.name,
+              event.lastName,
+              event.email,
+              event.password,
+              event.confirmPassword,
+              event.genre,
+              event.birthDate,
+            ),
+        savePhoneInfo:
+            (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
         initValidation: (_) => _initValidation(emit),
         registerEvent: (_) => _registerEvent(emit),
         setUserInfo: (event) => _setUserInfo(emit, event.credential),
@@ -39,6 +47,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
+  final FirebaseFirestore _firestore;
 
   _changeLoading(Emitter<RegisterState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
@@ -56,20 +65,26 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   ) async {
     emit(state.copyWith(isLoading: true));
     await Future.delayed(Duration(seconds: 3), () {});
-    emit(state.copyWith(
-      isLoading: false,
-      status: RegisterStatus.formFinished,
-      name: name,
-      lastName: lastName,
-      email: email,
-      password: password,
-      confirmPassword: confirmPassword,
-      genre: genre,
-      birthDate: birthDate,
-    ));
+    emit(
+      state.copyWith(
+        isLoading: false,
+        status: RegisterStatus.formFinished,
+        name: name,
+        lastName: lastName,
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword,
+        genre: genre,
+        birthDate: birthDate,
+      ),
+    );
   }
 
-  _savePhoneInfo(Emitter<RegisterState> emit, String phone, String isoCode) async {
+  _savePhoneInfo(
+    Emitter<RegisterState> emit,
+    String phone,
+    String isoCode,
+  ) async {
     emit(state.copyWith(isLoading: true));
     await Future.delayed(Duration(seconds: 3), () {});
     emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode));
@@ -110,7 +125,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  _setUserInfo(Emitter<RegisterState> emit, UserCredential userCredential) async {
+  _setUserInfo(
+    Emitter<RegisterState> emit,
+    UserCredential userCredential,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _userRepository.setInitialUserInfo(
@@ -124,9 +142,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           phone: state.phone!,
           fcmToken: '',
           currentChat: '',
-          userImg: state.genre == 'Masculino'
-              ? 'https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/commonFiles%2Favatares%2Favatar_man_1.png?alt=media&token=11af323b-5266-422b-94c4-5a176a931ec0'
-              : state.genre == 'Femenino'
+          userImg:
+              state.genre == 'Masculino'
+                  ? 'https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/commonFiles%2Favatares%2Favatar_man_1.png?alt=media&token=11af323b-5266-422b-94c4-5a176a931ec0'
+                  : state.genre == 'Femenino'
                   ? 'https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/commonFiles%2Favatares%2Favatar_woman_1.png?alt=media&token=23a0d5b4-22d4-4e76-9f77-6250fc1ca163'
                   : '',
           friendList: [],
@@ -157,7 +176,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   _registerEvent(Emitter<RegisterState> emit) async {
-    emit(state.copyWith(isLoading: true)); // Indica que la operación está en progreso
+    emit(
+      state.copyWith(isLoading: true),
+    ); // Indica que la operación está en progreso
 
     try {
       final response = await _authRepository.register(
@@ -179,10 +200,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         (r) {
           add(RegisterEvent.setUserInfo(r));
           emit(
-            state.copyWith(
-              isLoading: false,
-              status: RegisterStatus.success,
-            ),
+            state.copyWith(isLoading: false, status: RegisterStatus.success),
           );
         },
       );
@@ -197,9 +215,156 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
+  _googleLoginEvent(Emitter<RegisterState> emit) async {
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.initial));
+    try {
+      final response = await _authRepository.signInWithGoogle();
+
+      return response.fold(
+        (l) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              status: RegisterStatus.error,
+              errorMessage: l.message,
+            ),
+          );
+        },
+        (r) async {
+          bool exist = await checkUserExist(email: r.user?.email ?? '');
+          if (exist) {
+            emit(
+              state.copyWith(
+                isLoading: false,
+                status: RegisterStatus.federatedFinished,
+              ),
+            );
+          } else {
+            final user = r.user;
+            final userModel = UserModel(
+              id: user?.uid,
+              firstName: user?.displayName?.split(' ')[0],
+              lastName: user?.displayName?.split(' ')[1],
+              fullName: user?.displayName,
+              userImg: user?.photoURL,
+              email: user?.email,
+              birthDate: DateTime.now(),
+              registerDate: DateTime.now(),
+              phone: '',
+              isoCode: '',
+              friendList: [],
+              giftcardList: [],
+              matchList: [],
+              fcmToken: '',
+            );
+
+            _setUserInfoRegister(userModel);
+
+            emit(
+              state.copyWith(
+                isLoading: false,
+                status: RegisterStatus.federated,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _appleLoginEvent(Emitter<RegisterState> emit) async {
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.initial));
+    try {
+      final response = await _authRepository.signInWithApple();
+
+      return response.fold(
+        (l) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              status: RegisterStatus.error,
+              errorMessage: l.message,
+            ),
+          );
+        },
+        (r) async {
+          bool exist = await checkUserExist(email: r.user?.email ?? '');
+          if (exist) {
+            emit(
+              state.copyWith(
+                isLoading: false,
+                status: RegisterStatus.federatedFinished,
+              ),
+            );
+          } else {
+            final user = r.user;
+            final userModel = UserModel(
+              id: user?.uid,
+              firstName: user?.displayName?.split(' ')[0],
+              lastName: user?.displayName?.split(' ')[1],
+              fullName: user?.displayName,
+              userImg: '',
+              email: user?.email,
+              birthDate: DateTime.now(),
+              registerDate: DateTime.now(),
+              phone: '',
+              isoCode: '',
+              friendList: [],
+              giftcardList: [],
+              matchList: [],
+              fcmToken: '',
+            );
+
+            _setUserInfoRegister(userModel);
+            emit(
+              state.copyWith(
+                isLoading: false,
+                status: RegisterStatus.federated,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
+  }
+
   _finishEvent(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
     await Future.delayed(Duration(seconds: 3), () {});
     emit(state.copyWith(isLoading: false, status: RegisterStatus.finished));
+  }
+
+  Future<bool> checkUserExist({required String email}) async {
+    final docRef = _firestore.collection(AppConstants.usersCollection);
+    final response = await docRef.where('email', isEqualTo: email).get();
+    if (response.docs.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  _setUserInfoRegister(UserModel user) async {
+    await _firestore.collection(AppConstants.usersCollection).doc(user.id).set({
+      'id': user.id,
+      'firstName': user.firstName,
+      'lastName': user.lastName,
+      'fullName': user.fullName,
+      'userImg': user.userImg,
+      'email': user.email,
+      'birthDate': DateTime.now(),
+      'registerDate': DateTime.now(),
+      'phone': '',
+      'isoCode': '',
+      'friendList': [],
+      'giftcardList': [],
+      'matchList': [],
+      'fcmToken': '',
+      'genre': '',
+    });
   }
 }

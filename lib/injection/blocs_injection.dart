@@ -12,7 +12,11 @@ void _initBlocsInjection() {
     )
     ..registerFactory(() => LoginBloc(authRepository: di(), firestore: di()))
     ..registerFactory(
-      () => RegisterBloc(authRepository: di(), userRepository: di()),
+      () => RegisterBloc(
+        authRepository: di(),
+        userRepository: di(),
+        firestore: di(),
+      ),
     )
     ..registerFactory(() => HomeBloc(userRepository: di()))
     ..registerFactory(

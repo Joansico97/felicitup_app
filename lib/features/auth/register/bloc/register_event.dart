@@ -12,12 +12,13 @@ class RegisterEvent with _$RegisterEvent {
     String genre,
     DateTime birthDate,
   ) = _initRegister;
-  const factory RegisterEvent.savePhoneInfo(
-    String phone,
-    String isoCode,
-  ) = _savePhoneInfo;
+  const factory RegisterEvent.savePhoneInfo(String phone, String isoCode) =
+      _savePhoneInfo;
+  const factory RegisterEvent.googleLoginEvent() = _googleLoginEvent;
+  const factory RegisterEvent.appleLoginEvent() = _appleLoginEvent;
   const factory RegisterEvent.initValidation() = _initValidation;
   const factory RegisterEvent.registerEvent() = _registerEvent;
-  const factory RegisterEvent.setUserInfo(UserCredential credential) = _setUserInfo;
+  const factory RegisterEvent.setUserInfo(UserCredential credential) =
+      _setUserInfo;
   const factory RegisterEvent.finishEvent() = _finishEvent;
 }

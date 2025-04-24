@@ -1,6 +1,15 @@
 part of 'register_bloc.dart';
 
-enum RegisterStatus { initial, formFinished, validateCode, success, finished, error }
+enum RegisterStatus {
+  initial,
+  formFinished,
+  validateCode,
+  success,
+  finished,
+  federated,
+  federatedFinished,
+  error,
+}
 
 @freezed
 class RegisterState with _$RegisterState {
@@ -21,8 +30,8 @@ class RegisterState with _$RegisterState {
   }) = _RegisterState;
 
   factory RegisterState.initial() => RegisterState(
-        isLoading: false,
-        status: RegisterStatus.initial,
-        errorMessage: '',
-      );
+    isLoading: false,
+    status: RegisterStatus.initial,
+    errorMessage: '',
+  );
 }

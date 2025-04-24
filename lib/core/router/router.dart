@@ -11,8 +11,10 @@ part 'router_handler.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> detailsFelicitupNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> detailsPastFelicitupNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> detailsFelicitupNavigatorKey =
+    GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> detailsPastFelicitupNavigatorKey =
+    GlobalKey<NavigatorState>();
 
 class CustomRouter {
   static final _router = GoRouter(
@@ -29,9 +31,21 @@ class CustomRouter {
       return null;
     },
     routes: [
-      GoRoute(path: RouterPaths.init, pageBuilder: _initHandler, parentNavigatorKey: rootNavigatorKey),
-      GoRoute(path: RouterPaths.login, pageBuilder: _loginHandler, parentNavigatorKey: rootNavigatorKey),
-      GoRoute(path: RouterPaths.register, pageBuilder: _registerHandler, parentNavigatorKey: rootNavigatorKey),
+      GoRoute(
+        path: RouterPaths.init,
+        pageBuilder: _initHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.login,
+        pageBuilder: _loginHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.register,
+        pageBuilder: _registerHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
       GoRoute(
         path: RouterPaths.federatedRegister,
         pageBuilder: _federatedRegisterHandler,
@@ -91,26 +105,59 @@ class CustomRouter {
           ),
         ],
       ),
-      GoRoute(path: RouterPaths.payment, pageBuilder: _paymentHandler, parentNavigatorKey: rootNavigatorKey),
-      GoRoute(path: RouterPaths.videoEditor, pageBuilder: _videoEditorHandler, parentNavigatorKey: rootNavigatorKey),
+      GoRoute(
+        path: RouterPaths.payment,
+        pageBuilder: _paymentHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.videoEditor,
+        pageBuilder: _videoEditorHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
       GoRoute(
         path: RouterPaths.notifications,
         pageBuilder: _notificationsHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
-      GoRoute(path: RouterPaths.profile, pageBuilder: _profileHandler, parentNavigatorKey: rootNavigatorKey),
-      GoRoute(path: RouterPaths.wishList, pageBuilder: _wishListHandler, parentNavigatorKey: rootNavigatorKey),
-      GoRoute(path: RouterPaths.wishListEdit, pageBuilder: _wishListEditHandler, parentNavigatorKey: rootNavigatorKey),
-      GoRoute(path: RouterPaths.singleChat, pageBuilder: _singleChatHandler, parentNavigatorKey: rootNavigatorKey),
+      GoRoute(
+        path: RouterPaths.profile,
+        pageBuilder: _profileHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.wishList,
+        pageBuilder: _wishListHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.wishListEdit,
+        pageBuilder: _wishListEditHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.singleChat,
+        pageBuilder: _singleChatHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
       GoRoute(
         path: RouterPaths.listSingleChat,
         pageBuilder: _listSingleChatHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
-      GoRoute(path: RouterPaths.contacts, pageBuilder: _contactsHandler, parentNavigatorKey: rootNavigatorKey),
+      GoRoute(
+        path: RouterPaths.contacts,
+        pageBuilder: _contactsHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
       GoRoute(
         path: RouterPaths.notificationsSettings,
         pageBuilder: _notificationsSettingsHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.termsPolicies,
+        pageBuilder: _termsPoliciesHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
       GoRoute(
@@ -145,7 +192,11 @@ class CustomRouter {
           ),
         ],
       ),
-      GoRoute(path: RouterPaths.reminders, pageBuilder: _remindersHandler, parentNavigatorKey: rootNavigatorKey),
+      GoRoute(
+        path: RouterPaths.reminders,
+        pageBuilder: _remindersHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
     ],
   );
 

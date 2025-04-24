@@ -19,7 +19,8 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<LoginBloc, LoginState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen:
+          (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -90,9 +91,7 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                   SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: context.sp(60),
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
                     child: GestureDetector(
                       onTap: () => FocusScope.of(context).unfocus(),
                       child: Column(
@@ -118,10 +117,7 @@ class LoginPage extends StatelessWidget {
                                 width: context.sp(123),
                                 color: Colors.black,
                               ),
-                              Text(
-                                'O',
-                                style: context.styles.header1,
-                              ),
+                              Text('O', style: context.styles.header2),
                               Container(
                                 height: context.sp(1),
                                 width: context.sp(123),
@@ -136,7 +132,10 @@ class LoginPage extends StatelessWidget {
                             child: BlocBuilder<LoginBloc, LoginState>(
                               builder: (_, state) {
                                 return AppSocialRegularButton(
-                                  onTap: () => context.read<LoginBloc>().add(LoginEvent.googleLoginEvent()),
+                                  onTap:
+                                      () => context.read<LoginBloc>().add(
+                                        LoginEvent.googleLoginEvent(),
+                                      ),
                                   label: 'Entrar con Google',
                                   isActive: true,
                                   icon: Assets.icons.googleIcon,
@@ -154,7 +153,10 @@ class LoginPage extends StatelessWidget {
                               child: BlocBuilder<LoginBloc, LoginState>(
                                 builder: (_, state) {
                                   return AppSocialRegularButton(
-                                    onTap: () => context.read<LoginBloc>().add(LoginEvent.appleLoginEvent()),
+                                    onTap:
+                                        () => context.read<LoginBloc>().add(
+                                          LoginEvent.appleLoginEvent(),
+                                        ),
                                     label: 'Entrar con Apple',
                                     isActive: true,
                                     icon: Assets.icons.appleIcon,
