@@ -36,6 +36,8 @@
 	<string>This app requires microphone access to function properly.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires files access to function properly.</string>
+	<key>FirebasePhoneAuthMultiFactorEnabled</key>
+	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

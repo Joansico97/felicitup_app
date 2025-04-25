@@ -17,7 +17,7 @@ class RegisterEvent with _$RegisterEvent {
   const factory RegisterEvent.googleLoginEvent() = _googleLoginEvent;
   const factory RegisterEvent.appleLoginEvent() = _appleLoginEvent;
   const factory RegisterEvent.initValidation() = _initValidation;
-  const factory RegisterEvent.registerEvent() = _registerEvent;
+  const factory RegisterEvent.registerEvent(bool isEmail) = _registerEvent;
   const factory RegisterEvent.setUserInfo(UserCredential credential) =
       _setUserInfo;
   const factory RegisterEvent.finishEvent() = _finishEvent;

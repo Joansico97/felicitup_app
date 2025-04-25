@@ -15,9 +15,11 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     required AuthRepository authRepository,
     required UserRepository userRepository,
     required FirebaseFirestore firestore,
+    required FirebaseAuth firebaseAuth,
   }) : _authRepository = authRepository,
        _userRepository = userRepository,
        _firestore = firestore,
+       _firebaseAuth = firebaseAuth,
        super(RegisterState.initial()) {
     on<RegisterEvent>(
       (events, emit) => events.map(
@@ -48,6 +50,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _firebaseAuth;
 
   _changeLoading(Emitter<RegisterState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
@@ -63,8 +66,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     String genre,
     DateTime birthDate,
   ) async {
-    emit(state.copyWith(isLoading: true));
-    await Future.delayed(Duration(seconds: 3), () {});
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
+    await Future.delayed(Duration(seconds: 1), () {});
     emit(
       state.copyWith(
         isLoading: false,
@@ -85,34 +88,39 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     String phone,
     String isoCode,
   ) async {
-    emit(state.copyWith(isLoading: true));
-    await Future.delayed(Duration(seconds: 3), () {});
-    emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode));
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
+    try {
+      emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          status: RegisterStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
   }
 
   _initValidation(Emitter<RegisterState> emit) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
     try {
-      await _authRepository.verifyPhone(
-        phone: state.phone!,
-        onCodeSent: (verificationId) {
-          emit(
-            state.copyWith(
-              verificationId: verificationId,
-              isLoading: false,
-              status: RegisterStatus.validateCode,
-            ),
-          );
-        },
-        onError: (error) {
-          emit(
-            state.copyWith(
-              isLoading: false,
-              status: RegisterStatus.error,
-              errorMessage: error.toString(),
-            ),
-          );
-        },
+      final exist = await checkPhoneExist(
+        phone: '${state.isoCode}${state.phone}',
+      );
+      if (exist) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            status: RegisterStatus.error,
+            errorMessage: 'El número de teléfono ya está en uso',
+          ),
+        );
+        return;
+      }
+      emit(
+        //TODO: Cambiar el estado a uno que indique que se está validando el código
+        state.copyWith(isLoading: false, status: RegisterStatus.success),
       );
     } catch (e) {
       emit(
@@ -159,6 +167,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           registerDate: DateTime.now(),
           birthDay: state.birthDate!.day,
           birthMonth: state.birthDate!.month,
+          provider: 'email',
         ),
       );
 
@@ -188,7 +197,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
       return response.fold(
         (l) {
-          // Si hay un error en el registro
           emit(
             state.copyWith(
               isLoading: false,
@@ -197,7 +205,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
             ),
           );
         },
-        (r) {
+        (r) async {
+          await r.user!.sendEmailVerification();
           add(RegisterEvent.setUserInfo(r));
           emit(
             state.copyWith(isLoading: false, status: RegisterStatus.success),
@@ -215,8 +224,15 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
+  Future<void> resendVerificationEmail() async {
+    User? user = _firebaseAuth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  }
+
   _googleLoginEvent(Emitter<RegisterState> emit) async {
-    emit(state.copyWith(isLoading: true, status: RegisterStatus.initial));
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
     try {
       final response = await _authRepository.signInWithGoogle();
 
@@ -275,7 +291,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   _appleLoginEvent(Emitter<RegisterState> emit) async {
-    emit(state.copyWith(isLoading: true, status: RegisterStatus.initial));
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
     try {
       final response = await _authRepository.signInWithApple();
 
@@ -348,6 +364,16 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
+  Future<bool> checkPhoneExist({required String phone}) async {
+    final docRef = _firestore.collection(AppConstants.usersCollection);
+    final response = await docRef.where('phone', isEqualTo: phone).get();
+    if (response.docs.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   _setUserInfoRegister(UserModel user) async {
     await _firestore.collection(AppConstants.usersCollection).doc(user.id).set({
       'id': user.id,
@@ -365,6 +391,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       'matchList': [],
       'fcmToken': '',
       'genre': '',
+      'provider': 'federated',
     });
   }
 }

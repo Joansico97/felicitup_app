@@ -16,6 +16,7 @@ void _initBlocsInjection() {
         authRepository: di(),
         userRepository: di(),
         firestore: di(),
+        firebaseAuth: di(),
       ),
     )
     ..registerFactory(() => HomeBloc(userRepository: di()))

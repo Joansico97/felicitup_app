@@ -53,6 +53,47 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
+  Future<Either<ApiException, bool>> checkVerifyStatus() async {
+    try {
+      await _firebaseAuth.currentUser?.reload();
+      final isVerified = _firebaseAuth.currentUser?.emailVerified ?? false;
+      return Right(isVerified);
+    } on FirebaseException catch (e) {
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> sendVerifyEmail() async {
+    final maxRetries = 3;
+    final initialDelay = Duration(seconds: 1);
+    for (var i = 0; i < maxRetries; i++) {
+      try {
+        await _firebaseAuth.currentUser?.sendEmailVerification();
+        return Right(null);
+      } on FirebaseException catch (e) {
+        if (e.code == 'too-many-requests') {
+          final delay = initialDelay * (i + 1);
+          await Future.delayed(delay);
+          continue;
+        }
+        return Left(
+          ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+        );
+      } catch (e) {
+        return Left(ApiException(1000, e.toString()));
+      }
+    }
+    return Left(
+      ApiException(429, 'Too many requests, please try again later.'),
+    );
+  }
+
+  @override
   Future<Either<ApiException, Map<String, dynamic>>> getUserDataByPhone(
     String phone,
   ) async {

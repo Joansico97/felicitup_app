@@ -6,26 +6,26 @@ part 'federated_register_event.dart';
 part 'federated_register_state.dart';
 part 'federated_register_bloc.freezed.dart';
 
-class FederatedRegisterBloc extends Bloc<FederatedRegisterEvent, FederatedRegisterState> {
-  FederatedRegisterBloc({
-    required UserRepository userRepository,
-  })  : _userRepository = userRepository,
-        super(FederatedRegisterState.initial()) {
+class FederatedRegisterBloc
+    extends Bloc<FederatedRegisterEvent, FederatedRegisterState> {
+  FederatedRegisterBloc({required UserRepository userRepository})
+    : _userRepository = userRepository,
+      super(FederatedRegisterState.initial()) {
     on<FederatedRegisterEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
-        initRegister: (event) => _initRegister(
-          emit,
-          event.name,
-          event.lastName,
-          event.genre,
-          event.birthDate,
-        ),
-        savePhoneInfo: (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
+        initRegister:
+            (event) => _initRegister(
+              emit,
+              event.name,
+              event.lastName,
+              event.genre,
+              event.birthDate,
+            ),
+        savePhoneInfo:
+            (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
         initValidation: (_) => _initValidation(emit),
-        setUserInfoRemaning: (_) => _setUserInfoRemaining(
-          emit,
-        ),
+        setUserInfoRemaning: (_) => _setUserInfoRemaining(emit),
         finishEvent: (_) => _finishEvent(emit),
       ),
     );
@@ -46,26 +46,41 @@ class FederatedRegisterBloc extends Bloc<FederatedRegisterEvent, FederatedRegist
   ) async {
     emit(state.copyWith(isLoading: true));
     await Future.delayed(Duration(seconds: 3), () {});
-    emit(state.copyWith(
-      isLoading: false,
-      currentIndex: state.currentIndex + 1,
-      name: name,
-      lastName: lastName,
-      genre: genre,
-      birthDate: birthDate,
-    ));
+    emit(
+      state.copyWith(
+        isLoading: false,
+        currentIndex: state.currentIndex + 1,
+        name: name,
+        lastName: lastName,
+        genre: genre,
+        birthDate: birthDate,
+      ),
+    );
   }
 
-  _savePhoneInfo(Emitter<FederatedRegisterState> emit, String phone, String isoCode) async {
+  _savePhoneInfo(
+    Emitter<FederatedRegisterState> emit,
+    String phone,
+    String isoCode,
+  ) async {
     emit(state.copyWith(isLoading: true));
     await Future.delayed(Duration(seconds: 3), () {});
-    emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode, currentIndex: state.currentIndex + 1));
+    emit(
+      state.copyWith(
+        isLoading: false,
+        phone: phone,
+        isoCode: isoCode,
+        currentIndex: state.currentIndex + 1,
+      ),
+    );
   }
 
   _initValidation(Emitter<FederatedRegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
     await Future.delayed(Duration(seconds: 3), () {});
-    emit(state.copyWith(isLoading: false, currentIndex: state.currentIndex + 1));
+    emit(
+      state.copyWith(isLoading: false, currentIndex: state.currentIndex + 1),
+    );
   }
 
   _setUserInfoRemaining(Emitter<FederatedRegisterState> emit) async {
@@ -80,7 +95,9 @@ class FederatedRegisterBloc extends Bloc<FederatedRegisterEvent, FederatedRegist
         state.birthDate!,
       );
 
-      emit(state.copyWith(isLoading: false, currentIndex: state.currentIndex + 1));
+      emit(
+        state.copyWith(isLoading: false, currentIndex: state.currentIndex + 1),
+      );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
@@ -88,7 +105,7 @@ class FederatedRegisterBloc extends Bloc<FederatedRegisterEvent, FederatedRegist
 
   _finishEvent(Emitter<FederatedRegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
-    await Future.delayed(Duration(seconds: 3), () {});
+    await Future.delayed(Duration(seconds: 1), () {});
     emit(state.copyWith(isLoading: false));
   }
 }

@@ -19,6 +19,7 @@ class UserModel with _$UserModel {
     String? userImg,
     String? fcmToken,
     String? currentChat,
+    String? provider,
     int? birthMonth,
     int? birthDay,
     List<ContactModel>? friendList,
@@ -33,5 +34,6 @@ class UserModel with _$UserModel {
     @TimestampConverter() DateTime? registerDate,
   }) = _UserModel;
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
 }

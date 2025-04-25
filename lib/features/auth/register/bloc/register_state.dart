@@ -1,6 +1,7 @@
 part of 'register_bloc.dart';
 
 enum RegisterStatus {
+  none,
   initial,
   formFinished,
   validateCode,
@@ -27,6 +28,7 @@ class RegisterState with _$RegisterState {
     String? isoCode,
     String? verificationId,
     DateTime? birthDate,
+    UserModel? user,
   }) = _RegisterState;
 
   factory RegisterState.initial() => RegisterState(

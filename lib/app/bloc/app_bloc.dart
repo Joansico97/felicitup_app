@@ -21,20 +21,22 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     required AuthRepository authRepository,
     required FirebaseAuth firebaseAuth,
     required FirebaseMessaging firebaseMessaging,
-  })  : _userRepository = userRepository,
-        _authRepository = authRepository,
-        _firebaseAuth = firebaseAuth,
-        _firebaseMessaging = firebaseMessaging,
-        super(AppState.initial()) {
+  }) : _userRepository = userRepository,
+       _authRepository = authRepository,
+       _firebaseAuth = firebaseAuth,
+       _firebaseMessaging = firebaseMessaging,
+       super(AppState.initial()) {
     on<AppEvent>(
       (event, emit) => event.map(
         changeLoading: (_) => _changeLoading(emit),
         loadUserData: (_) => _loadUserData(emit),
         updateMatchList: (event) => _updateMatchList(event.phoneList),
+        checkVerifyStatus: (_) => _checkVerifyStatus(emit),
         initializeNotifications: (_) => _initializeNotifications(emit),
         requestManualPermissions: (_) => _requestManualPermissions(emit),
         deleterPermissions: (_) => _deleterPermissions(emit),
-        handleRemoteMessage: (event) => handleRemoteMessage(event.message, emit),
+        handleRemoteMessage:
+            (event) => handleRemoteMessage(event.message, emit),
         getFCMToken: (_) => _getFCMToken(),
         logout: (_) => _logout(emit),
       ),
@@ -54,7 +56,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     emit(state.copyWith(isLoading: true));
 
     try {
-      final response = await _userRepository.getUserData(_firebaseAuth.currentUser?.uid ?? '');
+      final response = await _userRepository.getUserData(
+        _firebaseAuth.currentUser?.uid ?? '',
+      );
 
       response.fold(
         (error) {
@@ -62,13 +66,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           emit(state.copyWith(isLoading: false));
         },
         (data) {
-          logger.info('User data loaded: ${data.toString()}');
-          emit(
-            state.copyWith(
-              isLoading: false,
-              currentUser: UserModel.fromJson(data),
-            ),
-          );
+          final user = UserModel.fromJson(data);
+          emit(state.copyWith(isLoading: false, currentUser: user));
         },
       );
     } catch (e) {
@@ -82,18 +81,15 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
     final response = await _userRepository.getListUserDataByPhone(phones);
 
-    return response.fold(
-      (l) => logger.error(l),
-      (r) async {
-        List<String> ids = [];
-        for (final doc in r) {
-          if (doc.id != null) {
-            ids.add(doc.id!);
-          }
+    return response.fold((l) => logger.error(l), (r) async {
+      List<String> ids = [];
+      for (final doc in r) {
+        if (doc.id != null) {
+          ids.add(doc.id!);
         }
-        await _userRepository.updateMatchList(ids);
-      },
-    );
+      }
+      await _userRepository.updateMatchList(ids);
+    });
   }
 
   _requestManualPermissions(Emitter<AppState> emit) async {
@@ -139,10 +135,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       await _userRepository.asignCurrentChatId('');
       await _authRepository.logout();
-      emit(state.copyWith(
-        isLoading: false,
-        currentUser: null,
-      ));
+      emit(state.copyWith(isLoading: false, currentUser: null));
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
@@ -160,11 +153,39 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
+  _checkVerifyStatus(Emitter<AppState> emit) async {
+    logger.info('El provider del usuario es: ${state.currentUser?.provider}');
+    if (state.currentUser?.provider == 'email' ||
+        state.currentUser?.provider == null) {
+      final response = await _userRepository.checkVerifyStatus();
+      return response.fold(
+        (error) {
+          logger.error(error);
+          emit(state.copyWith(isLoading: false));
+        },
+        (data) async {
+          logger.info('Verify status loaded: ${data.toString()}');
+          if (data) {
+            emit(state.copyWith(isLoading: false, isVerified: data));
+            return;
+          } else {
+            await _userRepository.sendVerifyEmail();
+            emit(state.copyWith(isLoading: false, isVerified: data));
+          }
+        },
+      );
+    } else {
+      emit(state.copyWith(isLoading: false, isVerified: true));
+      return;
+    }
+  }
+
   handleRemoteMessage(RemoteMessage message, Emitter<AppState> emit) {
     if (message.notification == null) return;
 
     final notification = PushMessageModel(
-      messageId: message.messageId?.replaceAll(':', '').replaceAll('%', '') ??
+      messageId:
+          message.messageId?.replaceAll(':', '').replaceAll('%', '') ??
           '${state.currentUser?.id}-${DateTime.now().millisecondsSinceEpoch}',
       title: message.notification!.title ?? '',
       body: message.notification!.body ?? '',
@@ -172,12 +193,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       data: DataMessageModel.fromJson(message.data),
     );
 
-    Future.delayed(
-      Duration.zero,
-      () async {
-        await _userRepository.syncNotifications(notification);
-      },
-    );
+    Future.delayed(Duration.zero, () async {
+      await _userRepository.syncNotifications(notification);
+    });
 
     if (Platform.isAndroid) {
       showLocalNotification(
@@ -218,7 +236,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
     final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.requestNotificationsPermission();
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
@@ -228,7 +248,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   initializeLocalNotifications() async {
     final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    const initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+    const initializationSettingsAndroid = AndroidInitializationSettings(
+      'app_icon',
+    );
     final initializationSettingsIos = DarwinInitializationSettings();
 
     final initializationSettings = InitializationSettings(
@@ -268,9 +290,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
     const notificationDetails = NotificationDetails(
       android: androidDetails,
-      iOS: DarwinNotificationDetails(
-        presentSound: true,
-      ),
+      iOS: DarwinNotificationDetails(presentSound: true),
     );
 
     final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -284,7 +304,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     );
   }
 
-  static void onDidReceiveNotificationResponse(NotificationResponse response) async {
+  static void onDidReceiveNotificationResponse(
+    NotificationResponse response,
+  ) async {
     final resp = jsonDecode(response.payload ?? '{}');
     redirectHelper(data: resp);
   }

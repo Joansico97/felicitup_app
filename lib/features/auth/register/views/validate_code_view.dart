@@ -7,9 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class ValidateCodeView extends StatefulWidget {
-  const ValidateCodeView({
-    super.key,
-  });
+  const ValidateCodeView({super.key});
 
   @override
   State<ValidateCodeView> createState() => _ValidateCodeViewState();
@@ -24,20 +22,11 @@ class _ValidateCodeViewState extends State<ValidateCodeView> {
       child: Column(
         children: [
           SizedBox(height: context.sp(24)),
-          Image.asset(
-            Assets.images.logo.path,
-            height: context.sp(60),
-          ),
+          Image.asset(Assets.images.logo.path, height: context.sp(60)),
           SizedBox(height: context.sp(12)),
-          Image.asset(
-            Assets.images.logoLetter.path,
-            height: context.sp(62),
-          ),
+          Image.asset(Assets.images.logoLetter.path, height: context.sp(62)),
           SizedBox(height: context.sp(36)),
-          Text(
-            'Código de verificación',
-            style: context.styles.header2,
-          ),
+          Text('Código de verificación', style: context.styles.header2),
           SizedBox(height: context.sp(24)),
           Text(
             'Introduce el código de verificación que te hemos enviado por sms.',
@@ -86,7 +75,9 @@ class _ValidateCodeViewState extends State<ValidateCodeView> {
             height: context.sp(50),
             child: PrimaryButton(
               onTap: () {
-                context.read<RegisterBloc>().add(RegisterEvent.registerEvent());
+                context.read<RegisterBloc>().add(
+                  RegisterEvent.registerEvent(true),
+                );
               },
               label: 'Validar código',
               isActive: !_codeCompleted,

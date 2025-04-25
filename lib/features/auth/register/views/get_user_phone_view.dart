@@ -7,9 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 class GetUserPhoneView extends StatefulWidget {
-  const GetUserPhoneView({
-    super.key,
-  });
+  const GetUserPhoneView({super.key});
 
   @override
   State<GetUserPhoneView> createState() => _GetUserPhoneViewState();
@@ -27,15 +25,9 @@ class _GetUserPhoneViewState extends State<GetUserPhoneView> {
         child: Column(
           children: [
             SizedBox(height: context.sp(24)),
-            Image.asset(
-              Assets.images.logo.path,
-              height: context.sp(60),
-            ),
+            Image.asset(Assets.images.logo.path, height: context.sp(60)),
             SizedBox(height: context.sp(12)),
-            Image.asset(
-              Assets.images.logoLetter.path,
-              height: context.sp(62),
-            ),
+            Image.asset(Assets.images.logoLetter.path, height: context.sp(62)),
             SizedBox(height: context.sp(36)),
             Text(
               'Ingresa tu número de teléfono',
@@ -74,10 +66,18 @@ class _GetUserPhoneViewState extends State<GetUserPhoneView> {
               height: context.sp(50),
               child: PrimaryButton(
                 onTap: () {
-                  context.read<RegisterBloc>().add(RegisterEvent.savePhoneInfo(phone, isoCode));
-                  context.read<RegisterBloc>().add(RegisterEvent.initValidation());
+                  context.read<RegisterBloc>().add(
+                    RegisterEvent.savePhoneInfo(phone, isoCode),
+                  );
+                  context.read<RegisterBloc>().add(
+                    RegisterEvent.initValidation(),
+                  );
+                  context.read<RegisterBloc>().add(
+                    RegisterEvent.registerEvent(true),
+                  );
                 },
-                label: 'Enviar código',
+                // label: 'Enviar código',
+                label: 'Finalizar registro',
                 isActive: true,
               ),
             ),

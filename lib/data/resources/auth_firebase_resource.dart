@@ -12,8 +12,8 @@ class AuthFirebaseResource implements AuthRepository {
   AuthFirebaseResource({
     required DatabaseHelper client,
     required FirebaseAuth firebaseAuth,
-  })  : _client = client,
-        _firebaseAuth = firebaseAuth;
+  }) : _client = client,
+       _firebaseAuth = firebaseAuth;
 
   final FirebaseAuth _firebaseAuth;
   final DatabaseHelper _client;
@@ -32,9 +32,15 @@ class AuthFirebaseResource implements AuthRepository {
   }
 
   @override
-  Future<Either<ApiException, String>> login({required String email, required String password}) async {
+  Future<Either<ApiException, String>> login({
+    required String email,
+    required String password,
+  }) async {
     try {
-      await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+      await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       return const Right('');
     } on FirebaseAuthException catch (e) {
       // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
@@ -45,7 +51,10 @@ class AuthFirebaseResource implements AuthRepository {
   }
 
   @override
-  Future<Either<ApiException, UserCredential>> register({required String email, required String password}) async {
+  Future<Either<ApiException, UserCredential>> register({
+    required String email,
+    required String password,
+  }) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
@@ -64,7 +73,8 @@ class AuthFirebaseResource implements AuthRepository {
   Future<Either<ApiException, UserCredential>> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
@@ -80,19 +90,17 @@ class AuthFirebaseResource implements AuthRepository {
   }
 
   @override
-  Future<Either<ApiException, String>> setFCMToken({required String token}) async {
+  Future<Either<ApiException, String>> setFCMToken({
+    required String token,
+  }) async {
     try {
       final userId = _firebaseAuth.currentUser?.uid;
       if (userId == null) {
         return Left(ApiException(400, 'User not logged in'));
       }
-      _client.update(
-        AppConstants.appTitle,
-        {
-          'fcmToken': token,
-        },
-        document: userId,
-      );
+      _client.update(AppConstants.appTitle, {
+        'fcmToken': token,
+      }, document: userId);
 
       return const Right('');
     } catch (e) {
@@ -101,19 +109,17 @@ class AuthFirebaseResource implements AuthRepository {
   }
 
   @override
-  Future<Either<ApiException, String>> updateCurrentChat({required String chatId}) async {
+  Future<Either<ApiException, String>> updateCurrentChat({
+    required String chatId,
+  }) async {
     try {
       final userId = _firebaseAuth.currentUser?.uid;
       if (userId == null) {
         return Left(ApiException(400, 'User not logged in'));
       }
-      _client.update(
-        AppConstants.appTitle,
-        {
-          'currentChat': chatId,
-        },
-        document: userId,
-      );
+      _client.update(AppConstants.appTitle, {
+        'currentChat': chatId,
+      }, document: userId);
 
       return const Right('');
     } catch (e) {
@@ -124,14 +130,17 @@ class AuthFirebaseResource implements AuthRepository {
   @override
   Future<Either<ApiException, UserCredential>> signInWithApple() async {
     try {
-      final AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          //Solicita los datos que necesites
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-      final OAuthProvider oAuthProvider = OAuthProvider("apple.com"); //Importante, el providerId
+      final AuthorizationCredentialAppleID appleCredential =
+          await SignInWithApple.getAppleIDCredential(
+            scopes: [
+              //Solicita los datos que necesites
+              AppleIDAuthorizationScopes.email,
+              AppleIDAuthorizationScopes.fullName,
+            ],
+          );
+      final OAuthProvider oAuthProvider = OAuthProvider(
+        "apple.com",
+      ); //Importante, el providerId
       final AuthCredential credential = oAuthProvider.credential(
         idToken: appleCredential.identityToken,
         accessToken: appleCredential.authorizationCode,
@@ -155,12 +164,13 @@ class AuthFirebaseResource implements AuthRepository {
     required Function(String) onError,
   }) async {
     try {
-      await _firebaseAuth.verifyPhoneNumber(
-        verificationCompleted: (_) {},
-        verificationFailed: (e) => onError(e.message ?? 'Error'),
-        codeSent: (verificationId, _) => onCodeSent(verificationId),
-        codeAutoRetrievalTimeout: (_) {},
-      );
+      // await _firebaseAuth.verifyPhoneNumber(
+      //   phoneNumber: phone,
+      //   verificationCompleted: (_) {},
+      //   verificationFailed: (e) => onError(e.message ?? 'Error'),
+      //   codeSent: (verificationId, _) => onCodeSent(verificationId),
+      //   codeAutoRetrievalTimeout: (_) {},
+      // );
       return Right('response');
     } on FirebaseAuthException catch (e) {
       // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
