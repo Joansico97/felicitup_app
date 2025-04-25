@@ -47,10 +47,10 @@ class RegisterView extends StatelessWidget {
             child: BlocBuilder<RegisterBloc, RegisterState>(
               builder: (_, state) {
                 return AppSocialRegularButton(
-                  onTap: () {},
-                  // () => context.read<RegisterBloc>().add(
-                  //   RegisterEvent.googleRegisterEvent(),
-                  // ),
+                  onTap:
+                      () => context.read<RegisterBloc>().add(
+                        RegisterEvent.googleLoginEvent(),
+                      ),
                   label: 'Registrate con Google',
                   isActive: true,
                   icon: Assets.icons.googleIcon,
@@ -68,10 +68,10 @@ class RegisterView extends StatelessWidget {
               child: BlocBuilder<RegisterBloc, RegisterState>(
                 builder: (_, state) {
                   return AppSocialRegularButton(
-                    onTap: () {},
-                    // () => context.read<RegisterBloc>().add(
-                    //   RegisterEvent.appleLoginEvent(),
-                    // ),
+                    onTap:
+                        () => context.read<RegisterBloc>().add(
+                          RegisterEvent.appleLoginEvent(),
+                        ),
                     label: 'Registrate con Apple',
                     isActive: true,
                     icon: Assets.icons.appleIcon,

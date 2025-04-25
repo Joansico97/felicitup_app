@@ -21,20 +21,11 @@ class _PhoneFederatedViewState extends State<PhoneFederatedView> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Image.asset(
-          Assets.images.logo.path,
-          height: context.sp(60),
-        ),
+        Image.asset(Assets.images.logo.path, height: context.sp(60)),
         SizedBox(height: context.sp(12)),
-        Image.asset(
-          Assets.images.logoLetter.path,
-          height: context.sp(62),
-        ),
+        Image.asset(Assets.images.logoLetter.path, height: context.sp(62)),
         SizedBox(height: context.sp(12)),
-        Text(
-          'Ingresa tu número de teléfono',
-          style: context.styles.header2,
-        ),
+        Text('Ingresa tu número de teléfono', style: context.styles.header2),
         SizedBox(height: context.sp(24)),
         Text(
           'Por favor introduce tu número de teléfono y te enviaremos un sms con un código de verificación.',
@@ -68,9 +59,15 @@ class _PhoneFederatedViewState extends State<PhoneFederatedView> {
           height: context.sp(50),
           child: PrimaryButton(
             onTap: () {
-              context.read<FederatedRegisterBloc>().add(FederatedRegisterEvent.savePhoneInfo(phone, isoCode));
+              context.read<FederatedRegisterBloc>().add(
+                FederatedRegisterEvent.savePhoneInfo(phone, isoCode),
+              );
+              context.read<FederatedRegisterBloc>().add(
+                FederatedRegisterEvent.setUserInfoRemaning(),
+              );
             },
-            label: 'Enviar código',
+            // label: 'Enviar código',
+            label: 'Finaliza tu registro',
             isActive: true,
           ),
         ),

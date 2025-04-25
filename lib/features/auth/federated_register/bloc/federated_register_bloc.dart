@@ -70,7 +70,7 @@ class FederatedRegisterBloc
         isLoading: false,
         phone: phone,
         isoCode: isoCode,
-        currentIndex: state.currentIndex + 1,
+        currentIndex: state.currentIndex + 2,
       ),
     );
   }
