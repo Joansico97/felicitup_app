@@ -41,7 +41,7 @@ class FederatedRegisterBloc
     Emitter<FederatedRegisterState> emit,
     String name,
     String lastName,
-    String genre,
+    String incommingGenre,
     DateTime birthDate,
   ) async {
     emit(state.copyWith(isLoading: true));
@@ -52,7 +52,7 @@ class FederatedRegisterBloc
         currentIndex: state.currentIndex + 1,
         name: name,
         lastName: lastName,
-        genre: genre,
+        genre: incommingGenre,
         birthDate: birthDate,
       ),
     );
@@ -70,7 +70,7 @@ class FederatedRegisterBloc
         isLoading: false,
         phone: phone,
         isoCode: isoCode,
-        currentIndex: state.currentIndex + 2,
+        currentIndex: state.currentIndex + 1,
       ),
     );
   }

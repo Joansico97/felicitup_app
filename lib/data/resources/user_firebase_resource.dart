@@ -777,6 +777,10 @@ class UserFirebaseResource implements UserRepository {
         'isoCode': isoCode,
         'genre': genre,
         'birthDate': birthDate,
+        'birthDay': birthDate.day,
+        'birthMonth': birthDate.month,
+        'birthdateAlerts': [],
+        'singleChats': [],
       });
       return Right(null);
     } on FirebaseException catch (e) {

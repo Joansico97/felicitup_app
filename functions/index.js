@@ -243,7 +243,6 @@ exports.sendFelicitup = onCall(
 
         // 6. Actualizar estado en Firestore
         await felicitupRef.update({
-          status: 'scheduled',
           scheduledCompletionTime: felicitupData.date,
           lastUpdated: Timestamp.now(),
           scheduledBy: request.auth.uid,
@@ -325,14 +324,13 @@ async function completeFelicitup(felicitupId) {
 
     // Marcar como completada
     await felicitupRef.update({
-      status: "Finished",
-      completedAt: Timestamp.now(),
+      // status: "Finished",
     });
 
     console.log(`Felicitup ${felicitupId} completada exitosamente`);
   } catch (error) {
     console.error(`Error al completar la Felicitup ${felicitupId}:`, error);
-    await felicitupRef.update({status: "failed"});
+    // await felicitupRef.update({status: "failed"});
     throw error;
   }
 }

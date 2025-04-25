@@ -18,9 +18,9 @@ class FederatedRegisterPage extends StatelessWidget {
           return FormFederatedView();
         case 1:
           return PhoneFederatedView();
+        // case 2:
+        //   return ValidateCodeFederatedView();
         case 2:
-          return ValidateCodeFederatedView();
-        case 3:
           return FinishRegisterFederatedView();
         default:
           return FormFederatedView();
@@ -46,7 +46,10 @@ class FederatedRegisterPage extends StatelessWidget {
                     horizontal: context.sp(60),
                     vertical: context.sp(12),
                   ),
-                  child: BlocBuilder<FederatedRegisterBloc, FederatedRegisterState>(
+                  child: BlocBuilder<
+                    FederatedRegisterBloc,
+                    FederatedRegisterState
+                  >(
                     builder: (_, state) {
                       return AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
