@@ -41,6 +41,7 @@ class FelicitupApp extends StatelessWidget {
           builder: (_, state) {
             return MaterialApp.router(
               title: AppConstants.appTitle,
+
               localizationsDelegates: const [
                 IntlTrans.delegate,
                 GlobalMaterialLocalizations.delegate,
@@ -50,7 +51,9 @@ class FelicitupApp extends StatelessWidget {
               supportedLocales: IntlTrans.delegate.supportedLocales,
               theme: AppTheme().getTheme(),
               routerConfig: router,
-              builder: (context, child) => HandleNotificationsInteractions(child: child!),
+              builder:
+                  (context, child) =>
+                      HandleNotificationsInteractions(child: child!),
             );
           },
         ),
@@ -60,20 +63,20 @@ class FelicitupApp extends StatelessWidget {
 }
 
 class HandleNotificationsInteractions extends StatefulWidget {
-  const HandleNotificationsInteractions({
-    super.key,
-    required this.child,
-  });
+  const HandleNotificationsInteractions({super.key, required this.child});
 
   final Widget child;
 
   @override
-  State<HandleNotificationsInteractions> createState() => _HandleNotificationsInteractionsState();
+  State<HandleNotificationsInteractions> createState() =>
+      _HandleNotificationsInteractionsState();
 }
 
-class _HandleNotificationsInteractionsState extends State<HandleNotificationsInteractions> {
+class _HandleNotificationsInteractionsState
+    extends State<HandleNotificationsInteractions> {
   Future<void> setupInteractedMessage() async {
-    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
       _handleMessage(initialMessage);

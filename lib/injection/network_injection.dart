@@ -13,5 +13,6 @@ void _initNetworkInjection() {
     ..registerLazySingleton<FirebaseMessaging>(() => FirebaseMessaging.instance)
     ..registerLazySingleton<FirebaseFunctions>(() => FirebaseFunctions.instance)
     ..registerLazySingleton<FirebaseStorage>(() => FirebaseStorage.instance)
+    ..registerLazySingleton<FirebaseAnalytics>(() => FirebaseAnalytics.instance)
     ..registerLazySingleton<LocalStorageHelper>(() => LocalStorageHelper());
 }
