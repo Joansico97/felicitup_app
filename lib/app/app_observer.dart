@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 import '../core/utils/utils.dart';
@@ -14,6 +15,14 @@ class AppObserver extends BlocObserver {
   void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
     super.onChange(bloc, change);
     logger.debug('Changed (${bloc.runtimeType}, $change)');
+    FirebaseAnalytics.instance.logEvent(
+      name: 'screen_change',
+      parameters: {
+        'screen_name': bloc.runtimeType.toString(),
+        'bloc': bloc.runtimeType.toString(),
+        'change': change.toString(),
+      },
+    );
   }
 
   @override
