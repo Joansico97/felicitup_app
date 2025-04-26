@@ -33,9 +33,15 @@ class RemindersPage extends StatelessWidget {
                 itemCount: currentUser?.birthdateAlerts?.length ?? 0,
                 itemBuilder: (_, index) {
                   final data = currentUser?.birthdateAlerts?[index];
+                  DateTime? triedParsedDate = DateTime.tryParse(
+                    data?.targetDate != null
+                        ? data!.targetDate!
+                        : DateTime.now().toString(),
+                  );
+
                   return RememberCard(
                     name: data?.friendName ?? 'Jorge Silva',
-                    date: data?.targetDate ?? DateTime.now(),
+                    date: triedParsedDate ?? DateTime.now(),
                     image: data?.friendProfilePic,
                     onTap:
                         () => showConfirDoublemModal(

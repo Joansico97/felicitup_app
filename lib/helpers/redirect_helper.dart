@@ -16,13 +16,14 @@ void redirectHelper({required Map<String, dynamic> data}) {
   switch (pushMessageType) {
     case PushMessageType.felicitup:
       CustomRouter().router.go(
-            RouterPaths.felicitupNotification,
-            extra: felicitupId,
-          );
+        RouterPaths.felicitupNotification,
+        extra: felicitupId,
+      );
       break;
 
     case PushMessageType.chat:
-      if (CustomRouter().router.routerDelegate.state.matchedLocation == RouterPaths.messageFelicitup) {
+      if (CustomRouter().router.routerDelegate.state.matchedLocation ==
+          RouterPaths.messageFelicitup) {
         detailsFelicitupNavigatorKey.currentContext!
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
@@ -30,25 +31,21 @@ void redirectHelper({required Map<String, dynamic> data}) {
       logger.debug(CustomRouter().router.routerDelegate.state.matchedLocation);
       CustomRouter().router.go(
         RouterPaths.messageFelicitup,
-        extra: {
-          'felicitupId': felicitupId,
-          'chatId': chatId,
-        },
+        extra: {'felicitupId': felicitupId, 'chatId': chatId},
       );
 
       break;
 
     case PushMessageType.payment:
-      if (CustomRouter().router.routerDelegate.state.matchedLocation == RouterPaths.boteFelicitup) {
+      if (CustomRouter().router.routerDelegate.state.matchedLocation ==
+          RouterPaths.boteFelicitup) {
         detailsFelicitupNavigatorKey.currentContext!
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
       CustomRouter().router.go(
         RouterPaths.boteFelicitup,
-        extra: {
-          'felicitupId': felicitupId,
-        },
+        extra: {'felicitupId': felicitupId},
       );
 
       break;
@@ -62,48 +59,43 @@ void redirectHelper({required Map<String, dynamic> data}) {
       );
       CustomRouter().router.go(
         RouterPaths.singleChat,
-        extra: {
-          'data': chatModel,
-        },
+        extra: {'data': chatModel},
       );
       break;
 
     case PushMessageType.participation:
-      if (CustomRouter().router.routerDelegate.state.matchedLocation == RouterPaths.peopleFelicitup) {
+      if (CustomRouter().router.routerDelegate.state.matchedLocation ==
+          RouterPaths.peopleFelicitup) {
         detailsFelicitupNavigatorKey.currentContext!
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
       CustomRouter().router.go(
         RouterPaths.peopleFelicitup,
-        extra: {
-          'felicitupId': felicitupId,
-        },
+        extra: {'felicitupId': felicitupId},
       );
       break;
     case PushMessageType.video:
-      if (CustomRouter().router.routerDelegate.state.matchedLocation == RouterPaths.videoFelicitup) {
+      if (CustomRouter().router.routerDelegate.state.matchedLocation ==
+          RouterPaths.videoFelicitup) {
         detailsFelicitupNavigatorKey.currentContext!
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
       CustomRouter().router.go(
         RouterPaths.videoFelicitup,
-        extra: {
-          'felicitupId': felicitupId,
-        },
+        extra: {'felicitupId': felicitupId},
       );
 
       break;
     case PushMessageType.past:
       CustomRouter().router.go(
         RouterPaths.chatPastFelicitup,
-        extra: {
-          'felicitupId': felicitupId,
-        },
+        extra: {'felicitupId': felicitupId},
       );
       break;
     case PushMessageType.reminder:
+      CustomRouter().router.go(RouterPaths.reminders);
       break;
   }
 }
