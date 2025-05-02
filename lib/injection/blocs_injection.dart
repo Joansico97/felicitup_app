@@ -111,5 +111,6 @@ void _initBlocsInjection() {
     ..registerFactory(() => VideoPastFelicitupBloc())
     ..registerFactory(
       () => RemindersBloc(userRepository: di(), chatRepository: di()),
-    );
+    )
+    ..registerFactory(() => ForgotPasswordBloc(authRepository: di()));
 }

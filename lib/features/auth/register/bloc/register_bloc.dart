@@ -104,23 +104,28 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
   _initValidation(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
+
     try {
-      final exist = await checkPhoneExist(
-        phone: '${state.isoCode}${state.phone}',
-      );
-      if (exist) {
-        emit(
-          state.copyWith(
-            isLoading: false,
-            status: RegisterStatus.error,
-            errorMessage: 'El número de teléfono ya está en uso',
-          ),
-        );
-        return;
-      }
-      emit(
-        //TODO: Cambiar el estado a uno que indique que se está validando el código
-        state.copyWith(isLoading: false, status: RegisterStatus.success),
+      await _authRepository.verifyPhone(
+        phone: state.phone!,
+        onCodeSent: (verificationId) {
+          emit(
+            state.copyWith(
+              verificationId: verificationId,
+              isLoading: false,
+              status: RegisterStatus.validateCode,
+            ),
+          );
+        },
+        onError: (error) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              status: RegisterStatus.error,
+              errorMessage: error.toString(),
+            ),
+          );
+        },
       );
     } catch (e) {
       emit(
@@ -131,6 +136,33 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         ),
       );
     }
+    // try {
+    //   final exist = await checkPhoneExist(
+    //     phone: '${state.isoCode}${state.phone}',
+    //   );
+    //   if (exist) {
+    //     emit(
+    //       state.copyWith(
+    //         isLoading: false,
+    //         status: RegisterStatus.error,
+    //         errorMessage: 'El número de teléfono ya está en uso',
+    //       ),
+    //     );
+    //     return;
+    //   }
+    //   emit(
+
+    //     state.copyWith(isLoading: false, status: RegisterStatus.success),
+    //   );
+    // } catch (e) {
+    //   emit(
+    //     state.copyWith(
+    //       isLoading: false,
+    //       status: RegisterStatus.error,
+    //       errorMessage: e.toString(),
+    //     ),
+    //   );
+    // }
   }
 
   _setUserInfo(

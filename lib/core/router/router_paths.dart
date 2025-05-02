@@ -10,7 +10,6 @@ class RouterPaths {
   static const String federatedRegister = '/federatedRegister';
   static const String forgotPassword = '/forgotPassword';
   static const String finishRegister = '/finishRegister';
-  static const String resetPassword = '/resetPassword';
   static const String termsConditions = '/termsConditions';
   static const String verification = '/verification';
   static const String notifications = '/notifications';
@@ -22,7 +21,8 @@ class RouterPaths {
   static const String peopleFelicitup = '/peopleFelicitup';
   static const String videoFelicitup = '/videoFelicitup';
   static const String boteFelicitup = '/boteFelicitup';
-  static const String felicitupPastDetailsDashboard = '/felicitupPastDetailsDashboard';
+  static const String felicitupPastDetailsDashboard =
+      '/felicitupPastDetailsDashboard';
   static const String mainPastFelicitup = '/mainPastFelicitup';
   static const String chatPastFelicitup = '/chatPastFelicitup';
   static const String peoplePastFelicitup = '/peoplePastFelicitup';
@@ -53,7 +53,7 @@ class RouterPaths {
     termsConditions,
     verification,
     inviteContacts,
-    resetPassword,
+    forgotPassword,
     notificationInfo,
     termsPolicies,
   ];

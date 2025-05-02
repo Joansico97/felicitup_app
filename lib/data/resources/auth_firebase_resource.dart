@@ -164,13 +164,13 @@ class AuthFirebaseResource implements AuthRepository {
     required Function(String) onError,
   }) async {
     try {
-      // await _firebaseAuth.verifyPhoneNumber(
-      //   phoneNumber: phone,
-      //   verificationCompleted: (_) {},
-      //   verificationFailed: (e) => onError(e.message ?? 'Error'),
-      //   codeSent: (verificationId, _) => onCodeSent(verificationId),
-      //   codeAutoRetrievalTimeout: (_) {},
-      // );
+      await _firebaseAuth.verifyPhoneNumber(
+        phoneNumber: phone,
+        verificationCompleted: (_) {},
+        verificationFailed: (e) => onError(e.message ?? 'Error'),
+        codeSent: (verificationId, _) => onCodeSent(verificationId),
+        codeAutoRetrievalTimeout: (_) {},
+      );
       return Right('response');
     } on FirebaseAuthException catch (e) {
       // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
@@ -197,6 +197,22 @@ class AuthFirebaseResource implements AuthRepository {
       await _firebaseAuth.signOut(); // Cierra la sesión temporal
 
       return const Right(true);
+    } on FirebaseAuthException catch (e) {
+      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
+      return Left(ApiException(400, e.message ?? ''));
+    } catch (e) {
+      FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
+      return Left(ApiException(400, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, String>> forgotPassword({
+    required String email,
+  }) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+      return const Right('');
     } on FirebaseAuthException catch (e) {
       // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
       return Left(ApiException(400, e.message ?? ''));

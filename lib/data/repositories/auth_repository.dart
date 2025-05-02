@@ -15,7 +15,9 @@ abstract class AuthRepository {
   Future<Either<ApiException, UserCredential>> signInWithGoogle();
   Future<Either<ApiException, UserCredential>> signInWithApple();
   Future<Either<ApiException, String>> setFCMToken({required String token});
-  Future<Either<ApiException, String>> updateCurrentChat({required String chatId});
+  Future<Either<ApiException, String>> updateCurrentChat({
+    required String chatId,
+  });
   Future<Either<ApiException, String>> verifyPhone({
     required String phone,
     required Function(String) onCodeSent,
@@ -27,4 +29,5 @@ abstract class AuthRepository {
     required String userId,
     required String phoneNumber,
   });
+  Future<Either<ApiException, String>> forgotPassword({required String email});
 }

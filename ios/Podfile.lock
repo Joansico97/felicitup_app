@@ -1516,6 +1516,8 @@ DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - cloud_functions (from `.symlinks/plugins/cloud_functions/ios`)
   - fast_contacts (from `.symlinks/plugins/fast_contacts/ios`)
+  - Firebase/Auth
+  - Firebase/Core
   - firebase_analytics (from `.symlinks/plugins/firebase_analytics/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
@@ -1671,6 +1673,6 @@ SPEC CHECKSUMS:
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
   video_player_avfoundation: 7c6c11d8470e1675df7397027218274b6d2360b3
 
-PODFILE CHECKSUM: aec646ecdc7be1365754ed27e9556fa75df8d1be
+PODFILE CHECKSUM: 46a75b3c6020c09458f0b9cb14f0123c3bd46b8e
 
 COCOAPODS: 1.16.2

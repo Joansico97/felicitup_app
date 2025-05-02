@@ -21,6 +21,14 @@ const {getFirestore, Timestamp} = require('firebase-admin/firestore');
 const {onCall} = require('firebase-functions/v2/https');
 const {HttpsError} = require('firebase-functions/v2/https');
 
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffprobePath = require('ffprobe-static').path;
+
+// Configura las rutas de FFmpeg (ESTO ES CLAVE)
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
+
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -531,6 +539,94 @@ exports.mergeVideos = functions.https.onCall({
   }
 });
 
+// Modifica la función normalizeVideo para manejar codecs desconocidos
+async function normalizeVideo(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const command = ffmpeg(inputPath)
+        .inputOptions([
+          '-ignore_unknown', // Ignora streams desconocidos
+          '-analyzeduration 10M', // Aumenta tiempo de análisis
+          '-probesize 10M', // Aumenta tamaño de sondeo
+        ])
+        .videoCodec('libx264')
+        .audioCodec('aac')
+        .outputOptions([
+          '-map 0:v', // Solo el stream de video
+          '-map 0:a:0?', // Solo el primer stream de audio (si existe)
+          '-movflags +faststart',
+          '-preset fast',
+          '-strict experimental', // Permite codecs experimentales
+        ])
+        .videoFilter('scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1')
+        .audioFilter('aresample=async=1000')
+        .on('start', (cmd) => console.log('Ejecutando:', cmd))
+        .on('progress', (progress) => console.log(`Progreso: ${progress.percent}%`))
+        .on('end', () => {
+          console.log('Normalización completada');
+          resolve();
+        })
+        .on('error', (err) => {
+          console.error('Error en normalización:', err);
+          reject(new Error(`Error al normalizar video: ${err.message}`));
+        });
+
+    command.save(outputPath);
+  });
+}
+
+// Función concatVideos actualizada
+async function concatVideos(videoPaths, outputFilePath) {
+  return new Promise((resolve, reject) => {
+    const command = ffmpeg();
+
+    // Añadir inputs con opciones para manejar codecs especiales
+    videoPaths.forEach((path) => {
+      command.input(path)
+          .inputOptions([
+            '-ignore_unknown',
+            '-analyzeduration 10M',
+            '-probesize 10M',
+          ]);
+    });
+
+    // Configurar filtros complejos
+    command.complexFilter([
+      {
+        filter: 'concat',
+        options: {
+          n: videoPaths.length,
+          v: 1,
+          a: 1,
+        },
+        inputs: videoPaths.map((_, i) => `[${i}:v] [${i}:a]`).join(' '),
+        outputs: '[outv][outa]',
+      },
+    ])
+        .outputOptions([
+          '-map', '[outv]',
+          '-map', '[outa]',
+          '-c:v', 'libx264',
+          '-c:a', 'aac',
+          '-preset', 'fast',
+          '-movflags', '+faststart',
+          '-shortest',
+          '-strict', 'experimental',
+        ])
+        .on('start', (cmd) => console.log('Ejecutando concatenación:', cmd))
+        .on('progress', (progress) => console.log(`Progreso: ${progress.percent}%`))
+        .on('end', () => {
+          console.log('Concatenación completada');
+          resolve();
+        })
+        .on('error', (err, stdout, stderr) => {
+          console.error('Error en concatenación:', stderr);
+          reject(new Error(`Error al concatenar videos: ${stderr || err.message}`));
+        });
+
+    command.save(outputFilePath);
+  });
+}
+
 // Función para obtener metadatos (versión segura)
 async function getVideoMetadata(filePath) {
   return new Promise((resolve, reject) => {
@@ -550,117 +646,6 @@ async function getVideoMetadata(filePath) {
       } catch (e) {
         reject(new Error('Invalid metadata'));
       }
-    });
-  });
-}
-
-// Función para concatenar videos (versión corregida)
-async function concatVideos(videoPaths, outputFilePath) {
-  return new Promise((resolve, reject) => {
-    const listFilePath = `${outputFilePath}.txt`;
-
-    try {
-      // Eliminé el 'outpoint 1' que causaba el problema de duración
-      const fileList = videoPaths.map((p) => `file '${p}'`).join('\n');
-      fs.writeFileSync(listFilePath, fileList);
-    } catch (err) {
-      return reject(new Error(`Error creating file list: ${err.message}`));
-    }
-
-    execFile('ffmpeg', [
-      '-f', 'concat',
-      '-safe', '0',
-      '-i', listFilePath,
-      '-c:v', 'libx264',
-      '-profile:v', 'high',
-      '-preset', 'fast',
-      '-r', '30',
-      '-g', '60',
-      '-keyint_min', '60',
-      '-sc_threshold', '0',
-      '-movflags', '+faststart',
-      '-c:a', 'aac',
-      '-b:a', '128k',
-      '-ar', '44100',
-      '-ac', '2',
-      '-vsync', 'cfr',
-      '-async', '1',
-      '-filter_complex', 'apad',
-      '-shortest',
-      '-y',
-      outputFilePath,
-    ], {timeout: 600000}, (error, stdout, stderr) => {
-      // Limpieza del archivo temporal
-      try {
-        fs.unlinkSync(listFilePath);
-      } catch (e) {
-        console.warn('Could not delete temp list file:', e);
-      }
-
-      if (error) {
-        console.error('FFmpeg stderr:', stderr);
-        return reject(new Error(`FFmpeg concat failed: ${error.message}`));
-      }
-
-      if (!fs.existsSync(outputFilePath)) {
-        return reject(new Error('Output file not created'));
-      }
-
-      // Verificar la duración del video resultante
-      getVideoMetadata(outputFilePath)
-          .then((metadata) => {
-            console.log('Merged video duration:', metadata.duration);
-            resolve();
-          })
-          .catch((e) => {
-            console.warn('Could not verify output duration:', e);
-            resolve(); // Resolvemos igual aunque no podamos verificar
-          });
-    });
-  });
-}
-
-// Función para normalizar videos (versión optimizada)
-async function normalizeVideo(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    execFile('ffmpeg', [
-      '-i', inputPath,
-      '-c:v', 'libx264',
-      '-profile:v', 'high',
-      '-preset', 'fast',
-      '-r', '30',
-      '-g', '60',
-      '-keyint_min', '60',
-      '-sc_threshold', '0',
-      '-movflags', '+faststart',
-      '-c:a', 'aac',
-      '-b:a', '128k',
-      '-ar', '44100',
-      '-ac', '2',
-      '-filter_complex',
-      '[0:v]scale=w=1080:h=1920:force_original_aspect_ratio=decrease,' +
-      'pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[outv]',
-      '-map', '[outv]',
-      '-map', '0:a?',
-      '-af', 'aresample=async=1000',
-      '-y',
-      outputPath,
-    ], {timeout: 300000}, (error, stdout, stderr) => {
-      if (error) {
-        console.error('FFmpeg error details:', stderr);
-        return reject(new Error(`FFmpeg error: ${stderr}`));
-      }
-
-      // Verificar que el video normalizado tenga la duración correcta
-      getVideoMetadata(outputPath)
-          .then((metadata) => {
-            console.log(`Normalized video duration: ${metadata.duration}s`);
-            resolve();
-          })
-          .catch((e) => {
-            console.warn('Could not verify normalized video duration:', e);
-            resolve(); // Continuamos aunque no podamos verificar
-          });
     });
   });
 }
