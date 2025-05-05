@@ -62,12 +62,8 @@ class _PhoneFederatedViewState extends State<PhoneFederatedView> {
               context.read<FederatedRegisterBloc>().add(
                 FederatedRegisterEvent.savePhoneInfo(phone, isoCode),
               );
-              context.read<FederatedRegisterBloc>().add(
-                FederatedRegisterEvent.setUserInfoRemaning(),
-              );
             },
-            // label: 'Enviar código',
-            label: 'Finaliza tu registro',
+            label: 'Enviar código',
             isActive: true,
           ),
         ),

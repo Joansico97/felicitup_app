@@ -10,11 +10,10 @@ class FederatedRegisterState with _$FederatedRegisterState {
     String? phone,
     String? isoCode,
     String? genre,
+    String? verificationId,
     DateTime? birthDate,
   }) = _FederatedRegisterState;
 
-  factory FederatedRegisterState.initial() => FederatedRegisterState(
-        isLoading: false,
-        currentIndex: 0,
-      );
+  factory FederatedRegisterState.initial() =>
+      FederatedRegisterState(isLoading: false, currentIndex: 0);
 }

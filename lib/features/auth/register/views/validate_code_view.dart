@@ -15,6 +15,7 @@ class ValidateCodeView extends StatefulWidget {
 
 class _ValidateCodeViewState extends State<ValidateCodeView> {
   bool _codeCompleted = true;
+  final TextEditingController _pinCodeController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +37,7 @@ class _ValidateCodeViewState extends State<ValidateCodeView> {
           SizedBox(height: context.sp(36)),
           PinCodeTextField(
             appContext: context,
+            controller: _pinCodeController,
             length: 6,
             obscureText: false,
             animationType: AnimationType.fade,
@@ -76,7 +78,7 @@ class _ValidateCodeViewState extends State<ValidateCodeView> {
             child: PrimaryButton(
               onTap: () {
                 context.read<RegisterBloc>().add(
-                  RegisterEvent.registerEvent(true),
+                  RegisterEvent.validateCode(_pinCodeController.text),
                 );
               },
               label: 'Validar código',

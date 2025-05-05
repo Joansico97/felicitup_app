@@ -72,12 +72,9 @@ class _GetUserPhoneViewState extends State<GetUserPhoneView> {
                   context.read<RegisterBloc>().add(
                     RegisterEvent.initValidation(),
                   );
-                  context.read<RegisterBloc>().add(
-                    RegisterEvent.registerEvent(true),
-                  );
                 },
-                // label: 'Enviar código',
-                label: 'Finalizar registro',
+                label: 'Enviar código',
+                // label: 'Finalizar registro',
                 isActive: true,
               ),
             ),

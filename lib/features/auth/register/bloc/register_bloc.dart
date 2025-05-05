@@ -37,6 +37,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
               event.genre,
               event.birthDate,
             ),
+        validateCode: (value) => _validateCode(emit, value.code),
         savePhoneInfo:
             (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
         initValidation: (_) => _initValidation(emit),
@@ -106,6 +107,19 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
 
     try {
+      final exist = await checkPhoneExist(
+        phone: '${state.isoCode}${state.phone}',
+      );
+      if (exist) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            status: RegisterStatus.error,
+            errorMessage: 'El número de teléfono ya está en uso',
+          ),
+        );
+        return;
+      }
       await _authRepository.verifyPhone(
         phone: state.phone!,
         onCodeSent: (verificationId) {
@@ -136,33 +150,42 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         ),
       );
     }
-    // try {
-    //   final exist = await checkPhoneExist(
-    //     phone: '${state.isoCode}${state.phone}',
-    //   );
-    //   if (exist) {
-    //     emit(
-    //       state.copyWith(
-    //         isLoading: false,
-    //         status: RegisterStatus.error,
-    //         errorMessage: 'El número de teléfono ya está en uso',
-    //       ),
-    //     );
-    //     return;
-    //   }
-    //   emit(
+  }
 
-    //     state.copyWith(isLoading: false, status: RegisterStatus.success),
-    //   );
-    // } catch (e) {
-    //   emit(
-    //     state.copyWith(
-    //       isLoading: false,
-    //       status: RegisterStatus.error,
-    //       errorMessage: e.toString(),
-    //     ),
-    //   );
-    // }
+  _validateCode(Emitter<RegisterState> emit, String code) async {
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
+    try {
+      final response = await _authRepository.confirmVerification(
+        verificationId: state.verificationId!,
+        smsCode: code,
+        userId: state.name!,
+        phoneNumber: '${state.isoCode}${state.phone}',
+      );
+
+      return response.fold(
+        (l) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              status: RegisterStatus.error,
+              errorMessage: l.message,
+            ),
+          );
+        },
+        (r) {
+          emit(state.copyWith(isLoading: false, status: RegisterStatus.none));
+          add(RegisterEvent.registerEvent(true));
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          status: RegisterStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
   }
 
   _setUserInfo(

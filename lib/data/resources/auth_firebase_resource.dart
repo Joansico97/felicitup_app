@@ -1,5 +1,6 @@
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
+import 'package:felicitup_app/core/utils/logger.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
 import 'package:felicitup_app/data/repositories/auth_repository.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
@@ -167,7 +168,13 @@ class AuthFirebaseResource implements AuthRepository {
       await _firebaseAuth.verifyPhoneNumber(
         phoneNumber: phone,
         verificationCompleted: (_) {},
-        verificationFailed: (e) => onError(e.message ?? 'Error'),
+        verificationFailed: (e) {
+          logger.error('Error de verificación: ${e.message}');
+          if (e.code == 'invalid-phone-number') {
+            logger.error('Número de teléfono inválido');
+          }
+          onError(e.message ?? 'Error');
+        },
         codeSent: (verificationId, _) => onCodeSent(verificationId),
         codeAutoRetrievalTimeout: (_) {},
       );

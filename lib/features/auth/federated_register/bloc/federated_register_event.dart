@@ -14,6 +14,8 @@ class FederatedRegisterEvent with _$FederatedRegisterEvent {
     String isoCode,
   ) = _savePhoneInfo;
   const factory FederatedRegisterEvent.initValidation() = _initValidation;
+  const factory FederatedRegisterEvent.validateCode(String code) =
+      _validateCode;
   const factory FederatedRegisterEvent.setUserInfoRemaning() = _setUserInfo;
   const factory FederatedRegisterEvent.finishEvent() = _finishEvent;
 }

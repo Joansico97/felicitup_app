@@ -10,11 +10,13 @@ class ValidateCodeFederatedView extends StatefulWidget {
   const ValidateCodeFederatedView({super.key});
 
   @override
-  State<ValidateCodeFederatedView> createState() => _ValidateCodeFederatedViewState();
+  State<ValidateCodeFederatedView> createState() =>
+      _ValidateCodeFederatedViewState();
 }
 
 class _ValidateCodeFederatedViewState extends State<ValidateCodeFederatedView> {
   bool _codeCompleted = true;
+  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -22,20 +24,11 @@ class _ValidateCodeFederatedViewState extends State<ValidateCodeFederatedView> {
       child: Column(
         children: [
           SizedBox(height: context.sp(24)),
-          Image.asset(
-            Assets.images.logo.path,
-            height: context.sp(60),
-          ),
+          Image.asset(Assets.images.logo.path, height: context.sp(60)),
           SizedBox(height: context.sp(12)),
-          Image.asset(
-            Assets.images.logoLetter.path,
-            height: context.sp(62),
-          ),
+          Image.asset(Assets.images.logoLetter.path, height: context.sp(62)),
           SizedBox(height: context.sp(36)),
-          Text(
-            'Código de verificación',
-            style: context.styles.header2,
-          ),
+          Text('Código de verificación', style: context.styles.header2),
           SizedBox(height: context.sp(24)),
           Text(
             'Introduce el código de verificación que te hemos enviado por sms.',
@@ -46,6 +39,7 @@ class _ValidateCodeFederatedViewState extends State<ValidateCodeFederatedView> {
           PinCodeTextField(
             appContext: context,
             length: 6,
+            controller: _controller,
             obscureText: false,
             animationType: AnimationType.fade,
             keyboardType: TextInputType.number,
@@ -84,7 +78,9 @@ class _ValidateCodeFederatedViewState extends State<ValidateCodeFederatedView> {
             height: context.sp(50),
             child: PrimaryButton(
               onTap: () {
-                context.read<FederatedRegisterBloc>().add(FederatedRegisterEvent.setUserInfoRemaning());
+                context.read<FederatedRegisterBloc>().add(
+                  FederatedRegisterEvent.validateCode(_controller.text),
+                );
               },
               label: 'Validar código',
               isActive: !_codeCompleted,

@@ -18,9 +18,9 @@ class FederatedRegisterPage extends StatelessWidget {
           return FormFederatedView();
         case 1:
           return PhoneFederatedView();
-        // case 2:
-        //   return ValidateCodeFederatedView();
         case 2:
+          return ValidateCodeFederatedView();
+        case 3:
           return FinishRegisterFederatedView();
         default:
           return FormFederatedView();

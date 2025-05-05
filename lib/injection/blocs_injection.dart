@@ -91,7 +91,13 @@ void _initBlocsInjection() {
     ..registerFactory(() => ListSingleChatBloc())
     ..registerFactory(() => ContactsBloc(userRepository: di()))
     ..registerFactory(() => NotificationsSettingsBloc())
-    ..registerFactory(() => FederatedRegisterBloc(userRepository: di()))
+    ..registerFactory(
+      () => FederatedRegisterBloc(
+        userRepository: di(),
+        authRepository: di(),
+        firestore: di(),
+      ),
+    )
     ..registerFactory(() => TermsPoliciesBloc())
     ..registerFactory(
       () => DetailsPastFelicitupDashboardBloc(

@@ -36,10 +36,7 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Text(
-                      'Bote de regalo',
-                      style: context.styles.header2,
-                    ),
+                    Text('Bote de regalo', style: context.styles.header2),
                     SizedBox(height: context.sp(12)),
                     Text(
                       'Selecciona la cantidad deseada para el bote regalo.',
@@ -56,13 +53,21 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                               20,
                               (index) => GestureDetector(
                                 onTap: () {
-                                  context
-                                      .read<BoteFelicitupBloc>()
-                                      .add(BoteFelicitupEvent.setBoteQuantity(5 * (index + 1)));
-                                  final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-                                  context
-                                      .read<BoteFelicitupBloc>()
-                                      .add(BoteFelicitupEvent.updateFelicitupBote(felicitup?.id ?? ''));
+                                  context.read<BoteFelicitupBloc>().add(
+                                    BoteFelicitupEvent.setBoteQuantity(
+                                      5 * (index + 1),
+                                    ),
+                                  );
+                                  final felicitup =
+                                      context
+                                          .read<DetailsFelicitupDashboardBloc>()
+                                          .state
+                                          .felicitup;
+                                  context.read<BoteFelicitupBloc>().add(
+                                    BoteFelicitupEvent.updateFelicitupBote(
+                                      felicitup?.id ?? '',
+                                    ),
+                                  );
                                   context.pop();
                                 },
                                 child: Container(
@@ -88,7 +93,7 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                   ),
                                 ),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -114,13 +119,21 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                               SizedBox(height: context.sp(5)),
                               GestureDetector(
                                 onTap: () {
-                                  context
-                                      .read<BoteFelicitupBloc>()
-                                      .add(BoteFelicitupEvent.setBoteQuantity(int.parse(controller.text)));
-                                  final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-                                  context
-                                      .read<BoteFelicitupBloc>()
-                                      .add(BoteFelicitupEvent.updateFelicitupBote(felicitup?.id ?? ''));
+                                  context.read<BoteFelicitupBloc>().add(
+                                    BoteFelicitupEvent.setBoteQuantity(
+                                      int.parse(controller.text),
+                                    ),
+                                  );
+                                  final felicitup =
+                                      context
+                                          .read<DetailsFelicitupDashboardBloc>()
+                                          .state
+                                          .felicitup;
+                                  context.read<BoteFelicitupBloc>().add(
+                                    BoteFelicitupEvent.updateFelicitupBote(
+                                      felicitup?.id ?? '',
+                                    ),
+                                  );
                                   context.pop();
                                 },
                                 child: Icon(
@@ -147,16 +160,22 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
   @override
   void initState() {
     super.initState();
-    detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
-          DetailsFelicitupDashboardEvent.changeCurrentIndex(4),
-        );
-    final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-    context.read<BoteFelicitupBloc>().add(BoteFelicitupEvent.startListening(felicitup?.id ?? ''));
+    detailsFelicitupNavigatorKey.currentContext!
+        .read<DetailsFelicitupDashboardBloc>()
+        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(4));
+    final felicitup =
+        context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+    context.read<BoteFelicitupBloc>().add(
+      BoteFelicitupEvent.startListening(felicitup?.id ?? ''),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+    return BlocBuilder<
+      DetailsFelicitupDashboardBloc,
+      DetailsFelicitupDashboardState
+    >(
       buildWhen: (previous, current) => previous.felicitup != current.felicitup,
       builder: (_, state) {
         final felicitup = state.felicitup;
@@ -164,6 +183,34 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
 
         return Scaffold(
           backgroundColor: context.colors.background,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: Padding(
+            padding: EdgeInsets.symmetric(horizontal: context.sp(90)),
+            child:
+                felicitup!.createdBy != currentUser!.id &&
+                        felicitup.invitedUserDetails
+                            .where(
+                              (e) =>
+                                  e.id == currentUser.id &&
+                                  e.paid ==
+                                      enumToStringPayment(
+                                        PaymentStatus.pending,
+                                      ),
+                            )
+                            .isNotEmpty
+                    ? FloatingActionButton(
+                      onPressed: () {
+                        context.go(
+                          RouterPaths.payment,
+                          extra: {'isVerify': false, 'felicitup': felicitup},
+                        );
+                      },
+                      backgroundColor: context.colors.orange,
+                      child: Icon(Icons.check, color: context.colors.white),
+                    )
+                    : null,
+          ),
           body: Column(
             children: [
               Row(
@@ -187,11 +234,12 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                   BlocBuilder<BoteFelicitupBloc, BoteFelicitupState>(
                     builder: (_, state) {
                       return GestureDetector(
-                        onTap: felicitup?.createdBy == currentUser?.id
-                            ? () {
-                                showBoteQuantity();
-                              }
-                            : null,
+                        onTap:
+                            felicitup.createdBy == currentUser.id
+                                ? () {
+                                  showBoteQuantity();
+                                }
+                                : null,
                         child: Container(
                           height: context.sp(40),
                           width: context.sp(55),
@@ -201,7 +249,9 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                             color: Colors.white,
                           ),
                           child: Text(
-                            state.boteQuantity != null ? '${state.boteQuantity}€' : '${felicitup?.boteQuantity}€',
+                            state.boteQuantity != null
+                                ? '${state.boteQuantity}€'
+                                : '${felicitup.boteQuantity}€',
                             style: context.styles.smallText.copyWith(
                               color: context.colors.softOrange,
                             ),
@@ -225,8 +275,11 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                if (invitedUsers?[index].paid == enumToStringPayment(PaymentStatus.pending) &&
-                                    invitedUsers?[index].id == currentUser?.id) {
+                                if (invitedUsers?[index].paid ==
+                                        enumToStringPayment(
+                                          PaymentStatus.pending,
+                                        ) &&
+                                    invitedUsers?[index].id == currentUser.id) {
                                   context.go(
                                     RouterPaths.payment,
                                     extra: {
@@ -235,14 +288,18 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                     },
                                   );
                                 }
-                                if (invitedUsers?[index].paid == enumToStringPayment(PaymentStatus.waiting) &&
-                                    felicitup?.createdBy == currentUser?.id) {
+                                if (invitedUsers?[index].paid ==
+                                        enumToStringPayment(
+                                          PaymentStatus.waiting,
+                                        ) &&
+                                    felicitup.createdBy == currentUser.id) {
                                   context.go(
                                     RouterPaths.payment,
                                     extra: {
                                       'isVerify': true,
                                       'felicitup': felicitup,
-                                      'userId': invitedUsers?[index].idInformation,
+                                      'userId':
+                                          invitedUsers?[index].idInformation,
                                     },
                                   );
                                 }
@@ -259,7 +316,9 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                         color: context.colors.lightGrey,
                                       ),
                                       child: Text(
-                                        invitedUsers?[index].name![0].toUpperCase() ?? '',
+                                        invitedUsers?[index].name![0]
+                                                .toUpperCase() ??
+                                            '',
                                         style: context.styles.subtitle,
                                       ),
                                     ),
@@ -267,10 +326,13 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                     Text(
                                       invitedUsers?[index].name ?? '',
                                       style: context.styles.smallText.copyWith(
-                                        color: invitedUsers?[index].assistanceStatus ==
-                                                enumToStringAssistance(AssistanceStatus.pending)
-                                            ? context.colors.text
-                                            : context.colors.primary,
+                                        color:
+                                            invitedUsers?[index].paid ==
+                                                    enumToStringPayment(
+                                                      PaymentStatus.pending,
+                                                    )
+                                                ? context.colors.text
+                                                : context.colors.primary,
                                       ),
                                     ),
                                   ],
@@ -279,18 +341,32 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                   padding: EdgeInsets.all(context.sp(5)),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: invitedUsers?[index].paid == enumToStringPayment(PaymentStatus.paid)
-                                        ? Colors.lightGreen
-                                        : invitedUsers?[index].paid == enumToStringPayment(PaymentStatus.waiting)
+                                    color:
+                                        invitedUsers?[index].paid ==
+                                                enumToStringPayment(
+                                                  PaymentStatus.paid,
+                                                )
+                                            ? Colors.lightGreen
+                                            : invitedUsers?[index].paid ==
+                                                enumToStringPayment(
+                                                  PaymentStatus.waiting,
+                                                )
                                             ? context.colors.softOrange
                                             : context.colors.otherGrey,
                                   ),
                                   child: Icon(
                                     Icons.euro,
-                                    color: invitedUsers?[index].paid == enumToStringPayment(PaymentStatus.paid) ||
-                                            invitedUsers?[index].paid == enumToStringPayment(PaymentStatus.waiting)
-                                        ? Colors.white
-                                        : context.colors.darkGrey,
+                                    color:
+                                        invitedUsers?[index].paid ==
+                                                    enumToStringPayment(
+                                                      PaymentStatus.paid,
+                                                    ) ||
+                                                invitedUsers?[index].paid ==
+                                                    enumToStringPayment(
+                                                      PaymentStatus.waiting,
+                                                    )
+                                            ? Colors.white
+                                            : context.colors.darkGrey,
                                     size: context.sp(11),
                                   ),
                                 ),
@@ -299,11 +375,11 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                             SizedBox(height: context.sp(12)),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   );
                 },
-              )
+              ),
             ],
           ),
         );

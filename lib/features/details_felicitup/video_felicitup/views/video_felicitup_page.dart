@@ -21,17 +21,21 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
   @override
   void initState() {
     super.initState();
-    final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-    detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
-          DetailsFelicitupDashboardEvent.changeCurrentIndex(3),
-        );
-    context.read<VideoFelicitupBloc>().add(VideoFelicitupEvent.startListening(felicitup?.id ?? ''));
+    final felicitup =
+        context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+    detailsFelicitupNavigatorKey.currentContext!
+        .read<DetailsFelicitupDashboardBloc>()
+        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(3));
+    context.read<VideoFelicitupBloc>().add(
+      VideoFelicitupEvent.startListening(felicitup?.id ?? ''),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<VideoFelicitupBloc, VideoFelicitupState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen:
+          (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -48,8 +52,12 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
           );
         }
       },
-      child: BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
-        buildWhen: (previous, current) => previous.felicitup != current.felicitup,
+      child: BlocBuilder<
+        DetailsFelicitupDashboardBloc,
+        DetailsFelicitupDashboardState
+      >(
+        buildWhen:
+            (previous, current) => previous.felicitup != current.felicitup,
         builder: (_, state) {
           final felicitup = state.felicitup;
           final currentUser = context.read<AppBloc>().state.currentUser;
@@ -62,7 +70,8 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
             },
             child: Scaffold(
               backgroundColor: context.colors.background,
-              floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.centerFloat,
               floatingActionButton: Padding(
                 padding: EdgeInsets.symmetric(horizontal: context.sp(90)),
                 child: Row(
@@ -74,26 +83,31 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                         children: [
                           FloatingActionButton(
                             heroTag: '3',
-                            onPressed: () => showConfirmModal(
-                              title:
-                                  'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
-                              onAccept: () async {
-                                final listVideos = felicitup.invitedUserDetails
-                                    .map((e) => e.videoData?.videoUrl)
-                                    .where((url) => url != null && url.isNotEmpty)
-                                    .cast<String>()
-                                    .toList();
+                            onPressed:
+                                () => showConfirmModal(
+                                  title:
+                                      'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
+                                  onAccept: () async {
+                                    final listVideos =
+                                        felicitup.invitedUserDetails
+                                            .map((e) => e.videoData?.videoUrl)
+                                            .where(
+                                              (url) =>
+                                                  url != null && url.isNotEmpty,
+                                            )
+                                            .cast<String>()
+                                            .toList();
 
-                                if (context.mounted) {
-                                  context.read<VideoFelicitupBloc>().add(
+                                    if (context.mounted) {
+                                      context.read<VideoFelicitupBloc>().add(
                                         VideoFelicitupEvent.mergeVideos(
                                           felicitup.id,
                                           listVideos,
                                         ),
                                       );
-                                }
-                              },
-                            ),
+                                    }
+                                  },
+                                ),
                             backgroundColor: context.colors.orange,
                             child: Icon(
                               Icons.cameraswitch_rounded,
@@ -107,24 +121,48 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                       children: [
                         FloatingActionButton(
                           heroTag: '4',
-                          onPressed: felicitup.finalVideoUrl != null && felicitup.finalVideoUrl!.isNotEmpty
-                              ? () {
-                                  context.go(
-                                    RouterPaths.videoEditor,
-                                    extra: {
-                                      'felicitupId': felicitup.id,
-                                      'videoUrl': felicitup.finalVideoUrl ?? '',
-                                    },
-                                  );
-                                }
-                              : null,
-                          backgroundColor: felicitup.finalVideoUrl != null && felicitup.finalVideoUrl!.isNotEmpty
-                              ? context.colors.orange
-                              : context.colors.grey,
+                          onPressed:
+                              felicitup.finalVideoUrl != null &&
+                                      felicitup.finalVideoUrl!.isNotEmpty
+                                  ? () {
+                                    context.go(
+                                      RouterPaths.videoEditor,
+                                      extra: {
+                                        'felicitupId': felicitup.id,
+                                        'videoUrl':
+                                            felicitup.finalVideoUrl ?? '',
+                                      },
+                                    );
+                                  }
+                                  : null,
+                          backgroundColor:
+                              felicitup.finalVideoUrl != null &&
+                                      felicitup.finalVideoUrl!.isNotEmpty
+                                  ? context.colors.orange
+                                  : context.colors.grey,
                           child: Icon(
                             Icons.play_arrow,
                             color: context.colors.white,
                           ),
+                        ),
+                      ],
+                    ),
+                    // if (felicitup.createdBy != currentUser.id)
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        FloatingActionButton(
+                          heroTag: '9',
+                          onPressed:
+                              () => context.go(
+                                RouterPaths.videoEditor,
+                                extra: {
+                                  'felicitupId': felicitup.id,
+                                  'videoUrl': '',
+                                },
+                              ),
+                          backgroundColor: context.colors.orange,
+                          child: Icon(Icons.add, color: context.colors.white),
                         ),
                       ],
                     ),
@@ -168,7 +206,11 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                       RouterPaths.videoEditor,
                                       extra: {
                                         'felicitupId': felicitup.id,
-                                        'videoUrl': invitedUsers?[index].videoData?.videoUrl ?? '',
+                                        'videoUrl':
+                                            invitedUsers?[index]
+                                                .videoData
+                                                ?.videoUrl ??
+                                            '',
                                       },
                                     );
                                   },
@@ -184,18 +226,28 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                             color: context.colors.lightGrey,
                                           ),
                                           child: Text(
-                                            invitedUsers?[index].name![0].toUpperCase() ?? '',
+                                            invitedUsers?[index].name![0]
+                                                    .toUpperCase() ??
+                                                '',
                                             style: context.styles.subtitle,
                                           ),
                                         ),
                                         SizedBox(width: context.sp(14)),
                                         Text(
                                           invitedUsers?[index].name ?? '',
-                                          style: context.styles.smallText.copyWith(
-                                            color: invitedUsers?[index].videoData?.videoUrl?.isEmpty ?? false
-                                                ? context.colors.text
-                                                : context.colors.primary,
-                                          ),
+                                          style: context.styles.smallText
+                                              .copyWith(
+                                                color:
+                                                    invitedUsers?[index]
+                                                                .videoData
+                                                                ?.videoUrl
+                                                                ?.isEmpty ??
+                                                            false
+                                                        ? context.colors.text
+                                                        : context
+                                                            .colors
+                                                            .primary,
+                                              ),
                                         ),
                                       ],
                                     ),
@@ -203,15 +255,25 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                       padding: EdgeInsets.all(context.sp(5)),
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: invitedUsers?[index].videoData?.videoUrl?.isNotEmpty ?? false
-                                            ? context.colors.softOrange
-                                            : context.colors.text,
+                                        color:
+                                            invitedUsers?[index]
+                                                        .videoData
+                                                        ?.videoUrl
+                                                        ?.isNotEmpty ??
+                                                    false
+                                                ? context.colors.softOrange
+                                                : context.colors.text,
                                       ),
                                       child: Icon(
                                         Icons.play_arrow,
-                                        color: invitedUsers?[index].videoData?.videoUrl?.isNotEmpty ?? false
-                                            ? Colors.white
-                                            : context.colors.text,
+                                        color:
+                                            invitedUsers?[index]
+                                                        .videoData
+                                                        ?.videoUrl
+                                                        ?.isNotEmpty ??
+                                                    false
+                                                ? Colors.white
+                                                : context.colors.text,
                                         size: context.sp(11),
                                       ),
                                     ),
@@ -220,11 +282,11 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                 SizedBox(height: context.sp(12)),
                               ],
                             ),
-                          )
+                          ),
                         ],
                       );
                     },
-                  )
+                  ),
                 ],
               ),
             ),
