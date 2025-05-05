@@ -21,9 +21,9 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
   @override
   void initState() {
     super.initState();
-    detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
-          DetailsFelicitupDashboardEvent.changeCurrentIndex(0),
-        );
+    detailsFelicitupNavigatorKey.currentContext!
+        .read<DetailsFelicitupDashboardBloc>()
+        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(0));
   }
 
   @override
@@ -33,9 +33,14 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
       backgroundColor: context.colors.background,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
-        padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
-        child: BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
-          buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+        padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
+        child: BlocBuilder<
+          DetailsFelicitupDashboardBloc,
+          DetailsFelicitupDashboardState
+        >(
+          buildWhen:
+              (previous, current) =>
+                  previous.felicitup!.owner != current.felicitup!.owner,
           builder: (_, state) {
             final felicitup = state.felicitup;
             return Row(
@@ -47,7 +52,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                     children: [
                       BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
                         builder: (_, state) {
-                          return FloatingActionButton(
+                          return FloatingActionButton.extended(
                             heroTag: '1',
                             onPressed: () {
                               final friendList = [...state.friendList];
@@ -66,10 +71,14 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                 hasBottomButton: true,
                                 onTap: () async {
                                   context.read<InfoFelicitupBloc>().add(
-                                        InfoFelicitupEvent.updateFelicitupOwners(felicitup.id),
-                                      );
+                                    InfoFelicitupEvent.updateFelicitupOwners(
+                                      felicitup.id,
+                                    ),
+                                  );
                                   setState(() {});
-                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) {
                                     context.pop();
                                   });
                                 },
@@ -83,20 +92,35 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                           onTap: () {
                                             final owner = OwnerModel(
                                               id: friendList[index].id ?? '',
-                                              name: friendList[index].fullName ?? '',
-                                              date: friendList[index].birthDate ?? DateTime.now(),
-                                              userImg: friendList[index].userImg ?? '',
+                                              name:
+                                                  friendList[index].fullName ??
+                                                  '',
+                                              date:
+                                                  friendList[index].birthDate ??
+                                                  DateTime.now(),
+                                              userImg:
+                                                  friendList[index].userImg ??
+                                                  '',
                                             );
-                                            context
-                                                .read<InfoFelicitupBloc>()
-                                                .add(InfoFelicitupEvent.addToOwnerList(owner));
+                                            context.read<InfoFelicitupBloc>().add(
+                                              InfoFelicitupEvent.addToOwnerList(
+                                                owner,
+                                              ),
+                                            );
                                           },
-                                          child: BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
+                                          child: BlocBuilder<
+                                            InfoFelicitupBloc,
+                                            InfoFelicitupState
+                                          >(
                                             builder: (_, state) {
                                               return ContactCardRow(
                                                 contact: friendList[index],
-                                                isSelected:
-                                                    state.ownersList.any((owner) => owner.id == friendList[index].id),
+                                                isSelected: state.ownersList
+                                                    .any(
+                                                      (owner) =>
+                                                          owner.id ==
+                                                          friendList[index].id,
+                                                    ),
                                               );
                                             },
                                           ),
@@ -108,9 +132,20 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                               );
                             },
                             backgroundColor: context.colors.orange,
-                            child: Icon(
-                              Icons.person_add,
-                              color: context.colors.white,
+                            label: Row(
+                              children: [
+                                Icon(
+                                  Icons.person_add,
+                                  color: context.colors.white,
+                                ),
+                                SizedBox(width: context.sp(6)),
+                                Text(
+                                  'Añadir',
+                                  style: context.styles.smallText.copyWith(
+                                    color: context.colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -121,43 +156,56 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      FloatingActionButton(
+                      FloatingActionButton.extended(
                         heroTag: '2',
                         onPressed: () async {
-                          final DateTime? pickedDate = await showGenericDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime(2100),
-                            helpText: 'Selecciona una fecha',
-                            cancelText: 'Cancelar',
-                            confirmText: 'OK',
-                            locale: const Locale('es', 'ES'),
-                          );
+                          final DateTime? pickedDate =
+                              await showGenericDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime(2100),
+                                helpText: 'Selecciona una fecha',
+                                cancelText: 'Cancelar',
+                                confirmText: 'OK',
+                                locale: const Locale('es', 'ES'),
+                              );
 
                           if (pickedDate == null) return;
 
-                          final TimeOfDay? pickedTime = await showGenericTimePicker(
-                            context: context,
-                            helpText: 'Selecciona una hora',
-                            cancelText: 'Cancelar',
-                            confirmText: 'OK',
-                          );
+                          final TimeOfDay? pickedTime =
+                              await showGenericTimePicker(
+                                context: context,
+                                helpText: 'Selecciona una hora',
+                                cancelText: 'Cancelar',
+                                confirmText: 'OK',
+                              );
 
                           if (pickedTime == null) return;
 
-                          final DateTime? combinedDateTime = combineDateAndTime(pickedDate, pickedTime);
+                          final DateTime? combinedDateTime = combineDateAndTime(
+                            pickedDate,
+                            pickedTime,
+                          );
                           context.read<InfoFelicitupBloc>().add(
-                                InfoFelicitupEvent.updateDateFelicitup(
-                                  felicitup.id,
-                                  combinedDateTime!,
-                                ),
-                              );
+                            InfoFelicitupEvent.updateDateFelicitup(
+                              felicitup.id,
+                              combinedDateTime!,
+                            ),
+                          );
                         },
                         backgroundColor: context.colors.orange,
-                        child: Icon(
-                          Icons.edit,
-                          color: context.colors.white,
+                        label: Row(
+                          children: [
+                            Icon(Icons.edit, color: context.colors.white),
+                            SizedBox(width: context.sp(6)),
+                            Text(
+                              'Editar',
+                              style: context.styles.smallText.copyWith(
+                                color: context.colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -166,20 +214,32 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      FloatingActionButton(
-                        onPressed: () => showConfirmModal(
-                          title: 'Estás seguro de querer enviar la felicitup?',
-                          onAccept: () async {
-                            context.read<InfoFelicitupBloc>().add(
-                                  InfoFelicitupEvent.sendFelicitup(felicitup.id),
+                      FloatingActionButton.extended(
+                        onPressed:
+                            () => showConfirmModal(
+                              title:
+                                  'Estás seguro de querer enviar la felicitup?',
+                              onAccept: () async {
+                                context.read<InfoFelicitupBloc>().add(
+                                  InfoFelicitupEvent.sendFelicitup(
+                                    felicitup.id,
+                                  ),
                                 );
-                            context.go(RouterPaths.felicitupsDashboard);
-                          },
-                        ),
+                                context.go(RouterPaths.felicitupsDashboard);
+                              },
+                            ),
                         backgroundColor: context.colors.orange,
-                        child: Icon(
-                          Icons.send,
-                          color: context.colors.white,
+                        label: Row(
+                          children: [
+                            Icon(Icons.send, color: context.colors.white),
+                            SizedBox(width: context.sp(6)),
+                            Text(
+                              'Enviar',
+                              style: context.styles.smallText.copyWith(
+                                color: context.colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -211,8 +271,13 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
             ),
           ),
           SizedBox(height: context.sp(22)),
-          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
-            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+          BlocBuilder<
+            DetailsFelicitupDashboardBloc,
+            DetailsFelicitupDashboardState
+          >(
+            buildWhen:
+                (previous, current) =>
+                    previous.felicitup!.owner != current.felicitup!.owner,
             builder: (_, state) {
               final thisFelicitup = state.felicitup;
               return DetailsRow(
@@ -232,7 +297,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                   style: context.styles.subtitle,
                                 ),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -255,8 +320,13 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
             },
           ),
           SizedBox(height: context.sp(15)),
-          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
-            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+          BlocBuilder<
+            DetailsFelicitupDashboardBloc,
+            DetailsFelicitupDashboardState
+          >(
+            buildWhen:
+                (previous, current) =>
+                    previous.felicitup!.owner != current.felicitup!.owner,
             builder: (_, state) {
               final felicitup = state.felicitup;
               return DetailsRow(
@@ -272,11 +342,12 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                               felicitup?.invitedUserDetails.length ?? 0,
                               (index) => ListTile(
                                 title: Text(
-                                  felicitup?.invitedUserDetails[index].name ?? '',
+                                  felicitup?.invitedUserDetails[index].name ??
+                                      '',
                                   style: context.styles.subtitle,
                                 ),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -299,8 +370,13 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
             },
           ),
           SizedBox(height: context.sp(15)),
-          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
-            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+          BlocBuilder<
+            DetailsFelicitupDashboardBloc,
+            DetailsFelicitupDashboardState
+          >(
+            buildWhen:
+                (previous, current) =>
+                    previous.felicitup!.owner != current.felicitup!.owner,
             builder: (_, state) {
               final felicitup = state.felicitup;
               return DetailsRow(
@@ -310,22 +386,20 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                     child: Column(
                       children: [
                         ListTile(
-                          title: Text(
-                            'Fecha',
-                            style: context.styles.subtitle,
-                          ),
+                          title: Text('Fecha', style: context.styles.subtitle),
                           subtitle: Text(
-                            DateFormat('dd·MM·yyyy').format(felicitup?.date ?? DateTime.now()),
+                            DateFormat(
+                              'dd·MM·yyyy',
+                            ).format(felicitup?.date ?? DateTime.now()),
                             style: context.styles.smallText,
                           ),
                         ),
                         ListTile(
-                          title: Text(
-                            'Hora',
-                            style: context.styles.subtitle,
-                          ),
+                          title: Text('Hora', style: context.styles.subtitle),
                           subtitle: Text(
-                            DateFormat('HH:ss').format(felicitup?.date ?? DateTime.now()),
+                            DateFormat(
+                              'HH:ss',
+                            ).format(felicitup?.date ?? DateTime.now()),
                             style: context.styles.smallText,
                           ),
                         ),
@@ -364,8 +438,13 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
               ),
             ),
           ),
-          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
-            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+          BlocBuilder<
+            DetailsFelicitupDashboardBloc,
+            DetailsFelicitupDashboardState
+          >(
+            buildWhen:
+                (previous, current) =>
+                    previous.felicitup!.owner != current.felicitup!.owner,
             builder: (_, state) {
               final felicitup = state.felicitup;
               return Visibility(
@@ -398,8 +477,13 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
               );
             },
           ),
-          BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
-            buildWhen: (previous, current) => previous.felicitup!.owner != current.felicitup!.owner,
+          BlocBuilder<
+            DetailsFelicitupDashboardBloc,
+            DetailsFelicitupDashboardState
+          >(
+            buildWhen:
+                (previous, current) =>
+                    previous.felicitup!.owner != current.felicitup!.owner,
             builder: (_, state) {
               final felicitup = state.felicitup;
               return Visibility(

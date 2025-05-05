@@ -186,7 +186,7 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
           floatingActionButton: Padding(
-            padding: EdgeInsets.symmetric(horizontal: context.sp(90)),
+            padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
             child:
                 felicitup!.createdBy != currentUser!.id &&
                         felicitup.invitedUserDetails
@@ -199,7 +199,7 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                       ),
                             )
                             .isNotEmpty
-                    ? FloatingActionButton(
+                    ? FloatingActionButton.extended(
                       onPressed: () {
                         context.go(
                           RouterPaths.payment,
@@ -207,7 +207,18 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                         );
                       },
                       backgroundColor: context.colors.orange,
-                      child: Icon(Icons.check, color: context.colors.white),
+                      label: Row(
+                        children: [
+                          Icon(Icons.check, color: context.colors.white),
+                          SizedBox(width: context.sp(6)),
+                          Text(
+                            'Pagar bote',
+                            style: context.styles.smallText.copyWith(
+                              color: context.colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     )
                     : null,
           ),

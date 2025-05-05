@@ -73,98 +73,144 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
               floatingActionButtonLocation:
                   FloatingActionButtonLocation.centerFloat,
               floatingActionButton: Padding(
-                padding: EdgeInsets.symmetric(horizontal: context.sp(90)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    if (felicitup!.createdBy == currentUser!.id)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          FloatingActionButton(
-                            heroTag: '3',
-                            onPressed:
-                                () => showConfirmModal(
-                                  title:
-                                      'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
-                                  onAccept: () async {
-                                    final listVideos =
-                                        felicitup.invitedUserDetails
-                                            .map((e) => e.videoData?.videoUrl)
-                                            .where(
-                                              (url) =>
-                                                  url != null && url.isNotEmpty,
-                                            )
-                                            .cast<String>()
-                                            .toList();
-
-                                    if (context.mounted) {
-                                      context.read<VideoFelicitupBloc>().add(
-                                        VideoFelicitupEvent.mergeVideos(
-                                          felicitup.id,
-                                          listVideos,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-                            backgroundColor: context.colors.orange,
-                            child: Icon(
-                              Icons.cameraswitch_rounded,
-                              color: context.colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        FloatingActionButton(
-                          heroTag: '4',
-                          onPressed:
-                              felicitup.finalVideoUrl != null &&
-                                      felicitup.finalVideoUrl!.isNotEmpty
-                                  ? () {
-                                    context.go(
-                                      RouterPaths.videoEditor,
-                                      extra: {
-                                        'felicitupId': felicitup.id,
-                                        'videoUrl':
-                                            felicitup.finalVideoUrl ?? '',
+                        if (felicitup!.createdBy == currentUser!.id)
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              FloatingActionButton.extended(
+                                heroTag: '3',
+                                onPressed:
+                                    () => showConfirmModal(
+                                      title:
+                                          'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
+                                      onAccept: () async {
+                                        final listVideos =
+                                            felicitup.invitedUserDetails
+                                                .map(
+                                                  (e) => e.videoData?.videoUrl,
+                                                )
+                                                .where(
+                                                  (url) =>
+                                                      url != null &&
+                                                      url.isNotEmpty,
+                                                )
+                                                .cast<String>()
+                                                .toList();
+
+                                        if (context.mounted) {
+                                          context
+                                              .read<VideoFelicitupBloc>()
+                                              .add(
+                                                VideoFelicitupEvent.mergeVideos(
+                                                  felicitup.id,
+                                                  listVideos,
+                                                ),
+                                              );
+                                        }
                                       },
-                                    );
-                                  }
-                                  : null,
-                          backgroundColor:
-                              felicitup.finalVideoUrl != null &&
-                                      felicitup.finalVideoUrl!.isNotEmpty
-                                  ? context.colors.orange
-                                  : context.colors.grey,
-                          child: Icon(
-                            Icons.play_arrow,
-                            color: context.colors.white,
+                                    ),
+                                backgroundColor: context.colors.orange,
+                                label: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.cameraswitch_rounded,
+                                      color: context.colors.white,
+                                    ),
+                                    SizedBox(width: context.sp(6)),
+                                    Text(
+                                      'Mix',
+                                      style: context.styles.smallText.copyWith(
+                                        color: context.colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            FloatingActionButton.extended(
+                              heroTag: '4',
+                              onPressed:
+                                  felicitup.finalVideoUrl != null &&
+                                          felicitup.finalVideoUrl!.isNotEmpty
+                                      ? () {
+                                        context.go(
+                                          RouterPaths.videoEditor,
+                                          extra: {
+                                            'felicitupId': felicitup.id,
+                                            'videoUrl':
+                                                felicitup.finalVideoUrl ?? '',
+                                          },
+                                        );
+                                      }
+                                      : null,
+                              backgroundColor:
+                                  felicitup.finalVideoUrl != null &&
+                                          felicitup.finalVideoUrl!.isNotEmpty
+                                      ? context.colors.orange
+                                      : context.colors.grey,
+                              label: Row(
+                                children: [
+                                  Icon(
+                                    Icons.play_arrow,
+                                    color: context.colors.white,
+                                  ),
+                                  SizedBox(width: context.sp(6)),
+                                  Text(
+                                    'Ver video',
+                                    style: context.styles.smallText.copyWith(
+                                      color: context.colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    // if (felicitup.createdBy != currentUser.id)
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        FloatingActionButton(
-                          heroTag: '9',
-                          onPressed:
-                              () => context.go(
-                                RouterPaths.videoEditor,
-                                extra: {
-                                  'felicitupId': felicitup.id,
-                                  'videoUrl': '',
-                                },
-                              ),
-                          backgroundColor: context.colors.orange,
-                          child: Icon(Icons.add, color: context.colors.white),
+                    SizedBox(height: context.sp(12)),
+                    FloatingActionButton.extended(
+                      heroTag: '9',
+                      onPressed:
+                          () => context.go(
+                            RouterPaths.videoEditor,
+                            extra: {
+                              'felicitupId': felicitup.id,
+                              'videoUrl': '',
+                            },
+                          ),
+                      backgroundColor: context.colors.orange,
+                      label: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: context.sp(60),
                         ),
-                      ],
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.videocam_rounded,
+                              color: context.colors.white,
+                            ),
+                            SizedBox(width: context.sp(6)),
+                            Text(
+                              'Grabar video',
+                              style: context.styles.smallText.copyWith(
+                                color: context.colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),

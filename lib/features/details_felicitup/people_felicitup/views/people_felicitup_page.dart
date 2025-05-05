@@ -22,16 +22,22 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
   @override
   void initState() {
     super.initState();
-    detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
-          DetailsFelicitupDashboardEvent.changeCurrentIndex(2),
-        );
-    final felicitup = context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-    context.read<PeopleFelicitupBloc>().add(PeopleFelicitupEvent.startListening(felicitup?.id ?? ''));
+    detailsFelicitupNavigatorKey.currentContext!
+        .read<DetailsFelicitupDashboardBloc>()
+        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(2));
+    final felicitup =
+        context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+    context.read<PeopleFelicitupBloc>().add(
+      PeopleFelicitupEvent.startListening(felicitup?.id ?? ''),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+    return BlocBuilder<
+      DetailsFelicitupDashboardBloc,
+      DetailsFelicitupDashboardState
+    >(
       buildWhen: (previous, current) => previous.felicitup != current.felicitup,
       builder: (_, state) {
         final felicitup = state.felicitup;
@@ -39,7 +45,8 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
 
         return Scaffold(
           backgroundColor: context.colors.background,
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
           floatingActionButton: Padding(
             padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
             child: Row(
@@ -50,7 +57,10 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       BlocBuilder<PeopleFelicitupBloc, PeopleFelicitupState>(
-                        buildWhen: (previous, current) => previous.invitedContacts != current.invitedContacts,
+                        buildWhen:
+                            (previous, current) =>
+                                previous.invitedContacts !=
+                                current.invitedContacts,
                         builder: (_, state) {
                           final friendList = [...state.friendList];
                           friendList.removeWhere(
@@ -63,17 +73,22 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                               (invitedUser) => invitedUser == friend.id,
                             ),
                           );
-                          isSelected = List.generate(friendList.length, (index) => false);
+                          isSelected = List.generate(
+                            friendList.length,
+                            (index) => false,
+                          );
 
-                          return FloatingActionButton(
+                          return FloatingActionButton.extended(
                             onPressed: () {
                               commoBottomModal(
                                 context: rootNavigatorKey.currentContext!,
                                 hasBottomButton: true,
                                 onTap: () {
-                                  context
-                                      .read<PeopleFelicitupBloc>()
-                                      .add(PeopleFelicitupEvent.updateParticipantsList(felicitup.id));
+                                  context.read<PeopleFelicitupBloc>().add(
+                                    PeopleFelicitupEvent.updateParticipantsList(
+                                      felicitup.id,
+                                    ),
+                                  );
                                   context.pop();
                                 },
                                 body: BlocProvider.value(
@@ -84,30 +99,49 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                         friendList.length,
                                         (index) => GestureDetector(
                                           onTap: () {
-                                            isSelected[index] = !isSelected[index];
+                                            isSelected[index] =
+                                                !isSelected[index];
                                             final participant = InvitedModel(
                                               id: friendList[index].id ?? '',
-                                              name: friendList[index].fullName ?? '',
-                                              userImage: friendList[index].userImg ?? '',
-                                              assistanceStatus: enumToStringAssistance(AssistanceStatus.pending),
-                                              paid: enumToStringPayment(PaymentStatus.pending),
+                                              name:
+                                                  friendList[index].fullName ??
+                                                  '',
+                                              userImage:
+                                                  friendList[index].userImg ??
+                                                  '',
+                                              assistanceStatus:
+                                                  enumToStringAssistance(
+                                                    AssistanceStatus.pending,
+                                                  ),
+                                              paid: enumToStringPayment(
+                                                PaymentStatus.pending,
+                                              ),
                                               videoData: VideoDataModel(
                                                 videoUrl: '',
                                                 videoThumbnail: '',
                                               ),
                                               idInformation: '',
                                             );
-                                            context
-                                                .read<PeopleFelicitupBloc>()
-                                                .add(PeopleFelicitupEvent.addParticipant(participant));
+                                            context.read<PeopleFelicitupBloc>().add(
+                                              PeopleFelicitupEvent.addParticipant(
+                                                participant,
+                                              ),
+                                            );
                                           },
-                                          child: BlocBuilder<PeopleFelicitupBloc, PeopleFelicitupState>(
+                                          child: BlocBuilder<
+                                            PeopleFelicitupBloc,
+                                            PeopleFelicitupState
+                                          >(
                                             builder: (_, state) {
                                               return ContactCardRow(
                                                 contact: friendList[index],
-                                                isSelected: state.invitedContacts.any(
-                                                  (user) => user.id == friendList[index].id,
-                                                ),
+                                                isSelected: state
+                                                    .invitedContacts
+                                                    .any(
+                                                      (user) =>
+                                                          user.id ==
+                                                          friendList[index].id,
+                                                    ),
                                               );
                                             },
                                           ),
@@ -119,9 +153,20 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                               );
                             },
                             backgroundColor: context.colors.orange,
-                            child: Icon(
-                              Icons.person_add,
-                              color: context.colors.white,
+                            label: Row(
+                              children: [
+                                Icon(
+                                  Icons.person_add,
+                                  color: context.colors.white,
+                                ),
+                                SizedBox(width: context.sp(6)),
+                                Text(
+                                  'Agregar',
+                                  style: context.styles.smallText.copyWith(
+                                    color: context.colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -162,52 +207,66 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            if (invitedUsers?[index].id == currentUser.id && felicitup.createdBy != currentUser.id) {
+                            if (invitedUsers?[index].id == currentUser.id &&
+                                felicitup.createdBy != currentUser.id) {
                               showConfirDoublemModal(
                                 title: 'Participarás en la felicitup?',
                                 label1: 'Confirmar',
                                 isDestructive: true,
-                                onAction1: invitedUsers?[index].assistanceStatus ==
-                                        enumToStringAssistance(AssistanceStatus.accepted)
-                                    ? () async {
-                                        context.pop();
-                                      }
-                                    : () async => context.read<PeopleFelicitupBloc>().add(
-                                          PeopleFelicitupEvent.informParticipation(
-                                            felicitupId: felicitup.id,
-                                            felicitupOwnerId: felicitup.createdBy,
-                                            newStatus: enumToStringAssistance(AssistanceStatus.accepted),
-                                            name: currentUser.firstName ?? '',
-                                          ),
-                                        ),
+                                onAction1:
+                                    invitedUsers?[index].assistanceStatus ==
+                                            enumToStringAssistance(
+                                              AssistanceStatus.accepted,
+                                            )
+                                        ? () async {
+                                          context.pop();
+                                        }
+                                        : () async => context
+                                            .read<PeopleFelicitupBloc>()
+                                            .add(
+                                              PeopleFelicitupEvent.informParticipation(
+                                                felicitupId: felicitup.id,
+                                                felicitupOwnerId:
+                                                    felicitup.createdBy,
+                                                newStatus:
+                                                    enumToStringAssistance(
+                                                      AssistanceStatus.accepted,
+                                                    ),
+                                                name:
+                                                    currentUser.firstName ?? '',
+                                              ),
+                                            ),
                                 label2: 'Denegar',
                                 onAction2: () async {
                                   context.read<PeopleFelicitupBloc>().add(
-                                        PeopleFelicitupEvent.informParticipation(
-                                          felicitupId: felicitup.id,
-                                          felicitupOwnerId: felicitup.createdBy,
-                                          newStatus: enumToStringAssistance(AssistanceStatus.rejected),
-                                          name: currentUser.firstName ?? '',
-                                        ),
-                                      );
+                                    PeopleFelicitupEvent.informParticipation(
+                                      felicitupId: felicitup.id,
+                                      felicitupOwnerId: felicitup.createdBy,
+                                      newStatus: enumToStringAssistance(
+                                        AssistanceStatus.rejected,
+                                      ),
+                                      name: currentUser.firstName ?? '',
+                                    ),
+                                  );
                                   context.go(RouterPaths.felicitupsDashboard);
                                 },
                               );
                             }
                           },
                           onLongPress: () {
-                            if (felicitup.createdBy == currentUser.id && invitedUsers?[index].id != currentUser.id) {
+                            if (felicitup.createdBy == currentUser.id &&
+                                invitedUsers?[index].id != currentUser.id) {
                               showConfirDoublemModal(
                                 title: 'Eliminar participante?',
                                 label1: 'Eliminar',
                                 isDestructive: true,
                                 onAction1: () async {
                                   context.read<PeopleFelicitupBloc>().add(
-                                        PeopleFelicitupEvent.deleteParticipant(
-                                          felicitup.id,
-                                          invitedUsers?[index].id ?? '',
-                                        ),
-                                      );
+                                    PeopleFelicitupEvent.deleteParticipant(
+                                      felicitup.id,
+                                      invitedUsers?[index].id ?? '',
+                                    ),
+                                  );
                                   // context.pop();
                                 },
                                 label2: 'Cancelar',
@@ -229,7 +288,9 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                     color: context.colors.lightGrey,
                                   ),
                                   child: Text(
-                                    invitedUsers?[index].name![0].toUpperCase() ?? '',
+                                    invitedUsers?[index].name![0]
+                                            .toUpperCase() ??
+                                        '',
                                     style: context.styles.subtitle,
                                   ),
                                 ),
@@ -237,10 +298,13 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                 Text(
                                   invitedUsers?[index].name ?? '',
                                   style: context.styles.smallText.copyWith(
-                                    color: invitedUsers?[index].assistanceStatus ==
-                                            enumToStringAssistance(AssistanceStatus.pending)
-                                        ? context.colors.text
-                                        : context.colors.primary,
+                                    color:
+                                        invitedUsers?[index].assistanceStatus ==
+                                                enumToStringAssistance(
+                                                  AssistanceStatus.pending,
+                                                )
+                                            ? context.colors.text
+                                            : context.colors.primary,
                                   ),
                                 ),
                               ],
@@ -249,17 +313,23 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                               padding: EdgeInsets.all(context.sp(5)),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: invitedUsers?[index].assistanceStatus ==
-                                        enumToStringAssistance(AssistanceStatus.accepted)
-                                    ? context.colors.softOrange
-                                    : context.colors.otherGrey,
+                                color:
+                                    invitedUsers?[index].assistanceStatus ==
+                                            enumToStringAssistance(
+                                              AssistanceStatus.accepted,
+                                            )
+                                        ? context.colors.softOrange
+                                        : context.colors.otherGrey,
                               ),
                               child: Icon(
                                 Icons.check,
-                                color: invitedUsers?[index].assistanceStatus ==
-                                        enumToStringAssistance(AssistanceStatus.accepted)
-                                    ? Colors.white
-                                    : context.colors.otherGrey,
+                                color:
+                                    invitedUsers?[index].assistanceStatus ==
+                                            enumToStringAssistance(
+                                              AssistanceStatus.accepted,
+                                            )
+                                        ? Colors.white
+                                        : context.colors.otherGrey,
                                 size: 11,
                               ),
                             ),
