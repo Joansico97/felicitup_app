@@ -31,7 +31,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         changeLoading: (_) => _changeLoading(emit),
         loadUserData: (_) => _loadUserData(emit),
         updateMatchList: (event) => _updateMatchList(event.phoneList),
-        checkVerifyStatus: (_) => _checkVerifyStatus(emit),
         initializeNotifications: (_) => _initializeNotifications(emit),
         requestManualPermissions: (_) => _requestManualPermissions(emit),
         deleterPermissions: (_) => _deleterPermissions(emit),
@@ -150,33 +149,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       }
     } catch (e) {
       logger.error(e);
-    }
-  }
-
-  _checkVerifyStatus(Emitter<AppState> emit) async {
-    logger.info('El provider del usuario es: ${state.currentUser?.provider}');
-    if (state.currentUser?.provider == 'email' ||
-        state.currentUser?.provider == null) {
-      final response = await _userRepository.checkVerifyStatus();
-      return response.fold(
-        (error) {
-          logger.error(error);
-          emit(state.copyWith(isLoading: false));
-        },
-        (data) async {
-          logger.info('Verify status loaded: ${data.toString()}');
-          if (data) {
-            emit(state.copyWith(isLoading: false, isVerified: data));
-            return;
-          } else {
-            await _userRepository.sendVerifyEmail();
-            emit(state.copyWith(isLoading: false, isVerified: data));
-          }
-        },
-      );
-    } else {
-      emit(state.copyWith(isLoading: false, isVerified: true));
-      return;
     }
   }
 

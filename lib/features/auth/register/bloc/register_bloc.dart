@@ -15,11 +15,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     required AuthRepository authRepository,
     required UserRepository userRepository,
     required FirebaseFirestore firestore,
-    required FirebaseAuth firebaseAuth,
   }) : _authRepository = authRepository,
        _userRepository = userRepository,
        _firestore = firestore,
-       _firebaseAuth = firebaseAuth,
        super(RegisterState.initial()) {
     on<RegisterEvent>(
       (events, emit) => events.map(
@@ -51,7 +49,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _firebaseAuth;
 
   _changeLoading(Emitter<RegisterState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
@@ -261,7 +258,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           );
         },
         (r) async {
-          await r.user!.sendEmailVerification();
           add(RegisterEvent.setUserInfo(r));
           emit(
             state.copyWith(isLoading: false, status: RegisterStatus.success),
@@ -276,13 +272,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           errorMessage: e.toString(),
         ),
       );
-    }
-  }
-
-  Future<void> resendVerificationEmail() async {
-    User? user = _firebaseAuth.currentUser;
-    if (user != null && !user.emailVerified) {
-      await user.sendEmailVerification();
     }
   }
 

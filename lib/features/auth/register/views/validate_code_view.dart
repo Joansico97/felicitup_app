@@ -29,10 +29,14 @@ class _ValidateCodeViewState extends State<ValidateCodeView> {
           SizedBox(height: context.sp(36)),
           Text('Código de verificación', style: context.styles.header2),
           SizedBox(height: context.sp(24)),
-          Text(
-            'Introduce el código de verificación que te hemos enviado por sms.',
-            textAlign: TextAlign.center,
-            style: context.styles.paragraph,
+          BlocBuilder<RegisterBloc, RegisterState>(
+            builder: (_, state) {
+              return Text(
+                'Introduce el código de verificación que te hemos enviado por sms al número ${state.isoCode}${state.phone}.',
+                textAlign: TextAlign.center,
+                style: context.styles.paragraph,
+              );
+            },
           ),
           SizedBox(height: context.sp(36)),
           PinCodeTextField(
