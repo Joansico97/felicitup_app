@@ -62,6 +62,24 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+	<dict>
+		<key>CFBundleTypeRole</key>
+		<string>Editor</string>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>com.googleusercontent.apps.846523746579-5uln1n8dn639dbt6h9hs6uide5mmrogr</string>
+		</array>
+	</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+	<string>googlechrome</string>
+	<string>comgooglemaps</string>
+	<string>comgooglemaps-x-callback</string>
+	<string>firebase</string>
+	</array>
 </dict>
 
 </plist>
