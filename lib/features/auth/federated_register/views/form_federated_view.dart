@@ -1,3 +1,4 @@
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/buttons/primary_button.dart';
@@ -27,21 +28,24 @@ class _FormFederatedViewState extends State<FormFederatedView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final data = context.read<AppBloc>().state.federatedData;
+    firstNameController.text = data?['firstName'] ?? '';
+    lastNameController.text = data?['lastName'] ?? '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Column(
         children: [
-          Image.asset(
-            Assets.images.logo.path,
-            height: context.sp(60),
-          ),
+          Image.asset(Assets.images.logo.path, height: context.sp(60)),
           SizedBox(height: context.sp(12)),
-          Image.asset(
-            Assets.images.logoLetter.path,
-            height: context.sp(62),
-          ),
+          Image.asset(Assets.images.logoLetter.path, height: context.sp(62)),
           SizedBox(height: context.sp(12)),
           Form(
             key: _formKey,
@@ -49,7 +53,7 @@ class _FormFederatedViewState extends State<FormFederatedView> {
               children: [
                 CustomTextFormField(
                   controller: firstNameController,
-                  hintText: 'Nombres',
+                  hintText: 'Nombre',
                 ),
                 SizedBox(height: context.sp(6)),
                 CustomTextFormField(
@@ -62,9 +66,13 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                     FocusScope.of(context).unfocus();
                     final DateTime? pickedDate = await showGenericDatePicker(
                       context: context,
-                      initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+                      initialDate: DateTime.now().subtract(
+                        const Duration(days: 365 * 18),
+                      ),
                       firstDate: DateTime(1939),
-                      lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+                      lastDate: DateTime.now().subtract(
+                        const Duration(days: 365 * 18),
+                      ),
                       helpText: 'Selecciona una fecha',
                       cancelText: 'Cancelar',
                       confirmText: 'OK',
@@ -79,9 +87,7 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                   },
                   child: Container(
                     height: context.sp(45),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: context.sp(12),
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
@@ -94,15 +100,20 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          birthDate == null ? 'Fecha Nacimiento' : DateFormat('dd/MM/yyyy').format(birthDate!),
+                          birthDate == null
+                              ? 'Fecha Nacimiento'
+                              : DateFormat('dd/MM/yyyy').format(birthDate!),
                           style: context.styles.paragraph.copyWith(
-                            color: birthDate == null ? context.colors.darkGrey : context.colors.black,
+                            color:
+                                birthDate == null
+                                    ? context.colors.darkGrey
+                                    : context.colors.black,
                           ),
                         ),
                         Icon(
                           Icons.calendar_month_rounded,
                           color: context.colors.orange,
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -110,10 +121,7 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                 SizedBox(height: context.sp(24)),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Género',
-                    style: context.styles.paragraph,
-                  ),
+                  child: Text('Género', style: context.styles.paragraph),
                 ),
                 SizedBox(height: context.sp(12)),
                 Row(
@@ -122,29 +130,32 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                     GenreCheckBox(
                       label: 'Masculino',
                       boolValue: masculine,
-                      onChanged: (value) => setState(() {
-                        masculine = value!;
-                        feminine = false;
-                        other = false;
-                      }),
+                      onChanged:
+                          (value) => setState(() {
+                            masculine = value!;
+                            feminine = false;
+                            other = false;
+                          }),
                     ),
                     GenreCheckBox(
                       label: 'Femenino',
                       boolValue: feminine,
-                      onChanged: (value) => setState(() {
-                        feminine = value!;
-                        masculine = false;
-                        other = false;
-                      }),
+                      onChanged:
+                          (value) => setState(() {
+                            feminine = value!;
+                            masculine = false;
+                            other = false;
+                          }),
                     ),
                     GenreCheckBox(
                       label: 'Otro',
                       boolValue: other,
-                      onChanged: (value) => setState(() {
-                        other = value!;
-                        feminine = false;
-                        masculine = false;
-                      }),
+                      onChanged:
+                          (value) => setState(() {
+                            other = value!;
+                            feminine = false;
+                            masculine = false;
+                          }),
                     ),
                   ],
                 ),
@@ -160,30 +171,29 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                         style: context.styles.smallText.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            context.push(
-                              RouterPaths.termsPolicies,
-                              extra: true,
-                            );
-                          },
+                        recognizer:
+                            TapGestureRecognizer()
+                              ..onTap = () {
+                                context.push(
+                                  RouterPaths.termsPolicies,
+                                  extra: true,
+                                );
+                              },
                       ),
-                      TextSpan(
-                        text: 'y la ',
-                        style: context.styles.smallText,
-                      ),
+                      TextSpan(text: 'y la ', style: context.styles.smallText),
                       TextSpan(
                         text: 'Política de Privacidad ',
                         style: context.styles.smallText.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            context.push(
-                              RouterPaths.termsPolicies,
-                              extra: false,
-                            );
-                          },
+                        recognizer:
+                            TapGestureRecognizer()
+                              ..onTap = () {
+                                context.push(
+                                  RouterPaths.termsPolicies,
+                                  extra: false,
+                                );
+                              },
                       ),
                     ],
                   ),
@@ -199,17 +209,17 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                           birthDate != null &&
                           (masculine || feminine || other)) {
                         context.read<FederatedRegisterBloc>().add(
-                              FederatedRegisterEvent.initRegister(
-                                firstNameController.text.trim().capitalize(),
-                                lastNameController.text.trim().capitalize(),
-                                masculine
-                                    ? "Masculino"
-                                    : feminine
-                                        ? "Feminino"
-                                        : "Otro",
-                                birthDate!,
-                              ),
-                            );
+                          FederatedRegisterEvent.initRegister(
+                            firstNameController.text.trim().capitalize(),
+                            lastNameController.text.trim().capitalize(),
+                            masculine
+                                ? "Masculino"
+                                : feminine
+                                ? "Feminino"
+                                : "Otro",
+                            birthDate!,
+                          ),
+                        );
                       }
                     },
                     label: 'Continuar',

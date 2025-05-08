@@ -324,6 +324,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
               state.copyWith(
                 isLoading: false,
                 status: RegisterStatus.federated,
+                federatedUser: {
+                  'firstName': user?.displayName?.split(' ')[0] ?? '',
+                  'lastName': user?.displayName?.split(' ')[1] ?? '',
+                },
               ),
             );
           }
@@ -382,6 +386,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
               state.copyWith(
                 isLoading: false,
                 status: RegisterStatus.federated,
+                federatedUser: {
+                  'firstName': user?.displayName?.split(' ')[0] ?? '',
+                  'lastName': user?.displayName?.split(' ')[1] ?? '',
+                },
               ),
             );
           }

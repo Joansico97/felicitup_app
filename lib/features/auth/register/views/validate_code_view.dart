@@ -32,7 +32,7 @@ class _ValidateCodeViewState extends State<ValidateCodeView> {
           BlocBuilder<RegisterBloc, RegisterState>(
             builder: (_, state) {
               return Text(
-                'Introduce el código de verificación que te hemos enviado por sms al número ${state.isoCode}${state.phone}.',
+                'Introduce el código de verificación que te hemos enviado por sms al número ${state.phone}.',
                 textAlign: TextAlign.center,
                 style: context.styles.paragraph,
               );

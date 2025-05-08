@@ -7,6 +7,7 @@ class AppState with _$AppState {
     required AuthorizationStatus status,
     bool? isVerified,
     UserModel? currentUser,
+    Map<String, dynamic>? federatedData,
     List<PushMessageModel>? notifications,
   }) = _AppState;
 

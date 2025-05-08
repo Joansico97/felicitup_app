@@ -29,6 +29,7 @@ class RegisterState with _$RegisterState {
     String? verificationId,
     DateTime? birthDate,
     UserModel? user,
+    Map<String, String>? federatedUser,
   }) = _RegisterState;
 
   factory RegisterState.initial() => RegisterState(

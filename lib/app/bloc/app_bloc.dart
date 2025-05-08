@@ -30,6 +30,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       (event, emit) => event.map(
         changeLoading: (_) => _changeLoading(emit),
         loadUserData: (_) => _loadUserData(emit),
+        loadProvUserData:
+            (event) => _loadProvUserData(emit, event.federatedData),
         updateMatchList: (event) => _updateMatchList(event.phoneList),
         initializeNotifications: (_) => _initializeNotifications(emit),
         requestManualPermissions: (_) => _requestManualPermissions(emit),
@@ -73,6 +75,13 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       logger.error(e);
       emit(state.copyWith(isLoading: false));
     }
+  }
+
+  _loadProvUserData(
+    Emitter<AppState> emit,
+    Map<String, dynamic> federatedData,
+  ) {
+    emit(state.copyWith(federatedData: federatedData));
   }
 
   _updateMatchList(List<String> phonesList) async {

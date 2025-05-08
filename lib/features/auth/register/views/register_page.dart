@@ -36,7 +36,12 @@ class RegisterPage extends StatelessWidget {
         }
 
         if (state.status == RegisterStatus.federated) {
-          context.go(RouterPaths.federatedRegister);
+          if (context.mounted) {
+            context.read<AppBloc>().add(
+              AppEvent.loadProvUserData(state.federatedUser!),
+            );
+            context.go(RouterPaths.federatedRegister);
+          }
         }
 
         if (state.status == RegisterStatus.federatedFinished) {
