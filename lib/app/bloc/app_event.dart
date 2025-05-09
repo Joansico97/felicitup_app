@@ -15,4 +15,9 @@ class AppEvent with _$AppEvent {
       _handleRemoteMessage;
   const factory AppEvent.getFCMToken() = _getFCMToken;
   const factory AppEvent.logout() = _logout;
+  const factory AppEvent.startGlobalTimer({required Duration duration}) =
+      _appEventStartGlobalTimer;
+  const factory AppEvent.stopGlobalTimer() =
+      _appEventStopGlobalTimer; // Opcional
+  const factory AppEvent.globalTimerTick() = _appEventGlobalTimerTick;
 }

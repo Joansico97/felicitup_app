@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -39,6 +40,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         handleRemoteMessage:
             (event) => handleRemoteMessage(event.message, emit),
         getFCMToken: (_) => _getFCMToken(),
+        startGlobalTimer:
+            (event) => _appEventStartGlobalTimer(emit, event.duration),
+        stopGlobalTimer: (_) => _stopGlobalTimer(emit),
+        globalTimerTick: (_) => _globalTimerTick(emit),
         logout: (_) => _logout(emit),
       ),
     );
@@ -48,6 +53,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   final AuthRepository _authRepository;
   final FirebaseAuth _firebaseAuth;
   final FirebaseMessaging _firebaseMessaging;
+  Timer? _globalTimer;
 
   _changeLoading(Emitter<AppState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
@@ -82,6 +88,48 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     Map<String, dynamic> federatedData,
   ) {
     emit(state.copyWith(federatedData: federatedData));
+  }
+
+  _appEventStartGlobalTimer(Emitter<AppState> emit, Duration duration) {
+    emit(
+      state.copyWith(
+        isGlobalTimerActive: true,
+        globalTimerRemaining: duration,
+        globalTimerInitialDuration: duration,
+      ),
+    );
+    _globalTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      // Agrega un evento interno para cada tick
+      add(const AppEvent.globalTimerTick());
+    });
+  }
+
+  _stopGlobalTimer(Emitter<AppState> emit) {
+    _globalTimer?.cancel();
+    emit(
+      state.copyWith(
+        isGlobalTimerActive: false,
+        globalTimerRemaining: null,
+        globalTimerInitialDuration: null,
+      ),
+    );
+  }
+
+  _globalTimerTick(Emitter<AppState> emit) {
+    if (state.globalTimerRemaining != null &&
+        state.globalTimerRemaining! > Duration.zero) {
+      final newRemainingTime =
+          state.globalTimerRemaining! - const Duration(seconds: 1);
+      emit(state.copyWith(globalTimerRemaining: newRemainingTime));
+    } else {
+      _globalTimer?.cancel();
+      emit(
+        state.copyWith(
+          isGlobalTimerActive: false,
+          globalTimerRemaining: Duration.zero,
+        ),
+      );
+    }
   }
 
   _updateMatchList(List<String> phonesList) async {
@@ -143,7 +191,16 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       await _userRepository.asignCurrentChatId('');
       await _authRepository.logout();
-      emit(state.copyWith(isLoading: false, currentUser: null));
+      _globalTimer?.cancel();
+      emit(
+        state.copyWith(
+          isLoading: false,
+          currentUser: null,
+          isGlobalTimerActive: false,
+          globalTimerRemaining: null,
+          globalTimerInitialDuration: null,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }

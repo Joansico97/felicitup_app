@@ -18,8 +18,12 @@ class VideoFelicitupPage extends StatefulWidget {
 }
 
 class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
-  final Map<String, DateTime> _lastMergeTimes = {};
-  final int _mergeCooldownMinutes = 5;
+  void _startTimer(BuildContext context) {
+    // Inicia el temporizador con una duración, por ejemplo, 60 segundos
+    context.read<AppBloc>().add(
+      const AppEvent.startGlobalTimer(duration: Duration(seconds: 180)),
+    );
+  }
 
   @override
   void initState() {
@@ -32,29 +36,6 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
     context.read<VideoFelicitupBloc>().add(
       VideoFelicitupEvent.startListening(felicitup?.id ?? ''),
     );
-  }
-
-  bool _canMergeVideo(String felicitupId) {
-    final lastMergeTime = _lastMergeTimes[felicitupId];
-    if (lastMergeTime == null) return true;
-
-    final cooldownEnd = lastMergeTime.add(
-      Duration(minutes: _mergeCooldownMinutes),
-    );
-    return DateTime.now().isAfter(cooldownEnd);
-  }
-
-  String _getTimeRemaining(String felicitupId) {
-    final lastMergeTime = _lastMergeTimes[felicitupId];
-    if (lastMergeTime == null) return '';
-
-    final cooldownEnd = lastMergeTime.add(
-      Duration(minutes: _mergeCooldownMinutes),
-    );
-    final remaining = cooldownEnd.difference(DateTime.now());
-
-    if (remaining.isNegative) return '';
-    return ' (${remaining.inMinutes}m ${remaining.inSeconds.remainder(60)}s restantes)';
   }
 
   @override
@@ -99,7 +80,7 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
               floatingActionButtonLocation:
                   FloatingActionButtonLocation.centerFloat,
               floatingActionButton: Padding(
-                padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
+                padding: EdgeInsets.symmetric(horizontal: context.sp(30)),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -110,65 +91,73 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              FloatingActionButton.extended(
-                                heroTag: '3',
-                                onPressed:
-                                    _canMergeVideo(felicitup.id)
-                                        ? () => showConfirmModal(
-                                          title:
-                                              'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
-                                          onAccept: () async {
-                                            final listVideos =
-                                                felicitup.invitedUserDetails
-                                                    .map(
-                                                      (e) =>
-                                                          e.videoData?.videoUrl,
-                                                    )
-                                                    .where(
-                                                      (url) =>
-                                                          url != null &&
-                                                          url.isNotEmpty,
-                                                    )
-                                                    .cast<String>()
-                                                    .toList();
+                              BlocBuilder<AppBloc, AppState>(
+                                builder: (_, state) {
+                                  return FloatingActionButton.extended(
+                                    heroTag: '3',
+                                    onPressed:
+                                        !state.isGlobalTimerActive
+                                            ? () => showConfirmModal(
+                                              title:
+                                                  'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
+                                              onAccept: () async {
+                                                final listVideos =
+                                                    felicitup.invitedUserDetails
+                                                        .map(
+                                                          (e) =>
+                                                              e
+                                                                  .videoData
+                                                                  ?.videoUrl,
+                                                        )
+                                                        .where(
+                                                          (url) =>
+                                                              url != null &&
+                                                              url.isNotEmpty,
+                                                        )
+                                                        .cast<String>()
+                                                        .toList();
 
-                                            if (context.mounted) {
-                                              // Registrar el tiempo del merge
-                                              _lastMergeTimes[felicitup.id] =
-                                                  DateTime.now();
-                                              setState(() {}); // Actualizar UI
+                                                if (context.mounted) {
+                                                  _startTimer(context);
 
-                                              context
-                                                  .read<VideoFelicitupBloc>()
-                                                  .add(
-                                                    VideoFelicitupEvent.mergeVideos(
-                                                      felicitup.id,
-                                                      listVideos,
-                                                    ),
-                                                  );
-                                            }
-                                          },
-                                        )
-                                        : null,
-                                backgroundColor:
-                                    _canMergeVideo(felicitup.id)
-                                        ? context.colors.orange
-                                        : context.colors.grey,
-                                label: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.cameraswitch_rounded,
-                                      color: context.colors.white,
+                                                  context
+                                                      .read<
+                                                        VideoFelicitupBloc
+                                                      >()
+                                                      .add(
+                                                        VideoFelicitupEvent.mergeVideos(
+                                                          felicitup.id,
+                                                          listVideos,
+                                                        ),
+                                                      );
+                                                }
+                                              },
+                                            )
+                                            : null,
+                                    backgroundColor:
+                                        !state.isGlobalTimerActive
+                                            ? context.colors.orange
+                                            : context.colors.grey,
+                                    label: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.cameraswitch_rounded,
+                                          color: context.colors.white,
+                                        ),
+                                        SizedBox(width: context.sp(6)),
+                                        Text(
+                                          !state.isGlobalTimerActive
+                                              ? 'Mix'
+                                              : 'Mix${state.globalTimerRemaining != null ? ' (${state.globalTimerRemaining!.inSeconds})' : ''}',
+                                          style: context.styles.smallText
+                                              .copyWith(
+                                                color: context.colors.white,
+                                              ),
+                                        ),
+                                      ],
                                     ),
-                                    SizedBox(width: context.sp(6)),
-                                    Text(
-                                      'Mix${_getTimeRemaining(felicitup.id)}',
-                                      style: context.styles.smallText.copyWith(
-                                        color: context.colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  );
+                                },
                               ),
                             ],
                           ),
