@@ -197,6 +197,11 @@ class CustomRouter {
         pageBuilder: _remindersHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.phoneVerifyInt,
+        pageBuilder: _phoneVerifyIntHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
     ],
   );
 

@@ -45,6 +45,7 @@ class RouterPaths {
   static const String felicitupNotification = '/felicitupNotification';
   static const String termsPolicies = '/termsPolicies';
   static const String reminders = '/reminders';
+  static const String phoneVerifyInt = '/phoneVerifyInt';
 
   List<String> get noAuthenticated => [
     init,

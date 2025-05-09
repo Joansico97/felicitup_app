@@ -192,7 +192,6 @@ class AuthFirebaseResource implements AuthRepository {
   Future<Either<ApiException, bool>> confirmVerification({
     required String verificationId,
     required String smsCode,
-    required String userId,
     required String phoneNumber,
   }) async {
     try {

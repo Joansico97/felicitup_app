@@ -39,21 +39,28 @@ class FelicitupApp extends StatelessWidget {
         create: (_) => appBloc,
         child: BlocBuilder<AppBloc, AppState>(
           builder: (_, state) {
-            return MaterialApp.router(
-              title: AppConstants.appTitle,
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: MediaQuery.of(
+                  context,
+                ).textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1.1),
+              ),
+              child: MaterialApp.router(
+                title: AppConstants.appTitle,
 
-              localizationsDelegates: const [
-                IntlTrans.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: IntlTrans.delegate.supportedLocales,
-              theme: AppTheme().getTheme(),
-              routerConfig: router,
-              builder:
-                  (context, child) =>
-                      HandleNotificationsInteractions(child: child!),
+                localizationsDelegates: const [
+                  IntlTrans.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: IntlTrans.delegate.supportedLocales,
+                theme: AppTheme().getTheme(),
+                routerConfig: router,
+                builder:
+                    (context, child) =>
+                        HandleNotificationsInteractions(child: child!),
+              ),
             );
           },
         ),

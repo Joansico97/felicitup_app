@@ -10,6 +10,7 @@ export './list_single_chat/list_single_chat.dart';
 export './notifications_settings/notifications_settings.dart';
 export './notifications/notifications.dart';
 export './payment/payment.dart';
+export './phone_verify_int/phone_verify_int.dart';
 export './profile/profile.dart';
 export './reminders/reminders.dart';
 export './single_chat/single_chat.dart';

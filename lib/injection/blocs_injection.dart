@@ -117,5 +117,8 @@ void _initBlocsInjection() {
     ..registerFactory(
       () => RemindersBloc(userRepository: di(), chatRepository: di()),
     )
-    ..registerFactory(() => ForgotPasswordBloc(authRepository: di()));
+    ..registerFactory(() => ForgotPasswordBloc(authRepository: di()))
+    ..registerFactory(
+      () => PhoneVerifyIntBloc(authRepository: di(), userRepository: di()),
+    );
 }

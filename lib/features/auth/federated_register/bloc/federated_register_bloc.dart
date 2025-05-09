@@ -122,7 +122,6 @@ class FederatedRegisterBloc
       final response = await _authRepository.confirmVerification(
         verificationId: state.verificationId!,
         smsCode: code,
-        userId: state.name!,
         phoneNumber: '${state.isoCode}${state.phone}',
       );
 
