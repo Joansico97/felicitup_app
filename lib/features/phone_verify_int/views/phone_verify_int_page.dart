@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/features/phone_verify_int/phone_verify_int.dart';
 import 'package:felicitup_app/features/phone_verify_int/views/get_phone_view.dart';
@@ -42,32 +43,35 @@ class PhoneVerifyIntPage extends StatelessWidget {
       },
       child: Scaffold(
         body: SafeArea(
-          child: BlocBuilder<PhoneVerifyIntBloc, PhoneVerifyIntState>(
-            builder: (_, state) {
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (widget, animation) {
-                  final slideAnimation = Tween<Offset>(
-                    begin: const Offset(1.0, 0.0),
-                    end: Offset.zero,
-                  ).animate(animation);
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
+            child: BlocBuilder<PhoneVerifyIntBloc, PhoneVerifyIntState>(
+              builder: (_, state) {
+                return AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (widget, animation) {
+                    final slideAnimation = Tween<Offset>(
+                      begin: const Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation);
 
-                  final fadeAnimation = Tween<double>(
-                    begin: 0.0,
-                    end: 1.0,
-                  ).animate(animation);
+                    final fadeAnimation = Tween<double>(
+                      begin: 0.0,
+                      end: 1.0,
+                    ).animate(animation);
 
-                  return FadeTransition(
-                    opacity: fadeAnimation,
-                    child: SlideTransition(
-                      position: slideAnimation,
-                      child: widget,
-                    ),
-                  );
-                },
-                child: getView(state.currentStep),
-              );
-            },
+                    return FadeTransition(
+                      opacity: fadeAnimation,
+                      child: SlideTransition(
+                        position: slideAnimation,
+                        child: widget,
+                      ),
+                    );
+                  },
+                  child: getView(state.currentStep),
+                );
+              },
+            ),
           ),
         ),
       ),
