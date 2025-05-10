@@ -30,16 +30,17 @@ class _HomePageState extends State<HomePage> {
       listenWhen:
           (previous, current) => previous.currentUser != current.currentUser,
       listener: (_, state) {
-        if (state.currentUser?.phone == null ||
-            (state.currentUser?.phone?.isEmpty ?? false)) {
-          context.go(RouterPaths.phoneVerifyInt);
-        }
         context.read<AppBloc>().add(
           AppEvent.updateMatchList(state.currentUser?.friendsPhoneList ?? []),
         );
         context.read<HomeBloc>().add(
           HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
         );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (state.currentUser != null && state.currentUser!.phone!.isEmpty) {
+            context.go(RouterPaths.phoneVerifyInt);
+          }
+        });
       },
       child: Scaffold(
         drawer: const DrawerApp(),

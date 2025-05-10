@@ -43,7 +43,7 @@ class FelicitupApp extends StatelessWidget {
               data: MediaQuery.of(context).copyWith(
                 textScaler: MediaQuery.of(
                   context,
-                ).textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1.1),
+                ).textScaler.clamp(minScaleFactor: 0.9, maxScaleFactor: 1),
               ),
               child: MaterialApp.router(
                 title: AppConstants.appTitle,
