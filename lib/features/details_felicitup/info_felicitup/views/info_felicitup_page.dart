@@ -33,7 +33,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
       backgroundColor: context.colors.background,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
-        padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
+        padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
         child: BlocBuilder<
           DetailsFelicitupDashboardBloc,
           DetailsFelicitupDashboardState
@@ -138,7 +138,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                   Icons.person_add,
                                   color: context.colors.white,
                                 ),
-                                SizedBox(width: context.sp(6)),
+                                SizedBox(width: context.sp(5)),
                                 Text(
                                   'Añadir',
                                   style: context.styles.smallText.copyWith(
@@ -198,7 +198,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                         label: Row(
                           children: [
                             Icon(Icons.edit, color: context.colors.white),
-                            SizedBox(width: context.sp(6)),
+                            SizedBox(width: context.sp(5)),
                             Text(
                               'Editar',
                               style: context.styles.smallText.copyWith(
@@ -232,7 +232,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                         label: Row(
                           children: [
                             Icon(Icons.send, color: context.colors.white),
-                            SizedBox(width: context.sp(6)),
+                            SizedBox(width: context.sp(5)),
                             Text(
                               'Enviar',
                               style: context.styles.smallText.copyWith(
