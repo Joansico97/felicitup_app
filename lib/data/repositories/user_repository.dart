@@ -74,6 +74,10 @@ abstract class UserRepository {
     String genre,
     DateTime birthDate,
   );
-  Future<Either<ApiException, void>> setUserPhone(String phone, String isoCode);
+  Future<Either<ApiException, void>> setUserPhone(
+    String phone,
+    String isoCode,
+    String userId,
+  );
   Stream<Either<ApiException, List<GiftcarModel>>> getGiftcardListStream();
 }

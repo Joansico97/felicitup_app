@@ -796,13 +796,14 @@ class UserFirebaseResource implements UserRepository {
   Future<Either<ApiException, void>> setUserPhone(
     String phone,
     String isoCode,
+    String userId,
   ) async {
     try {
-      final uid = _firebaseAuth.currentUser?.uid;
-      if (uid == null) {
-        return Left(ApiException(401, 'User not authenticated'));
-      }
-      await _client.update(AppConstants.usersCollection, document: uid, {
+      // final uid = _firebaseAuth.currentUser?.uid;
+      // if (uid == null) {
+      //   return Left(ApiException(401, 'User not authenticated'));
+      // }
+      await _client.update(AppConstants.usersCollection, document: userId, {
         'phone': phone,
         'isoCode': isoCode,
       });

@@ -1,3 +1,4 @@
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/phone_verify_int/bloc/phone_verify_int_bloc.dart';
@@ -16,6 +17,13 @@ class GetPhoneView extends StatefulWidget {
 class _GetPhoneViewState extends State<GetPhoneView> {
   String phone = '';
   String isoCode = '';
+  late String userId;
+
+  @override
+  void initState() {
+    userId = context.read<AppBloc>().state.currentUser?.id ?? '';
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +78,7 @@ class _GetPhoneViewState extends State<GetPhoneView> {
                     PhoneVerifyIntEvent.savePhoneInfo(
                       isoCode: isoCode,
                       phoneNumber: phone,
+                      userId: userId,
                     ),
                   );
                 },

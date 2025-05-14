@@ -6,6 +6,7 @@ class PhoneVerifyIntState with _$PhoneVerifyIntState {
     required bool isLoading,
     required bool finished,
     required int currentStep,
+    required String userId,
     String? phoneNumber,
     String? isoCode,
     String? verificationId,
@@ -15,5 +16,6 @@ class PhoneVerifyIntState with _$PhoneVerifyIntState {
     currentStep: 0,
     isLoading: false,
     finished: false,
+    userId: '',
   );
 }

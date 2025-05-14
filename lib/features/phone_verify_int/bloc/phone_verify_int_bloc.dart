@@ -20,7 +20,12 @@ class PhoneVerifyIntBloc
     on<PhoneVerifyIntEvent>(
       (events, emit) => events.map(
         savePhoneInfo:
-            (event) => _savePhoneInfo(emit, event.phoneNumber, event.isoCode),
+            (event) => _savePhoneInfo(
+              emit,
+              event.phoneNumber,
+              event.isoCode,
+              event.userId,
+            ),
         initValidation: (_) => _initValidation(emit),
         validateCode: (event) => _validateCode(emit, event.code),
       ),
@@ -34,9 +39,15 @@ class PhoneVerifyIntBloc
     Emitter<PhoneVerifyIntState> emit,
     String phone,
     String isoCode,
+    String userId,
   ) async {
     emit(
-      state.copyWith(isLoading: false, phoneNumber: phone, isoCode: isoCode),
+      state.copyWith(
+        isLoading: false,
+        phoneNumber: phone,
+        isoCode: isoCode,
+        userId: userId,
+      ),
     );
     add(PhoneVerifyIntEvent.initValidation());
   }
@@ -101,6 +112,10 @@ class PhoneVerifyIntBloc
   }
 
   _setUserInfo() async {
-    await _userRepository.setUserPhone(state.phoneNumber!, state.isoCode!);
+    await _userRepository.setUserPhone(
+      state.phoneNumber!,
+      state.isoCode!,
+      state.userId,
+    );
   }
 }
