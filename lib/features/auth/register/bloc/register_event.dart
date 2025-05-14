@@ -3,6 +3,8 @@ part of 'register_bloc.dart';
 @freezed
 class RegisterEvent with _$RegisterEvent {
   const factory RegisterEvent.changeLoading() = _changeLoading;
+  const factory RegisterEvent.changeStatus(RegisterStatus status) =
+      _changeStatus;
   const factory RegisterEvent.initRegister(
     String name,
     String lastName,

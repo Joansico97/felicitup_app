@@ -32,6 +32,21 @@ class _RegisterFormState extends State<RegisterForm> {
   final TextEditingController lastNameController = TextEditingController();
 
   @override
+  void initState() {
+    emailController.text = context.read<RegisterBloc>().state.email ?? '';
+    passwordController.text = context.read<RegisterBloc>().state.password ?? '';
+    repeatPasswordController.text =
+        context.read<RegisterBloc>().state.confirmPassword ?? '';
+    firstNameController.text = context.read<RegisterBloc>().state.name ?? '';
+    lastNameController.text = context.read<RegisterBloc>().state.lastName ?? '';
+    birthDate = context.read<RegisterBloc>().state.birthDate;
+    masculine = context.read<RegisterBloc>().state.genre == 'Masculino';
+    feminine = context.read<RegisterBloc>().state.genre == 'Femenino';
+    other = context.read<RegisterBloc>().state.genre == 'Otro';
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),

@@ -58,10 +58,7 @@ class RegisterPage extends StatelessWidget {
             child: Container(
               height: context.fullHeight,
               width: context.fullWidth,
-              padding: EdgeInsets.symmetric(
-                horizontal: context.sp(60),
-                vertical: context.sp(12),
-              ),
+              padding: EdgeInsets.symmetric(vertical: context.sp(12)),
               child: BlocBuilder<RegisterBloc, RegisterState>(
                 builder: (_, state) {
                   final status = state.status;

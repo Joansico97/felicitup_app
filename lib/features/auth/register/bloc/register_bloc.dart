@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
+import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,6 +23,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     on<RegisterEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
+        changeStatus: (event) => _changeStatus(emit, event.status),
         googleLoginEvent: (_) => _googleLoginEvent(emit),
         appleLoginEvent: (_) => _appleLoginEvent(emit),
         initRegister:
@@ -54,6 +56,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
 
+  _changeStatus(Emitter<RegisterState> emit, RegisterStatus status) {
+    emit(state.copyWith(status: status));
+  }
+
   _initRegister(
     Emitter<RegisterState> emit,
     String name,
@@ -81,42 +87,27 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     );
   }
 
-  _savePhoneInfo(
-    Emitter<RegisterState> emit,
-    String phone,
-    String isoCode,
-  ) async {
-    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
-    try {
-      emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode));
-    } catch (e) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          status: RegisterStatus.error,
-          errorMessage: e.toString(),
-        ),
-      );
-    }
+  _savePhoneInfo(Emitter<RegisterState> emit, String phone, String isoCode) {
+    emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode));
+    add(RegisterEvent.initValidation());
+    final data = {
+      'name': state.name,
+      'lastName': state.lastName,
+      'email': state.email,
+      'password': state.password,
+      'confirmPassword': state.confirmPassword,
+      'genre': state.genre,
+      'birthDate': state.birthDate,
+      'phone': state.phone,
+      'isoCode': state.isoCode,
+    };
+    logger.debug(data);
   }
 
   _initValidation(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
 
     try {
-      final exist = await checkPhoneExist(
-        phone: '${state.isoCode}${state.phone}',
-      );
-      if (exist) {
-        emit(
-          state.copyWith(
-            isLoading: false,
-            status: RegisterStatus.error,
-            errorMessage: 'El número de teléfono ya está en uso',
-          ),
-        );
-        return;
-      }
       await _authRepository.verifyPhone(
         phone: state.phone!,
         onCodeSent: (verificationId) {
@@ -127,6 +118,18 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
               status: RegisterStatus.validateCode,
             ),
           );
+          final data = {
+            'name': state.name,
+            'lastName': state.lastName,
+            'email': state.email,
+            'password': state.password,
+            'confirmPassword': state.confirmPassword,
+            'genre': state.genre,
+            'birthDate': state.birthDate,
+            'phone': state.phone,
+            'isoCode': state.isoCode,
+          };
+          logger.debug(data);
         },
         onError: (error) {
           emit(

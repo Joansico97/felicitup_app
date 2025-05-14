@@ -1,5 +1,8 @@
 import 'package:bloc/bloc.dart';
+import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'phone_verify_int_event.dart';
@@ -33,13 +36,9 @@ class PhoneVerifyIntBloc
     String isoCode,
   ) async {
     emit(
-      state.copyWith(
-        isLoading: false,
-        phoneNumber: phone,
-        isoCode: isoCode,
-        currentStep: state.currentStep + 1,
-      ),
+      state.copyWith(isLoading: false, phoneNumber: phone, isoCode: isoCode),
     );
+    add(PhoneVerifyIntEvent.initValidation());
   }
 
   _initValidation(Emitter<PhoneVerifyIntState> emit) async {
@@ -50,11 +49,24 @@ class PhoneVerifyIntBloc
         phone: state.phoneNumber!,
         onCodeSent: (verificationId) {
           emit(
-            state.copyWith(verificationId: verificationId, isLoading: false),
+            state.copyWith(
+              verificationId: verificationId,
+              isLoading: false,
+              currentStep: state.currentStep + 1,
+            ),
           );
         },
         onError: (error) {
           emit(state.copyWith(isLoading: false));
+          ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+            SnackBar(
+              content: Text(
+                error,
+                style: rootNavigatorKey.currentContext!.styles.paragraph,
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
         },
       );
     } catch (e) {

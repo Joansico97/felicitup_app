@@ -72,9 +72,6 @@ class _GetPhoneViewState extends State<GetPhoneView> {
                       phoneNumber: phone,
                     ),
                   );
-                  context.read<PhoneVerifyIntBloc>().add(
-                    PhoneVerifyIntEvent.initValidation(),
-                  );
                 },
                 label: 'Enviar código',
                 isActive: true,

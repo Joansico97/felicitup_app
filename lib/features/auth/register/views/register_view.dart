@@ -17,6 +17,7 @@ class RegisterView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
       child: Column(
         children: [
           Image.asset(Assets.images.logo.path, height: context.sp(60)),
