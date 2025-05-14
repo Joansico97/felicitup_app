@@ -799,43 +799,14 @@ class UserFirebaseResource implements UserRepository {
   ) async {
     try {
       final uid = _firebaseAuth.currentUser?.uid;
-
       if (uid == null) {
-        return Left(ApiException(401, "Usuario no autenticado"));
+        return Left(ApiException(401, 'User not authenticated'));
       }
-
-      final userDocRef = _firestore
-          .collection(AppConstants.usersCollection)
-          .doc(uid);
-
-      return FirebaseFirestore.instance.runTransaction<
-        Either<ApiException, void>
-      >((transaction) async {
-        try {
-          final userDoc = await transaction.get(userDocRef);
-
-          if (!userDoc.exists) {
-            return Left(ApiException(404, "Usuario no encontrado"));
-          }
-
-          final userData = userDoc.data();
-          if (userData == null) {
-            return Left(
-              ApiException(404, "Error al obtener la información del usuario"),
-            );
-          }
-
-          transaction.update(userDocRef, {'phone': phone, 'isoCode': isoCode});
-
-          return Right(null);
-        } on FirebaseException catch (e) {
-          return Left(
-            ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
-          );
-        } catch (e) {
-          return Left(ApiException(500, "Error desconocido: ${e.toString()}"));
-        }
+      await _client.update(AppConstants.usersCollection, document: uid, {
+        'phone': phone,
+        'isoCode': isoCode,
       });
+      return Right(null);
     } on FirebaseException catch (e) {
       return Left(
         ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
