@@ -73,16 +73,8 @@ class FederatedRegisterBloc
     String phone,
     String isoCode,
   ) async {
-    emit(state.copyWith(isLoading: true));
-    await Future.delayed(Duration(seconds: 3), () {});
-    emit(
-      state.copyWith(
-        isLoading: false,
-        phone: phone,
-        isoCode: isoCode,
-        currentIndex: state.currentIndex + 1,
-      ),
-    );
+    emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode));
+    add(FederatedRegisterEvent.initValidation());
   }
 
   _initValidation(Emitter<FederatedRegisterState> emit) async {

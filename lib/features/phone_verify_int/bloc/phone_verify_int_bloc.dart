@@ -62,7 +62,10 @@ class PhoneVerifyIntBloc
             SnackBar(
               content: Text(
                 error,
-                style: rootNavigatorKey.currentContext!.styles.paragraph,
+                style: rootNavigatorKey.currentContext!.styles.paragraph
+                    .copyWith(
+                      color: rootNavigatorKey.currentContext!.colors.white,
+                    ),
               ),
               duration: const Duration(seconds: 2),
             ),
