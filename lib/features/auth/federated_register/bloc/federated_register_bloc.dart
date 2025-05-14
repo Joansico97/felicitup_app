@@ -21,6 +21,7 @@ class FederatedRegisterBloc
     on<FederatedRegisterEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
+        backStep: (_) => _backStep(emit),
         initRegister:
             (event) => _initRegister(
               emit,
@@ -106,6 +107,10 @@ class FederatedRegisterBloc
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+  }
+
+  _backStep(Emitter<FederatedRegisterState> emit) async {
+    emit(state.copyWith(currentIndex: state.currentIndex - 1));
   }
 
   _validateCode(Emitter<FederatedRegisterState> emit, String code) async {

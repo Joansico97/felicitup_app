@@ -3,6 +3,7 @@ part of 'federated_register_bloc.dart';
 @freezed
 class FederatedRegisterEvent with _$FederatedRegisterEvent {
   const factory FederatedRegisterEvent.changeLoading() = _changeLoading;
+  const factory FederatedRegisterEvent.backStep() = _backStep;
   const factory FederatedRegisterEvent.initRegister(
     String name,
     String lastName,

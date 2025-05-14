@@ -1,8 +1,7 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
-import 'package:felicitup_app/core/widgets/buttons/primary_button.dart';
-import 'package:felicitup_app/core/widgets/common/date_time_picker.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/auth/register/widgets/register_form.dart';
 import 'package:felicitup_app/features/auth/register/widgets/register_input_field.dart';
 import 'package:felicitup_app/features/features.dart';
@@ -47,187 +46,193 @@ class _FormFederatedViewState extends State<FormFederatedView> {
           SizedBox(height: context.sp(12)),
           Image.asset(Assets.images.logoLetter.path, height: context.sp(62)),
           SizedBox(height: context.sp(12)),
-          Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                CustomTextFormField(
-                  controller: firstNameController,
-                  hintText: 'Nombre',
-                ),
-                SizedBox(height: context.sp(6)),
-                CustomTextFormField(
-                  controller: lastNameController,
-                  hintText: 'Apellidos',
-                ),
-                SizedBox(height: context.sp(12)),
-                GestureDetector(
-                  onTap: () async {
-                    FocusScope.of(context).unfocus();
-                    final DateTime? pickedDate = await showGenericDatePicker(
-                      context: context,
-                      initialDate: DateTime.now().subtract(
-                        const Duration(days: 365 * 18),
-                      ),
-                      firstDate: DateTime(1939),
-                      lastDate: DateTime.now().subtract(
-                        const Duration(days: 365 * 18),
-                      ),
-                      helpText: 'Selecciona una fecha',
-                      cancelText: 'Cancelar',
-                      confirmText: 'OK',
-                      locale: const Locale('es', 'ES'),
-                    );
-
-                    if (pickedDate == null) return;
-
-                    setState(() {
-                      birthDate = pickedDate;
-                    });
-                  },
-                  child: Container(
-                    height: context.sp(45),
-                    padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          width: context.sp(1),
-                          color: context.colors.darkGrey,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  CustomTextFormField(
+                    controller: firstNameController,
+                    hintText: 'Nombre',
+                  ),
+                  SizedBox(height: context.sp(6)),
+                  CustomTextFormField(
+                    controller: lastNameController,
+                    hintText: 'Apellidos',
+                  ),
+                  SizedBox(height: context.sp(12)),
+                  GestureDetector(
+                    onTap: () async {
+                      FocusScope.of(context).unfocus();
+                      final DateTime? pickedDate = await showGenericDatePicker(
+                        context: context,
+                        initialDate: DateTime.now().subtract(
+                          const Duration(days: 365 * 18),
                         ),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          birthDate == null
-                              ? 'Fecha Nacimiento'
-                              : DateFormat('dd/MM/yyyy').format(birthDate!),
-                          style: context.styles.paragraph.copyWith(
-                            color:
-                                birthDate == null
-                                    ? context.colors.darkGrey
-                                    : context.colors.black,
+                        firstDate: DateTime(1939),
+                        lastDate: DateTime.now().subtract(
+                          const Duration(days: 365 * 18),
+                        ),
+                        helpText: 'Selecciona una fecha',
+                        cancelText: 'Cancelar',
+                        confirmText: 'OK',
+                        locale: const Locale('es', 'ES'),
+                      );
+
+                      if (pickedDate == null) return;
+
+                      setState(() {
+                        birthDate = pickedDate;
+                      });
+                    },
+                    child: Container(
+                      height: context.sp(45),
+                      padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            width: context.sp(1),
+                            color: context.colors.darkGrey,
                           ),
                         ),
-                        Icon(
-                          Icons.calendar_month_rounded,
-                          color: context.colors.orange,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            birthDate == null
+                                ? 'Fecha Nacimiento'
+                                : DateFormat('dd/MM/yyyy').format(birthDate!),
+                            style: context.styles.paragraph.copyWith(
+                              color:
+                                  birthDate == null
+                                      ? context.colors.darkGrey
+                                      : context.colors.black,
+                            ),
+                          ),
+                          Icon(
+                            Icons.calendar_month_rounded,
+                            color: context.colors.orange,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: context.sp(24)),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Género', style: context.styles.paragraph),
+                  ),
+                  SizedBox(height: context.sp(12)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GenreCheckBox(
+                        label: 'Masculino',
+                        boolValue: masculine,
+                        onChanged:
+                            (value) => setState(() {
+                              masculine = value!;
+                              feminine = false;
+                              other = false;
+                            }),
+                      ),
+                      GenreCheckBox(
+                        label: 'Femenino',
+                        boolValue: feminine,
+                        onChanged:
+                            (value) => setState(() {
+                              feminine = value!;
+                              masculine = false;
+                              other = false;
+                            }),
+                      ),
+                      GenreCheckBox(
+                        label: 'Otro',
+                        boolValue: other,
+                        onChanged:
+                            (value) => setState(() {
+                              other = value!;
+                              feminine = false;
+                              masculine = false;
+                            }),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: context.sp(12)),
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      text: 'Al registrarte aceptas los ',
+                      style: context.styles.smallText,
+                      children: [
+                        TextSpan(
+                          text: 'Términos y Condiciones ',
+                          style: context.styles.smallText.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          recognizer:
+                              TapGestureRecognizer()
+                                ..onTap = () {
+                                  context.push(
+                                    RouterPaths.termsPolicies,
+                                    extra: true,
+                                  );
+                                },
+                        ),
+                        TextSpan(
+                          text: 'y la ',
+                          style: context.styles.smallText,
+                        ),
+                        TextSpan(
+                          text: 'Política de Privacidad ',
+                          style: context.styles.smallText.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          recognizer:
+                              TapGestureRecognizer()
+                                ..onTap = () {
+                                  context.push(
+                                    RouterPaths.termsPolicies,
+                                    extra: false,
+                                  );
+                                },
                         ),
                       ],
                     ),
                   ),
-                ),
-                SizedBox(height: context.sp(24)),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Género', style: context.styles.paragraph),
-                ),
-                SizedBox(height: context.sp(12)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GenreCheckBox(
-                      label: 'Masculino',
-                      boolValue: masculine,
-                      onChanged:
-                          (value) => setState(() {
-                            masculine = value!;
-                            feminine = false;
-                            other = false;
-                          }),
+                  SizedBox(height: context.sp(24)),
+                  SizedBox(
+                    height: context.sp(45),
+                    width: context.sp(172),
+                    child: PrimaryButton(
+                      onTap: () {
+                        if (firstNameController.text.isNotEmpty &&
+                            lastNameController.text.isNotEmpty &&
+                            birthDate != null &&
+                            (masculine || feminine || other)) {
+                          context.read<FederatedRegisterBloc>().add(
+                            FederatedRegisterEvent.initRegister(
+                              firstNameController.text.trim().capitalize(),
+                              lastNameController.text.trim().capitalize(),
+                              masculine
+                                  ? "Masculino"
+                                  : feminine
+                                  ? "Feminino"
+                                  : "Otro",
+                              birthDate!,
+                            ),
+                          );
+                        }
+                      },
+                      label: 'Continuar',
+                      isActive: true,
                     ),
-                    GenreCheckBox(
-                      label: 'Femenino',
-                      boolValue: feminine,
-                      onChanged:
-                          (value) => setState(() {
-                            feminine = value!;
-                            masculine = false;
-                            other = false;
-                          }),
-                    ),
-                    GenreCheckBox(
-                      label: 'Otro',
-                      boolValue: other,
-                      onChanged:
-                          (value) => setState(() {
-                            other = value!;
-                            feminine = false;
-                            masculine = false;
-                          }),
-                    ),
-                  ],
-                ),
-                SizedBox(height: context.sp(12)),
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    text: 'Al registrarte aceptas los ',
-                    style: context.styles.smallText,
-                    children: [
-                      TextSpan(
-                        text: 'Términos y Condiciones ',
-                        style: context.styles.smallText.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                        recognizer:
-                            TapGestureRecognizer()
-                              ..onTap = () {
-                                context.push(
-                                  RouterPaths.termsPolicies,
-                                  extra: true,
-                                );
-                              },
-                      ),
-                      TextSpan(text: 'y la ', style: context.styles.smallText),
-                      TextSpan(
-                        text: 'Política de Privacidad ',
-                        style: context.styles.smallText.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                        recognizer:
-                            TapGestureRecognizer()
-                              ..onTap = () {
-                                context.push(
-                                  RouterPaths.termsPolicies,
-                                  extra: false,
-                                );
-                              },
-                      ),
-                    ],
                   ),
-                ),
-                SizedBox(height: context.sp(24)),
-                SizedBox(
-                  height: context.sp(45),
-                  width: context.sp(172),
-                  child: PrimaryButton(
-                    onTap: () {
-                      if (firstNameController.text.isNotEmpty &&
-                          lastNameController.text.isNotEmpty &&
-                          birthDate != null &&
-                          (masculine || feminine || other)) {
-                        context.read<FederatedRegisterBloc>().add(
-                          FederatedRegisterEvent.initRegister(
-                            firstNameController.text.trim().capitalize(),
-                            lastNameController.text.trim().capitalize(),
-                            masculine
-                                ? "Masculino"
-                                : feminine
-                                ? "Feminino"
-                                : "Otro",
-                            birthDate!,
-                          ),
-                        );
-                      }
-                    },
-                    label: 'Continuar',
-                    isActive: true,
-                  ),
-                ),
-                SizedBox(height: context.sp(12)),
-              ],
+                  SizedBox(height: context.sp(12)),
+                ],
+              ),
             ),
           ),
         ],

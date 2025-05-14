@@ -42,10 +42,7 @@ class FederatedRegisterPage extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: context.sp(60),
-                    vertical: context.sp(12),
-                  ),
+                  padding: EdgeInsets.symmetric(vertical: context.sp(12)),
                   child: BlocBuilder<
                     FederatedRegisterBloc,
                     FederatedRegisterState
