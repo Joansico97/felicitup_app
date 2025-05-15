@@ -266,99 +266,99 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                     builder: (_, state) {
                       final invitedUsers = state.invitedUsers;
 
-                      return Column(
-                        children: [
-                          ...List.generate(
-                            invitedUsers?.length ?? 0,
-                            (index) => Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    context.go(
-                                      RouterPaths.videoEditor,
-                                      extra: {
-                                        'felicitupId': felicitup.id,
-                                        'videoUrl':
-                                            invitedUsers?[index]
-                                                .videoData
-                                                ?.videoUrl ??
-                                            '',
-                                      },
-                                    );
-                                  },
-                                  child: DetailsRow(
-                                    prefixChild: Row(
-                                      children: [
-                                        Container(
-                                          height: context.sp(23),
-                                          width: context.sp(23),
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: context.colors.lightGrey,
+                      return Expanded(
+                        child: ListView.builder(
+                          itemCount: invitedUsers?.length ?? 0,
+                          itemBuilder:
+                              (_, index) => Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      context.go(
+                                        RouterPaths.videoEditor,
+                                        extra: {
+                                          'felicitupId': felicitup.id,
+                                          'videoUrl':
+                                              invitedUsers?[index]
+                                                  .videoData
+                                                  ?.videoUrl ??
+                                              '',
+                                        },
+                                      );
+                                    },
+                                    child: DetailsRow(
+                                      prefixChild: Row(
+                                        children: [
+                                          Container(
+                                            height: context.sp(23),
+                                            width: context.sp(23),
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: context.colors.lightGrey,
+                                            ),
+                                            child: Text(
+                                              invitedUsers?[index].name![0]
+                                                      .toUpperCase() ??
+                                                  '',
+                                              style: context.styles.subtitle,
+                                            ),
                                           ),
-                                          child: Text(
-                                            invitedUsers?[index].name![0]
-                                                    .toUpperCase() ??
-                                                '',
-                                            style: context.styles.subtitle,
+                                          SizedBox(width: context.sp(14)),
+                                          Text(
+                                            invitedUsers?[index].name ?? '',
+                                            style: context.styles.smallText
+                                                .copyWith(
+                                                  color:
+                                                      invitedUsers?[index]
+                                                                  .videoData
+                                                                  ?.videoUrl
+                                                                  ?.isEmpty ??
+                                                              false
+                                                          ? context.colors.text
+                                                          : context
+                                                              .colors
+                                                              .primary,
+                                                ),
                                           ),
-                                        ),
-                                        SizedBox(width: context.sp(14)),
-                                        Text(
-                                          invitedUsers?[index].name ?? '',
-                                          style: context.styles.smallText
-                                              .copyWith(
-                                                color:
-                                                    invitedUsers?[index]
-                                                                .videoData
-                                                                ?.videoUrl
-                                                                ?.isEmpty ??
-                                                            false
-                                                        ? context.colors.text
-                                                        : context
-                                                            .colors
-                                                            .primary,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                    sufixChild: Container(
-                                      padding: EdgeInsets.all(context.sp(5)),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color:
-                                            invitedUsers?[index]
-                                                        .videoData
-                                                        ?.videoUrl
-                                                        ?.isNotEmpty ??
-                                                    false
-                                                ? context.colors.softOrange
-                                                : context.colors.text,
+                                        ],
                                       ),
-                                      child: Icon(
-                                        Icons.play_arrow,
-                                        color:
-                                            invitedUsers?[index]
-                                                        .videoData
-                                                        ?.videoUrl
-                                                        ?.isNotEmpty ??
-                                                    false
-                                                ? Colors.white
-                                                : context.colors.text,
-                                        size: context.sp(11),
+                                      sufixChild: Container(
+                                        padding: EdgeInsets.all(context.sp(5)),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color:
+                                              invitedUsers?[index]
+                                                          .videoData
+                                                          ?.videoUrl
+                                                          ?.isNotEmpty ??
+                                                      false
+                                                  ? context.colors.softOrange
+                                                  : context.colors.text,
+                                        ),
+                                        child: Icon(
+                                          Icons.play_arrow,
+                                          color:
+                                              invitedUsers?[index]
+                                                          .videoData
+                                                          ?.videoUrl
+                                                          ?.isNotEmpty ??
+                                                      false
+                                                  ? Colors.white
+                                                  : context.colors.text,
+                                          size: context.sp(11),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                SizedBox(height: context.sp(12)),
-                              ],
-                            ),
-                          ),
-                        ],
+                                  SizedBox(height: context.sp(12)),
+                                ],
+                              ),
+                        ),
                       );
                     },
                   ),
+                  SizedBox(height: context.sp(80)),
                 ],
               ),
             ),

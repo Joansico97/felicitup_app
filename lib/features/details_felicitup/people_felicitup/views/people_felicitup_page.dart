@@ -201,144 +201,166 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                     ),
                   ),
                   SizedBox(height: context.sp(22)),
-                  ...List.generate(
-                    invitedUsers?.length ?? 0,
-                    (index) => Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            if (invitedUsers?[index].id == currentUser.id &&
-                                felicitup.createdBy != currentUser.id) {
-                              showConfirDoublemModal(
-                                title: 'Participarás en la felicitup?',
-                                label1: 'Confirmar',
-                                isDestructive: true,
-                                onAction1:
-                                    invitedUsers?[index].assistanceStatus ==
-                                            enumToStringAssistance(
-                                              AssistanceStatus.accepted,
-                                            )
-                                        ? () async {
-                                          context.pop();
-                                        }
-                                        : () async => context
-                                            .read<PeopleFelicitupBloc>()
-                                            .add(
-                                              PeopleFelicitupEvent.informParticipation(
-                                                felicitupId: felicitup.id,
-                                                felicitupOwnerId:
-                                                    felicitup.createdBy,
-                                                newStatus:
-                                                    enumToStringAssistance(
-                                                      AssistanceStatus.accepted,
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: invitedUsers?.length ?? 0,
+                      itemBuilder:
+                          (_, index) => Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  if (invitedUsers?[index].id ==
+                                          currentUser.id &&
+                                      felicitup.createdBy != currentUser.id) {
+                                    showConfirDoublemModal(
+                                      title: 'Participarás en la felicitup?',
+                                      label1: 'Confirmar',
+                                      isDestructive: true,
+                                      onAction1:
+                                          invitedUsers?[index]
+                                                      .assistanceStatus ==
+                                                  enumToStringAssistance(
+                                                    AssistanceStatus.accepted,
+                                                  )
+                                              ? () async {
+                                                context.pop();
+                                              }
+                                              : () async => context
+                                                  .read<PeopleFelicitupBloc>()
+                                                  .add(
+                                                    PeopleFelicitupEvent.informParticipation(
+                                                      felicitupId: felicitup.id,
+                                                      felicitupOwnerId:
+                                                          felicitup.createdBy,
+                                                      newStatus:
+                                                          enumToStringAssistance(
+                                                            AssistanceStatus
+                                                                .accepted,
+                                                          ),
+                                                      name:
+                                                          currentUser
+                                                              .firstName ??
+                                                          '',
                                                     ),
-                                                name:
-                                                    currentUser.firstName ?? '',
-                                              ),
+                                                  ),
+                                      label2: 'Denegar',
+                                      onAction2: () async {
+                                        context.read<PeopleFelicitupBloc>().add(
+                                          PeopleFelicitupEvent.informParticipation(
+                                            felicitupId: felicitup.id,
+                                            felicitupOwnerId:
+                                                felicitup.createdBy,
+                                            newStatus: enumToStringAssistance(
+                                              AssistanceStatus.rejected,
                                             ),
-                                label2: 'Denegar',
-                                onAction2: () async {
-                                  context.read<PeopleFelicitupBloc>().add(
-                                    PeopleFelicitupEvent.informParticipation(
-                                      felicitupId: felicitup.id,
-                                      felicitupOwnerId: felicitup.createdBy,
-                                      newStatus: enumToStringAssistance(
-                                        AssistanceStatus.rejected,
+                                            name: currentUser.firstName ?? '',
+                                          ),
+                                        );
+                                        context.go(
+                                          RouterPaths.felicitupsDashboard,
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                                onLongPress: () {
+                                  if (felicitup.createdBy == currentUser.id &&
+                                      invitedUsers?[index].id !=
+                                          currentUser.id) {
+                                    showConfirDoublemModal(
+                                      title: 'Eliminar participante?',
+                                      label1: 'Eliminar',
+                                      isDestructive: true,
+                                      onAction1: () async {
+                                        context.read<PeopleFelicitupBloc>().add(
+                                          PeopleFelicitupEvent.deleteParticipant(
+                                            felicitup.id,
+                                            invitedUsers?[index].id ?? '',
+                                          ),
+                                        );
+                                        // context.pop();
+                                      },
+                                      label2: 'Cancelar',
+                                      onAction2: () async {
+                                        context.pop();
+                                      },
+                                    );
+                                  }
+                                },
+                                child: DetailsRow(
+                                  prefixChild: Row(
+                                    children: [
+                                      Container(
+                                        height: context.sp(23),
+                                        width: context.sp(23),
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: context.colors.lightGrey,
+                                        ),
+                                        child: Text(
+                                          invitedUsers?[index].name![0]
+                                                  .toUpperCase() ??
+                                              '',
+                                          style: context.styles.subtitle,
+                                        ),
                                       ),
-                                      name: currentUser.firstName ?? '',
-                                    ),
-                                  );
-                                  context.go(RouterPaths.felicitupsDashboard);
-                                },
-                              );
-                            }
-                          },
-                          onLongPress: () {
-                            if (felicitup.createdBy == currentUser.id &&
-                                invitedUsers?[index].id != currentUser.id) {
-                              showConfirDoublemModal(
-                                title: 'Eliminar participante?',
-                                label1: 'Eliminar',
-                                isDestructive: true,
-                                onAction1: () async {
-                                  context.read<PeopleFelicitupBloc>().add(
-                                    PeopleFelicitupEvent.deleteParticipant(
-                                      felicitup.id,
-                                      invitedUsers?[index].id ?? '',
-                                    ),
-                                  );
-                                  // context.pop();
-                                },
-                                label2: 'Cancelar',
-                                onAction2: () async {
-                                  context.pop();
-                                },
-                              );
-                            }
-                          },
-                          child: DetailsRow(
-                            prefixChild: Row(
-                              children: [
-                                Container(
-                                  height: context.sp(23),
-                                  width: context.sp(23),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: context.colors.lightGrey,
+                                      SizedBox(width: context.sp(14)),
+                                      Text(
+                                        invitedUsers?[index].name ?? '',
+                                        style: context.styles.smallText.copyWith(
+                                          color:
+                                              invitedUsers?[index]
+                                                          .assistanceStatus ==
+                                                      enumToStringAssistance(
+                                                        AssistanceStatus
+                                                            .pending,
+                                                      )
+                                                  ? context.colors.text
+                                                  : context.colors.primary,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  child: Text(
-                                    invitedUsers?[index].name![0]
-                                            .toUpperCase() ??
-                                        '',
-                                    style: context.styles.subtitle,
+                                  sufixChild: Container(
+                                    padding: EdgeInsets.all(context.sp(5)),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color:
+                                          invitedUsers?[index]
+                                                      .assistanceStatus ==
+                                                  enumToStringAssistance(
+                                                    AssistanceStatus.accepted,
+                                                  )
+                                              ? context.colors.softOrange
+                                              : context.colors.otherGrey,
+                                    ),
+                                    child: Icon(
+                                      Icons.check,
+                                      color:
+                                          invitedUsers?[index]
+                                                      .assistanceStatus ==
+                                                  enumToStringAssistance(
+                                                    AssistanceStatus.accepted,
+                                                  )
+                                              ? Colors.white
+                                              : context.colors.otherGrey,
+                                      size: 11,
+                                    ),
                                   ),
                                 ),
-                                SizedBox(width: context.sp(14)),
-                                Text(
-                                  invitedUsers?[index].name ?? '',
-                                  style: context.styles.smallText.copyWith(
-                                    color:
-                                        invitedUsers?[index].assistanceStatus ==
-                                                enumToStringAssistance(
-                                                  AssistanceStatus.pending,
-                                                )
-                                            ? context.colors.text
-                                            : context.colors.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            sufixChild: Container(
-                              padding: EdgeInsets.all(context.sp(5)),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color:
-                                    invitedUsers?[index].assistanceStatus ==
-                                            enumToStringAssistance(
-                                              AssistanceStatus.accepted,
-                                            )
-                                        ? context.colors.softOrange
-                                        : context.colors.otherGrey,
                               ),
-                              child: Icon(
-                                Icons.check,
-                                color:
-                                    invitedUsers?[index].assistanceStatus ==
-                                            enumToStringAssistance(
-                                              AssistanceStatus.accepted,
-                                            )
-                                        ? Colors.white
-                                        : context.colors.otherGrey,
-                                size: 11,
-                              ),
-                            ),
+                              SizedBox(height: context.sp(12)),
+                            ],
                           ),
-                        ),
-                        SizedBox(height: context.sp(12)),
-                      ],
                     ),
                   ),
+                  // ...List.generate(
+                  //   invitedUsers?.length ?? 0,
+                  //   (index) => SingleChildScrollView(
+                  //     child:
+                  //   ),
+                  // ),
                 ],
               );
             },

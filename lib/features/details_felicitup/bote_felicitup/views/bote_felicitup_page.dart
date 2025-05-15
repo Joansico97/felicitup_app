@@ -278,116 +278,118 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                 builder: (_, state) {
                   final invitedUsers = state.invitedUsers;
 
-                  return Column(
-                    children: [
-                      ...List.generate(
-                        invitedUsers?.length ?? 0,
-                        (index) => Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                if (invitedUsers?[index].paid ==
-                                        enumToStringPayment(
-                                          PaymentStatus.pending,
-                                        ) &&
-                                    invitedUsers?[index].id == currentUser.id) {
-                                  context.go(
-                                    RouterPaths.payment,
-                                    extra: {
-                                      'isVerify': false,
-                                      'felicitup': felicitup,
-                                    },
-                                  );
-                                }
-                                if (invitedUsers?[index].paid ==
-                                        enumToStringPayment(
-                                          PaymentStatus.waiting,
-                                        ) &&
-                                    felicitup.createdBy == currentUser.id) {
-                                  context.go(
-                                    RouterPaths.payment,
-                                    extra: {
-                                      'isVerify': true,
-                                      'felicitup': felicitup,
-                                      'userId':
-                                          invitedUsers?[index].idInformation,
-                                    },
-                                  );
-                                }
-                              },
-                              child: DetailsRow(
-                                prefixChild: Row(
-                                  children: [
-                                    Container(
-                                      height: context.sp(23),
-                                      width: context.sp(23),
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: context.colors.lightGrey,
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: invitedUsers?.length ?? 0,
+                      itemBuilder:
+                          (_, index) => Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  if (invitedUsers?[index].paid ==
+                                          enumToStringPayment(
+                                            PaymentStatus.pending,
+                                          ) &&
+                                      invitedUsers?[index].id ==
+                                          currentUser.id) {
+                                    context.go(
+                                      RouterPaths.payment,
+                                      extra: {
+                                        'isVerify': false,
+                                        'felicitup': felicitup,
+                                      },
+                                    );
+                                  }
+                                  if (invitedUsers?[index].paid ==
+                                          enumToStringPayment(
+                                            PaymentStatus.waiting,
+                                          ) &&
+                                      felicitup.createdBy == currentUser.id) {
+                                    context.go(
+                                      RouterPaths.payment,
+                                      extra: {
+                                        'isVerify': true,
+                                        'felicitup': felicitup,
+                                        'userId':
+                                            invitedUsers?[index].idInformation,
+                                      },
+                                    );
+                                  }
+                                },
+                                child: DetailsRow(
+                                  prefixChild: Row(
+                                    children: [
+                                      Container(
+                                        height: context.sp(23),
+                                        width: context.sp(23),
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: context.colors.lightGrey,
+                                        ),
+                                        child: Text(
+                                          invitedUsers?[index].name![0]
+                                                  .toUpperCase() ??
+                                              '',
+                                          style: context.styles.subtitle,
+                                        ),
                                       ),
-                                      child: Text(
-                                        invitedUsers?[index].name![0]
-                                                .toUpperCase() ??
-                                            '',
-                                        style: context.styles.subtitle,
+                                      SizedBox(width: context.sp(14)),
+                                      Text(
+                                        invitedUsers?[index].name ?? '',
+                                        style: context.styles.smallText
+                                            .copyWith(
+                                              color:
+                                                  invitedUsers?[index].paid ==
+                                                          enumToStringPayment(
+                                                            PaymentStatus
+                                                                .pending,
+                                                          )
+                                                      ? context.colors.text
+                                                      : context.colors.primary,
+                                            ),
                                       ),
-                                    ),
-                                    SizedBox(width: context.sp(14)),
-                                    Text(
-                                      invitedUsers?[index].name ?? '',
-                                      style: context.styles.smallText.copyWith(
-                                        color:
-                                            invitedUsers?[index].paid ==
-                                                    enumToStringPayment(
-                                                      PaymentStatus.pending,
-                                                    )
-                                                ? context.colors.text
-                                                : context.colors.primary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                sufixChild: Container(
-                                  padding: EdgeInsets.all(context.sp(5)),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color:
-                                        invitedUsers?[index].paid ==
-                                                enumToStringPayment(
-                                                  PaymentStatus.paid,
-                                                )
-                                            ? Colors.lightGreen
-                                            : invitedUsers?[index].paid ==
-                                                enumToStringPayment(
-                                                  PaymentStatus.waiting,
-                                                )
-                                            ? context.colors.softOrange
-                                            : context.colors.otherGrey,
+                                    ],
                                   ),
-                                  child: Icon(
-                                    Icons.euro,
-                                    color:
-                                        invitedUsers?[index].paid ==
-                                                    enumToStringPayment(
-                                                      PaymentStatus.paid,
-                                                    ) ||
-                                                invitedUsers?[index].paid ==
-                                                    enumToStringPayment(
-                                                      PaymentStatus.waiting,
-                                                    )
-                                            ? Colors.white
-                                            : context.colors.darkGrey,
-                                    size: context.sp(11),
+                                  sufixChild: Container(
+                                    padding: EdgeInsets.all(context.sp(5)),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color:
+                                          invitedUsers?[index].paid ==
+                                                  enumToStringPayment(
+                                                    PaymentStatus.paid,
+                                                  )
+                                              ? Colors.lightGreen
+                                              : invitedUsers?[index].paid ==
+                                                  enumToStringPayment(
+                                                    PaymentStatus.waiting,
+                                                  )
+                                              ? context.colors.softOrange
+                                              : context.colors.otherGrey,
+                                    ),
+                                    child: Icon(
+                                      Icons.euro,
+                                      color:
+                                          invitedUsers?[index].paid ==
+                                                      enumToStringPayment(
+                                                        PaymentStatus.paid,
+                                                      ) ||
+                                                  invitedUsers?[index].paid ==
+                                                      enumToStringPayment(
+                                                        PaymentStatus.waiting,
+                                                      )
+                                              ? Colors.white
+                                              : context.colors.darkGrey,
+                                      size: context.sp(11),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            SizedBox(height: context.sp(12)),
-                          ],
-                        ),
-                      ),
-                    ],
+                              SizedBox(height: context.sp(12)),
+                            ],
+                          ),
+                    ),
                   );
                 },
               ),

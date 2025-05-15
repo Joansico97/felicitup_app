@@ -1,5 +1,4 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
-import 'package:felicitup_app/core/widgets/buttons/primary_button.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/auth/federated_register/bloc/federated_register_bloc.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
