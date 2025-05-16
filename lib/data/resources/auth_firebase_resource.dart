@@ -195,12 +195,52 @@ class AuthFirebaseResource implements AuthRepository {
     required String phoneNumber,
   }) async {
     try {
+      // 1. Verificar el código SMS
       final credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
         smsCode: smsCode,
       );
-      await _firebaseAuth.signInWithCredential(credential);
-      await _firebaseAuth.signOut(); // Cierra la sesión temporal
+
+      // 2. Obtener el usuario actual ANTES de la verificación
+      final currentUser = _firebaseAuth.currentUser;
+      final originalAuthProvider =
+          currentUser?.providerData.firstOrNull?.providerId;
+
+      // 3. Realizar verificación temporal
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
+
+      // 4. Verificar que el número coincida
+      if (userCredential.user?.phoneNumber != phoneNumber) {
+        await _firebaseAuth.signOut(); // Cierra la sesión temporal
+        if (currentUser != null) {
+          await _firebaseAuth.signInWithCredential(
+            // Reautentica al usuario original si es necesario
+            await currentUser.getIdToken().then(
+              (token) => GoogleAuthProvider.credential(idToken: token),
+            ),
+          );
+        }
+        return Left(ApiException(400, 'El número de teléfono no coincide'));
+      }
+
+      // 5. Cerrar sesión temporal
+      await _firebaseAuth.signOut();
+
+      // 6. Restaurar sesión original si existía
+      if (currentUser != null) {
+        if (originalAuthProvider == 'google.com') {
+          await _firebaseAuth.signInWithCredential(
+            await currentUser.getIdToken().then(
+              (token) => GoogleAuthProvider.credential(idToken: token),
+            ),
+          );
+        } else if (originalAuthProvider == 'apple.com') {
+          // Lógica similar para Apple
+        }
+        // Para email/password u otros proveedores
+      }
 
       return const Right(true);
     } on FirebaseAuthException catch (e) {

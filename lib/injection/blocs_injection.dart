@@ -94,6 +94,7 @@ void _initBlocsInjection() {
       () => FederatedRegisterBloc(
         userRepository: di(),
         authRepository: di(),
+        firebaseAuth: di(),
         firestore: di(),
       ),
     )

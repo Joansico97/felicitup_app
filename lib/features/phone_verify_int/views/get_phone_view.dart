@@ -1,10 +1,12 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/phone_verify_int/bloc/phone_verify_int_bloc.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 class GetPhoneView extends StatefulWidget {
@@ -83,6 +85,18 @@ class _GetPhoneViewState extends State<GetPhoneView> {
                   );
                 },
                 label: 'Enviar código',
+                isActive: true,
+              ),
+            ),
+            SizedBox(height: context.sp(12)),
+            SizedBox(
+              width: context.sp(250),
+              height: context.sp(50),
+              child: PrimaryButton(
+                onTap: () {
+                  context.go(RouterPaths.init);
+                },
+                label: 'Logout',
                 isActive: true,
               ),
             ),

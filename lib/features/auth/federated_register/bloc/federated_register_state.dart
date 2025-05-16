@@ -11,6 +11,7 @@ class FederatedRegisterState with _$FederatedRegisterState {
     String? isoCode,
     String? genre,
     String? verificationId,
+    String? userId,
     DateTime? birthDate,
   }) = _FederatedRegisterState;
 

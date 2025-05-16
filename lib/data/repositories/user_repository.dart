@@ -66,6 +66,7 @@ abstract class UserRepository {
   );
   Future<Either<ApiException, void>> deleteNotification(String notificationId);
   Future<Either<ApiException, void>> setInitialUserInfo(UserModel user);
+
   Future<Either<ApiException, void>> setUserInfoRemaining(
     String name,
     String lastName,
@@ -74,6 +75,12 @@ abstract class UserRepository {
     String genre,
     DateTime birthDate,
   );
+  Future<Either<ApiException, void>> setFederatedData({
+    required String firstName,
+    required String lastName,
+    required String genre,
+    required DateTime birthDate,
+  });
   Future<Either<ApiException, void>> setUserPhone(
     String phone,
     String isoCode,

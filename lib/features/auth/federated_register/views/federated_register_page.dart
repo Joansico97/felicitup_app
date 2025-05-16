@@ -28,6 +28,8 @@ class FederatedRegisterPage extends StatelessWidget {
     }
 
     return BlocListener<FederatedRegisterBloc, FederatedRegisterState>(
+      listenWhen:
+          (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());

@@ -799,13 +799,43 @@ class UserFirebaseResource implements UserRepository {
     String userId,
   ) async {
     try {
-      // final uid = _firebaseAuth.currentUser?.uid;
-      // if (uid == null) {
-      //   return Left(ApiException(401, 'User not authenticated'));
-      // }
       await _client.update(AppConstants.usersCollection, document: userId, {
         'phone': phone,
         'isoCode': isoCode,
+      });
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> setFederatedData({
+    required String firstName,
+    required String lastName,
+    required String genre,
+    required DateTime birthDate,
+  }) async {
+    final uid = _firebaseAuth.currentUser?.uid;
+    if (uid == null) {
+      return Left(ApiException(401, 'User not authenticated'));
+    }
+
+    try {
+      await _client.update(AppConstants.usersCollection, document: uid, {
+        'firstName': firstName,
+        'lastName': lastName,
+        'fullName': '$firstName $lastName',
+        'genre': genre,
+        'birthDate': birthDate,
+        'birthDay': birthDate.day,
+        'birthMonth': birthDate.month,
+        'birthdateAlerts': [],
+        'singleChats': [],
       });
       return Right(null);
     } on FirebaseException catch (e) {

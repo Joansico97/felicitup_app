@@ -4,12 +4,12 @@ part of 'federated_register_bloc.dart';
 class FederatedRegisterEvent with _$FederatedRegisterEvent {
   const factory FederatedRegisterEvent.changeLoading() = _changeLoading;
   const factory FederatedRegisterEvent.backStep() = _backStep;
-  const factory FederatedRegisterEvent.initRegister(
-    String name,
-    String lastName,
-    String genre,
-    DateTime birthDate,
-  ) = _initRegister;
+  const factory FederatedRegisterEvent.initRegister({
+    required String name,
+    required String lastName,
+    required String genre,
+    required DateTime birthDate,
+  }) = _initRegister;
   const factory FederatedRegisterEvent.savePhoneInfo(
     String phone,
     String isoCode,

@@ -214,14 +214,17 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                             (masculine || feminine || other)) {
                           context.read<FederatedRegisterBloc>().add(
                             FederatedRegisterEvent.initRegister(
-                              firstNameController.text.trim().capitalize(),
-                              lastNameController.text.trim().capitalize(),
-                              masculine
-                                  ? "Masculino"
-                                  : feminine
-                                  ? "Feminino"
-                                  : "Otro",
-                              birthDate!,
+                              name:
+                                  firstNameController.text.trim().capitalize(),
+                              lastName:
+                                  lastNameController.text.trim().capitalize(),
+                              genre:
+                                  masculine
+                                      ? "Masculino"
+                                      : feminine
+                                      ? "Feminino"
+                                      : "Otro",
+                              birthDate: birthDate!,
                             ),
                           );
                         }

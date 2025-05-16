@@ -11,9 +11,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 
 class SelectContactsView extends StatelessWidget {
-  const SelectContactsView({
-    super.key,
-  });
+  const SelectContactsView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +23,7 @@ class SelectContactsView extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: context.sp(20),
-            ),
+            padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -36,34 +32,34 @@ class SelectContactsView extends StatelessWidget {
                     final listOwner = state.felicitupOwner;
                     return listOwner.isEmpty || listOwner[0].userImg == ''
                         ? SizedBox(
-                            width: context.sp(120),
-                            child: SvgPicture.asset(
-                              Assets.icons.personIcon,
-                              height: context.sp(76),
-                              width: context.sp(76),
-                              colorFilter: ColorFilter.mode(
-                                Color(0xFFDADADA),
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          )
-                        : Container(
+                          width: context.sp(120),
+                          child: SvgPicture.asset(
+                            Assets.icons.personIcon,
                             height: context.sp(76),
                             width: context.sp(76),
-                            margin: EdgeInsets.only(
-                              left: context.sp(25),
-                              right: context.sp(25),
+                            colorFilter: ColorFilter.mode(
+                              Color(0xFFDADADA),
+                              BlendMode.srcIn,
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                context.sp(100),
-                              ),
-                              child: Image.network(
-                                listOwner[0].userImg ?? '',
-                                fit: BoxFit.cover,
-                              ),
+                          ),
+                        )
+                        : Container(
+                          height: context.sp(76),
+                          width: context.sp(76),
+                          margin: EdgeInsets.only(
+                            left: context.sp(25),
+                            right: context.sp(25),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              context.sp(100),
                             ),
-                          );
+                            child: Image.network(
+                              listOwner[0].userImg ?? '',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
                   },
                 ),
                 SizedBox(
@@ -85,10 +81,10 @@ class SelectContactsView extends StatelessWidget {
                             listOwner.length > 2
                                 ? 'Felicitas a ${listOwner[0].name}, a ${listOwner[1].name} y a ${listOwner.length - 2} más'
                                 : listOwner.length == 2
-                                    ? 'Felicitas a ${listOwner[0].name} y a ${listOwner[1].name}'
-                                    : listOwner.length == 1
-                                        ? 'Felicitas a ${listOwner[0].name}'
-                                        : '¿A quién felicitas?',
+                                ? 'Felicitas a ${listOwner[0].name} y a ${listOwner[1].name}'
+                                : listOwner.length == 1
+                                ? 'Felicitas a ${listOwner[0].name}'
+                                : '¿A quién felicitas?',
                             style: context.styles.smallText,
                           );
                         },
@@ -103,8 +99,8 @@ class SelectContactsView extends StatelessWidget {
                             selectedDate != null
                                 ? 'Fecha envío felicitUp:\n${DateFormat('dd·MM·yyyy').format(selectedDate)} - ${DateFormat('HH:mm').format(selectedDate)}'
                                 : listOwner.isNotEmpty
-                                    ? 'Fecha envío felicitUp:\n${DateFormat('dd·MM·yyyy').format(listOwner[0].date)} - ${DateFormat('HH:mm').format(listOwner[0].date)}'
-                                    : 'Selecciona la persona a la que irá destinada la Felicitup.',
+                                ? 'Fecha envío felicitUp:\n${DateFormat('dd·MM·yyyy').format(listOwner[0].date)} - ${DateFormat('HH:mm').format(listOwner[0].date)}'
+                                : 'Selecciona la persona a la que irá destinada la Felicitup.',
                             style: context.styles.smallText.copyWith(
                               fontSize: context.sp(10),
                             ),
@@ -125,48 +121,69 @@ class SelectContactsView extends StatelessWidget {
               return SizedBox(
                 width: context.sp(170),
                 child: PrimarySmallButton(
-                  onTap: () => commoBottomModal(
-                    context: context,
-                    body: BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
-                      builder: (_, state) {
-                        List<UserModel> friendList = [...state.friendList];
-                        friendList.sort((a, b) => a.fullName!.compareTo(b.fullName!));
-                        return friendList.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No tienes contactos',
-                                  style: context.styles.paragraph,
-                                ),
-                              )
-                            : Column(
-                                children: [
-                                  ...List.generate(
-                                    friendList.length,
-                                    (index) => GestureDetector(
-                                      onTap: () {
-                                        final owner = OwnerModel(
-                                          id: friendList[index].id ?? '',
-                                          name: friendList[index].fullName ?? '',
-                                          date: friendList[index].birthDate ?? DateTime.now(),
-                                          userImg: friendList[index].userImg ?? '',
-                                        );
-                                        context
-                                            .read<CreateFelicitupBloc>()
-                                            .add(CreateFelicitupEvent.changeFelicitupOwner(owner));
-                                      },
-                                      child: ContactCardRow(
-                                        contact: friendList[index],
-                                        isSelected:
-                                            state.felicitupOwner.any((owner) => owner.id == friendList[index].id),
+                  onTap:
+                      () => commoBottomModal(
+                        context: context,
+                        body: BlocBuilder<
+                          CreateFelicitupBloc,
+                          CreateFelicitupState
+                        >(
+                          builder: (_, state) {
+                            List<UserModel> friendList = [...state.friendList];
+                            friendList.sort(
+                              (a, b) => (a.fullName ?? '').compareTo(
+                                b.fullName ?? '',
+                              ),
+                            );
+                            return friendList.isEmpty
+                                ? Center(
+                                  child: Text(
+                                    'No tienes contactos',
+                                    style: context.styles.paragraph,
+                                  ),
+                                )
+                                : Column(
+                                  children: [
+                                    ...List.generate(
+                                      friendList.length,
+                                      (index) => GestureDetector(
+                                        onTap: () {
+                                          final owner = OwnerModel(
+                                            id: friendList[index].id ?? '',
+                                            name:
+                                                friendList[index].fullName ??
+                                                'Usuario sin nombre',
+                                            date:
+                                                friendList[index].birthDate ??
+                                                DateTime.now(),
+                                            userImg:
+                                                friendList[index].userImg ?? '',
+                                          );
+                                          context.read<CreateFelicitupBloc>().add(
+                                            CreateFelicitupEvent.changeFelicitupOwner(
+                                              owner,
+                                            ),
+                                          );
+                                        },
+                                        child: ContactCardRow(
+                                          contact: friendList[index],
+                                          isSelected: state.felicitupOwner.any(
+                                            (owner) =>
+                                                owner.id ==
+                                                friendList[index].id,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                      },
-                    ),
-                  ),
-                  label: listOwner.isNotEmpty ? 'Modificar contacto' : 'Buscar contacto',
+                                  ],
+                                );
+                          },
+                        ),
+                      ),
+                  label:
+                      listOwner.isNotEmpty
+                          ? 'Modificar contacto'
+                          : 'Buscar contacto',
                   isActive: true,
                   isCollapsed: true,
                 ),
@@ -203,13 +220,21 @@ class SelectContactsView extends StatelessWidget {
 
                     if (pickedTime == null) return;
 
-                    final DateTime? combinedDateTime = combineDateAndTime(pickedDate, pickedTime);
+                    final DateTime? combinedDateTime = combineDateAndTime(
+                      pickedDate,
+                      pickedTime,
+                    );
 
-                    context
-                        .read<CreateFelicitupBloc>()
-                        .add(CreateFelicitupEvent.changeFelicitupDate(combinedDateTime!));
+                    context.read<CreateFelicitupBloc>().add(
+                      CreateFelicitupEvent.changeFelicitupDate(
+                        combinedDateTime!,
+                      ),
+                    );
                   },
-                  label: felicitupDate != null ? 'Cambiar Fecha' : 'Seleccionar fecha',
+                  label:
+                      felicitupDate != null
+                          ? 'Cambiar Fecha'
+                          : 'Seleccionar fecha',
                   isActive: true,
                   isCollapsed: true,
                 ),

@@ -24,9 +24,7 @@ class ContactCardRow extends StatelessWidget {
       builder: (_, setState) {
         return Container(
           padding: EdgeInsets.all(context.sp(15)),
-          margin: EdgeInsets.only(
-            bottom: context.sp(10),
-          ),
+          margin: EdgeInsets.only(bottom: context.sp(10)),
           width: context.fullWidth,
           decoration: BoxDecoration(
             color: context.colors.white,
@@ -43,22 +41,20 @@ class ContactCardRow extends StatelessWidget {
                   color: context.colors.lightGrey,
                   shape: BoxShape.circle,
                 ),
-                child: userImg.isNotEmpty
-                    ? SizedBox(
-                        height: context.sp(55),
-                        width: context.sp(55),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(context.sp(55)),
-                          child: Image.network(
-                            userImg,
-                            fit: BoxFit.cover,
+                child:
+                    userImg.isNotEmpty
+                        ? SizedBox(
+                          height: context.sp(55),
+                          width: context.sp(55),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(context.sp(55)),
+                            child: Image.network(userImg, fit: BoxFit.cover),
                           ),
+                        )
+                        : Text(
+                          name.isNotEmpty ? name[0].toUpperCase() : '',
+                          style: context.styles.header2,
                         ),
-                      )
-                    : Text(
-                        name[0].toUpperCase(),
-                        style: context.styles.header2,
-                      ),
               ),
               SizedBox(width: context.sp(24)),
               Column(
@@ -80,9 +76,7 @@ class ContactCardRow extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              CirclePicker(
-                isActive: isSelected,
-              ),
+              CirclePicker(isActive: isSelected),
             ],
           ),
         );

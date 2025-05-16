@@ -343,7 +343,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                                   enumToStringAssistance(
                                                     AssistanceStatus.accepted,
                                                   )
-                                              ? Colors.white
+                                              ? context.colors.white
                                               : context.colors.otherGrey,
                                       size: 11,
                                     ),
@@ -355,12 +355,6 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                           ),
                     ),
                   ),
-                  // ...List.generate(
-                  //   invitedUsers?.length ?? 0,
-                  //   (index) => SingleChildScrollView(
-                  //     child:
-                  //   ),
-                  // ),
                 ],
               );
             },

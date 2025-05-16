@@ -161,48 +161,49 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                               ),
                             ],
                           ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            FloatingActionButton.extended(
-                              heroTag: '4',
-                              onPressed:
-                                  felicitup.finalVideoUrl != null &&
-                                          felicitup.finalVideoUrl!.isNotEmpty
-                                      ? () {
-                                        context.go(
-                                          RouterPaths.videoEditor,
-                                          extra: {
-                                            'felicitupId': felicitup.id,
-                                            'videoUrl':
-                                                felicitup.finalVideoUrl ?? '',
-                                          },
-                                        );
-                                      }
-                                      : null,
-                              backgroundColor:
-                                  felicitup.finalVideoUrl != null &&
-                                          felicitup.finalVideoUrl!.isNotEmpty
-                                      ? context.colors.orange
-                                      : context.colors.grey,
-                              label: Row(
-                                children: [
-                                  Icon(
-                                    Icons.play_arrow,
-                                    color: context.colors.white,
-                                  ),
-                                  SizedBox(width: context.sp(6)),
-                                  Text(
-                                    'Ver video',
-                                    style: context.styles.smallText.copyWith(
+                        if (felicitup.finalVideoUrl?.isNotEmpty ?? false)
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              FloatingActionButton.extended(
+                                heroTag: '4',
+                                onPressed:
+                                    felicitup.finalVideoUrl != null &&
+                                            felicitup.finalVideoUrl!.isNotEmpty
+                                        ? () {
+                                          context.go(
+                                            RouterPaths.videoEditor,
+                                            extra: {
+                                              'felicitupId': felicitup.id,
+                                              'videoUrl':
+                                                  felicitup.finalVideoUrl ?? '',
+                                            },
+                                          );
+                                        }
+                                        : null,
+                                backgroundColor:
+                                    felicitup.finalVideoUrl != null &&
+                                            felicitup.finalVideoUrl!.isNotEmpty
+                                        ? context.colors.orange
+                                        : context.colors.grey,
+                                label: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.play_arrow,
                                       color: context.colors.white,
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(width: context.sp(6)),
+                                    Text(
+                                      'Ver video',
+                                      style: context.styles.smallText.copyWith(
+                                        color: context.colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
                       ],
                     ),
                     SizedBox(height: context.sp(12)),
@@ -358,7 +359,7 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                       );
                     },
                   ),
-                  SizedBox(height: context.sp(80)),
+                  SizedBox(height: context.sp(75)),
                 ],
               ),
             ),

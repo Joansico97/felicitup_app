@@ -14,26 +14,26 @@ class FinishRegisterFederatedView extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Image.asset(
-          Assets.images.logo.path,
-          height: context.sp(60),
-        ),
+        Image.asset(Assets.images.logo.path, height: context.sp(60)),
         SizedBox(height: context.sp(23)),
-        Image.asset(
-          Assets.images.logoLetter.path,
-          height: context.sp(62),
+        Image.asset(Assets.images.logoLetter.path, height: context.sp(62)),
+        SizedBox(height: context.sp(24)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
+          child: Text(
+            'Felicidades, tu registro se ha compleado!',
+            textAlign: TextAlign.center,
+            style: context.styles.header2,
+          ),
         ),
         SizedBox(height: context.sp(24)),
-        Text(
-          'Felicidades, tu registro se ha compleado!',
-          textAlign: TextAlign.center,
-          style: context.styles.header2,
-        ),
-        SizedBox(height: context.sp(24)),
-        Text(
-          'Ahora ya puedes iniciar sesión y disfrutar de todas las funcionalidades de la aplicación.',
-          textAlign: TextAlign.center,
-          style: context.styles.paragraph,
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
+          child: Text(
+            'Ahora ya puedes iniciar sesión y disfrutar de todas las funcionalidades de la aplicación.',
+            textAlign: TextAlign.center,
+            style: context.styles.paragraph,
+          ),
         ),
         SizedBox(height: context.sp(24)),
         SizedBox(
