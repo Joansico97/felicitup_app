@@ -283,17 +283,15 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                   width: context.sp(300),
                   child: PrimaryButton(
                     onTap: () {
-                      if (selectedDate != null) {
-                        context.read<PaymentBloc>().add(
-                          PaymentEvent.updatePaymentInfo(
-                            widget.felicitup.id,
-                            selectedPaymentMethod,
-                            selectedPaymentStatus,
-                            DateTime.now(),
-                            '',
-                          ),
-                        );
-                      }
+                      context.read<PaymentBloc>().add(
+                        PaymentEvent.updatePaymentInfo(
+                          widget.felicitup.id,
+                          selectedPaymentMethod,
+                          selectedPaymentStatus,
+                          DateTime.now(),
+                          '',
+                        ),
+                      );
                       context.read<PaymentBloc>().add(
                         PaymentEvent.sendNotification(
                           widget.felicitup.createdBy,

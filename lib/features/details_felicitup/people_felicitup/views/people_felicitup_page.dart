@@ -301,7 +301,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                         child: Text(
                                           invitedUsers?[index].name![0]
                                                   .toUpperCase() ??
-                                              '',
+                                              'Usuario sin nombre',
                                           style: context.styles.subtitle,
                                         ),
                                       ),
