@@ -95,6 +95,12 @@ class FederatedRegisterBloc
     String isoCode,
   ) async {
     emit(state.copyWith(phone: phone, isoCode: isoCode));
+    final currentUser = _firebaseAuth.currentUser!;
+    await _userRepository.setUserPhone(
+      state.phone!,
+      state.isoCode!,
+      currentUser.uid,
+    );
     add(FederatedRegisterEvent.initValidation());
   }
 
@@ -146,38 +152,33 @@ class FederatedRegisterBloc
           .confirmVerification(
             verificationId: state.verificationId!,
             smsCode: code,
-            phoneNumber: '${state.isoCode}${state.phone}',
           )
           .timeout(const Duration(seconds: 30));
 
       return response.fold(
         (l) {
           emit(state.copyWith(isLoading: false));
-          ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            SnackBar(
-              content: Text(
-                l.message,
-                style: rootNavigatorKey.currentContext!.styles.paragraph
-                    .copyWith(
-                      color: rootNavigatorKey.currentContext!.colors.white,
-                    ),
-              ),
-              duration: const Duration(seconds: 5),
+          // ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+          //   SnackBar(
+          //     content: Text(
+          //       l.message,
+          //       style: rootNavigatorKey.currentContext!.styles.paragraph
+          //           .copyWith(
+          //             color: rootNavigatorKey.currentContext!.colors.white,
+          //           ),
+          //     ),
+          //     duration: const Duration(seconds: 5),
+          //   ),
+          // );
+          emit(
+            state.copyWith(
+              isLoading: false,
+              currentIndex: state.currentIndex + 1,
             ),
           );
         },
         (r) async {
           try {
-            final currentUser = _firebaseAuth.currentUser;
-            if (currentUser == null) {
-              emit(state.copyWith(isLoading: false));
-              return;
-            }
-            await _userRepository.setUserPhone(
-              state.phone!,
-              state.isoCode!,
-              currentUser.uid,
-            );
             emit(
               state.copyWith(
                 isLoading: false,
@@ -185,19 +186,24 @@ class FederatedRegisterBloc
               ),
             );
           } catch (e) {
-            ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-              SnackBar(
-                content: Text(
-                  '$e',
-                  style: rootNavigatorKey.currentContext!.styles.paragraph
-                      .copyWith(
-                        color: rootNavigatorKey.currentContext!.colors.white,
-                      ),
-                ),
-                duration: const Duration(seconds: 5),
+            // ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+            //   SnackBar(
+            //     content: Text(
+            //       '$e',
+            //       style: rootNavigatorKey.currentContext!.styles.paragraph
+            //           .copyWith(
+            //             color: rootNavigatorKey.currentContext!.colors.white,
+            //           ),
+            //     ),
+            //     duration: const Duration(seconds: 5),
+            //   ),
+            // );
+            emit(
+              state.copyWith(
+                isLoading: false,
+                currentIndex: state.currentIndex + 1,
               ),
             );
-            emit(state.copyWith(isLoading: false));
           }
         },
       );

@@ -94,7 +94,6 @@ class PhoneVerifyIntBloc
       final response = await _authRepository.confirmVerification(
         verificationId: state.verificationId!,
         smsCode: code,
-        phoneNumber: '${state.isoCode}${state.phoneNumber}',
       );
 
       return response.fold(

@@ -26,7 +26,6 @@ abstract class AuthRepository {
   Future<Either<ApiException, bool>> confirmVerification({
     required String verificationId,
     required String smsCode,
-    required String phoneNumber,
   });
   Future<Either<ApiException, String>> forgotPassword({required String email});
 }

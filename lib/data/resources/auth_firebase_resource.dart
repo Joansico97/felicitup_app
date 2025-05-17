@@ -25,8 +25,7 @@ class AuthFirebaseResource implements AuthRepository {
       await _firebaseAuth.signOut();
       return const Right(null);
     } on FirebaseAuthException catch (e) {
-      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
-      return Left(ApiException(400, e.message ?? ''));
+      return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
       return Left(ApiException(400, e.toString()));
     }
@@ -44,8 +43,7 @@ class AuthFirebaseResource implements AuthRepository {
       );
       return const Right('');
     } on FirebaseAuthException catch (e) {
-      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
-      return Left(ApiException(400, e.message ?? ''));
+      return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
       return Left(ApiException(400, e.toString()));
     }
@@ -63,8 +61,7 @@ class AuthFirebaseResource implements AuthRepository {
       );
       return Right(userCredential);
     } on FirebaseAuthException catch (e) {
-      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
-      return Left(ApiException(400, e.message ?? ''));
+      return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
       return Left(ApiException(400, e.toString()));
     }
@@ -84,7 +81,7 @@ class AuthFirebaseResource implements AuthRepository {
 
       return Right(response);
     } on FirebaseAuthException catch (e) {
-      return Left(ApiException(400, e.message ?? ''));
+      return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
       return Left(ApiException(400, e.toString()));
     }
@@ -150,8 +147,7 @@ class AuthFirebaseResource implements AuthRepository {
 
       return Right(response);
     } on FirebaseAuthException catch (e) {
-      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
-      return Left(ApiException(400, e.message ?? ''));
+      return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
       FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
       return Left(ApiException(400, e.toString()));
@@ -180,8 +176,7 @@ class AuthFirebaseResource implements AuthRepository {
       );
       return Right('response');
     } on FirebaseAuthException catch (e) {
-      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
-      return Left(ApiException(400, e.message ?? ''));
+      return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
       FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
       return Left(ApiException(400, e.toString()));
@@ -192,60 +187,18 @@ class AuthFirebaseResource implements AuthRepository {
   Future<Either<ApiException, bool>> confirmVerification({
     required String verificationId,
     required String smsCode,
-    required String phoneNumber,
   }) async {
     try {
-      // 1. Verificar el código SMS
       final credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
         smsCode: smsCode,
       );
-
-      // 2. Obtener el usuario actual ANTES de la verificación
-      final currentUser = _firebaseAuth.currentUser;
-      final originalAuthProvider =
-          currentUser?.providerData.firstOrNull?.providerId;
-
-      // 3. Realizar verificación temporal
-      final userCredential = await _firebaseAuth.signInWithCredential(
-        credential,
-      );
-
-      // 4. Verificar que el número coincida
-      if (userCredential.user?.phoneNumber != phoneNumber) {
-        await _firebaseAuth.signOut(); // Cierra la sesión temporal
-        if (currentUser != null) {
-          await _firebaseAuth.signInWithCredential(
-            // Reautentica al usuario original si es necesario
-            await currentUser.getIdToken().then(
-              (token) => GoogleAuthProvider.credential(idToken: token),
-            ),
-          );
-        }
-        return Left(ApiException(400, 'El número de teléfono no coincide'));
-      }
-
-      // 5. Cerrar sesión temporal
+      await _firebaseAuth.signInWithCredential(credential);
       await _firebaseAuth.signOut();
-
-      // 6. Restaurar sesión original si existía
-      if (currentUser != null) {
-        if (originalAuthProvider == 'google.com') {
-          await _firebaseAuth.signInWithCredential(
-            await currentUser.getIdToken().then(
-              (token) => GoogleAuthProvider.credential(idToken: token),
-            ),
-          );
-        } else if (originalAuthProvider == 'apple.com') {
-          // Lógica similar para Apple
-        }
-        // Para email/password u otros proveedores
-      }
 
       return const Right(true);
     } on FirebaseAuthException catch (e) {
-      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
-      return Left(ApiException(400, e.message ?? ''));
+      return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
       FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
       return Left(ApiException(400, e.toString()));
@@ -260,11 +213,93 @@ class AuthFirebaseResource implements AuthRepository {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
       return const Right('');
     } on FirebaseAuthException catch (e) {
-      // final message = _firebaseAuth.read(appEventsProvider.notifier).mapFirebaseAuthError(e);
-      return Left(ApiException(400, e.message ?? ''));
+      return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
       FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
       return Left(ApiException(400, e.toString()));
     }
+  }
+}
+
+String _mapFirebaseAuthErrors(FirebaseAuthException e) {
+  switch (e.code) {
+    // Errores generales
+    case 'invalid-email':
+      return 'El formato del correo electrónico no es válido';
+    case 'user-disabled':
+      return 'Esta cuenta ha sido deshabilitada';
+    case 'user-not-found':
+      return 'No existe una cuenta con este correo electrónico';
+    case 'wrong-password':
+      return 'Contraseña incorrecta';
+    case 'email-already-in-use':
+      return 'Este correo electrónico ya está registrado';
+    case 'operation-not-allowed':
+      return 'Este método de autenticación no está habilitado';
+    case 'weak-password':
+      return 'La contraseña es demasiado débil (mínimo 6 caracteres)';
+    case 'requires-recent-login':
+      return 'Debes iniciar sesión nuevamente para realizar esta acción';
+
+    // Errores de proveedores federados
+    case 'account-exists-with-different-credential':
+      return 'Esta cuenta ya existe con un método de autenticación diferente';
+    case 'invalid-credential':
+      return 'Credenciales de autenticación inválidas';
+    case 'credential-already-in-use':
+      return 'Estas credenciales ya están asociadas a otra cuenta';
+
+    // Errores de verificación por teléfono
+    case 'invalid-verification-code':
+      return 'El código de verificación es inválido o ha expirado';
+    case 'invalid-verification-id':
+      return 'El ID de verificación no es válido';
+    case 'session-expired':
+      return 'La sesión de verificación ha expirado. Solicita un nuevo código';
+    case 'quota-exceeded':
+      return 'Se ha excedido el límite de intentos. Intenta más tarde';
+    case 'missing-verification-code':
+      return 'No se proporcionó el código de verificación';
+    case 'missing-verification-id':
+      return 'No se proporcionó el ID de verificación';
+    case 'invalid-phone-number':
+      return 'El número de teléfono no es válido';
+    case 'too-many-requests':
+      return 'Demasiados intentos. Por favor, espera antes de intentar nuevamente';
+
+    // Errores de autenticación con Google
+    case 'popup-closed-by-user':
+      return 'Cerraste la ventana de autenticación antes de completar el proceso';
+    case 'network-request-failed':
+      return 'Error de conexión a internet. Verifica tu red';
+
+    // Errores de autenticación con Apple
+    case 'apple-auth-invalid-nonce':
+      return 'Error en la autenticación con Apple (nonce inválido)';
+    case 'apple-auth-invalid-id-token':
+      return 'Error en la autenticación con Apple (token inválido)';
+
+    // Errores varios
+    case 'app-not-authorized':
+      return 'La aplicación no está autorizada para usar Firebase Authentication';
+    case 'expired-action-code':
+      return 'El código de acción ha expirado';
+    case 'invalid-action-code':
+      return 'El código de acción no es válido';
+    case 'missing-email':
+      return 'No se proporcionó un correo electrónico';
+    case 'missing-iframe-start':
+      return 'Error interno de autenticación (iframe)';
+
+    // Errores de configuración
+    case 'auth-domain-config-required':
+      return 'Configuración de dominio de autenticación requerida';
+    case 'missing-client-type':
+      return 'Falta el tipo de cliente en la configuración';
+    case 'unauthorized-domain':
+      return 'Dominio no autorizado para la autenticación';
+
+    default:
+      return 'Error desconocido: ${e.message ?? 'Por favor, intenta nuevamente'}';
   }
 }

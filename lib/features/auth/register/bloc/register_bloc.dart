@@ -158,7 +158,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       final response = await _authRepository.confirmVerification(
         verificationId: state.verificationId!,
         smsCode: code,
-        phoneNumber: '${state.isoCode}${state.phone}',
       );
 
       return response.fold(
