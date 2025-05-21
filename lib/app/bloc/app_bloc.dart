@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
@@ -11,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:go_router/go_router.dart';
 
 part 'app_event.dart';
 part 'app_state.dart';
@@ -71,6 +73,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         (error) {
           logger.error(error);
           emit(state.copyWith(isLoading: false));
+          add(const AppEvent.logout());
+          rootNavigatorKey.currentContext!.go(RouterPaths.init);
         },
         (data) {
           final user = UserModel.fromJson(data);

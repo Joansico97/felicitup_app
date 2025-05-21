@@ -13,11 +13,14 @@ class AuthFirebaseResource implements AuthRepository {
   AuthFirebaseResource({
     required DatabaseHelper client,
     required FirebaseAuth firebaseAuth,
+    required FirebaseFunctionsHelper firebaseFunctionsHelper,
   }) : _client = client,
-       _firebaseAuth = firebaseAuth;
+       _firebaseAuth = firebaseAuth,
+       _firebaseFunctionsHelper = firebaseFunctionsHelper;
 
   final FirebaseAuth _firebaseAuth;
   final DatabaseHelper _client;
+  final FirebaseFunctionsHelper _firebaseFunctionsHelper;
 
   @override
   Future<Either<ApiException, void>> logout() async {
@@ -166,6 +169,9 @@ class AuthFirebaseResource implements AuthRepository {
         verificationCompleted: (_) {},
         verificationFailed: (e) {
           logger.error('Error de verificación: ${e.message}');
+          _firebaseFunctionsHelper.logErrors(
+            error: 'Error de verificación: $e',
+          );
           if (e.code == 'invalid-phone-number') {
             logger.error('Número de teléfono inválido');
           }
@@ -193,8 +199,13 @@ class AuthFirebaseResource implements AuthRepository {
         verificationId: verificationId,
         smsCode: smsCode,
       );
-      await _firebaseAuth.signInWithCredential(credential);
-      await _firebaseAuth.signOut();
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.linkWithCredential(credential);
+      } else {
+        await _firebaseAuth.signInWithCredential(credential);
+        await _firebaseAuth.signOut();
+      }
 
       return const Right(true);
     } on FirebaseAuthException catch (e) {

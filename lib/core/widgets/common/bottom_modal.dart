@@ -53,50 +53,11 @@ void commoBottomModal({
                       shape: BoxShape.circle,
                       color: context.colors.orange,
                     ),
-                    child: Icon(
-                      Icons.close,
-                      color: context.colors.white,
-                    ),
+                    child: Icon(Icons.close, color: context.colors.white),
                   ),
                 ),
               ),
-              hasSearch
-                  ? TextFormField(
-                      style: context.styles.paragraph,
-                      decoration: InputDecoration(
-                        fillColor: context.colors.white,
-                        filled: true,
-                        hintText: 'Buscar',
-                        hintStyle: context.styles.paragraph.copyWith(
-                          color: context.colors.darkGrey,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: context.colors.darkGrey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            context.sp(10),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            context.sp(10),
-                          ),
-                        ),
-                      ),
-                      onEditingComplete: () {
-                        FocusScope.of(context).unfocus();
-                      },
-                      onChanged: (value) {},
-                    )
-                  : SizedBox(),
-              SizedBox(height: context.sp(12)),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: body,
-                ),
-              ),
+              Expanded(child: SingleChildScrollView(child: body)),
               Visibility(
                 visible: hasBottomButton,
                 child: Column(

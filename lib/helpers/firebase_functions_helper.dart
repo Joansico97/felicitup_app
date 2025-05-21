@@ -7,6 +7,10 @@ class FirebaseFunctionsHelper {
 
   final FirebaseFunctions _firebaseFunctions;
 
+  Future<void> logErrors({required String error}) async {
+    await _call('logErrors', parameters: {'error': error});
+  }
+
   Future<void> sendNotification({
     required String userId,
     required String title,

@@ -26,6 +26,7 @@ class FederatedRegisterBloc
        _authRepository = authRepository,
        _firebaseAuth = firebaseAuth,
        _firestore = firestore,
+
        super(FederatedRegisterState.initial()) {
     on<FederatedRegisterEvent>(
       (events, emit) => events.map(
@@ -158,22 +159,10 @@ class FederatedRegisterBloc
       return response.fold(
         (l) {
           emit(state.copyWith(isLoading: false));
-          // ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-          //   SnackBar(
-          //     content: Text(
-          //       l.message,
-          //       style: rootNavigatorKey.currentContext!.styles.paragraph
-          //           .copyWith(
-          //             color: rootNavigatorKey.currentContext!.colors.white,
-          //           ),
-          //     ),
-          //     duration: const Duration(seconds: 5),
-          //   ),
-          // );
           emit(
             state.copyWith(
               isLoading: false,
-              currentIndex: state.currentIndex + 1,
+              // currentIndex: state.currentIndex + 1,
             ),
           );
         },
@@ -201,7 +190,7 @@ class FederatedRegisterBloc
             emit(
               state.copyWith(
                 isLoading: false,
-                currentIndex: state.currentIndex + 1,
+                // currentIndex: state.currentIndex + 1,
               ),
             );
           }

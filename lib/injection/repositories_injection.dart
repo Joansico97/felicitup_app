@@ -6,6 +6,7 @@ void _initRepositoriesInjection() {
       () => AuthFirebaseResource(
         client: di(),
         firebaseAuth: di(),
+        firebaseFunctionsHelper: di(),
       ),
     )
     ..registerLazySingleton<UserRepository>(

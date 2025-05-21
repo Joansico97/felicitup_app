@@ -48,6 +48,17 @@ exports.testFunction = functions.https.onCall(
     },
 );
 
+exports.logErrors = functions.https.onCall(
+    {
+      region: "us-central1",
+      timeoutSeconds: 300,
+      memory: "256MiB",
+    },
+    async (data, context) => {
+      console.log("Data recibida en sendNotification:", data.data.error);
+    },
+);
+
 exports.sendNotification = functions.https.onCall(
     {
       region: "us-central1",
