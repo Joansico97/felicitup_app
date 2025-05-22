@@ -26,15 +26,21 @@ class PrimarySmallButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isActive ? onTap : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isActive ? context.colors.orange : context.colors.lightBlue.valueOpacity(.6),
+          backgroundColor:
+              isActive
+                  ? context.colors.orange
+                  : context.colors.lightBlue.valueOpacity(.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(context.sp(28)),
           ),
         ),
         child: Text(
           label,
-          style: context.styles.menu.copyWith(
-            color: isActive ? context.colors.white : context.colors.white.valueOpacity(.3),
+          style: context.styles.paragraph.copyWith(
+            color:
+                isActive
+                    ? context.colors.white
+                    : context.colors.white.valueOpacity(.3),
           ),
         ),
       ),

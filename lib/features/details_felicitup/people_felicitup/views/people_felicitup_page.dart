@@ -12,13 +12,11 @@ import 'package:go_router/go_router.dart';
 
 class PeoplePageModalSearchList extends StatefulWidget {
   final List<UserModel> initialFriendList;
-  final List<InvitedModel> currentSelectedParticipantsInBloc;
   final PeopleFelicitupBloc peopleFelicitupBloc;
-
   const PeoplePageModalSearchList({
     super.key,
     required this.initialFriendList,
-    required this.currentSelectedParticipantsInBloc,
+
     required this.peopleFelicitupBloc,
   });
 
@@ -88,84 +86,108 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
       );
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          margin: EdgeInsets.only(bottom: context.sp(12)),
-          child: TextField(
-            controller: _searchController,
-            style: context.styles.paragraph,
-            decoration: InputDecoration(
-              fillColor: context.colors.white,
-              filled: true,
-              hintText: 'Buscar participante...',
-              hintStyle: context.styles.paragraph.copyWith(
-                color: context.colors.darkGrey,
-              ),
-              prefixIcon: Icon(Icons.search, color: context.colors.darkGrey),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(context.sp(10)),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(context.sp(10)),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(context.sp(10)),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: EdgeInsets.symmetric(
-                vertical: context.sp(10),
-                horizontal: context.sp(15),
-              ),
-            ),
-            onChanged: _filterContacts,
-          ),
-        ),
-        if (_filteredFriendList.isEmpty && _searchQuery.isNotEmpty)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: context.sp(20)),
-            child: Text(
-              'No se encontraron contactos para "$_searchQuery"',
-              style: context.styles.paragraph.copyWith(color: Colors.grey[700]),
-              textAlign: TextAlign.center,
-            ),
-          )
-        else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _filteredFriendList.length,
-            itemBuilder: (context, index) {
-              final contact = _filteredFriendList[index];
+    return BlocBuilder<PeopleFelicitupBloc, PeopleFelicitupState>(
+      bloc: widget.peopleFelicitupBloc,
 
-              final bool isSelected = widget.currentSelectedParticipantsInBloc
-                  .any((participant) => participant.id == contact.id);
-              return GestureDetector(
-                onTap: () {
-                  final participant = InvitedModel(
-                    id: contact.id ?? '',
-                    name: contact.fullName ?? 'Usuario sin nombre',
-                    userImage: contact.userImg ?? '',
-                    assistanceStatus: enumToStringAssistance(
-                      AssistanceStatus.pending,
+      builder: (context, peopleState) {
+        final currentSelectedParticipantsFromBloc = peopleState.invitedContacts;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: EdgeInsets.only(
+                bottom: context.sp(12),
+                left: context.sp(12),
+                right: context.sp(12),
+                top: context.sp(12),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: context.styles.paragraph,
+                decoration: InputDecoration(
+                  fillColor: context.colors.white,
+                  filled: true,
+                  hintText: 'Buscar participante...',
+                  hintStyle: context.styles.paragraph.copyWith(
+                    color: context.colors.darkGrey,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: context.colors.darkGrey,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(context.sp(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(context.sp(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(context.sp(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: context.sp(10),
+                    horizontal: context.sp(15),
+                  ),
+                ),
+                onChanged: _filterContacts,
+              ),
+            ),
+            if (_filteredFriendList.isEmpty && _searchQuery.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: context.sp(20)),
+                child: Text(
+                  'No se encontraron contactos para "$_searchQuery"',
+                  style: context.styles.paragraph.copyWith(
+                    color: Colors.grey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _filteredFriendList.length,
+                itemBuilder: (context, index) {
+                  final contact = _filteredFriendList[index];
+
+                  final bool isSelected = currentSelectedParticipantsFromBloc
+                      .any((participant) => participant.id == contact.id);
+                  return GestureDetector(
+                    onTap: () {
+                      final participant = InvitedModel(
+                        id: contact.id ?? '',
+                        name: contact.fullName ?? 'Usuario sin nombre',
+                        userImage: contact.userImg ?? '',
+                        assistanceStatus: enumToStringAssistance(
+                          AssistanceStatus.pending,
+                        ),
+                        paid: enumToStringPayment(PaymentStatus.pending),
+                        videoData: VideoDataModel(
+                          videoUrl: '',
+                          videoThumbnail: '',
+                        ),
+                        idInformation: '',
+                      );
+
+                      widget.peopleFelicitupBloc.add(
+                        PeopleFelicitupEvent.addParticipant(participant),
+                      );
+                    },
+                    child: ContactCardRow(
+                      contact: contact,
+                      isSelected: isSelected,
                     ),
-                    paid: enumToStringPayment(PaymentStatus.pending),
-                    videoData: VideoDataModel(videoUrl: '', videoThumbnail: ''),
-                    idInformation: '',
-                  );
-
-                  widget.peopleFelicitupBloc.add(
-                    PeopleFelicitupEvent.addParticipant(participant),
                   );
                 },
-                child: ContactCardRow(contact: contact, isSelected: isSelected),
-              );
-            },
-          ),
-      ],
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -256,8 +278,6 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                   value: context.read<PeopleFelicitupBloc>(),
                                   child: PeoplePageModalSearchList(
                                     initialFriendList: friendList,
-                                    currentSelectedParticipantsInBloc:
-                                        state.invitedContacts,
                                     peopleFelicitupBloc: bloc,
                                   ),
                                 ),

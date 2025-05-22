@@ -10,9 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class SelectEventView extends StatefulWidget {
-  const SelectEventView({
-    super.key,
-  });
+  const SelectEventView({super.key});
 
   @override
   State<SelectEventView> createState() => _SelectEventViewState();
@@ -33,9 +31,7 @@ class _SelectEventViewState extends State<SelectEventView> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: context.sp(20),
-          ),
+          padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -44,34 +40,32 @@ class _SelectEventViewState extends State<SelectEventView> {
                   final listOwner = state.felicitupOwner;
                   return listOwner.isEmpty || listOwner[0].userImg == ''
                       ? SizedBox(
-                          width: context.sp(120),
-                          child: SvgPicture.asset(
-                            Assets.icons.personIcon,
-                            height: context.sp(76),
-                            width: context.sp(76),
-                            colorFilter: ColorFilter.mode(
-                              Color(0xFFDADADA),
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        )
-                      : Container(
+                        width: context.sp(120),
+                        child: SvgPicture.asset(
+                          Assets.icons.personIcon,
                           height: context.sp(76),
                           width: context.sp(76),
-                          margin: EdgeInsets.only(
-                            left: context.sp(25),
-                            right: context.sp(25),
+                          colorFilter: ColorFilter.mode(
+                            Color(0xFFDADADA),
+                            BlendMode.srcIn,
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                              context.sp(100),
-                            ),
-                            child: Image.network(
-                              listOwner[0].userImg ?? '',
-                              fit: BoxFit.cover,
-                            ),
+                        ),
+                      )
+                      : Container(
+                        height: context.sp(76),
+                        width: context.sp(76),
+                        margin: EdgeInsets.only(
+                          left: context.sp(25),
+                          right: context.sp(25),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(context.sp(100)),
+                          child: Image.network(
+                            listOwner[0].userImg ?? '',
+                            fit: BoxFit.cover,
                           ),
-                        );
+                        ),
+                      );
                 },
               ),
               SizedBox(
@@ -79,38 +73,33 @@ class _SelectEventViewState extends State<SelectEventView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '| Paso 02',
-                      style: context.styles.menu.copyWith(
-                        fontSize: context.sp(9),
-                      ),
-                    ),
+                    Text('| Paso 02', style: context.styles.menu),
                     SizedBox(height: context.sp(8)),
                     BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                       builder: (_, state) {
                         final listOwner = state.felicitupOwner;
                         final reason = state.eventReason;
-                        final selectedDate = state.selectedDate ?? listOwner[0].date;
+                        final selectedDate =
+                            state.selectedDate ?? listOwner[0].date;
 
                         return RichText(
                           text: TextSpan(
-                            text: reason.isEmpty
-                                ? 'Selecciona un evento'
-                                : listOwner.length > 2
+                            text:
+                                reason.isEmpty
+                                    ? 'Selecciona un evento'
+                                    : listOwner.length > 2
                                     ? '$reason de ${listOwner[0].name}, de ${listOwner[1].name} y de ${listOwner.length - 2} más'
                                     : listOwner.length == 2
-                                        ? '$reason de ${listOwner[0].name} y de ${listOwner[1].name}'
-                                        : '$reason de ${listOwner[0].name}',
-                            style: context.styles.smallText,
+                                    ? '$reason de ${listOwner[0].name} y de ${listOwner[1].name}'
+                                    : '$reason de ${listOwner[0].name}',
+                            style: context.styles.subtitle,
                             children: [
                               reason.isNotEmpty
                                   ? TextSpan(
-                                      text:
-                                          '\n\n${DateFormat('dd·MM·yyyy').format(selectedDate)} - ${DateFormat('HH:mm').format(selectedDate)}',
-                                      style: context.styles.smallText.copyWith(
-                                        fontSize: context.sp(10),
-                                      ),
-                                    )
+                                    text:
+                                        '\n\n${DateFormat('dd·MM·yyyy').format(selectedDate)} - ${DateFormat('HH:mm').format(selectedDate)}',
+                                    style: context.styles.smallText,
+                                  )
                                   : TextSpan(),
                             ],
                           ),
@@ -126,9 +115,7 @@ class _SelectEventViewState extends State<SelectEventView> {
                           visible: reason.isEmpty,
                           child: Text(
                             'Selecciona el motivo del evento para la Felicitup.',
-                            style: context.styles.smallText.copyWith(
-                              fontSize: context.sp(10),
-                            ),
+                            style: context.styles.paragraph,
                           ),
                         );
                       },
@@ -159,9 +146,11 @@ class _SelectEventViewState extends State<SelectEventView> {
                             eventsName.length,
                             (index) => GestureDetector(
                               onTap: () {
-                                context
-                                    .read<CreateFelicitupBloc>()
-                                    .add(CreateFelicitupEvent.changeEventReason(eventsName[index]));
+                                context.read<CreateFelicitupBloc>().add(
+                                  CreateFelicitupEvent.changeEventReason(
+                                    eventsName[index],
+                                  ),
+                                );
                                 context.pop();
                               },
                               child: EventCardRow(
@@ -169,7 +158,7 @@ class _SelectEventViewState extends State<SelectEventView> {
                                 isSelected: eventReason == eventsName[index],
                               ),
                             ),
-                          )
+                          ),
                         ],
                       );
                     },

@@ -8,6 +8,7 @@ void commoBottomModal({
   required Widget body,
   bool hasSearch = true,
   bool hasBottomButton = false,
+  bool changeClose = false,
   void Function()? onTap,
 }) {
   showModalBottomSheet(
@@ -53,7 +54,10 @@ void commoBottomModal({
                       shape: BoxShape.circle,
                       color: context.colors.orange,
                     ),
-                    child: Icon(Icons.close, color: context.colors.white),
+                    child: Icon(
+                      changeClose ? Icons.navigate_next_rounded : Icons.close,
+                      color: context.colors.white,
+                    ),
                   ),
                 ),
               ),

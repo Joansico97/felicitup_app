@@ -9,9 +9,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 class SelectComplementsView extends StatefulWidget {
-  const SelectComplementsView({
-    super.key,
-  });
+  const SelectComplementsView({super.key});
 
   @override
   State<SelectComplementsView> createState() => _SelectComplementsViewState();
@@ -38,10 +36,7 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Text(
-                      'Bote de regalo',
-                      style: context.styles.header2,
-                    ),
+                    Text('Bote de regalo', style: context.styles.header2),
                     SizedBox(height: context.sp(12)),
                     Text(
                       'Selecciona la cantidad deseada para el bote regalo.',
@@ -58,9 +53,11 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                               20,
                               (index) => GestureDetector(
                                 onTap: () {
-                                  context
-                                      .read<CreateFelicitupBloc>()
-                                      .add(CreateFelicitupEvent.changeBoteQuantity(5 * (index + 1)));
+                                  context.read<CreateFelicitupBloc>().add(
+                                    CreateFelicitupEvent.changeBoteQuantity(
+                                      5 * (index + 1),
+                                    ),
+                                  );
                                   context.pop();
                                 },
                                 child: Container(
@@ -86,7 +83,7 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                                   ),
                                 ),
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -113,10 +110,14 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                               GestureDetector(
                                 onTap: () {
                                   context.read<CreateFelicitupBloc>().add(
-                                        CreateFelicitupEvent.changeBoteQuantity(
-                                          int.parse(controller.text.isNotEmpty ? controller.text : '0'),
-                                        ),
-                                      );
+                                    CreateFelicitupEvent.changeBoteQuantity(
+                                      int.parse(
+                                        controller.text.isNotEmpty
+                                            ? controller.text
+                                            : '0',
+                                      ),
+                                    ),
+                                  );
                                   context.pop();
                                 },
                                 child: Icon(
@@ -145,9 +146,7 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: context.sp(20),
-          ),
+          padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -156,34 +155,32 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                   final listOwner = state.felicitupOwner;
                   return listOwner.isEmpty || listOwner[0].userImg == ''
                       ? SizedBox(
-                          width: context.sp(120),
-                          child: SvgPicture.asset(
-                            Assets.icons.personIcon,
-                            height: context.sp(76),
-                            width: context.sp(76),
-                            colorFilter: ColorFilter.mode(
-                              Color(0xFFDADADA),
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        )
-                      : Container(
+                        width: context.sp(120),
+                        child: SvgPicture.asset(
+                          Assets.icons.personIcon,
                           height: context.sp(76),
                           width: context.sp(76),
-                          margin: EdgeInsets.only(
-                            left: context.sp(25),
-                            right: context.sp(25),
+                          colorFilter: ColorFilter.mode(
+                            Color(0xFFDADADA),
+                            BlendMode.srcIn,
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                              context.sp(100),
-                            ),
-                            child: Image.network(
-                              listOwner[0].userImg ?? '',
-                              fit: BoxFit.cover,
-                            ),
+                        ),
+                      )
+                      : Container(
+                        height: context.sp(76),
+                        width: context.sp(76),
+                        margin: EdgeInsets.only(
+                          left: context.sp(25),
+                          right: context.sp(25),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(context.sp(100)),
+                          child: Image.network(
+                            listOwner[0].userImg ?? '',
+                            fit: BoxFit.cover,
                           ),
-                        );
+                        ),
+                      );
                 },
               ),
               SizedBox(
@@ -191,23 +188,13 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '| Paso 04',
-                      style: context.styles.menu.copyWith(
-                        fontSize: context.sp(9),
-                      ),
-                    ),
+                    Text('| Paso 04', style: context.styles.menu),
                     SizedBox(height: context.sp(8)),
-                    Text(
-                      '¿Qué hacemos?',
-                      style: context.styles.smallText,
-                    ),
+                    Text('¿Qué hacemos?', style: context.styles.subtitle),
                     SizedBox(height: context.sp(8)),
                     Text(
                       'Elige los elementos que tendrá tu Felicitup.',
-                      style: context.styles.smallText.copyWith(
-                        fontSize: context.sp(10),
-                      ),
+                      style: context.styles.paragraph,
                     ),
                   ],
                 ),
@@ -223,19 +210,23 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
             final boteQuantity = state.boteQuantity ?? 0;
 
             return Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.sp(20),
-              ),
+              padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
               child: Column(
                 children: [
                   ActivityCard(
                     activity: 'Videogrupo',
-                    onTap: () => context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.toggleHasVideo()),
+                    onTap:
+                        () => context.read<CreateFelicitupBloc>().add(
+                          CreateFelicitupEvent.toggleHasVideo(),
+                        ),
                     isActive: hasVideo,
                   ),
                   ActivityCard(
                     activity: 'Bote Regalo',
-                    onTap: () => context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.toggleHasBote()),
+                    onTap:
+                        () => context.read<CreateFelicitupBloc>().add(
+                          CreateFelicitupEvent.toggleHasBote(),
+                        ),
                     isActive: hasBote,
                   ),
                   Visibility(
@@ -247,9 +238,7 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                           horizontal: context.sp(35),
                           vertical: context.sp(18),
                         ),
-                        margin: EdgeInsets.only(
-                          bottom: context.sp(10),
-                        ),
+                        margin: EdgeInsets.only(bottom: context.sp(10)),
                         width: context.fullWidth,
                         alignment: Alignment.centerLeft,
                         decoration: BoxDecoration(
@@ -271,7 +260,7 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             );

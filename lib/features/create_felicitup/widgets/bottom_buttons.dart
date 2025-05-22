@@ -18,9 +18,7 @@ class BottomButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.sp(20),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
       child: Row(
         children: [
           Visibility(
@@ -29,15 +27,9 @@ class BottomButtons extends StatelessWidget {
               onTap: onBack,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.arrow_back_ios_new_outlined,
-                    size: context.sp(10),
-                  ),
+                  Icon(Icons.arrow_back_ios_new_outlined, size: context.sp(10)),
                   SizedBox(width: context.sp(4)),
-                  Text(
-                    'Anterior',
-                    style: context.styles.menu,
-                  ),
+                  Text('Anterior', style: context.styles.paragraph),
                 ],
               ),
             ),
@@ -49,12 +41,9 @@ class BottomButtons extends StatelessWidget {
               onTap: onNext,
               child: Row(
                 children: [
-                  Text('Siguiente', style: context.styles.menu),
+                  Text('Siguiente', style: context.styles.paragraph),
                   SizedBox(width: context.sp(4)),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: context.sp(10),
-                  ),
+                  Icon(Icons.arrow_forward_ios_rounded, size: context.sp(10)),
                 ],
               ),
             ),

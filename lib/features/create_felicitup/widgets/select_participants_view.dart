@@ -9,17 +9,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 
 class ParticipantSearchList extends StatefulWidget {
-  final List<UserModel>
-  initialFriendList; // Lista de amigos disponibles para ser participantes
-  final List<InvitedModel>
-  selectedParticipants; // Lista de participantes ya invitados
+  final List<UserModel> initialFriendList;
   final Function(InvitedModel) onParticipantSelected;
   final CreateFelicitupBloc felicitupBloc;
 
   const ParticipantSearchList({
     super.key,
     required this.initialFriendList,
-    required this.selectedParticipants,
     required this.onParticipantSelected,
     required this.felicitupBloc,
   });
@@ -122,44 +118,50 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
             ),
           )
         else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _filteredFriendList.length,
-            itemBuilder: (context, index) {
-              final contact = _filteredFriendList[index];
-              final bool isSelected = widget.selectedParticipants.any(
-                (participant) => participant.id == contact.id,
-              );
-              return GestureDetector(
-                onTap: () {
-                  final participant = InvitedModel(
-                    id:
-                        contact
-                            .id, // Asumiendo que UserModel.id no es nullable o se maneja
-                    name: contact.fullName,
-                    userImage: contact.userImg,
-                    assistanceStatus: enumToStringAssistance(
-                      AssistanceStatus.pending,
+          BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+            bloc: widget.felicitupBloc,
+
+            builder: (context, state) {
+              final currentSelectedParticipantsFromBloc = state.invitedContacts;
+
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _filteredFriendList.length,
+                itemBuilder: (_, index) {
+                  final contact = _filteredFriendList[index];
+
+                  final bool isSelected = currentSelectedParticipantsFromBloc
+                      .any((participant) => participant.id == contact.id);
+                  return GestureDetector(
+                    onTap: () {
+                      final participant = InvitedModel(
+                        id: contact.id,
+                        name: contact.fullName,
+                        userImage: contact.userImg,
+                        assistanceStatus: enumToStringAssistance(
+                          AssistanceStatus.pending,
+                        ),
+                        videoData: VideoDataModel(
+                          videoUrl: '',
+                          videoThumbnail: '',
+                        ),
+                        paid: enumToStringPayment(PaymentStatus.pending),
+                        idInformation: '',
+                      );
+
+                      widget.felicitupBloc.add(
+                        CreateFelicitupEvent.addParticipant(participant),
+                      );
+
+                      widget.onParticipantSelected(participant);
+                    },
+                    child: ContactCardRow(
+                      contact: contact,
+                      isSelected: isSelected,
                     ),
-                    videoData: VideoDataModel(
-                      // Asegúrate que VideoDataModel esté definido
-                      videoUrl: '',
-                      videoThumbnail: '',
-                    ),
-                    paid: enumToStringPayment(PaymentStatus.pending),
-                    idInformation: '', // O algún valor por defecto/lógica
                   );
-                  widget.felicitupBloc.add(
-                    CreateFelicitupEvent.addParticipant(participant),
-                  );
-                  widget.onParticipantSelected(participant);
                 },
-                child: ContactCardRow(
-                  // Asumiendo que ContactCardRow está definido
-                  contact: contact,
-                  isSelected: isSelected,
-                ),
               );
             },
           ),
@@ -167,7 +169,6 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
     );
   }
 }
-// --- Fin del Nuevo Widget ---
 
 class SelectParticipantsView extends StatefulWidget {
   const SelectParticipantsView({super.key});
@@ -235,21 +236,14 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '| Paso 03',
-                      style: context.styles.menu.copyWith(
-                        fontSize: context.sp(9),
-                      ),
-                    ),
+                    Text('| Paso 03', style: context.styles.menu),
                     SizedBox(height: context.sp(8)),
-                    Text('¿Quién participa?', style: context.styles.smallText),
+                    Text('¿Quién participa?', style: context.styles.subtitle),
                     SizedBox(height: context.sp(8)),
                     Text(
                       'Selecciona los participantes de la Felicitup.',
-                      style: context.styles.smallText.copyWith(
-                        fontSize: context.sp(10),
-                      ),
-                      maxLines: 2,
+                      style: context.styles.paragraph,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -260,13 +254,11 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
         ),
         SizedBox(height: context.sp(12)),
         BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
-          builder: (buttonModalContext, state) {
-            // Renombrar context
+          builder: (buttonContext, state) {
             final felicitupBlocInstance =
-                buttonModalContext.read<CreateFelicitupBloc>();
+                buttonContext.read<CreateFelicitupBloc>();
             final listOwner = state.felicitupOwner;
 
-            // Filtrar la friendList para excluir a los dueños del Felicitup
             List<UserModel> availableFriendsForParticipation = [
               ...state.friendList,
             ];
@@ -274,25 +266,26 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
               (friend) => listOwner.any((owner) => owner.id == friend.id),
             );
 
+            availableFriendsForParticipation.removeWhere(
+              (friend) => state.invitedContacts.any(
+                (invited) => invited.id == friend.id,
+              ),
+            );
+
             return PrimarySmallButton(
               onTap: () {
                 commoBottomModal(
-                  // Asumo que commoBottomModal está definido
-                  context:
-                      buttonModalContext, // Usar el context del BlocBuilder del botón
+                  context: buttonContext,
+                  changeClose: true,
                   body: ParticipantSearchList(
                     initialFriendList: availableFriendsForParticipation,
-                    selectedParticipants: state.invitedContacts,
+
                     felicitupBloc: felicitupBlocInstance,
-                    onParticipantSelected: (selectedParticipant) {
-                      // Opcional: cerrar el modal
-                      // Navigator.of(buttonModalContext).pop();
-                    },
+                    onParticipantSelected: (selectedParticipant) {},
                   ),
                 );
               },
-              label:
-                  'Buscar participantes', // Cambiado el label para más claridad
+              label: 'Buscar participantes',
               isActive: true,
               isCollapsed: true,
             );
@@ -315,7 +308,6 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                         ...List.generate(
                           listParticipants.length,
                           (index) => OnlyViewCardRow(
-                            // Asumo que OnlyViewCardRow está definido
                             contactName: listParticipants[index].name ?? '',
                             userImg: listParticipants[index].userImage ?? '',
                             stepOne: false,

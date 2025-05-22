@@ -8,10 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 
 class SummaryView extends StatelessWidget {
-  const SummaryView({
-    super.key,
-    required this.messageController,
-  });
+  const SummaryView({super.key, required this.messageController});
 
   final TextEditingController messageController;
 
@@ -25,9 +22,7 @@ class SummaryView extends StatelessWidget {
           maxHeight: context.sp(470),
         ),
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: context.sp(20),
-          ),
+          padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
           child: Column(
             children: [
               SizedBox(height: context.sp(16)),
@@ -38,33 +33,31 @@ class SummaryView extends StatelessWidget {
 
                   return listOwner.length > 2
                       ? Column(
-                          children: [
-                            Text(
-                              '$reason de',
-                              style: context.styles.subtitle,
-                            ),
-                            Wrap(
-                              children: [
-                                ...List.generate(
-                                  listOwner.length,
-                                  (index) => index != listOwner.length - 1
-                                      ? Text(
+                        children: [
+                          Text('$reason de', style: context.styles.subtitle),
+                          Wrap(
+                            children: [
+                              ...List.generate(
+                                listOwner.length,
+                                (index) =>
+                                    index != listOwner.length - 1
+                                        ? Text(
                                           '${listOwner[index].name} ',
                                           style: context.styles.subtitle,
                                         )
-                                      : Text(
+                                        : Text(
                                           'y ${listOwner[index].name} ',
                                           style: context.styles.subtitle,
                                         ),
-                                )
-                              ],
-                            ),
-                          ],
-                        )
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
                       : Text(
-                          '$reason de ${listOwner[0].name}',
-                          style: context.styles.subtitle,
-                        );
+                        '$reason de ${listOwner[0].name}',
+                        style: context.styles.subtitle,
+                      );
                 },
               ),
               SizedBox(height: context.sp(12)),
@@ -73,60 +66,47 @@ class SummaryView extends StatelessWidget {
                   final listOwner = state.felicitupOwner;
                   return listOwner.isEmpty || listOwner[0].userImg == ''
                       ? SizedBox(
-                          width: context.sp(120),
-                          child: SvgPicture.asset(
-                            Assets.icons.personIcon,
-                            height: context.sp(76),
-                            width: context.sp(76),
-                            colorFilter: ColorFilter.mode(
-                              Color(0xFFDADADA),
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        )
-                      : Container(
+                        width: context.sp(120),
+                        child: SvgPicture.asset(
+                          Assets.icons.personIcon,
                           height: context.sp(76),
                           width: context.sp(76),
-                          margin: EdgeInsets.only(
-                            left: context.sp(25),
-                            right: context.sp(25),
+                          colorFilter: ColorFilter.mode(
+                            Color(0xFFDADADA),
+                            BlendMode.srcIn,
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                              context.sp(100),
-                            ),
-                            child: Image.network(
-                              listOwner[0].userImg ?? '',
-                              fit: BoxFit.cover,
-                            ),
+                        ),
+                      )
+                      : Container(
+                        height: context.sp(76),
+                        width: context.sp(76),
+                        margin: EdgeInsets.only(
+                          left: context.sp(25),
+                          right: context.sp(25),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(context.sp(100)),
+                          child: Image.network(
+                            listOwner[0].userImg ?? '',
+                            fit: BoxFit.cover,
                           ),
-                        );
+                        ),
+                      );
                 },
               ),
               SizedBox(height: context.sp(12)),
               SizedBox(
-                width: context.sp(150),
+                width: context.sp(230),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '| Paso 05',
-                      style: context.styles.menu.copyWith(
-                        fontSize: context.sp(9),
-                      ),
-                    ),
+                    Text('| Paso 05', style: context.styles.menu),
                     SizedBox(height: context.sp(8)),
-                    Text(
-                      'Resumen',
-                      style: context.styles.subtitle.copyWith(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text('Resumen', style: context.styles.header2),
                     SizedBox(height: context.sp(8)),
                     Text(
                       'Ya casi estamos, revisa los datos de tu Felicitup.',
-                      style: context.styles.menu,
+                      style: context.styles.paragraph,
                     ),
                   ],
                 ),
@@ -142,27 +122,48 @@ class SummaryView extends StatelessWidget {
                   return Column(
                     children: [
                       _ResumenCard(
-                        label: selectedDate != null
-                            ? 'Fecha: ${DateFormat('dd·MM·yyyy').format(selectedDate)}'
-                            : 'Fecha: ${DateFormat('dd·MM·yyyy').format(listOwner[0].date)}',
-                        onTap: () => context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.jumpToStep(0)),
+                        label:
+                            selectedDate != null
+                                ? 'Fecha: ${DateFormat('dd·MM·yyyy').format(selectedDate)}'
+                                : 'Fecha: ${DateFormat('dd·MM·yyyy').format(listOwner[0].date)}',
+                        onTap:
+                            () => context.read<CreateFelicitupBloc>().add(
+                              CreateFelicitupEvent.jumpToStep(0),
+                            ),
                       ),
                       SizedBox(height: context.sp(8)),
                       _ResumenCard(
                         label: 'Motivo: $reason',
-                        onTap: () => context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.jumpToStep(1)),
+                        onTap:
+                            () => context.read<CreateFelicitupBloc>().add(
+                              CreateFelicitupEvent.jumpToStep(1),
+                            ),
                       ),
                       SizedBox(height: context.sp(8)),
                       _ResumenCard(
                         label: 'Participantes: ${invitedList.length + 1}',
-                        onTap: () => context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.jumpToStep(2)),
+                        onTap:
+                            () => context.read<CreateFelicitupBloc>().add(
+                              CreateFelicitupEvent.jumpToStep(2),
+                            ),
                       ),
                       SizedBox(height: context.sp(8)),
                       _ResumenCard(
-                        label: selectedDate != null
-                            ? 'Fecha envío: ${DateFormat('dd·MM·yyyy').format(selectedDate.subtract(Duration(days: 1)))}'
-                            : 'Fecha envío: ${DateFormat('dd·MM·yyyy').format(listOwner[0].date.subtract(Duration(days: 1)))}',
-                        onTap: () => context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.jumpToStep(0)),
+                        label:
+                            (() {
+                              final now = DateTime.now();
+                              final date = selectedDate ?? listOwner[0].date;
+                              final sendDate = date.subtract(Duration(days: 1));
+                              final year =
+                                  sendDate.isAfter(now)
+                                      ? sendDate.year
+                                      : now.year;
+                              return 'Fecha envío: ${DateFormat('dd·MM').format(sendDate)}·$year';
+                            })(),
+                        onTap:
+                            () => context.read<CreateFelicitupBloc>().add(
+                              CreateFelicitupEvent.jumpToStep(0),
+                            ),
                       ),
                     ],
                   );
@@ -171,30 +172,28 @@ class SummaryView extends StatelessWidget {
               SizedBox(height: context.sp(12)),
               SizedBox(
                 height: context.sp(100),
-                width: context.sp(200),
+                width: context.sp(230),
                 child: InputCommon(
                   controller: messageController,
                   hintText: 'Ingresa un mensaje',
                   titleText: 'Mesnaje para tu felicitup',
-                  // onchangeEditing: (value) {
-                  //   ref.read(CreateFelicitupEventsProvider.notifier).setMessage(value);
-                  // },
                 ),
               ),
-              SizedBox(height: context.sp(12)),
-              PrimarySmallButton(
-                onTap: () => context.read<CreateFelicitupBloc>().add(
-                      CreateFelicitupEvent.createFelicitup(messageController.text),
+              SizedBox(height: context.sp(8)),
+              PrimaryButton(
+                onTap:
+                    () => context.read<CreateFelicitupBloc>().add(
+                      CreateFelicitupEvent.createFelicitup(
+                        messageController.text,
+                      ),
                     ),
-                label: 'Crear felicitup',
+                label: 'Crear Felicitup',
                 isActive: true,
                 isCollapsed: true,
               ),
               Visibility(
                 visible: true,
-                child: SizedBox(
-                  height: context.sp(200),
-                ),
+                child: SizedBox(height: context.sp(200)),
               ),
             ],
           ),
@@ -205,10 +204,7 @@ class SummaryView extends StatelessWidget {
 }
 
 class _ResumenCard extends StatelessWidget {
-  const _ResumenCard({
-    required this.label,
-    required this.onTap,
-  });
+  const _ResumenCard({required this.label, required this.onTap});
 
   final String label;
   final VoidCallback onTap;
@@ -218,32 +214,22 @@ class _ResumenCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: context.sp(30),
-        width: context.sp(193),
-        padding: EdgeInsets.symmetric(
-          horizontal: context.sp(12),
-        ),
-        margin: EdgeInsets.only(
-          bottom: context.sp(12),
-        ),
+        height: context.sp(40),
+        width: context.sp(230),
+        padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
+        margin: EdgeInsets.only(bottom: context.sp(12)),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(context.sp(5)),
           color: const Color(0xFFF4F2F2),
         ),
         child: Row(
           children: [
-            Text(
-              label,
-              style: context.styles.menu.copyWith(
-                fontSize: context.sp(9),
-              ),
-            ),
+            Text(label, style: context.styles.smallText),
             const Spacer(),
             Text(
               'Editar',
               style: context.styles.menu.copyWith(
                 decoration: TextDecoration.underline,
-                fontSize: context.sp(9),
               ),
             ),
           ],

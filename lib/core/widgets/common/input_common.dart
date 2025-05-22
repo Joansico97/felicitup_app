@@ -40,14 +40,7 @@ class _InputCommonState extends State<InputCommon> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.titleText,
-              style: context.styles.subtitle.copyWith(
-                fontSize: context.sp(10),
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-              ),
-            ),
+            Text(widget.titleText, style: context.styles.menu),
             SizedBox(height: context.sp(8)),
             ConstrainedBox(
               constraints: BoxConstraints(
@@ -57,14 +50,13 @@ class _InputCommonState extends State<InputCommon> {
               child: TextFormField(
                 controller: widget.controller,
                 focusNode: widget.focusNode,
-                keyboardType: widget.isPrice ? TextInputType.number : TextInputType.text,
-                style: context.styles.smallText.copyWith(
-                  letterSpacing: 0.5,
-                ),
+                keyboardType:
+                    widget.isPrice ? TextInputType.number : TextInputType.text,
+                style: context.styles.smallText.copyWith(letterSpacing: 0.5),
                 decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 15,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: context.sp(16),
+                    vertical: context.sp(15),
                   ),
                   fillColor: Colors.white,
                   filled: true,
@@ -117,17 +109,18 @@ class _InputCommonState extends State<InputCommon> {
                   ),
                 ),
                 onSaved: (e) => widget.onSave!(e!),
-                validator: widget.validate != null
-                    ? (e) {
-                        final error = widget.validate!(e);
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          setState(() {
-                            errorText = error ?? '';
+                validator:
+                    widget.validate != null
+                        ? (e) {
+                          final error = widget.validate!(e);
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            setState(() {
+                              errorText = error ?? '';
+                            });
                           });
-                        });
-                        return error;
-                      }
-                    : null,
+                          return error;
+                        }
+                        : null,
                 onChanged: widget.onchangeEditing,
               ),
             ),

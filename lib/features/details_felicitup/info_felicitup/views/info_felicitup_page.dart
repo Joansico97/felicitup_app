@@ -12,13 +12,11 @@ import 'package:intl/intl.dart';
 
 class OwnerSearchListInInfo extends StatefulWidget {
   final List<UserModel> initialFriendList;
-  final List<OwnerModel> currentSelectedOwners;
   final InfoFelicitupBloc infoFelicitupBloc;
 
   const OwnerSearchListInInfo({
     super.key,
     required this.initialFriendList,
-    required this.currentSelectedOwners,
     required this.infoFelicitupBloc,
   });
 
@@ -34,14 +32,12 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
   @override
   void initState() {
     super.initState();
-
     widget.initialFriendList.sort(
       (a, b) => (a.fullName ?? '').toLowerCase().compareTo(
         (b.fullName ?? '').toLowerCase(),
       ),
     );
     _filteredFriendList = List.from(widget.initialFriendList);
-
     _searchController.addListener(() {
       _filterContacts(_searchController.text);
     });
@@ -87,80 +83,101 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
       );
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          margin: EdgeInsets.only(bottom: context.sp(12)),
-          child: TextField(
-            controller: _searchController,
-            style: context.styles.paragraph,
-            decoration: InputDecoration(
-              fillColor: context.colors.white,
-              filled: true,
-              hintText: 'Buscar contacto...',
-              hintStyle: context.styles.paragraph.copyWith(
-                color: context.colors.darkGrey,
-              ),
-              prefixIcon: Icon(Icons.search, color: context.colors.darkGrey),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(context.sp(10)),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(context.sp(10)),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(context.sp(10)),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: EdgeInsets.symmetric(
-                vertical: context.sp(10),
-                horizontal: context.sp(15),
-              ),
-            ),
-            onChanged: _filterContacts,
-          ),
-        ),
-        if (_filteredFriendList.isEmpty && _searchQuery.isNotEmpty)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: context.sp(20)),
-            child: Text(
-              'No se encontraron contactos para "$_searchQuery"',
-              style: context.styles.paragraph.copyWith(color: Colors.grey[700]),
-              textAlign: TextAlign.center,
-            ),
-          )
-        else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _filteredFriendList.length,
-            itemBuilder: (context, index) {
-              final contact = _filteredFriendList[index];
+    return BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
+      bloc: widget.infoFelicitupBloc,
 
-              final bool isSelected = widget.currentSelectedOwners.any(
-                (owner) => owner.id == contact.id,
-              );
-              return GestureDetector(
-                onTap: () {
-                  final owner = OwnerModel(
-                    id: contact.id ?? '',
-                    name: contact.fullName ?? 'Usuario sin nombre',
-                    date: contact.birthDate ?? DateTime.now(),
-                    userImg: contact.userImg ?? '',
+      builder: (context, infoState) {
+        final currentSelectedOwnersFromBloc = infoState.ownersList;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                bottom: context.sp(12),
+                left: context.sp(12),
+                right: context.sp(12),
+                top: context.sp(12),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: context.styles.paragraph,
+                decoration: InputDecoration(
+                  fillColor: context.colors.white,
+                  filled: true,
+                  hintText: 'Buscar contacto...',
+                  hintStyle: context.styles.paragraph.copyWith(
+                    color: context.colors.darkGrey,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: context.colors.darkGrey,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(context.sp(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(context.sp(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(context.sp(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: context.sp(10),
+                    horizontal: context.sp(15),
+                  ),
+                ),
+                onChanged: _filterContacts,
+              ),
+            ),
+            if (_filteredFriendList.isEmpty && _searchQuery.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: context.sp(20)),
+                child: Text(
+                  'No se encontraron contactos para "$_searchQuery"',
+                  style: context.styles.paragraph.copyWith(
+                    color: Colors.grey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _filteredFriendList.length,
+                itemBuilder: (context, index) {
+                  final contact = _filteredFriendList[index];
+
+                  final bool isSelected = currentSelectedOwnersFromBloc.any(
+                    (owner) => owner.id == contact.id,
                   );
+                  return GestureDetector(
+                    onTap: () {
+                      final owner = OwnerModel(
+                        id: contact.id ?? '',
+                        name: contact.fullName ?? 'Usuario sin nombre',
+                        date: contact.birthDate ?? DateTime.now(),
+                        userImg: contact.userImg ?? '',
+                      );
 
-                  widget.infoFelicitupBloc.add(
-                    InfoFelicitupEvent.addToOwnerList(owner),
+                      widget.infoFelicitupBloc.add(
+                        InfoFelicitupEvent.addToOwnerList(owner),
+                      );
+                    },
+                    child: ContactCardRow(
+                      contact: contact,
+                      isSelected: isSelected,
+                    ),
                   );
                 },
-                child: ContactCardRow(contact: contact, isSelected: isSelected),
-              );
-            },
-          ),
-      ],
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -176,7 +193,6 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (detailsFelicitupNavigatorKey.currentContext != null && mounted) {
         detailsFelicitupNavigatorKey.currentContext!
@@ -189,7 +205,6 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
   @override
   Widget build(BuildContext context) {
     final currentUser = context.read<AppBloc>().state.currentUser;
-
     if (currentUser == null) {
       return Scaffold(
         backgroundColor: context.colors.background,
@@ -223,6 +238,8 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                           return FloatingActionButton.extended(
                             heroTag: 'fab_add_owner_info',
                             onPressed: () {
+                              final bloc =
+                                  infoBlocContext.read<InfoFelicitupBloc>();
                               List<UserModel> friendListForModal = [
                                 ...infoState.friendList,
                               ];
@@ -232,7 +249,6 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                   (owner) => owner.id == friend.id,
                                 ),
                               );
-
                               friendListForModal.removeWhere(
                                 (friend) => felicitup.invitedUsers.any(
                                   (invitedUserId) => invitedUserId == friend.id,
@@ -249,7 +265,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                 context: rootNavigatorKey.currentContext!,
                                 hasBottomButton: true,
                                 onTap: () async {
-                                  infoBlocContext.read<InfoFelicitupBloc>().add(
+                                  bloc.add(
                                     InfoFelicitupEvent.updateFelicitupOwners(
                                       felicitup.id,
                                     ),
@@ -264,14 +280,11 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                   }
                                 },
                                 body: BlocProvider.value(
-                                  value:
-                                      infoBlocContext.read<InfoFelicitupBloc>(),
+                                  value: bloc,
                                   child: OwnerSearchListInInfo(
                                     initialFriendList: friendListForModal,
-                                    currentSelectedOwners: infoState.ownersList,
-                                    infoFelicitupBloc:
-                                        infoBlocContext
-                                            .read<InfoFelicitupBloc>(),
+
+                                    infoFelicitupBloc: bloc,
                                   ),
                                 ),
                               );
@@ -338,7 +351,6 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                             pickedTime.hour,
                             pickedTime.minute,
                           );
-
                           context.read<InfoFelicitupBloc>().add(
                             InfoFelicitupEvent.updateDateFelicitup(
                               felicitup.id,
@@ -378,7 +390,6 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                     felicitup.id,
                                   ),
                                 );
-
                                 if (mounted &&
                                     rootNavigatorKey.currentContext != null) {
                                   GoRouter.of(
@@ -417,7 +428,6 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
           if (felicitup == null) {
             return Center(child: Text("Cargando detalles del Felicitup..."));
           }
-
           return SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: context.sp(16)),
             child: Column(

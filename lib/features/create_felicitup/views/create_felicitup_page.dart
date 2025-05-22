@@ -21,13 +21,7 @@ class CreateFelicitupPage extends StatefulWidget {
 class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   final TextEditingController messageController = TextEditingController();
 
-  List<String> steps = [
-    'Quién',
-    'Evento',
-    'Participantes',
-    'Qué',
-    'Resumen',
-  ];
+  List<String> steps = ['Quién', 'Evento', 'Participantes', 'Qué', 'Resumen'];
 
   late List<Widget> pages;
 
@@ -35,25 +29,32 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   void initState() {
     super.initState();
 
-    List<String> listData = [...context.read<AppBloc>().state.currentUser?.matchList ?? []];
-    listData.removeWhere((element) => element == context.read<AppBloc>().state.currentUser?.id);
-    context.read<CreateFelicitupBloc>().add(CreateFelicitupEvent.loadFriendsData(listData));
+    List<String> listData = [
+      ...context.read<AppBloc>().state.currentUser?.matchList ?? [],
+    ];
+    listData.removeWhere(
+      (element) => element == context.read<AppBloc>().state.currentUser?.id,
+    );
+    context.read<CreateFelicitupBloc>().add(
+      CreateFelicitupEvent.loadFriendsData(listData),
+    );
 
     pages = [
       SelectContactsView(),
       SelectEventView(),
       SelectParticipantsView(),
       SelectComplementsView(),
-      SummaryView(
-        messageController: messageController,
-      ),
+      SummaryView(messageController: messageController),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<CreateFelicitupBloc, CreateFelicitupState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading || previous.status != current.status,
+      listenWhen:
+          (previous, current) =>
+              previous.isLoading != current.isLoading ||
+              previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -62,12 +63,12 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
         }
 
         if (state.status == CreateStatus.success) {
-          showFinishModal(
-            () {
-              context.read<CreateFelicitupBloc>().add(const CreateFelicitupEvent.deleteCurrentFelicitup());
-              context.go(RouterPaths.felicitupsDashboard);
-            },
-          );
+          showFinishModal(() {
+            context.read<CreateFelicitupBloc>().add(
+              const CreateFelicitupEvent.deleteCurrentFelicitup(),
+            );
+            context.go(RouterPaths.felicitupsDashboard);
+          });
         }
       },
       child: BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
@@ -87,14 +88,10 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                         horizontal: context.sp(8),
                         // vertical: context.sp(8),
                       ),
-                      margin: EdgeInsets.only(
-                        top: context.sp(20),
-                      ),
+                      margin: EdgeInsets.only(top: context.sp(20)),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(
-                          context.sp(20),
-                        ),
+                        borderRadius: BorderRadius.circular(context.sp(20)),
                       ),
                       child: SingleChildScrollView(
                         child: Column(
@@ -103,9 +100,7 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                             Container(
                               width: context.fullWidth,
                               height: context.sp(30),
-                              margin: EdgeInsets.only(
-                                bottom: context.sp(10),
-                              ),
+                              margin: EdgeInsets.only(bottom: context.sp(10)),
                               padding: EdgeInsets.symmetric(
                                 horizontal: context.sp(5),
                               ),
@@ -113,18 +108,19 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                                 children: [
                                   Spacer(),
                                   GestureDetector(
-                                    onTap: () => showConfirmModal(
-                                      title: '¿Quieres salir de la creación de tu felicitup?',
-                                      onAccept: () async {
-                                        context.go(RouterPaths.felicitupsDashboard);
-                                        context
-                                            .read<CreateFelicitupBloc>()
-                                            .add(CreateFelicitupEvent.deleteCurrentFelicitup());
-                                        // context.read<HomeBloc>().add(const HomeEvent.changeShowButton());
-                                        // ref.read(homeEventsProvider.notifier).toggleCreate();
-                                        // ref.read(homeEventsProvider.notifier).deleteCurrentFelicitup();
-                                      },
-                                    ),
+                                    onTap:
+                                        () => showConfirmModal(
+                                          title:
+                                              '¿Quieres salir de la creación de tu felicitup?',
+                                          onAccept: () async {
+                                            context.go(
+                                              RouterPaths.felicitupsDashboard,
+                                            );
+                                            context.read<CreateFelicitupBloc>().add(
+                                              CreateFelicitupEvent.deleteCurrentFelicitup(),
+                                            );
+                                          },
+                                        ),
                                     child: Container(
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
@@ -148,9 +144,7 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                                 children: [
                                   Column(
                                     children: [
-                                      SizedBox(
-                                        height: context.sp(10),
-                                      ),
+                                      SizedBox(height: context.sp(10)),
                                       SizedBox(
                                         width: context.sp(200),
                                         child: Divider(
@@ -159,11 +153,15 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                                       ),
                                     ],
                                   ),
-                                  BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                                  BlocBuilder<
+                                    CreateFelicitupBloc,
+                                    CreateFelicitupState
+                                  >(
                                     builder: (_, state) {
                                       final currentStep = state.steperIndex;
                                       return Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
                                         children: [
                                           ...List.generate(
                                             steps.length,
@@ -171,9 +169,16 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                                               title: steps[index],
                                               step: (index + 1).toString(),
                                               isActive: index == currentStep,
-                                              onTap: () => context
-                                                  .read<CreateFelicitupBloc>()
-                                                  .add(CreateFelicitupEvent.jumpToStep(index)),
+                                              onTap:
+                                                  () => context
+                                                      .read<
+                                                        CreateFelicitupBloc
+                                                      >()
+                                                      .add(
+                                                        CreateFelicitupEvent.jumpToStep(
+                                                          index,
+                                                        ),
+                                                      ),
                                             ),
                                           ),
                                         ],
@@ -184,7 +189,10 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                               ),
                             ),
                             SizedBox(height: context.sp(20)),
-                            BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                            BlocBuilder<
+                              CreateFelicitupBloc,
+                              CreateFelicitupState
+                            >(
                               builder: (_, state) {
                                 return AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 300),
@@ -211,18 +219,27 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                               },
                             ),
                             SizedBox(height: context.sp(20)),
-                            BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                            BlocBuilder<
+                              CreateFelicitupBloc,
+                              CreateFelicitupState
+                            >(
                               builder: (_, state) {
                                 final currentStep = state.steperIndex;
                                 return BottomButtons(
                                   showBack: currentStep > 0,
                                   showNext: currentStep < steps.length - 1,
-                                  onBack: () => context
-                                      .read<CreateFelicitupBloc>()
-                                      .add(const CreateFelicitupEvent.previousStep()),
-                                  onNext: () => context
-                                      .read<CreateFelicitupBloc>()
-                                      .add(CreateFelicitupEvent.nextStep(steps.length - 1)),
+                                  onBack:
+                                      () => context.read<CreateFelicitupBloc>().add(
+                                        const CreateFelicitupEvent.previousStep(),
+                                      ),
+                                  onNext:
+                                      () => context
+                                          .read<CreateFelicitupBloc>()
+                                          .add(
+                                            CreateFelicitupEvent.nextStep(
+                                              steps.length - 1,
+                                            ),
+                                          ),
                                 );
                               },
                             ),
@@ -260,16 +277,12 @@ class _HeaderStep extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minWidth: context.sp(40),
-        ),
+        constraints: BoxConstraints(minWidth: context.sp(40)),
         child: Column(
           children: [
             Text(
               title,
-              style: context.styles.menu.copyWith(
-                fontSize: context.sp(10),
-              ),
+              style: context.styles.menu.copyWith(fontSize: context.sp(10)),
             ),
             SizedBox(height: context.sp(6)),
             Container(
@@ -289,7 +302,7 @@ class _HeaderStep extends StatelessWidget {
                   color: isActive ? context.colors.orange : context.colors.text,
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
