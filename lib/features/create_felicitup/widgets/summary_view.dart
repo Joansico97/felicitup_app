@@ -25,7 +25,6 @@ class SummaryView extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
           child: Column(
             children: [
-              SizedBox(height: context.sp(16)),
               BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;
@@ -60,7 +59,7 @@ class SummaryView extends StatelessWidget {
                       );
                 },
               ),
-              SizedBox(height: context.sp(12)),
+              SizedBox(height: context.sp(8)),
               BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;
@@ -94,7 +93,7 @@ class SummaryView extends StatelessWidget {
                       );
                 },
               ),
-              SizedBox(height: context.sp(12)),
+              SizedBox(height: context.sp(8)),
               SizedBox(
                 width: context.sp(230),
                 child: Column(
@@ -103,15 +102,15 @@ class SummaryView extends StatelessWidget {
                     Text('| Paso 05', style: context.styles.menu),
                     SizedBox(height: context.sp(8)),
                     Text('Resumen', style: context.styles.header2),
-                    SizedBox(height: context.sp(8)),
+                    SizedBox(height: context.sp(4)),
                     Text(
-                      'Ya casi estamos, revisa los datos de tu Felicitup.',
+                      'Revisa los datos de tu Felicitup',
                       style: context.styles.paragraph,
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: context.sp(16)),
+              SizedBox(height: context.sp(8)),
               BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;
@@ -131,7 +130,7 @@ class SummaryView extends StatelessWidget {
                               CreateFelicitupEvent.jumpToStep(0),
                             ),
                       ),
-                      SizedBox(height: context.sp(8)),
+
                       _ResumenCard(
                         label: 'Motivo: $reason',
                         onTap:
@@ -139,7 +138,7 @@ class SummaryView extends StatelessWidget {
                               CreateFelicitupEvent.jumpToStep(1),
                             ),
                       ),
-                      SizedBox(height: context.sp(8)),
+
                       _ResumenCard(
                         label: 'Participantes: ${invitedList.length + 1}',
                         onTap:
@@ -147,7 +146,7 @@ class SummaryView extends StatelessWidget {
                               CreateFelicitupEvent.jumpToStep(2),
                             ),
                       ),
-                      SizedBox(height: context.sp(8)),
+
                       _ResumenCard(
                         label:
                             (() {
@@ -169,14 +168,13 @@ class SummaryView extends StatelessWidget {
                   );
                 },
               ),
-              SizedBox(height: context.sp(12)),
               SizedBox(
                 height: context.sp(100),
                 width: context.sp(230),
                 child: InputCommon(
                   controller: messageController,
                   hintText: 'Ingresa un mensaje',
-                  titleText: 'Mesnaje para tu felicitup',
+                  titleText: 'Mensaje para tu felicitup',
                 ),
               ),
               SizedBox(height: context.sp(8)),

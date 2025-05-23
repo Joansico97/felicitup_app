@@ -135,6 +135,7 @@ class _SelectEventViewState extends State<SelectEventView> {
               onTap: () {
                 commoBottomModal(
                   context: context,
+                  changeClose: true,
                   hasSearch: false,
                   body: BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                     builder: (_, state) {

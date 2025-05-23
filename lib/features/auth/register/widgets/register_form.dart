@@ -139,12 +139,17 @@ class _RegisterFormState extends State<RegisterForm> {
                 ),
               ),
             ),
-            SizedBox(height: context.sp(24)),
+            SizedBox(height: context.sp(12)),
             Align(
               alignment: Alignment.centerLeft,
-              child: Text('Género', style: context.styles.paragraph),
+              child: Text(
+                'Género',
+                style: context.styles.paragraph.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-            SizedBox(height: context.sp(12)),
+            SizedBox(height: context.sp(8)),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -180,7 +185,7 @@ class _RegisterFormState extends State<RegisterForm> {
                 ),
               ],
             ),
-            SizedBox(height: context.sp(12)),
+            SizedBox(height: context.sp(8)),
             RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
@@ -219,7 +224,7 @@ class _RegisterFormState extends State<RegisterForm> {
                 ],
               ),
             ),
-            SizedBox(height: context.sp(24)),
+            SizedBox(height: context.sp(12)),
             SizedBox(
               height: context.sp(45),
               width: context.sp(172),
@@ -255,7 +260,7 @@ class _RegisterFormState extends State<RegisterForm> {
                 isActive: true,
               ),
             ),
-            SizedBox(height: context.sp(12)),
+            SizedBox(height: context.sp(8)),
           ],
         ),
       ),
