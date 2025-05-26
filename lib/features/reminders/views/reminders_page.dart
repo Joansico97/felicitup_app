@@ -33,16 +33,11 @@ class RemindersPage extends StatelessWidget {
                 itemCount: currentUser?.birthdateAlerts?.length ?? 0,
                 itemBuilder: (_, index) {
                   final data = currentUser?.birthdateAlerts?[index];
-                  DateTime? triedParsedDate = DateTime.tryParse(
-                    data?.targetDate != null
-                        ? data!.targetDate!
-                        : DateTime.now().toString(),
-                  );
 
                   return RememberCard(
                     name: data?.friendName ?? 'Jorge Silva',
-                    date: triedParsedDate ?? DateTime.now(),
-                    image: data?.friendProfilePic,
+                    date: data!.targetDate!,
+                    image: data.friendProfilePic,
                     onTap:
                         () => showConfirDoublemModal(
                           title: 'Qué acción deseas realizar?',
@@ -52,10 +47,10 @@ class RemindersPage extends StatelessWidget {
 
                           onAction1: () async {
                             final OwnerModel owner = OwnerModel(
-                              id: data?.friendId ?? '',
-                              name: data?.friendName ?? '',
-                              userImg: data?.friendProfilePic,
-                              date: DateTime.now(),
+                              id: data.friendId ?? '',
+                              name: data.friendName ?? '',
+                              userImg: data.friendProfilePic,
+                              date: data.targetDate!,
                             );
                             context.go(RouterPaths.createFelicitup);
                             rootNavigatorKey.currentContext!
@@ -78,24 +73,24 @@ class RemindersPage extends StatelessWidget {
 
                             context.read<RemindersBloc>().add(
                               RemindersEvent.deleteBirthdateAlert(
-                                data?.id ?? '',
+                                data.id ?? '',
                               ),
                             );
                           },
                           onAction2: () async {
                             final SingleChatModel singleChat = SingleChatModel(
-                              chatId: data?.friendId ?? '',
-                              friendId: data?.friendId ?? '',
-                              userName: data?.friendName ?? '',
-                              userImage: data?.friendProfilePic,
+                              chatId: data.friendId ?? '',
+                              friendId: data.friendId ?? '',
+                              userName: data.friendName ?? '',
+                              userImage: data.friendProfilePic,
                             );
                             if (currentUser?.singleChats?.any(
-                                  (alert) => alert.friendId == data?.friendId,
+                                  (alert) => alert.friendId == data.friendId,
                                 ) ??
                                 false) {
                               final alert = currentUser?.singleChats
                                   ?.firstWhere(
-                                    (alert) => alert.friendId == data?.friendId,
+                                    (alert) => alert.friendId == data.friendId,
                                   );
                               context.go(RouterPaths.singleChat, extra: alert);
                               return;
@@ -106,7 +101,7 @@ class RemindersPage extends StatelessWidget {
                             );
                             context.read<RemindersBloc>().add(
                               RemindersEvent.deleteBirthdateAlert(
-                                data?.id ?? '',
+                                data.id ?? '',
                               ),
                             );
                           },

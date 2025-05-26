@@ -23,16 +23,10 @@ class RememberCard extends StatelessWidget {
       child: Container(
         height: context.sp(50),
         width: context.sp(264),
-        padding: EdgeInsets.symmetric(
-          horizontal: context.sp(20),
-        ),
-        margin: EdgeInsets.only(
-          bottom: context.sp(8),
-        ),
+        padding: EdgeInsets.symmetric(horizontal: context.sp(20)),
+        margin: EdgeInsets.only(bottom: context.sp(8)),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(
-            context.sp(28),
-          ),
+          borderRadius: BorderRadius.circular(context.sp(28)),
           color: context.colors.softOrange,
         ),
         child: Row(
@@ -47,40 +41,37 @@ class RememberCard extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: context.colors.grey,
                   ),
-                  child: image != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            context.sp(20),
+                  child:
+                      image != null
+                          ? ClipRRect(
+                            borderRadius: BorderRadius.circular(context.sp(20)),
+                            child: Image.network(image!, fit: BoxFit.cover),
+                          )
+                          : Icon(
+                            Icons.person,
+                            color: context.colors.white,
+                            size: context.sp(20),
                           ),
-                          child: Image.network(
-                            image!,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Icon(
-                          Icons.person,
-                          color: context.colors.white,
-                          size: context.sp(20),
-                        ),
                 ),
                 SizedBox(width: context.sp(10)),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      name,
-                      style: context.styles.smallText.copyWith(
-                        color: context.colors.grey,
-                        fontSize: context.sp(14),
-                        fontWeight: FontWeight.w500,
+                    SizedBox(
+                      width: context.sp(130),
+                      child: Text(
+                        name,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.styles.subtitle.copyWith(
+                          color: context.colors.grey,
+                        ),
                       ),
                     ),
                     Text(
-                      'Hoy, ${DateFormat('d MMMM').format(date)} · 28 años',
-                      style: context.styles.smallText.copyWith(
+                      '${DateFormat('MMMM d').format(date)} · ${DateTime.now().year - date.year} años',
+                      style: context.styles.paragraph.copyWith(
                         color: context.colors.grey,
-                        fontSize: context.sp(10),
                       ),
                     ),
                   ],
@@ -93,10 +84,7 @@ class RememberCard extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: context.colors.grey,
-                  width: 2,
-                ),
+                border: Border.all(color: context.colors.grey, width: 2),
               ),
               child: Icon(
                 Icons.chat_bubble,

@@ -81,93 +81,100 @@ class RememberSection extends StatelessWidget {
               builder: (_, state) {
                 final currentUser = state.currentUser;
 
-                return Column(
-                  children: [
-                    ...List.generate(
-                      currentUser?.birthdateAlerts?.length ?? 0,
-                      (index) {
-                        final data = currentUser?.birthdateAlerts?[index];
+                return Expanded(
+                  child: ListView.builder(
+                    itemCount: currentUser?.birthdateAlerts?.length ?? 0,
+                    itemBuilder: (_, index) {
+                      final data = currentUser?.birthdateAlerts?[index];
 
-                        return RememberCard(
-                          name: data?.friendName ?? '',
-                          date: DateTime.now(),
-                          image: data?.friendProfilePic,
-                          onTap: () {
-                            showConfirDoublemModal(
-                              title: 'Qué acción deseas realizar?',
-                              label1: 'Crear felicitup para este usuario',
-                              label2: 'Enviar mensaje directo',
-                              onAction1: () async {
-                                final OwnerModel owner = OwnerModel(
-                                  id: data?.friendId ?? '',
-                                  name: data?.friendName ?? '',
-                                  userImg: data?.friendProfilePic,
-                                  date: DateTime.now(),
-                                );
-                                context.go(RouterPaths.createFelicitup);
-                                context.read<CreateFelicitupBloc>().add(
-                                  CreateFelicitupEvent.changeFelicitupOwner(
-                                    owner,
-                                  ),
-                                );
-                                context.read<CreateFelicitupBloc>().add(
-                                  CreateFelicitupEvent.changeEventReason(
-                                    'Cumpleaños',
-                                  ),
-                                );
-                                context.read<CreateFelicitupBloc>().add(
-                                  CreateFelicitupEvent.jumpToStep(2),
-                                );
+                      return RememberCard(
+                        name: data?.friendName ?? '',
+                        date: data?.targetDate ?? DateTime.now(),
+                        image: data?.friendProfilePic,
+                        onTap: () {
+                          showConfirDoublemModal(
+                            title: 'Qué acción deseas realizar?',
+                            label1: 'Crear felicitup para este usuario',
+                            label2: 'Enviar mensaje directo',
+                            onAction1: () async {
+                              final OwnerModel owner = OwnerModel(
+                                id: data?.friendId ?? '',
+                                name: data?.friendName ?? '',
+                                userImg: data?.friendProfilePic,
+                                date: data?.targetDate ?? DateTime.now(),
+                              );
+                              context.go(RouterPaths.createFelicitup);
+                              context.read<CreateFelicitupBloc>().add(
+                                CreateFelicitupEvent.changeFelicitupOwner(
+                                  owner,
+                                ),
+                              );
+                              context.read<CreateFelicitupBloc>().add(
+                                CreateFelicitupEvent.changeEventReason(
+                                  'Cumpleaños',
+                                ),
+                              );
+                              context.read<CreateFelicitupBloc>().add(
+                                CreateFelicitupEvent.jumpToStep(2),
+                              );
 
-                                context.read<FelicitupsDashboardBloc>().add(
-                                  FelicitupsDashboardEvent.deleteBirthdateAlert(
-                                    data?.id ?? '',
-                                  ),
-                                );
-                              },
-                              onAction2: () async {
-                                final SingleChatModel singleChat =
-                                    SingleChatModel(
-                                      chatId: data?.friendId ?? '',
-                                      friendId: data?.friendId ?? '',
-                                      userName: data?.friendName ?? '',
-                                      userImage: data?.friendProfilePic,
-                                    );
-                                if (currentUser?.singleChats?.any(
+                              context.read<FelicitupsDashboardBloc>().add(
+                                FelicitupsDashboardEvent.deleteBirthdateAlert(
+                                  data?.id ?? '',
+                                ),
+                              );
+                            },
+                            onAction2: () async {
+                              final SingleChatModel singleChat =
+                                  SingleChatModel(
+                                    chatId: data?.friendId ?? '',
+                                    friendId: data?.friendId ?? '',
+                                    userName: data?.friendName ?? '',
+                                    userImage: data?.friendProfilePic,
+                                  );
+                              if (currentUser?.singleChats?.any(
+                                    (alert) => alert.friendId == data?.friendId,
+                                  ) ??
+                                  false) {
+                                final alert = currentUser?.singleChats
+                                    ?.firstWhere(
                                       (alert) =>
                                           alert.friendId == data?.friendId,
-                                    ) ??
-                                    false) {
-                                  final alert = currentUser?.singleChats
-                                      ?.firstWhere(
-                                        (alert) =>
-                                            alert.friendId == data?.friendId,
-                                      );
-                                  context.go(
-                                    RouterPaths.singleChat,
-                                    extra: alert,
-                                  );
-                                  return;
-                                }
-                                context.read<FelicitupsDashboardBloc>().add(
-                                  FelicitupsDashboardEvent.createSingleChat(
-                                    singleChat,
-                                  ),
+                                    );
+                                context.go(
+                                  RouterPaths.singleChat,
+                                  extra: alert,
                                 );
+                                return;
+                              }
+                              context.read<FelicitupsDashboardBloc>().add(
+                                FelicitupsDashboardEvent.createSingleChat(
+                                  singleChat,
+                                ),
+                              );
 
-                                context.read<FelicitupsDashboardBloc>().add(
-                                  FelicitupsDashboardEvent.deleteBirthdateAlert(
-                                    data?.id ?? '',
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
+                              context.read<FelicitupsDashboardBloc>().add(
+                                FelicitupsDashboardEvent.deleteBirthdateAlert(
+                                  data?.id ?? '',
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
                 );
+                // return Column(
+                //   children: [
+                //     ...List.generate(
+                //       currentUser?.birthdateAlerts?.length ?? 0,
+                //       (index) {
+
+                //       },
+                //     ),
+                //   ],
+                // );
               },
             ),
           ],
