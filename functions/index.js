@@ -687,35 +687,54 @@ async function generateThumbnail(videoPath, outputPath) {
 }
 
 exports.checkBirthdaysAndCreateAlerts = onSchedule({
-  // schedule: 'every 24 hours',
-  schedule: 'every 5 minutes',
-  timeZone: 'UTC',
+  schedule: 'every 24 hours',
+  timeZone: 'UTC', // Ajustar según necesidad
   timeoutSeconds: 540,
   memory: '1GB',
   maxInstances: 1,
 }, async (event) => {
   const db = admin.firestore();
   const today = new Date();
-  const currentMonth = today.getUTCMonth() + 1;
-  const currentDay = today.getUTCDate();
 
-  console.log(`Checking birthdays for date: ${currentMonth}/${currentDay}`);
+  console.log(`Starting birthday check from ${today.toISOString()}`);
 
   try {
-    // 1. Obtener todos los usuarios que cumplen años hoy
+    // Procesar para hoy + 4 días siguientes (total 5 días)
+    for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + dayOffset);
+
+      const targetMonth = targetDate.getUTCMonth() + 1;
+      const targetDay = targetDate.getUTCDate();
+      const isToday = dayOffset === 0;
+
+      console.log(`Checking for ${targetMonth}/${targetDay} (${isToday ? 'TODAY' : 'future'})`);
+
+      await processBirthdaysForDate(db, targetMonth, targetDay, targetDate, isToday);
+    }
+
+    console.log('Birthday alerts processing completed successfully for 5-day window');
+    return {success: true, message: 'Birthday alerts processed successfully for 5-day window'};
+  } catch (error) {
+    console.error('Error in checkBirthdaysAndCreateAlerts:', error);
+    throw new functions.https.HttpsError('internal', 'Error processing birthday alerts', error);
+  }
+});
+
+async function processBirthdaysForDate(db, targetMonth, targetDay, targetDate, shouldSendNotifications) {
+  try {
     const birthdayUsersSnapshot = await db.collection(constants.usersPath)
-        .where('birthMonth', '==', currentMonth)
-        .where('birthDay', '==', currentDay)
+        .where('birthMonth', '==', targetMonth)
+        .where('birthDay', '==', targetDay)
         .get();
 
     if (birthdayUsersSnapshot.empty) {
-      console.log('No birthdays today');
-      return {message: 'No birthdays found today'};
+      console.log(`No birthdays found for ${targetMonth}/${targetDay}`);
+      return;
     }
 
-    console.log(`Found ${birthdayUsersSnapshot.size} users with birthdays today`);
+    console.log(`Found ${birthdayUsersSnapshot.size} users with birthdays on ${targetMonth}/${targetDay}`);
 
-    // 2. Procesar cada usuario que cumple años
     const processingPromises = birthdayUsersSnapshot.docs.map(async (birthdayUserDoc) => {
       const birthdayUser = birthdayUserDoc.data();
       const birthdayUserId = birthdayUserDoc.id;
@@ -725,33 +744,38 @@ exports.checkBirthdaysAndCreateAlerts = onSchedule({
         return;
       }
 
-      // Filtrar el propio ID del usuario de su matchList (si estuviera)
+      // Filtrar el propio ID del usuario de su matchList
       const filteredMatchList = birthdayUser.matchList.filter((friendId) => friendId !== birthdayUserId);
 
       if (filteredMatchList.length === 0) {
-        console.log(`User ${birthdayUserId} has no valid friends in matchList (only self or empty)`);
+        console.log(`User ${birthdayUserId} has no valid friends in matchList`);
         return;
       }
 
       console.log(`Processing birthday user ${birthdayUserId} with ${filteredMatchList.length} valid matches`);
-      await processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, filteredMatchList);
+      await processFriendsForBirthdayUser(
+          db,
+          birthdayUser,
+          birthdayUserId,
+          filteredMatchList,
+          targetDate,
+          shouldSendNotifications,
+      );
     });
 
     await Promise.all(processingPromises);
-    console.log('Birthday alerts processing completed successfully');
-    return {success: true, message: 'Birthday alerts processed successfully'};
   } catch (error) {
-    console.error('Error in checkBirthdaysAndCreateAlerts:', error);
-    throw new functions.https.HttpsError('internal', 'Error processing birthday alerts', error);
+    console.error(`Error processing date ${targetMonth}/${targetDay}:`, error);
+    throw error;
   }
-});
+}
 
-async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, matchList) {
+async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, matchList, targetDate, shouldSendNotifications) {
   const batch = db.batch();
   const friendsToNotify = [];
 
   try {
-    // Obtener datos de todos los amigos a la vez (más eficiente)
+    // Obtener datos de todos los amigos a la vez
     const friendsSnapshots = await Promise.all(
         matchList.map((friendId) =>
           db.collection(constants.usersPath).doc(friendId).get(),
@@ -769,12 +793,6 @@ async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, m
 
       const friendData = friendDoc.data();
 
-      // Verificar relación bidireccional (opcional, según requisitos)
-      if (!friendData.matchList || !friendData.matchList.includes(birthdayUserId)) {
-        console.log(`Non-reciprocal relationship between ${birthdayUserId} and ${friendId}, skipping`);
-        continue;
-      }
-
       // Verificar si ya existe una alerta para este cumpleaños
       const existingAlerts = friendData.birthdateAlerts || [];
       const alertExists = existingAlerts.some((alert) =>
@@ -786,22 +804,23 @@ async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, m
         continue;
       }
 
-      // Crear nueva alerta
+      // Crear nueva alerta con la fecha real de cumpleaños
       const newAlert = {
-        id: `${birthdayUserId}-${Date.now()}`,
+        id: `${birthdayUserId}-${targetDate.getTime()}`,
         friendId: birthdayUserId,
         friendName: birthdayUser.fullName || `User ${birthdayUserId}`,
         friendProfilePic: birthdayUser.userImg || "",
-        targetDate: birthdayUser.birthdate,
+        targetDate: admin.firestore.Timestamp.fromDate(targetDate), // Fecha real del cumpleaños
       };
 
-      // Preparar actualización en batch
+      // Preparar actualización
       const friendRef = db.collection(constants.usersPath).doc(friendId);
       batch.update(friendRef, {
         birthdateAlerts: admin.firestore.FieldValue.arrayUnion(newAlert),
       });
 
-      if (friendData.fcmToken) {
+      // Solo agregar a notificaciones si es el día exacto del cumpleaños
+      if (shouldSendNotifications && friendData.fcmToken) {
         friendsToNotify.push({
           token: friendData.fcmToken,
           friendName: friendData.fullName || `User ${friendId}`,
@@ -810,13 +829,15 @@ async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, m
       }
     }
 
-    // Ejecutar todas las actualizaciones en una sola operación
+    // Ejecutar actualizaciones
     if (matchList.length > 0) {
       await batch.commit();
-      console.log(`Created alerts for ${matchList.length} friends of birthday user ${birthdayUserId}`);
+      console.log(`Created alerts for ${matchList.length} friends of ${birthdayUserId}`);
 
-      // Enviar notificaciones de manera optimizada
-      await sendBirthdayNotifications(friendsToNotify, birthdayUser.fullName);
+      // Enviar notificaciones solo si es el día exacto
+      if (shouldSendNotifications && friendsToNotify.length > 0) {
+        await sendBirthdayNotifications(friendsToNotify, birthdayUser.fullName);
+      }
     }
   } catch (error) {
     console.error(`Error processing friends for ${birthdayUserId}:`, error);
@@ -825,10 +846,7 @@ async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, m
 }
 
 async function sendBirthdayNotifications(friendsToNotify, birthdayUserName) {
-  if (friendsToNotify.length === 0) return;
-
   try {
-    // Dividir en lotes de 500 (límite de FCM)
     const batchSize = 500;
     for (let i = 0; i < friendsToNotify.length; i += batchSize) {
       const batch = friendsToNotify.slice(i, i + batchSize);
@@ -848,13 +866,12 @@ async function sendBirthdayNotifications(friendsToNotify, birthdayUserName) {
         },
       }));
 
-      await admin.messaging().sendAll(messages);
+      await admin.messaging().sendEach(messages);
       console.log(`Sent ${messages.length} notifications in batch`);
     }
     console.log(`Total notifications sent: ${friendsToNotify.length}`);
   } catch (error) {
     console.error('Error sending notifications:', error);
-    // No lanzamos error para no fallar toda la función por problemas de notificaciones
   }
 }
 
