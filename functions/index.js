@@ -810,7 +810,7 @@ async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, m
         friendId: birthdayUserId,
         friendName: birthdayUser.fullName || `User ${birthdayUserId}`,
         friendProfilePic: birthdayUser.userImg || "",
-        targetDate: admin.firestore.Timestamp.fromDate(targetDate), // Fecha real del cumpleaños
+        targetDate: birthdayUser.targetDate,
       };
 
       // Preparar actualización
