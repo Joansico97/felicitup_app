@@ -32,6 +32,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     on<AppEvent>(
       (event, emit) => event.map(
         changeLoading: (_) => _changeLoading(emit),
+        closeRememberSection: (_) => _closeRememberSection(emit),
         loadUserData: (_) => _loadUserData(emit),
         loadProvUserData:
             (event) => _loadProvUserData(emit, event.federatedData),
@@ -59,6 +60,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   _changeLoading(Emitter<AppState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
+  }
+
+  _closeRememberSection(Emitter<AppState> emit) {
+    emit(state.copyWith(showRememberSection: false));
   }
 
   _loadUserData(Emitter<AppState> emit) async {

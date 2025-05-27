@@ -66,19 +66,12 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
             CommonHeader(),
             BlocBuilder<AppBloc, AppState>(
               builder: (_, stateApp) {
-                return BlocBuilder<
-                  FelicitupsDashboardBloc,
-                  FelicitupsDashboardState
-                >(
-                  builder: (_, state) {
-                    return Visibility(
-                      visible:
-                          (stateApp.currentUser?.birthdateAlerts?.isNotEmpty ??
-                              false) &&
-                          state.showSection,
-                      child: RememberSection(),
-                    );
-                  },
+                return Visibility(
+                  visible:
+                      (stateApp.currentUser?.birthdateAlerts?.isNotEmpty ??
+                          false) &&
+                      stateApp.showRememberSection,
+                  child: RememberSection(),
                 );
               },
             ),

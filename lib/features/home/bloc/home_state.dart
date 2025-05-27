@@ -8,9 +8,6 @@ class HomeState with _$HomeState {
     required bool showButton,
   }) = _HomeState;
 
-  factory HomeState.initial() => HomeState(
-        isLoading: false,
-        create: false,
-        showButton: true,
-      );
+  factory HomeState.initial() =>
+      HomeState(isLoading: false, create: false, showButton: true);
 }

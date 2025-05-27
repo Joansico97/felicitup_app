@@ -4,6 +4,7 @@ part of 'app_bloc.dart';
 class AppState with _$AppState {
   const factory AppState({
     required bool isLoading,
+    required bool showRememberSection,
     required AuthorizationStatus status,
     bool? isVerified,
     UserModel? currentUser,
@@ -17,6 +18,7 @@ class AppState with _$AppState {
 
   factory AppState.initial() => AppState(
     isLoading: false,
+    showRememberSection: true,
     status: AuthorizationStatus.notDetermined,
     counter: 0,
     globalTimerRemaining: null,

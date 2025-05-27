@@ -57,8 +57,8 @@ class RememberSection extends StatelessWidget {
                 Spacer(),
                 GestureDetector(
                   onTap:
-                      () => context.read<FelicitupsDashboardBloc>().add(
-                        FelicitupsDashboardEvent.closeRememberSection(),
+                      () => context.read<AppBloc>().add(
+                        AppEvent.closeRememberSection(),
                       ),
                   child: Container(
                     padding: EdgeInsets.all(context.sp(4)),

@@ -9,10 +9,9 @@ part 'home_state.dart';
 part 'home_bloc.freezed.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  HomeBloc({
-    required UserRepository userRepository,
-  })  : _userRepository = userRepository,
-        super(HomeState.initial()) {
+  HomeBloc({required UserRepository userRepository})
+    : _userRepository = userRepository,
+      super(HomeState.initial()) {
     on<HomeEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
@@ -40,20 +39,29 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   _getAndUpdateContacts(String isoCode) async {
     final contacts = await getAllInfoContacts();
     List<Map<String, dynamic>> contactsMapList =
-        contacts.where((e) => e.displayName.isNotEmpty && e.phones.isNotEmpty).map(
-      (e) {
-        return {
-          'displayName': e.displayName,
-          'phone':
-              e.phones.first.number.replaceAll('-', '').replaceAll('(', '').replaceAll(')', '').replaceAll(' ', ''),
-        };
-      },
-    ).toList();
+        contacts
+            .where((e) => e.displayName.isNotEmpty && e.phones.isNotEmpty)
+            .map((e) {
+              return {
+                'displayName': e.displayName,
+                'phone': e.phones.first.number
+                    .replaceAll('-', '')
+                    .replaceAll('(', '')
+                    .replaceAll(')', '')
+                    .replaceAll(' ', ''),
+              };
+            })
+            .toList();
 
     RegExp nameRegex = RegExp(r'\d{3,}');
 
-    contactsMapList.removeWhere((element) => element['displayName'] == null || element['displayName'].isEmpty);
-    contactsMapList.removeWhere((element) => nameRegex.hasMatch(element['displayName'] ?? ''));
+    contactsMapList.removeWhere(
+      (element) =>
+          element['displayName'] == null || element['displayName'].isEmpty,
+    );
+    contactsMapList.removeWhere(
+      (element) => nameRegex.hasMatch(element['displayName'] ?? ''),
+    );
 
     for (var element in contactsMapList) {
       if (element['phone'][0] == '0' && element['phone'][1] == '0') {
@@ -66,7 +74,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     }
 
-    List<String> friendsPhoneList = contactsMapList.map((e) => e['phone'] as String).toList();
+    List<String> friendsPhoneList =
+        contactsMapList.map((e) => e['phone'] as String).toList();
     await _userRepository.updateContacts(contactsMapList, friendsPhoneList);
   }
 
@@ -77,8 +86,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final packageContacts = await FastContacts.getAllContacts();
       final List<Contact> contacts = [...packageContacts];
       contacts.removeWhere((element) => element.displayName.isEmpty);
-      contacts.sort((a, b) => a.displayName.toLowerCase().trim().compareTo(b.displayName.toLowerCase().trim()));
-      contacts.removeWhere((element) => element.phones.isNotEmpty ? element.phones[0].number.length < 8 : false);
+      contacts.sort(
+        (a, b) => a.displayName.toLowerCase().trim().compareTo(
+          b.displayName.toLowerCase().trim(),
+        ),
+      );
+      contacts.removeWhere(
+        (element) =>
+            element.phones.isNotEmpty
+                ? element.phones[0].number.length < 8
+                : false,
+      );
       return contacts;
     }
 

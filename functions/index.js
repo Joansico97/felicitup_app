@@ -687,8 +687,9 @@ async function generateThumbnail(videoPath, outputPath) {
 }
 
 exports.checkBirthdaysAndCreateAlerts = onSchedule({
-  schedule: 'every 24 hours',
-  timeZone: 'UTC', // Ajustar según necesidad
+  // schedule: 'every 24 hours',
+  schedule: 'every 5 minutes',
+  timeZone: 'UTC',
   timeoutSeconds: 540,
   memory: '1GB',
   maxInstances: 1,
@@ -793,7 +794,6 @@ async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, m
 
       const friendData = friendDoc.data();
 
-      // Verificar si ya existe una alerta para este cumpleaños
       const existingAlerts = friendData.birthdateAlerts || [];
       const alertExists = existingAlerts.some((alert) =>
         alert.friendId === birthdayUserId,
@@ -804,13 +804,15 @@ async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, m
         continue;
       }
 
-      // Crear nueva alerta con la fecha real de cumpleaños
+      const alertDate = new Date(targetDate);
+      alertDate.setFullYear(new Date().getFullYear());
+
       const newAlert = {
-        id: `${birthdayUserId}-${targetDate.getTime()}`,
+        id: `${birthdayUserId}-${alertDate.getTime()}`,
         friendId: birthdayUserId,
         friendName: birthdayUser.fullName || `User ${birthdayUserId}`,
         friendProfilePic: birthdayUser.userImg || "",
-        targetDate: birthdayUser.targetDate,
+        targetDate: alertDate,
       };
 
       // Preparar actualización
@@ -836,7 +838,7 @@ async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, m
 
       // Enviar notificaciones solo si es el día exacto
       if (shouldSendNotifications && friendsToNotify.length > 0) {
-        await sendBirthdayNotifications(friendsToNotify, birthdayUser.fullName);
+        await sendBirthdayNotifications(friendsToNotify, birthdayUser.fullName, birthdayUserId, birthdayUser.userImg);
       }
     }
   } catch (error) {
@@ -845,7 +847,7 @@ async function processFriendsForBirthdayUser(db, birthdayUser, birthdayUserId, m
   }
 }
 
-async function sendBirthdayNotifications(friendsToNotify, birthdayUserName) {
+async function sendBirthdayNotifications(friendsToNotify, birthdayUserName, friendId, friendImage) {
   try {
     const batchSize = 500;
     for (let i = 0; i < friendsToNotify.length; i += batchSize) {
@@ -860,9 +862,9 @@ async function sendBirthdayNotifications(friendsToNotify, birthdayUserName) {
           type: "reminder",
           felicitupId: "",
           chatId: "",
-          name: "",
-          friendId: "",
-          userImage: "",
+          name: birthdayUserName,
+          friendId: friendId,
+          userImage: friendImage,
         },
       }));
 
