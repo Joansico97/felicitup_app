@@ -36,7 +36,7 @@ class FelicitupApp extends StatelessWidget {
         ),
       ],
       child: BlocProvider<AppBloc>(
-        create: (_) => appBloc,
+        create: (_) => appBloc..add(const AppEvent.checkAppStatus()),
         child: BlocBuilder<AppBloc, AppState>(
           builder: (_, state) {
             return MediaQuery(

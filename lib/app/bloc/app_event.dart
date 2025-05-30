@@ -4,6 +4,7 @@ part of 'app_bloc.dart';
 class AppEvent with _$AppEvent {
   const factory AppEvent.changeLoading() = _changeLoading;
   const factory AppEvent.closeRememberSection() = _closeRememberSection;
+  const factory AppEvent.checkAppStatus() = _checkAppStatus;
   const factory AppEvent.loadUserData() = _loadUserData;
   const factory AppEvent.loadProvUserData(Map<String, dynamic> federatedData) =
       _loadProvUserData;

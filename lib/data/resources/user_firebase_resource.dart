@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
+import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
@@ -933,6 +934,40 @@ class UserFirebaseResource implements UserRepository {
           });
     } catch (e) {
       return Stream.value(Left(ApiException(1000, e.toString())));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, List<Map<String, dynamic>>>>
+  getAppVersionInfo() async {
+    try {
+      final response = await _client.get('GeneralInfo');
+      logger.info(response);
+
+      if (response != null) {
+        return Right(response);
+      } else {
+        return Left(ApiException(404, 'App version not found'));
+      }
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> deleteAccount({
+    required String userId,
+    required List<String> answers,
+  }) async {
+    try {
+      final response = await _client.set('DeleteAccountRequests', {
+        'userId': userId,
+        'answers': answers,
+      });
+
+      return Right(response);
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
     }
   }
 }

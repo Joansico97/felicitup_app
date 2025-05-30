@@ -1,24 +1,25 @@
 part of 'router.dart';
 
-Page<Widget> _initHandler(BuildContext context, GoRouterState state) =>
-    CustomTransitionPage(
-      key: state.pageKey,
+Page<Widget> _initHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: BlocProvider(
+      create: (_) => injection.di<InitBloc>()..add(InitEvent.checkAppStatus()),
       child: const InitPage(),
-      transitionDuration: Duration(milliseconds: 500),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(1.0, 0.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOut;
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
 
-        var tween = Tween(
-          begin: begin,
-          end: end,
-        ).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
 
-        return SlideTransition(position: offsetAnimation, child: child);
-      },
-    );
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
 
 Page<Widget> _loginHandler(BuildContext context, GoRouterState state) =>
     CustomTransitionPage(
@@ -337,6 +338,26 @@ Page<Widget> _profileHandler(BuildContext context, GoRouterState state) {
   );
 }
 
+Page<Widget> _deleteAccountHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<DeleteAccountBloc>(),
+      child: DeleteAccountPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
 Page<Widget> _wishListHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
     child: BlocProvider(
@@ -494,6 +515,23 @@ Page<Widget> _termsPoliciesHandler(BuildContext context, GoRouterState state) {
       create: (_) => injection.di<TermsPoliciesBloc>(),
       child: TermsPoliciesPage(isTerms: isTerms),
     ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Page<Widget> _updateHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: UpdatePage(),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);

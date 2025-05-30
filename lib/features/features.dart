@@ -15,5 +15,6 @@ export './profile/profile.dart';
 export './reminders/reminders.dart';
 export './single_chat/single_chat.dart';
 export './terms_policies/terms_policies.dart';
+export './update/update.dart';
 export './video_editor/video_editor.dart';
 export './wish_list/wish_list.dart';

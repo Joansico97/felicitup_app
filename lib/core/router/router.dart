@@ -202,6 +202,16 @@ class CustomRouter {
         pageBuilder: _phoneVerifyIntHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.updatePage,
+        pageBuilder: _updateHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.deleteAccount,
+        pageBuilder: _deleteAccountHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
     ],
   );
 

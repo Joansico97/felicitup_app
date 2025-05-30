@@ -86,5 +86,10 @@ abstract class UserRepository {
     String isoCode,
     String userId,
   );
+  Future<Either<ApiException, List<Map<String, dynamic>>>> getAppVersionInfo();
+  Future<Either<ApiException, void>> deleteAccount({
+    required String userId,
+    required List<String> answers,
+  });
   Stream<Either<ApiException, List<GiftcarModel>>> getGiftcardListStream();
 }

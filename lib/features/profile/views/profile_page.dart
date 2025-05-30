@@ -48,7 +48,10 @@ class _ProfilePageState extends State<ProfilePage> {
     final currentUser = context.read<AppBloc>().state.currentUser;
 
     return BlocListener<ProfileBloc, ProfileState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading || previous.status != current.status,
+      listenWhen:
+          (previous, current) =>
+              previous.isLoading != current.isLoading ||
+              previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -64,25 +67,47 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Scaffold(
         persistentFooterAlignment: AlignmentDirectional.bottomCenter,
         persistentFooterButtons: [
-          SizedBox(
-            width: context.sp(300),
-            child: BlocBuilder<ProfileBloc, ProfileState>(
-              builder: (_, state) {
-                return PrimaryButton(
-                  onTap: () {
-                    context.read<ProfileBloc>().add(
+          Column(
+            children: [
+              SizedBox(
+                width: context.sp(300),
+                child: PrimaryButton(
+                  onTap: () => context.go(RouterPaths.deleteAccount),
+                  label: 'Elimiar cuenta',
+                  isActive: true,
+                ),
+              ),
+              SizedBox(height: context.sp(12)),
+              SizedBox(
+                width: context.sp(300),
+                child: BlocBuilder<ProfileBloc, ProfileState>(
+                  builder: (_, state) {
+                    return PrimaryButton(
+                      onTap: () {
+                        context.read<ProfileBloc>().add(
                           ProfileEvent.updateUserInfo(
                             UserModel(
                               id: currentUser?.id,
-                              firstName: nameController.text.isNotEmpty ? nameController.text : currentUser?.firstName,
+                              firstName:
+                                  nameController.text.isNotEmpty
+                                      ? nameController.text
+                                      : currentUser?.firstName,
                               lastName:
-                                  lastNameController.text.isNotEmpty ? lastNameController.text : currentUser?.lastName,
-                              fullName: nameController.text.isNotEmpty && lastNameController.text.isNotEmpty
-                                  ? '${nameController.text} ${lastNameController.text}'
-                                  : currentUser?.fullName,
+                                  lastNameController.text.isNotEmpty
+                                      ? lastNameController.text
+                                      : currentUser?.lastName,
+                              fullName:
+                                  nameController.text.isNotEmpty &&
+                                          lastNameController.text.isNotEmpty
+                                      ? '${nameController.text} ${lastNameController.text}'
+                                      : currentUser?.fullName,
                               email: currentUser?.email,
-                              isoCode: isoCode.isNotEmpty ? isoCode : currentUser?.isoCode,
-                              phone: phone.isNotEmpty ? phone : currentUser?.phone,
+                              isoCode:
+                                  isoCode.isNotEmpty
+                                      ? isoCode
+                                      : currentUser?.isoCode,
+                              phone:
+                                  phone.isNotEmpty ? phone : currentUser?.phone,
                               userImg: currentUser?.userImg,
                               fcmToken: currentUser?.fcmToken,
                               currentChat: currentUser?.currentChat,
@@ -98,12 +123,14 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                         );
+                      },
+                      label: 'Guardar cambios',
+                      isActive: true,
+                    );
                   },
-                  label: 'Guardar cambios',
-                  isActive: true,
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
         ],
         extendBody: true,
@@ -114,7 +141,8 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 CollapsedHeader(
                   title: 'Perfil',
-                  onPressed: () async => context.go(RouterPaths.felicitupsDashboard),
+                  onPressed:
+                      () async => context.go(RouterPaths.felicitupsDashboard),
                 ),
                 Expanded(
                   child: SingleChildScrollView(
@@ -127,7 +155,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               title: 'Seleccionar una fuente para la imagen',
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
                                   ElevatedButton(
                                     onPressed: () async {
@@ -136,15 +165,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                         setState(() {
                                           canSave = true;
                                         });
-                                        context
-                                            .read<ProfileBloc>()
-                                            .add(ProfileEvent.updateUserImageFromFile(imageFile!));
+                                        context.read<ProfileBloc>().add(
+                                          ProfileEvent.updateUserImageFromFile(
+                                            imageFile!,
+                                          ),
+                                        );
                                       }
                                       context.pop();
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: context.colors.orange,
-                                      disabledBackgroundColor: context.colors.lightGrey,
+                                      disabledBackgroundColor:
+                                          context.colors.lightGrey,
                                       elevation: 0,
                                     ),
                                     child: Text(
@@ -161,15 +193,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                         setState(() {
                                           canSave = true;
                                         });
-                                        context
-                                            .read<ProfileBloc>()
-                                            .add(ProfileEvent.updateUserImageFromFile(imageFile!));
+                                        context.read<ProfileBloc>().add(
+                                          ProfileEvent.updateUserImageFromFile(
+                                            imageFile!,
+                                          ),
+                                        );
                                       }
                                       context.pop();
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: context.colors.orange,
-                                      disabledBackgroundColor: context.colors.lightGrey,
+                                      disabledBackgroundColor:
+                                          context.colors.lightGrey,
                                       elevation: 0,
                                     ),
                                     child: Text(
@@ -191,32 +226,48 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ...List.generate(
                                               avataresList.length,
                                               (index) => GestureDetector(
-                                                onTap: () => setState(() {
-                                                  imageFile = null;
-                                                  avatarUrl = avataresList[index];
-                                                  context
-                                                      .read<ProfileBloc>()
-                                                      .add(ProfileEvent.updateUserImageFromUrl(avatarUrl!));
-                                                  canSave = true;
-                                                  context.pop();
-                                                }),
+                                                onTap:
+                                                    () => setState(() {
+                                                      imageFile = null;
+                                                      avatarUrl =
+                                                          avataresList[index];
+                                                      context
+                                                          .read<ProfileBloc>()
+                                                          .add(
+                                                            ProfileEvent.updateUserImageFromUrl(
+                                                              avatarUrl!,
+                                                            ),
+                                                          );
+                                                      canSave = true;
+                                                      context.pop();
+                                                    }),
                                                 child: ChipTheme(
                                                   data: ChipThemeData(
-                                                    deleteIconBoxConstraints: BoxConstraints(
-                                                      minWidth: context.sp(0),
-                                                    ),
+                                                    deleteIconBoxConstraints:
+                                                        BoxConstraints(
+                                                          minWidth: context.sp(
+                                                            0,
+                                                          ),
+                                                        ),
                                                   ),
                                                   child: Chip(
-                                                    backgroundColor: Colors.transparent,
+                                                    backgroundColor:
+                                                        Colors.transparent,
                                                     side: BorderSide.none,
                                                     shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(context.sp(100)),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            context.sp(100),
+                                                          ),
                                                     ),
                                                     label: SizedBox(
                                                       height: context.sp(60),
                                                       width: context.sp(60),
                                                       child: ClipRRect(
-                                                        borderRadius: BorderRadius.circular(context.sp(100)),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              context.sp(100),
+                                                            ),
                                                         child: Image.network(
                                                           avataresList[index],
                                                         ),
@@ -232,7 +283,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: context.colors.orange,
-                                      disabledBackgroundColor: context.colors.lightGrey,
+                                      disabledBackgroundColor:
+                                          context.colors.lightGrey,
                                       elevation: 0,
                                     ),
                                     child: Text(
@@ -254,46 +306,53 @@ class _ProfilePageState extends State<ProfilePage> {
                               shape: BoxShape.circle,
                               color: context.colors.lightGrey,
                             ),
-                            child: avatarUrl != null
-                                ? SizedBox(
-                                    height: context.sp(200),
-                                    width: context.sp(200),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(context.sp(100)),
-                                      child: Image.network(
-                                        avatarUrl!,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  )
-                                : imageFile != null
+                            child:
+                                avatarUrl != null
                                     ? SizedBox(
-                                        height: context.sp(200),
-                                        width: context.sp(200),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(context.sp(100)),
-                                          child: Image.file(
-                                            imageFile!,
-                                            fit: BoxFit.cover,
-                                          ),
+                                      height: context.sp(200),
+                                      width: context.sp(200),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                          context.sp(100),
                                         ),
-                                      )
+                                        child: Image.network(
+                                          avatarUrl!,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
+                                    : imageFile != null
+                                    ? SizedBox(
+                                      height: context.sp(200),
+                                      width: context.sp(200),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                          context.sp(100),
+                                        ),
+                                        child: Image.file(
+                                          imageFile!,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
                                     : currentUser?.userImg != ''
-                                        ? SizedBox(
-                                            height: context.sp(200),
-                                            width: context.sp(200),
-                                            child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(context.sp(100)),
-                                              child: Image.network(
-                                                currentUser?.userImg ?? '',
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                          )
-                                        : Text(
-                                            currentUser?.fullName![0] ?? '',
-                                            style: context.styles.header1,
-                                          ),
+                                    ? SizedBox(
+                                      height: context.sp(200),
+                                      width: context.sp(200),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                          context.sp(100),
+                                        ),
+                                        child: Image.network(
+                                          currentUser?.userImg ?? '',
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    )
+                                    : Text(
+                                      currentUser?.fullName![0] ?? '',
+                                      style: context.styles.header1,
+                                    ),
                           ),
                         ),
                         SizedBox(height: context.sp(32)),
@@ -307,12 +366,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           hintText: currentUser?.lastName ?? '',
                         ),
                         SizedBox(height: context.sp(12)),
-                        InfoCard(
-                          label: currentUser?.email ?? '',
-                        ),
+                        InfoCard(label: currentUser?.email ?? ''),
                         SizedBox(height: context.sp(12)),
                         InfoCard(
-                          label: DateFormat('dd·MM·yyyy').format(currentUser?.birthDate ?? DateTime.now()),
+                          label: DateFormat(
+                            'dd·MM·yyyy',
+                          ).format(currentUser?.birthDate ?? DateTime.now()),
                         ),
                         SizedBox(height: context.sp(12)),
                         Container(
@@ -328,13 +387,19 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: IntlPhoneField(
                             languageCode: 'es',
                             decoration: InputDecoration(
-                              labelText: getLabel(currentUser?.isoCode ?? '', currentUser?.phone ?? ''),
+                              labelText: getLabel(
+                                currentUser?.isoCode ?? '',
+                                currentUser?.phone ?? '',
+                              ),
                               labelStyle: context.styles.smallText,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            initialCountryCode: (currentUser?.isoCode ?? '') == '+34' ? 'ES' : 'CO',
+                            initialCountryCode:
+                                (currentUser?.isoCode ?? '') == '+34'
+                                    ? 'ES'
+                                    : 'CO',
                             onChanged: (value) {
                               setState(() {
                                 phone = value.completeNumber;
@@ -342,7 +407,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               });
                             },
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -357,10 +422,7 @@ class _ProfilePageState extends State<ProfilePage> {
 }
 
 class InfoCard extends StatelessWidget {
-  const InfoCard({
-    super.key,
-    required this.label,
-  });
+  const InfoCard({super.key, required this.label});
 
   final String label;
 

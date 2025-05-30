@@ -13,6 +13,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 part 'app_event.dart';
 part 'app_state.dart';
@@ -32,6 +33,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     on<AppEvent>(
       (event, emit) => event.map(
         changeLoading: (_) => _changeLoading(emit),
+        checkAppStatus: (_) => _checkAppStatus(emit),
         closeRememberSection: (_) => _closeRememberSection(emit),
         loadUserData: (_) => _loadUserData(emit),
         loadProvUserData:
@@ -60,6 +62,28 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   _changeLoading(Emitter<AppState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
+  }
+
+  _checkAppStatus(Emitter<AppState> emit) async {
+    try {
+      final response = await _userRepository.getAppVersionInfo();
+
+      response.fold(
+        (error) {
+          logger.error('Error checking app status: $error');
+        },
+        (success) async {
+          final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+          final currentVersion =
+              '${packageInfo.version}+${packageInfo.buildNumber}';
+          if (success.first['appVersion'] != currentVersion) {
+            rootNavigatorKey.currentContext!.go(RouterPaths.updatePage);
+          }
+        },
+      );
+    } catch (e) {
+      logger.error('Error checking app status: $e');
+    }
   }
 
   _closeRememberSection(Emitter<AppState> emit) {
