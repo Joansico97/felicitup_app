@@ -69,7 +69,7 @@ class RememberCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${DateFormat('MMMM d').format(date)} · ${DateTime.now().year - date.year} años',
+                      DateFormat('MMMM d').format(date),
                       style: context.styles.paragraph.copyWith(
                         color: context.colors.grey,
                       ),

@@ -8,6 +8,7 @@ import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -20,13 +21,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
-    context.read<NotificationsBloc>().add(NotificationsEvent.getNotifications());
+    context.read<NotificationsBloc>().add(
+      NotificationsEvent.getNotifications(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<NotificationsBloc, NotificationsState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen:
+          (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -41,9 +45,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               Container(
                 height: context.sp(50),
                 width: context.fullWidth,
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.sp(12),
-                ),
+                padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
@@ -65,9 +67,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         ),
                         onPressed: () async {
                           if (context.mounted) {
-                            context.go(
-                              RouterPaths.felicitupsDashboard,
-                            );
+                            context.go(RouterPaths.felicitupsDashboard);
                           }
                         },
                       ),
@@ -78,49 +78,71 @@ class _NotificationsPageState extends State<NotificationsPage> {
               SizedBox(height: context.sp(12)),
               BlocBuilder<NotificationsBloc, NotificationsState>(
                 builder: (_, state) {
-                  final notifications = state.notifications;
+                  final notifications = List.of(state.notifications)..sort(
+                    (a, b) => (a.sentDate ?? DateTime(0)).compareTo(
+                      b.sentDate ?? DateTime(0),
+                    ),
+                  );
 
                   return Expanded(
                     child: ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
                       itemCount: notifications.length,
-                      reverse: true,
                       itemBuilder: (_, index) {
                         return ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: context.sp(12),
+                            vertical: context.sp(8),
+                          ),
                           title: Text(
                             notifications[index].title ?? '',
-                            style: context.styles.smallText,
+                            style: context.styles.smallText.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          subtitle: Text(
-                            notifications[index].body ?? '',
-                            style: context.styles.paragraph,
-                          ),
-                          trailing: Text(
-                            'id: ${notifications[index].messageId}',
-                            style: context.styles.smallText,
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                notifications[index].body ?? '',
+                                style: context.styles.paragraph,
+                              ),
+                              SizedBox(height: context.sp(4)),
+                              SizedBox(
+                                width: context.sp(350),
+                                child: Text(
+                                  'Recibido el: ${DateFormat('dd/MM/yyyy HH:mm').format(notifications[index].sentDate ?? DateTime.now())}',
+                                  textAlign: TextAlign.end,
+                                  style: context.styles.smallText.copyWith(
+                                    color: context.colors.darkGrey,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           onTap: () {
                             redirectHelper(
                               data: notifications[index].data?.toJson() ?? {},
                             );
                           },
-                          onLongPress: () {
-                            showConfirmModal(
-                              title: 'Deseas eliminar la notificación?',
-                              onAccept: () async {
-                                context.read<NotificationsBloc>().add(
-                                      NotificationsEvent.deleteNotification(
-                                        notifications[index].messageId ?? '',
-                                      ),
-                                    );
-                              },
-                            );
-                          },
+                          // onLongPress: () {
+                          //   showConfirmModal(
+                          //     title: 'Deseas eliminar la notificación?',
+                          //     onAccept: () async {
+                          //       context.read<NotificationsBloc>().add(
+                          //         NotificationsEvent.deleteNotification(
+                          //           notifications[index].messageId ?? '',
+                          //         ),
+                          //       );
+                          //     },
+                          //   );
+                          // },
                         );
                       },
                     ),
                   );
                 },
-              )
+              ),
             ],
           ),
         ),

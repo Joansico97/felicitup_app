@@ -69,8 +69,18 @@ class RemindersBloc extends Bloc<RemindersEvent, RemindersState> {
   _deleteBirthdateAlert(Emitter<RemindersState> emit, String id) async {
     emit(state.copyWith(isLoading: true));
     try {
-      await _userRepository.deleteReminder(id);
-      emit(state.copyWith(isLoading: false));
+      final reponse = await _userRepository.deleteReminder(id);
+
+      return reponse.fold(
+        (l) {
+          logger.error(l);
+          emit(state.copyWith(isLoading: false));
+        },
+        (r) {
+          logger.debug('Evento con id $id eliminado');
+          emit(state.copyWith(isLoading: false));
+        },
+      );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }

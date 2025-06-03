@@ -66,10 +66,17 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
             CommonHeader(),
             BlocBuilder<AppBloc, AppState>(
               builder: (_, stateApp) {
+                final birthdateAlerts =
+                    stateApp.currentUser?.birthdateAlerts
+                        ?.where(
+                          (alert) => alert.targetDate!.isAfter(
+                            DateTime.now().subtract(const Duration(days: 1)),
+                          ),
+                        )
+                        .toList();
                 return Visibility(
                   visible:
-                      (stateApp.currentUser?.birthdateAlerts?.isNotEmpty ??
-                          false) &&
+                      (birthdateAlerts?.isNotEmpty ?? false) &&
                       stateApp.showRememberSection,
                   child: RememberSection(),
                 );

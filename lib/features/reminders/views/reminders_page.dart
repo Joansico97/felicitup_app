@@ -15,8 +15,6 @@ class RemindersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = context.read<AppBloc>().state.currentUser;
-
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -28,84 +26,109 @@ class RemindersPage extends StatelessWidget {
             ),
             SizedBox(height: context.sp(12)),
             Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
-                itemCount: currentUser?.birthdateAlerts?.length ?? 0,
-                itemBuilder: (_, index) {
-                  final data = currentUser?.birthdateAlerts?[index];
+              child: BlocBuilder<AppBloc, AppState>(
+                builder: (_, state) {
+                  final currentUser = state.currentUser;
+                  final birthdateAlerts =
+                      state.currentUser?.birthdateAlerts
+                          ?.where(
+                            (alert) => alert.targetDate!.isAfter(
+                              DateTime.now().subtract(const Duration(days: 1)),
+                            ),
+                          )
+                          .toList();
 
-                  return RememberCard(
-                    name: data?.friendName ?? 'Jorge Silva',
-                    date: data!.targetDate!,
-                    image: data.friendProfilePic,
-                    onTap:
-                        () => showConfirDoublemModal(
-                          title: 'Qué acción deseas realizar?',
+                  return ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
+                    itemCount: birthdateAlerts?.length ?? 0,
+                    itemBuilder: (_, index) {
+                      final data = birthdateAlerts?[index];
 
-                          label1: 'Crear felicitup',
-                          label2: 'Enviar mensaje directo',
-
-                          onAction1: () async {
-                            final OwnerModel owner = OwnerModel(
-                              id: data.friendId ?? '',
-                              name: data.friendName ?? '',
-                              userImg: data.friendProfilePic,
-                              date: data.targetDate!,
-                            );
-                            context.go(RouterPaths.createFelicitup);
-                            rootNavigatorKey.currentContext!
-                                .read<CreateFelicitupBloc>()
-                                .add(
-                                  CreateFelicitupEvent.changeFelicitupOwner(
-                                    owner,
+                      return RememberCard(
+                        name: data?.friendName ?? 'Jorge Silva',
+                        date: data!.targetDate!,
+                        image: data.friendProfilePic,
+                        onTap:
+                            () => showConfirDoublemModal(
+                              needOtherButton: true,
+                              title: 'Qué acción deseas realizar?',
+                              label1: 'Crear felicitup para este usuario',
+                              label2: 'Enviar mensaje directo',
+                              label3: 'Eliminar recordatorio',
+                              onAction1: () async {
+                                final OwnerModel owner = OwnerModel(
+                                  id: data.friendId ?? '',
+                                  name: data.friendName ?? '',
+                                  userImg: data.friendProfilePic,
+                                  date: data.targetDate!,
+                                );
+                                context.go(RouterPaths.createFelicitup);
+                                rootNavigatorKey.currentContext!
+                                    .read<CreateFelicitupBloc>()
+                                    .add(
+                                      CreateFelicitupEvent.changeFelicitupOwner(
+                                        owner,
+                                      ),
+                                    );
+                                rootNavigatorKey.currentContext!
+                                    .read<CreateFelicitupBloc>()
+                                    .add(
+                                      CreateFelicitupEvent.changeEventReason(
+                                        'Cumpleaños',
+                                      ),
+                                    );
+                                context.read<RemindersBloc>().add(
+                                  RemindersEvent.deleteBirthdateAlert(
+                                    data.id ?? '',
                                   ),
                                 );
-                            rootNavigatorKey.currentContext!
-                                .read<CreateFelicitupBloc>()
-                                .add(
-                                  CreateFelicitupEvent.changeEventReason(
-                                    'Cumpleaños',
-                                  ),
-                                );
-                            rootNavigatorKey.currentContext!
-                                .read<CreateFelicitupBloc>()
-                                .add(CreateFelicitupEvent.jumpToStep(2));
-
-                            context.read<RemindersBloc>().add(
-                              RemindersEvent.deleteBirthdateAlert(
-                                data.id ?? '',
-                              ),
-                            );
-                          },
-                          onAction2: () async {
-                            final SingleChatModel singleChat = SingleChatModel(
-                              chatId: data.friendId ?? '',
-                              friendId: data.friendId ?? '',
-                              userName: data.friendName ?? '',
-                              userImage: data.friendProfilePic,
-                            );
-                            if (currentUser?.singleChats?.any(
-                                  (alert) => alert.friendId == data.friendId,
-                                ) ??
-                                false) {
-                              final alert = currentUser?.singleChats
-                                  ?.firstWhere(
-                                    (alert) => alert.friendId == data.friendId,
+                                rootNavigatorKey.currentContext!
+                                    .read<CreateFelicitupBloc>()
+                                    .add(CreateFelicitupEvent.jumpToStep(2));
+                              },
+                              onAction2: () async {
+                                final SingleChatModel singleChat =
+                                    SingleChatModel(
+                                      chatId: data.friendId ?? '',
+                                      friendId: data.friendId ?? '',
+                                      userName: data.friendName ?? '',
+                                      userImage: data.friendProfilePic,
+                                    );
+                                if (currentUser?.singleChats?.any(
+                                      (alert) =>
+                                          alert.friendId == data.friendId,
+                                    ) ??
+                                    false) {
+                                  final alert = currentUser?.singleChats
+                                      ?.firstWhere(
+                                        (alert) =>
+                                            alert.friendId == data.friendId,
+                                      );
+                                  context.go(
+                                    RouterPaths.singleChat,
+                                    extra: alert,
                                   );
-                              context.go(RouterPaths.singleChat, extra: alert);
-                              return;
-                            }
+                                  return;
+                                }
 
-                            context.read<RemindersBloc>().add(
-                              RemindersEvent.createSingleChat(singleChat),
-                            );
-                            context.read<RemindersBloc>().add(
-                              RemindersEvent.deleteBirthdateAlert(
-                                data.id ?? '',
-                              ),
-                            );
-                          },
-                        ),
+                                context.read<RemindersBloc>().add(
+                                  RemindersEvent.deleteBirthdateAlert(
+                                    data.id ?? '',
+                                  ),
+                                );
+                                context.read<RemindersBloc>().add(
+                                  RemindersEvent.createSingleChat(singleChat),
+                                );
+                              },
+                              onAction3:
+                                  () async => context.read<RemindersBloc>().add(
+                                    RemindersEvent.deleteBirthdateAlert(
+                                      data.id ?? '',
+                                    ),
+                                  ),
+                            ),
+                      );
+                    },
                   );
                 },
               ),
