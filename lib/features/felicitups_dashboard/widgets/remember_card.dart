@@ -18,6 +18,8 @@ class RememberCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -69,7 +71,7 @@ class RememberCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      DateFormat('MMMM d').format(date),
+                      date == now ? 'Hoy' : DateFormat('MMMM d').format(date),
                       style: context.styles.paragraph.copyWith(
                         color: context.colors.grey,
                       ),

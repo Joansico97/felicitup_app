@@ -137,9 +137,11 @@ class _RememberSectionState extends State<RememberSection> {
                             image: data?.friendProfilePic,
                             onTap: () {
                               showConfirDoublemModal(
+                                needOtherButton: true,
                                 title: 'Qué acción deseas realizar?',
                                 label1: 'Crear felicitup para este usuario',
                                 label2: 'Enviar mensaje directo',
+                                label3: 'Eliminar recordatorio',
                                 onAction1: () async {
                                   final OwnerModel owner = OwnerModel(
                                     id: data?.friendId ?? '',
@@ -198,6 +200,13 @@ class _RememberSectionState extends State<RememberSection> {
                                     ),
                                   );
 
+                                  context.read<FelicitupsDashboardBloc>().add(
+                                    FelicitupsDashboardEvent.deleteBirthdateAlert(
+                                      data?.id ?? '',
+                                    ),
+                                  );
+                                },
+                                onAction3: () async {
                                   context.read<FelicitupsDashboardBloc>().add(
                                     FelicitupsDashboardEvent.deleteBirthdateAlert(
                                       data?.id ?? '',

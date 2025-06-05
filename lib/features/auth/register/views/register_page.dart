@@ -32,7 +32,9 @@ class RegisterPage extends StatelessWidget {
         }
 
         if (state.status == RegisterStatus.error) {
-          unawaited(showErrorModal(state.errorMessage));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.errorMessage)));
         }
 
         if (state.status == RegisterStatus.federated) {

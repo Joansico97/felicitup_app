@@ -69,12 +69,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     String confirmPassword,
     String genre,
     DateTime birthDate,
-  ) async {
-    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
-    await Future.delayed(Duration(seconds: 1), () {});
+  ) {
     emit(
       state.copyWith(
-        isLoading: false,
         status: RegisterStatus.formFinished,
         name: name,
         lastName: lastName,
@@ -87,21 +84,38 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     );
   }
 
-  _savePhoneInfo(Emitter<RegisterState> emit, String phone, String isoCode) {
-    emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode));
-    add(RegisterEvent.initValidation());
-    final data = {
-      'name': state.name,
-      'lastName': state.lastName,
-      'email': state.email,
-      'password': state.password,
-      'confirmPassword': state.confirmPassword,
-      'genre': state.genre,
-      'birthDate': state.birthDate,
-      'phone': state.phone,
-      'isoCode': state.isoCode,
-    };
-    logger.debug(data);
+  _savePhoneInfo(
+    Emitter<RegisterState> emit,
+    String phone,
+    String isoCode,
+  ) async {
+    try {
+      emit(
+        state.copyWith(isLoading: true, status: RegisterStatus.formFinished),
+      );
+      final exist = await checkPhoneExist(phone: phone);
+      if (exist) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            status: RegisterStatus.error,
+            errorMessage: 'El número de teléfono ya está registrado.',
+          ),
+        );
+        return;
+      }
+
+      emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode));
+      add(RegisterEvent.initValidation());
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          status: RegisterStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
   }
 
   _initValidation(Emitter<RegisterState> emit) async {
