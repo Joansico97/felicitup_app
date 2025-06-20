@@ -49,7 +49,7 @@ class RegisterPage extends StatelessWidget {
         if (state.status == RegisterStatus.federatedFinished) {
           if (context.mounted) {
             context.read<AppBloc>().add(AppEvent.loadUserData());
-            context.go(RouterPaths.felicitupsDashboard);
+            context.go(RouterPaths.onBoarding);
           }
         }
       },

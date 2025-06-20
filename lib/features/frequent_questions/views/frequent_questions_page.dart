@@ -24,7 +24,11 @@ class FrequentQuestionsPage extends StatelessWidget {
               final url = 'https://felicitup.com/guia-de-inicio/';
               final link = Uri.parse(url);
               if (await canLaunchUrl(link)) {
-                launchUrl(link, mode: LaunchMode.externalApplication);
+                launchUrl(
+                  link,
+                  mode: LaunchMode.inAppBrowserView,
+                  browserConfiguration: BrowserConfiguration(showTitle: true),
+                );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('No se puede abrir la URL')),

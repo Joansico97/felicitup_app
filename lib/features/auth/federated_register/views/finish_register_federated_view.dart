@@ -40,7 +40,7 @@ class FinishRegisterFederatedView extends StatelessWidget {
           height: context.sp(45),
           width: context.sp(300),
           child: PrimaryButton(
-            onTap: () => context.go(RouterPaths.felicitupsDashboard),
+            onTap: () => context.go(RouterPaths.onBoarding),
             isBig: false,
             label: 'Acceder',
             isActive: true,

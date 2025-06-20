@@ -70,7 +70,7 @@ class FederatedRegisterBloc
       firstName: name,
       lastName: lastName,
       genre: incommingGenre,
-      birthDate: birthDate,
+      birthDate: birthDate.toLocal(),
     );
 
     response.fold(
