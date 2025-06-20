@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
@@ -247,7 +248,19 @@ class _VideoEditorPageState extends State<VideoEditorPage>
                             width: context.sp(200),
                             child: SecondaryButton(
                               onTap:
-                                  () {}, //TODO: implementar llamado a reporte
+                                  () => context.read<VideoEditorBloc>().add(
+                                    VideoEditorEvent.reportUserVideo(
+                                      felicitupId: widget.felicitupId,
+                                      userId:
+                                          context
+                                              .read<AppBloc>()
+                                              .state
+                                              .currentUser
+                                              ?.id ??
+                                          '',
+                                      videoUrl: state.currentSelectedVideo,
+                                    ),
+                                  ),
                               label: 'Reportar Video',
                               isActive: true,
                             ),

@@ -35,6 +35,9 @@ migrate_working_dir/
 .pub/
 /build/
 
+gitleaks-report_STD.json
+generar_informe_gitleaks.sh
+
 
 # Symbolication related
 app.*.symbols

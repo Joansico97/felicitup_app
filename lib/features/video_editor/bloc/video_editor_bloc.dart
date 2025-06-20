@@ -19,24 +19,34 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     required FelicitupRepository felicitupRepository,
     required FirebaseAuth firebaseAuth,
     required FirebaseFunctionsHelper firebaseFunctionsHelper,
-  })  : _userRepository = userRepository,
-        _felicitupRepository = felicitupRepository,
-        _firebaseAuth = firebaseAuth,
-        _firebaseFunctionsHelper = firebaseFunctionsHelper,
-        super(VideoEditorState.initial()) {
+  }) : _userRepository = userRepository,
+       _felicitupRepository = felicitupRepository,
+       _firebaseAuth = firebaseAuth,
+       _firebaseFunctionsHelper = firebaseFunctionsHelper,
+       super(VideoEditorState.initial()) {
     on<VideoEditorEvent>(
       (events, emit) => events.map(
         changeLoading: (event) => _changeLoading(emit),
         setUrlVideo: (event) => _setUrlVideo(emit, event.url),
         getFelicitupInfo: (event) => _getFelicitupInfo(emit, event.felicitupId),
-        uploadUserVideo: (event) => _uploadUserVideo(emit, event.felicitupId, event.file),
-        updateParticipantInfo: (event) => _updateParticipantInfo(event.felicitupId, event.url),
-        initializeVideoController: (event) => _initializeVideoController(emit, event.url),
+        uploadUserVideo:
+            (event) => _uploadUserVideo(emit, event.felicitupId, event.file),
+        updateParticipantInfo:
+            (event) => _updateParticipantInfo(event.felicitupId, event.url),
+        initializeVideoController:
+            (event) => _initializeVideoController(emit, event.url),
         disposeVideoController: (event) => _disposeVideoController(emit),
         generateThumbnail: (event) => _generateThumbnail(event.filePath),
         setDuraton: (event) => _setDuraton(emit, event.duration),
         setPosition: (event) => _setPosition(emit, event.position),
         changeFullScreen: (event) => _changeFullScreen(emit),
+        reportUserVideo:
+            (event) => _reportUserVideo(
+              emit,
+              event.felicitupId,
+              event.userId,
+              event.videoUrl,
+            ),
       ),
     );
   }
@@ -62,12 +72,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
       result.fold(
         (error) => logger.error('Error fetching Felicitup info: $error'),
         (felicitup) {
-          emit(
-            state.copyWith(
-              isLoading: false,
-              currentFelicitup: felicitup,
-            ),
-          );
+          emit(state.copyWith(isLoading: false, currentFelicitup: felicitup));
         },
       );
     } catch (e) {
@@ -75,7 +80,11 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _uploadUserVideo(Emitter<VideoEditorState> emit, String felicitupId, File file) async {
+  _uploadUserVideo(
+    Emitter<VideoEditorState> emit,
+    String felicitupId,
+    File file,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final result = await _userRepository.uploadVideoFile(file, 'videos');
@@ -86,12 +95,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
           add(VideoEditorEvent.initializeVideoController(url));
           add(VideoEditorEvent.getFelicitupInfo(felicitupId));
           // add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
-          emit(
-            state.copyWith(
-              isLoading: false,
-              currentSelectedVideo: url,
-            ),
-          );
+          emit(state.copyWith(isLoading: false, currentSelectedVideo: url));
         },
       );
     } catch (e) {
@@ -103,17 +107,21 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     emit(state.copyWith(isLoading: true));
     try {
       final videoPlayerController = VideoPlayerController.networkUrl(
-        Uri.parse(
-          url,
-        ),
+        Uri.parse(url),
         videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
       );
       await videoPlayerController.initialize().then((_) {
         videoPlayerController.play();
         videoPlayerController.addListener(() {
           if (videoPlayerController.value.isInitialized) {
-            add(VideoEditorEvent.setDuraton(videoPlayerController.value.duration));
-            add(VideoEditorEvent.setPosition(videoPlayerController.value.position));
+            add(
+              VideoEditorEvent.setDuraton(videoPlayerController.value.duration),
+            );
+            add(
+              VideoEditorEvent.setPosition(
+                videoPlayerController.value.position,
+              ),
+            );
           }
         });
       });
@@ -141,7 +149,10 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
 
   _generateThumbnail(String filePath) async {
     try {
-      await _firebaseFunctionsHelper.generateThumbnail(filePath: filePath, userId: _firebaseAuth.currentUser!.uid);
+      await _firebaseFunctionsHelper.generateThumbnail(
+        filePath: filePath,
+        userId: _firebaseAuth.currentUser!.uid,
+      );
     } catch (e) {
       logger.error('Error generating thumbnail: $e');
     }
@@ -165,6 +176,31 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
 
   _changeFullScreen(Emitter<VideoEditorState> emit) {
     emit(state.copyWith(isFullScreen: !state.isFullScreen));
+  }
+
+  _reportUserVideo(
+    Emitter<VideoEditorState> emit,
+    String felicitupId,
+    String userId,
+    String videoUrl,
+  ) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final result = await _felicitupRepository.reportUserVideo(
+        felicitupId,
+        userId,
+        videoUrl,
+      );
+      result.fold((error) => logger.error('Error reporting video: $error'), (
+        _,
+      ) {
+        emit(state.copyWith(isLoading: false));
+        // Optionally, you can show a success message or perform other actions
+      });
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+      logger.error('Error in reportUserVideo: $e');
+    }
   }
 
   @override

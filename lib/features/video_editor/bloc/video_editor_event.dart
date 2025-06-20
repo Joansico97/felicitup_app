@@ -6,11 +6,26 @@ class VideoEditorEvent with _$VideoEditorEvent {
   const factory VideoEditorEvent.changeFullScreen() = _changeFullScreen;
   const factory VideoEditorEvent.setDuraton(Duration duration) = _setDuraton;
   const factory VideoEditorEvent.setPosition(Duration position) = _setPosition;
-  const factory VideoEditorEvent.getFelicitupInfo(String felicitupId) = _getFelicitupInfo;
-  const factory VideoEditorEvent.initializeVideoController(String url) = _initializeVideoController;
-  const factory VideoEditorEvent.disposeVideoController() = _disposeVideoController;
+  const factory VideoEditorEvent.getFelicitupInfo(String felicitupId) =
+      _getFelicitupInfo;
+  const factory VideoEditorEvent.initializeVideoController(String url) =
+      _initializeVideoController;
+  const factory VideoEditorEvent.disposeVideoController() =
+      _disposeVideoController;
   const factory VideoEditorEvent.setUrlVideo(String url) = _setUrlVideo;
-  const factory VideoEditorEvent.uploadUserVideo(String felicitupId, File file) = _uploadUserVideo;
-  const factory VideoEditorEvent.generateThumbnail(String filePath) = _generateThumbnail;
-  const factory VideoEditorEvent.updateParticipantInfo(String felicitupId, String url) = _updateParticipantInfo;
+  const factory VideoEditorEvent.uploadUserVideo(
+    String felicitupId,
+    File file,
+  ) = _uploadUserVideo;
+  const factory VideoEditorEvent.generateThumbnail(String filePath) =
+      _generateThumbnail;
+  const factory VideoEditorEvent.reportUserVideo({
+    required String felicitupId,
+    required String userId,
+    required String videoUrl,
+  }) = _reportUserVideo;
+  const factory VideoEditorEvent.updateParticipantInfo(
+    String felicitupId,
+    String url,
+  ) = _updateParticipantInfo;
 }
