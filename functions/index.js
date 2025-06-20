@@ -20,6 +20,7 @@ const {defineSecret} = require('firebase-functions/params');
 const {getFirestore, Timestamp} = require('firebase-admin/firestore');
 const {onCall} = require('firebase-functions/v2/https');
 const {HttpsError} = require('firebase-functions/v2/https');
+const {getAuth} = require("firebase-admin/auth");
 
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
@@ -877,4 +878,60 @@ async function sendBirthdayNotifications(friendsToNotify, birthdayUserName, frie
   }
 }
 
+exports.getTemporaryImageUrl = onCall(
+    {
+      timeoutSeconds: 120,
+      memory: '512MiB',
+      region: 'us-central1',
+    },
+    async (request) => {
+      if (!request.auth) {
+        throw new functions.https.HttpsError(
+            "unauthenticated",
+            "El usuario debe estar autenticado para obtener la URL de la imagen temporal.",
+        );
+      }
 
+      const imageName = request.data.imageName;
+      if (!imageName) {
+        throw new HttpsError(
+            "invalid-argument",
+            "Se requiere el parámetro 'imageName' en la solicitud.",
+        );
+      }
+    });
+
+
+exports.disableCurrentUser = onCall(
+    {
+      timeoutSeconds: 120,
+      memory: '512MiB',
+      region: 'us-central1',
+    },
+    async (request) => {
+      if (!request.auth) {
+        throw new functions.https.HttpsError(
+            "unauthenticated",
+            "El usuario debe estar autenticado para poder bloquear su cuenta.",
+        );
+      }
+
+      const uid = request.auth.uid;
+
+      try {
+        // Deshabilitar el usuario utilizando el Admin SDK.
+        await getAuth().updateUser(uid, {disabled: true});
+
+        // Revocar los tokens de actualización para cerrar la sesión inmediatamente.
+        await getAuth().revokeRefreshTokens(uid);
+
+        console.log(`Usuario ${uid} deshabilitado exitosamente (v2).`);
+        return {success: true, message: "Tu cuenta ha sido bloqueada exitosamente."};
+      } catch (error) {
+        console.error("Error al deshabilitar el usuario (v2):", error);
+        throw new functions.https.HttpsError(
+            "internal",
+            "Ocurrió un error al intentar bloquear tu cuenta.",
+        );
+      }
+    });

@@ -90,6 +90,14 @@ class _DrawerAppState extends State<DrawerApp> {
             ),
             SettingsButton(
               onTap: () {
+                context.go(RouterPaths.onBoarding);
+                Scaffold.of(context).closeDrawer();
+              },
+              label: 'Manual de usuario',
+              icon: Icons.article_outlined,
+            ),
+            SettingsButton(
+              onTap: () {
                 context.go(RouterPaths.notificationsSettings);
                 Scaffold.of(context).closeDrawer();
               },

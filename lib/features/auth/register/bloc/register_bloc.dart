@@ -132,18 +132,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
               status: RegisterStatus.validateCode,
             ),
           );
-          final data = {
-            'name': state.name,
-            'lastName': state.lastName,
-            'email': state.email,
-            'password': state.password,
-            'confirmPassword': state.confirmPassword,
-            'genre': state.genre,
-            'birthDate': state.birthDate,
-            'phone': state.phone,
-            'isoCode': state.isoCode,
-          };
-          logger.debug(data);
         },
         onError: (error) {
           emit(
@@ -219,9 +207,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           currentChat: '',
           userImg:
               state.genre == 'Masculino'
-                  ? 'https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/commonFiles%2Favatares%2Favatar_man_1.png?alt=media&token=11af323b-5266-422b-94c4-5a176a931ec0'
+                  ? Env.avatar3
                   : state.genre == 'Femenino'
-                  ? 'https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/commonFiles%2Favatares%2Favatar_woman_1.png?alt=media&token=23a0d5b4-22d4-4e76-9f77-6250fc1ca163'
+                  ? Env.avatar1
                   : '',
           friendList: [],
           birthdateAlerts: [],

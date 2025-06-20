@@ -77,7 +77,6 @@ class RemindersBloc extends Bloc<RemindersEvent, RemindersState> {
           emit(state.copyWith(isLoading: false));
         },
         (r) {
-          logger.debug('Evento con id $id eliminado');
           emit(state.copyWith(isLoading: false));
         },
       );

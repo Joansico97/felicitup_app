@@ -64,6 +64,10 @@ class FirebaseFunctionsHelper {
     );
   }
 
+  Future<void> disableCurrentUser() async {
+    await _call('disableCurrentUser');
+  }
+
   Future<void> sendFelicitup({required String felicitupId}) async {
     try {
       final response = await _call<Map<String, dynamic>>(

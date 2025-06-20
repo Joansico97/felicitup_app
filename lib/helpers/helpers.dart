@@ -4,7 +4,6 @@ export './date_converter.dart';
 export './files_helper.dart';
 export './firebase_functions_helper.dart';
 export './generate_color.dart';
-export './list_avatares.dart';
 export './local_storage_helper.dart';
 export './map_firebase_errors.dart';
 export './redirect_helper.dart';

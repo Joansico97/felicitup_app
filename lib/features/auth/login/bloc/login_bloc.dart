@@ -1,26 +1,28 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
 part 'login_bloc.freezed.dart';
+part 'login_bloc.g.dart';
 
-class LoginBloc extends Bloc<LoginEvent, LoginState> {
+class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
   LoginBloc({
     required AuthRepository authRepository,
     required FirebaseFirestore firestore,
-  })  : _authRepository = authRepository,
-        _firestore = firestore,
-        super(LoginState.initial()) {
+  }) : _authRepository = authRepository,
+       _firestore = firestore,
+       super(LoginState.initial()) {
     on<LoginEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
+        changeFirstTimeRedirect: (_) => _changeFirstTimeRedirect(emit),
         loginEvent: (event) => _loginEvent(emit, event.email, event.password),
         googleLoginEvent: (_) => _googleLoginEvent(emit),
         appleLoginEvent: (_) => _appleLoginEvent(emit),
@@ -37,10 +39,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
 
+  _changeFirstTimeRedirect(Emitter<LoginState> emit) {
+    emit(state.copyWith(isFirstTime: false));
+  }
+
   _loginEvent(Emitter<LoginState> emit, String email, String password) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final response = await _authRepository.login(email: email, password: password);
+      final response = await _authRepository.login(
+        email: email,
+        password: password,
+      );
 
       return response.fold(
         (l) {
@@ -53,12 +62,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           );
         },
         (r) {
-          emit(
-            state.copyWith(
-              isLoading: false,
-              status: LoginStatus.success,
-            ),
-          );
+          emit(state.copyWith(isLoading: false, status: LoginStatus.success));
         },
       );
     } catch (e) {
@@ -84,12 +88,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         (r) async {
           bool exist = await checkUserExist(email: r.user?.email ?? '');
           if (exist) {
-            emit(
-              state.copyWith(
-                isLoading: false,
-                status: LoginStatus.success,
-              ),
-            );
+            emit(state.copyWith(isLoading: false, status: LoginStatus.success));
           } else {
             final user = r.user;
             final userModel = UserModel(
@@ -112,10 +111,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
             add(LoginEvent.setUserInfo(userModel));
 
             emit(
-              state.copyWith(
-                isLoading: false,
-                status: LoginStatus.federated,
-              ),
+              state.copyWith(isLoading: false, status: LoginStatus.federated),
             );
           }
         },
@@ -163,12 +159,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         (r) async {
           bool exist = await checkUserExist(email: r.user?.email ?? '');
           if (exist) {
-            emit(
-              state.copyWith(
-                isLoading: false,
-                status: LoginStatus.success,
-              ),
-            );
+            emit(state.copyWith(isLoading: false, status: LoginStatus.success));
           } else {
             final user = r.user;
             final userModel = UserModel(
@@ -190,10 +181,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
             add(LoginEvent.setUserInfo(userModel));
             emit(
-              state.copyWith(
-                isLoading: false,
-                status: LoginStatus.federated,
-              ),
+              state.copyWith(isLoading: false, status: LoginStatus.federated),
             );
           }
         },
@@ -215,5 +203,27 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     } else {
       return false;
     }
+  }
+
+  @override
+  LoginState? fromJson(Map<String, dynamic> json) {
+    try {
+      return LoginState(
+        errorMessage: json['errorMessage'] as String? ?? '',
+        isLoading: json['isLoading'] as bool? ?? false,
+        isFirstTime: json['isFirstTime'] as bool? ?? true,
+        status: LoginStatus.values.firstWhere(
+          (e) => e.toString() == json['status'],
+          orElse: () => LoginStatus.inProgress,
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Map<String, dynamic>? toJson(LoginState state) {
+    return state.toJson();
   }
 }

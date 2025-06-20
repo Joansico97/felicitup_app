@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/utils/env.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/profile/bloc/profile_bloc.dart';
@@ -29,6 +30,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String phone = '';
   String isoCode = '';
   String label = '';
+  late List<String> listAvatares;
 
   final nameController = TextEditingController();
   final lastNameController = TextEditingController();
@@ -41,6 +43,12 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       return phone.substring(3);
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    listAvatares = [Env.avatar1, Env.avatar2, Env.avatar3, Env.avatar4];
   }
 
   @override
@@ -224,13 +232,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                           runSpacing: context.sp(12),
                                           children: [
                                             ...List.generate(
-                                              avataresList.length,
+                                              listAvatares.length,
                                               (index) => GestureDetector(
                                                 onTap:
                                                     () => setState(() {
                                                       imageFile = null;
                                                       avatarUrl =
-                                                          avataresList[index];
+                                                          listAvatares[index];
                                                       context
                                                           .read<ProfileBloc>()
                                                           .add(
@@ -269,7 +277,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                               context.sp(100),
                                                             ),
                                                         child: Image.network(
-                                                          avataresList[index],
+                                                          listAvatares[index],
                                                         ),
                                                       ),
                                                     ),

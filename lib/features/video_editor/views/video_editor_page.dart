@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
-import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
 import 'package:felicitup_app/features/video_editor/bloc/video_editor_bloc.dart';
@@ -29,22 +28,24 @@ class VideoEditorPage extends StatefulWidget {
   State<VideoEditorPage> createState() => _VideoEditorPageState();
 }
 
-class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingObserver, TickerProviderStateMixin {
+class _VideoEditorPageState extends State<VideoEditorPage>
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   bool _isPlaying = false;
   bool _showControls = true;
   Timer? _hideControlsTimer;
 
   @override
   void initState() {
-    logger.debug('el id es: ${widget.felicitupId}');
     WidgetsBinding.instance.addObserver(this);
-    context.read<VideoEditorBloc>().add(VideoEditorEvent.getFelicitupInfo(widget.felicitupId));
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
+    context.read<VideoEditorBloc>().add(
+      VideoEditorEvent.getFelicitupInfo(widget.felicitupId),
+    );
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _startHideControlsTimer();
     if (widget.videoUrl.isNotEmpty) {
-      context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(widget.videoUrl));
+      context.read<VideoEditorBloc>().add(
+        VideoEditorEvent.setUrlVideo(widget.videoUrl),
+      );
     } else {
       context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
     }
@@ -65,7 +66,9 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   void dispose() {
     if (context.mounted) {
-      context.read<VideoEditorBloc>().add(VideoEditorEvent.disposeVideoController());
+      context.read<VideoEditorBloc>().add(
+        VideoEditorEvent.disposeVideoController(),
+      );
     }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -73,7 +76,8 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
+    final controller =
+        context.read<VideoEditorBloc>().state.videoPlayerController;
     if (controller != null) {
       if (state == AppLifecycleState.paused) {
         controller.pause();
@@ -84,7 +88,8 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   }
 
   void _togglePlay() {
-    final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
+    final controller =
+        context.read<VideoEditorBloc>().state.videoPlayerController;
     if (controller != null) {
       setState(() {
         if (controller.value.isPlaying) {
@@ -110,7 +115,8 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
   @override
   Widget build(BuildContext context) {
     return BlocListener<VideoEditorBloc, VideoEditorState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen:
+          (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -121,7 +127,8 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) {
-            final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
+            final controller =
+                context.read<VideoEditorBloc>().state.videoPlayerController;
             controller?.dispose();
           }
         },
@@ -135,14 +142,21 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                 builder: (_, state) {
                   return PrimaryButton(
                     onTap: () async {
-                      context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
-                      context.read<VideoEditorBloc>().add(VideoEditorEvent.disposeVideoController());
+                      context.read<VideoEditorBloc>().add(
+                        VideoEditorEvent.setUrlVideo(''),
+                      );
+                      context.read<VideoEditorBloc>().add(
+                        VideoEditorEvent.disposeVideoController(),
+                      );
                       File? response = await pickVideoFromCamera(context);
 
                       if (response != null) {
-                        context
-                            .read<VideoEditorBloc>()
-                            .add(VideoEditorEvent.uploadUserVideo(widget.felicitupId, response));
+                        context.read<VideoEditorBloc>().add(
+                          VideoEditorEvent.uploadUserVideo(
+                            widget.felicitupId,
+                            response,
+                          ),
+                        );
                       }
                     },
                     label: 'Grabar Vídeo',
@@ -165,13 +179,15 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                         if (context.mounted) {
                           context.go(
                             RouterPaths.videoFelicitup,
-                            extra: {
-                              'felicitupId': widget.felicitupId,
-                            },
+                            extra: {'felicitupId': widget.felicitupId},
                           );
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            detailsFelicitupNavigatorKey.currentContext?.read<DetailsFelicitupDashboardBloc>().add(
-                                  DetailsFelicitupDashboardEvent.changeCurrentIndex(3),
+                            detailsFelicitupNavigatorKey.currentContext
+                                ?.read<DetailsFelicitupDashboardBloc>()
+                                .add(
+                                  DetailsFelicitupDashboardEvent.changeCurrentIndex(
+                                    3,
+                                  ),
                                 );
                           });
                         }
@@ -203,10 +219,14 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                                 size: context.sp(40),
                               ),
                             ),
-                            Text(
-                              'Añadir video',
-                              style: context.styles.smallText.copyWith(
-                                color: const Color(0xFF7A7A7A),
+                            SizedBox(
+                              width: context.sp(200),
+                              child: Text(
+                                'Graba un video de máximo 10 segundos',
+                                textAlign: TextAlign.center,
+                                style: context.styles.smallText.copyWith(
+                                  color: const Color(0xFF7A7A7A),
+                                ),
                               ),
                             ),
                           ],
@@ -216,6 +236,28 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                   ),
                 ),
                 SizedBox(height: context.sp(12)),
+                BlocBuilder<VideoEditorBloc, VideoEditorState>(
+                  builder: (_, state) {
+                    return Visibility(
+                      visible: state.currentSelectedVideo.isNotEmpty,
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: context.sp(30),
+                            width: context.sp(200),
+                            child: SecondaryButton(
+                              onTap:
+                                  () {}, //TODO: implementar llamado a reporte
+                              label: 'Reportar Video',
+                              isActive: true,
+                            ),
+                          ),
+                          SizedBox(height: context.sp(12)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 BlocBuilder<VideoEditorBloc, VideoEditorState>(
                   builder: (_, state) {
                     return SizedBox(
@@ -228,10 +270,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                                 _formatDuration(state.position),
                                 style: context.styles.smallText,
                               ),
-                              Text(
-                                " / ",
-                                style: context.styles.header2,
-                              ),
+                              Text(" / ", style: context.styles.header2),
                               Text(
                                 _formatDuration(state.duration),
                                 style: context.styles.smallText,
@@ -252,11 +291,17 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                 ),
                 SizedBox(height: context.sp(12)),
                 BlocBuilder<VideoEditorBloc, VideoEditorState>(
-                  buildWhen: (previous, current) =>
-                      previous.currentFelicitup != current.currentFelicitup ||
-                      previous.isFullScreen != current.isFullScreen,
+                  buildWhen:
+                      (previous, current) =>
+                          previous.currentFelicitup !=
+                              current.currentFelicitup ||
+                          previous.isFullScreen != current.isFullScreen,
                   builder: (_, state) {
-                    final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
+                    final controller =
+                        context
+                            .read<VideoEditorBloc>()
+                            .state
+                            .videoPlayerController;
                     return Visibility(
                       visible: !state.isFullScreen,
                       child: Container(
@@ -266,29 +311,43 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                         child: ListView.builder(
                           physics: const BouncingScrollPhysics(),
                           scrollDirection: Axis.horizontal,
-                          itemCount: state.currentFelicitup?.invitedUserDetails.length,
+                          itemCount:
+                              state.currentFelicitup?.invitedUserDetails.length,
                           itemBuilder: (_, index) {
-                            final data = state.currentFelicitup?.invitedUserDetails[index];
+                            final data =
+                                state
+                                    .currentFelicitup
+                                    ?.invitedUserDetails[index];
                             final videoData = data?.videoData;
 
                             return VideoSpace(
-                              label: (data?.videoData?.videoUrl?.isNotEmpty ?? false)
-                                  ? 'Espacio ya tomado'
-                                  : '${index + 1}',
-                              screenshotImage: data?.videoData?.videoThumbnail ?? '',
+                              label:
+                                  (data?.videoData?.videoUrl?.isNotEmpty ??
+                                          false)
+                                      ? 'Espacio ya tomado'
+                                      : '${index + 1}',
+                              screenshotImage:
+                                  data?.videoData?.videoThumbnail ?? '',
                               name: data?.name ?? '',
                               id: data?.id ?? '',
-                              hasVideo: data?.videoData?.videoUrl?.isNotEmpty ?? false,
+                              hasVideo:
+                                  data?.videoData?.videoUrl?.isNotEmpty ??
+                                  false,
                               setVideo: () {
                                 final url = videoData?.videoUrl;
                                 if (url != null && url.isNotEmpty) {
-                                  context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(url));
-                                  if (controller != null && controller.value.isInitialized) {
+                                  context.read<VideoEditorBloc>().add(
+                                    VideoEditorEvent.setUrlVideo(url),
+                                  );
+                                  if (controller != null &&
+                                      controller.value.isInitialized) {
                                     controller.dispose();
                                   }
                                   // _initializeVideoPlayerFromUrl(url);
                                 } else {
-                                  context.read<VideoEditorBloc>().add(VideoEditorEvent.setUrlVideo(''));
+                                  context.read<VideoEditorBloc>().add(
+                                    VideoEditorEvent.setUrlVideo(''),
+                                  );
                                 }
                               },
                             );
@@ -314,7 +373,8 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
 
     return BlocBuilder<VideoEditorBloc, VideoEditorState>(
       builder: (context, state) {
-        final controller = context.read<VideoEditorBloc>().state.videoPlayerController;
+        final controller =
+            context.read<VideoEditorBloc>().state.videoPlayerController;
         return GestureDetector(
           onTap: () {
             setState(() {
@@ -330,7 +390,10 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
               if (Platform.isIOS)
                 AspectRatio(
                   aspectRatio: controller?.value.aspectRatio ?? 9 / 16,
-                  child: VideoPlayer(controller ?? VideoPlayerController.networkUrl(Uri.parse(''))),
+                  child: VideoPlayer(
+                    controller ??
+                        VideoPlayerController.networkUrl(Uri.parse('')),
+                  ),
                 ),
               if (Platform.isAndroid)
                 Center(
@@ -339,7 +402,10 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                     child: SizedBox(
                       width: controller?.value.size.width,
                       height: controller?.value.size.height,
-                      child: VideoPlayer(controller ?? VideoPlayerController.networkUrl(Uri.parse(''))),
+                      child: VideoPlayer(
+                        controller ??
+                            VideoPlayerController.networkUrl(Uri.parse('')),
+                      ),
                     ),
                   ),
                 ),
@@ -352,7 +418,8 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(context.sp(10)),
                     child: VideoProgressIndicator(
-                      controller ?? VideoPlayerController.networkUrl(Uri.parse('')),
+                      controller ??
+                          VideoPlayerController.networkUrl(Uri.parse('')),
                       allowScrubbing: true,
                       padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
                       colors: VideoProgressColors(
@@ -372,7 +439,9 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                     padding: EdgeInsets.zero,
                     iconSize: context.sp(50),
                     icon: Icon(
-                      _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                      _isPlaying
+                          ? Icons.pause_circle_filled
+                          : Icons.play_circle_fill,
                       color: context.colors.white.valueOpacity(.8),
                     ),
                     onPressed: _togglePlay,
@@ -384,7 +453,9 @@ class _VideoEditorPageState extends State<VideoEditorPage> with WidgetsBindingOb
                 right: context.sp(20),
                 child: GestureDetector(
                   onTap: () {
-                    context.read<VideoEditorBloc>().add(VideoEditorEvent.changeFullScreen());
+                    context.read<VideoEditorBloc>().add(
+                      VideoEditorEvent.changeFullScreen(),
+                    );
                   },
                   child: Container(
                     height: context.sp(30),

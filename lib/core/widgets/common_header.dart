@@ -71,16 +71,38 @@ class CommonHeader extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                margin: EdgeInsets.only(
-                  top: context.sp(15),
-                  right: context.sp(10),
-                ),
+                margin: EdgeInsets.only(top: context.sp(15)),
                 child: IconButton(
                   onPressed: () => context.go(RouterPaths.notifications),
                   icon: Icon(
                     Icons.notifications,
                     color: context.colors.darkGrey,
                     size: context.sp(28),
+                  ),
+                ),
+              ),
+              // SizedBox(width: context.sp(10)),
+              Container(
+                margin: EdgeInsets.only(
+                  top: context.sp(15),
+                  right: context.sp(10),
+                ),
+                child: IconButton(
+                  onPressed: () => context.go(RouterPaths.frequentQuestions),
+                  icon: Container(
+                    padding: EdgeInsets.all(context.sp(3)),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: context.colors.darkGrey,
+                        width: context.sp(1),
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.question_mark_rounded,
+                      color: context.colors.darkGrey,
+                      size: context.sp(18),
+                    ),
                   ),
                 ),
               ),

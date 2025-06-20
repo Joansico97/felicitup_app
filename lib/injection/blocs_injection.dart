@@ -10,6 +10,7 @@ void _initBlocsInjection() {
         firebaseMessaging: di(),
       ),
     )
+    ..registerFactory(() => SplashBloc())
     ..registerFactory(() => InitBloc(userRepository: di()))
     ..registerFactory(() => LoginBloc(authRepository: di(), firestore: di()))
     ..registerFactory(
@@ -123,5 +124,12 @@ void _initBlocsInjection() {
     ..registerFactory(
       () => PhoneVerifyIntBloc(authRepository: di(), userRepository: di()),
     )
-    ..registerFactory(() => DeleteAccountBloc(userRepository: di()));
+    ..registerFactory(
+      () => DeleteAccountBloc(
+        userRepository: di(),
+        firebaseFunctionsHelper: di(),
+      ),
+    )
+    ..registerFactory(() => OnBoardingBloc())
+    ..registerFactory(() => FrequentQuestionsBloc());
 }

@@ -176,6 +176,49 @@ Page<Widget> _felicitupNotificationHandler(
   );
 }
 
+Page<Widget> _onBoardingHandler(BuildContext context, GoRouterState state) {
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<OnBoardingBloc>(),
+      child: OnBoardingPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
+Page<Widget> _frequentQuestionsHandler(
+  BuildContext context,
+  GoRouterState state,
+) {
+  return CustomTransitionPage(
+    child: BlocProvider(
+      create: (_) => injection.di<FrequentQuestionsBloc>(),
+      child: FrequentQuestionsPage(),
+    ),
+    transitionDuration: Duration(milliseconds: 500),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
+
 Page<Widget> _detailsFelicitupDashboardHandler(
   BuildContext context,
   GoRouterState state,

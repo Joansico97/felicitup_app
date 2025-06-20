@@ -165,6 +165,16 @@ class CustomRouter {
         pageBuilder: _felicitupNotificationHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.onBoarding,
+        pageBuilder: _onBoardingHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.frequentQuestions,
+        pageBuilder: _frequentQuestionsHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
       ShellRoute(
         navigatorKey: detailsPastFelicitupNavigatorKey,
         parentNavigatorKey: rootNavigatorKey,

@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:felicitup_app/core/utils/logger.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -44,7 +43,6 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         },
         (r) {
           final user = UserModel.fromJson(r);
-          logger.debug('User notifications: ${r['notifications']}');
           emit(
             state.copyWith(
               isLoading: false,

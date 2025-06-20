@@ -4,7 +4,6 @@ import 'package:animate_do/animate_do.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
-import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/wish_list/bloc/wish_list_bloc.dart';
 import 'package:felicitup_app/features/wish_list/widgets/widgets.dart';
@@ -18,7 +17,8 @@ class WishListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<WishListBloc, WishListState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen:
+          (previous, current) => previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -35,11 +35,10 @@ class WishListPage extends StatelessWidget {
                   return CollapsedHeader(
                     title: 'Lista de deseos',
                     onPressed: () {
-                      logger.debug(state.isEdit);
                       if (state.isEdit) {
                         context.read<WishListBloc>().add(
-                              WishListEvent.editGiftItem(),
-                            );
+                          WishListEvent.editGiftItem(),
+                        );
                       } else {
                         context.go(RouterPaths.felicitupsDashboard);
                       }
@@ -52,32 +51,33 @@ class WishListPage extends StatelessWidget {
                 builder: (_, state) {
                   final listGiftcard = state.listGiftcard;
                   return Expanded(
-                    child: state.isEdit
-                        ? FadeInUp(
-                            child: SingleChildScrollView(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: context.sp(20),
+                    child:
+                        state.isEdit
+                            ? FadeInUp(
+                              child: SingleChildScrollView(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: context.sp(20),
+                                ),
+                                child: CreateWishListItem(),
                               ),
-                              child: CreateWishListItem(),
-                            ),
-                          )
-                        : FadeInUp(
-                            child: SingleChildScrollView(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: context.sp(20),
-                              ),
-                              child: Column(
-                                children: [
-                                  ...List.generate(
-                                    listGiftcard?.length ?? 0,
-                                    (index) => WishListItem(
-                                      giftcard: listGiftcard![index],
+                            )
+                            : FadeInUp(
+                              child: SingleChildScrollView(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: context.sp(20),
+                                ),
+                                child: Column(
+                                  children: [
+                                    ...List.generate(
+                                      listGiftcard?.length ?? 0,
+                                      (index) => WishListItem(
+                                        giftcard: listGiftcard![index],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
                   );
                 },
               ),
@@ -90,16 +90,16 @@ class WishListPage extends StatelessWidget {
                       onTap: () {
                         if (state.isEdit) {
                           context.read<WishListBloc>().add(
-                                WishListEvent.createGiftItemInfo(),
-                              );
+                            WishListEvent.createGiftItemInfo(),
+                          );
                           context.read<AppBloc>().add(AppEvent.loadUserData());
                           context.read<WishListBloc>().add(
-                                WishListEvent.editGiftItem(),
-                              );
+                            WishListEvent.editGiftItem(),
+                          );
                         } else {
                           context.read<WishListBloc>().add(
-                                WishListEvent.editGiftItem(),
-                              );
+                            WishListEvent.editGiftItem(),
+                          );
                         }
                       },
                       label: state.isEdit ? 'Guardar' : 'Añadir regalo',
@@ -117,9 +117,7 @@ class WishListPage extends StatelessWidget {
 }
 
 class CreateWishListItem extends StatefulWidget {
-  const CreateWishListItem({
-    super.key,
-  });
+  const CreateWishListItem({super.key});
 
   @override
   State<CreateWishListItem> createState() => _CreateWishListItemState();
@@ -155,7 +153,8 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
             controller: nameController,
             hintText: 'Ingresa el nombre del producto',
             titleText: 'Nombre del producto',
-            onchangeEditing: (value) => context.read<WishListBloc>().add(
+            onchangeEditing:
+                (value) => context.read<WishListBloc>().add(
                   WishListEvent.setProductName(value),
                 ),
           ),
@@ -166,7 +165,8 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
             hintText: 'Ingresa el precio del producto',
             titleText: 'Precio del producto',
             isPrice: true,
-            onchangeEditing: (value) => context.read<WishListBloc>().add(
+            onchangeEditing:
+                (value) => context.read<WishListBloc>().add(
                   WishListEvent.setProductPrice(value),
                 ),
           ),
@@ -176,7 +176,8 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
             controller: descriptionController,
             hintText: 'Ingresa la descripción del producto',
             titleText: 'Descripción del producto',
-            onchangeEditing: (value) => context.read<WishListBloc>().add(
+            onchangeEditing:
+                (value) => context.read<WishListBloc>().add(
                   WishListEvent.setProductDescription(value),
                 ),
           ),
@@ -261,8 +262,8 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
                         onPressed: () {
                           if (linkController.text.isNotEmpty) {
                             context.read<WishListBloc>().add(
-                                  WishListEvent.setLinks(links),
-                                );
+                              WishListEvent.setLinks(links),
+                            );
                             setState(() {
                               links.add(linkController.text);
                               linkController.clear();
@@ -270,9 +271,7 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
                             });
                           }
                         },
-                        icon: Icon(
-                          Icons.check_box_outlined,
-                        ),
+                        icon: Icon(Icons.check_box_outlined),
                       ),
                       IconButton(
                         onPressed: () {
@@ -280,9 +279,7 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
                             showLink = false;
                           });
                         },
-                        icon: Icon(
-                          Icons.cancel_outlined,
-                        ),
+                        icon: Icon(Icons.cancel_outlined),
                       ),
                     ],
                   ),

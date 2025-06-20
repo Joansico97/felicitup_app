@@ -1,6 +1,5 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
-import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/details_felicitup/message_felicitup/widgets/chat_space.dart';
 import 'package:felicitup_app/features/details_past_felicitups/details_past_felicitups.dart';
@@ -14,21 +13,26 @@ class ChatPastFelicitupPage extends StatefulWidget {
   State<ChatPastFelicitupPage> createState() => _ChatPastFelicitupPageState();
 }
 
-class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage> with WidgetsBindingObserver {
+class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage>
+    with WidgetsBindingObserver {
   final TextEditingController textController = TextEditingController();
   final scrollController = ScrollController();
 
   void deleteId() {
     if (context.mounted) {
-      context.read<ChatPastFelicitupBloc>().add(ChatPastFelicitupEvent.asignCurrentChat(''));
+      context.read<ChatPastFelicitupBloc>().add(
+        ChatPastFelicitupEvent.asignCurrentChat(''),
+      );
     }
   }
 
   void assignid() {
     if (context.mounted) {
-      final felicitup = context.read<DetailsPastFelicitupDashboardBloc>().state.felicitup;
-      logger.debug('Assigning chat id: ${felicitup?.chatId}');
-      context.read<ChatPastFelicitupBloc>().add(ChatPastFelicitupEvent.asignCurrentChat(felicitup?.chatId ?? ''));
+      final felicitup =
+          context.read<DetailsPastFelicitupDashboardBloc>().state.felicitup;
+      context.read<ChatPastFelicitupBloc>().add(
+        ChatPastFelicitupEvent.asignCurrentChat(felicitup?.chatId ?? ''),
+      );
     }
   }
 
@@ -40,14 +44,11 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage> with Widg
         break;
       case AppLifecycleState.paused:
         deleteId();
-        logger.debug('App is paused');
         break;
       case AppLifecycleState.resumed:
         assignid();
-        logger.debug('App is resumed');
         break;
       case AppLifecycleState.detached:
-        logger.debug('App is suspending');
         break;
       case AppLifecycleState.hidden:
         break;
@@ -59,8 +60,11 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage> with Widg
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     assignid();
-    final felicitup = context.read<DetailsPastFelicitupDashboardBloc>().state.felicitup;
-    context.read<ChatPastFelicitupBloc>().add(ChatPastFelicitupEvent.startListening(felicitup?.chatId ?? ''));
+    final felicitup =
+        context.read<DetailsPastFelicitupDashboardBloc>().state.felicitup;
+    context.read<ChatPastFelicitupBloc>().add(
+      ChatPastFelicitupEvent.startListening(felicitup?.chatId ?? ''),
+    );
   }
 
   @override
@@ -85,7 +89,10 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage> with Widg
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DetailsPastFelicitupDashboardBloc, DetailsPastFelicitupDashboardState>(
+    return BlocBuilder<
+      DetailsPastFelicitupDashboardBloc,
+      DetailsPastFelicitupDashboardState
+    >(
       builder: (_, state) {
         final felicitup = state.felicitup;
         final currentUser = context.read<AppBloc>().state.currentUser;
@@ -100,13 +107,24 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage> with Widg
                   child: CustomScrollView(
                     controller: scrollController,
                     slivers: [
-                      BlocBuilder<ChatPastFelicitupBloc, ChatPastFelicitupState>(
+                      BlocBuilder<
+                        ChatPastFelicitupBloc,
+                        ChatPastFelicitupState
+                      >(
                         builder: (_, state) {
-                          List<ChatMessageModel> chatMessages = [...state.messages];
-                          final ownerIds = felicitup?.owner.map((owner) => owner.id).toList() ?? [];
+                          List<ChatMessageModel> chatMessages = [
+                            ...state.messages,
+                          ];
+                          final ownerIds =
+                              felicitup?.owner
+                                  .map((owner) => owner.id)
+                                  .toList() ??
+                              [];
                           chatMessages.removeWhere((element) {
                             if (ownerIds.contains(currentUser?.id)) {
-                              return element.sendedAt.isBefore(felicitup?.date ?? DateTime.now());
+                              return element.sendedAt.isBefore(
+                                felicitup?.date ?? DateTime.now(),
+                              );
                             } else {
                               return false;
                             }
@@ -116,20 +134,19 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage> with Widg
                           });
 
                           return SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (_, index) {
-                                return ChatSpace(
-                                  key: ValueKey(chatMessages[index].id),
-                                  isMine: chatMessages[index].sendedBy == currentUser?.id,
-                                  date: chatMessages[index].sendedAt,
-                                  textContent: chatMessages[index].message,
-                                  id: chatMessages[index].sendedBy,
-                                  name: chatMessages[index].userName,
-                                  userImg: chatMessages[index].userImg,
-                                );
-                              },
-                              childCount: chatMessages.length,
-                            ),
+                            delegate: SliverChildBuilderDelegate((_, index) {
+                              return ChatSpace(
+                                key: ValueKey(chatMessages[index].id),
+                                isMine:
+                                    chatMessages[index].sendedBy ==
+                                    currentUser?.id,
+                                date: chatMessages[index].sendedAt,
+                                textContent: chatMessages[index].message,
+                                id: chatMessages[index].sendedBy,
+                                name: chatMessages[index].userName,
+                                userImg: chatMessages[index].userImg,
+                              );
+                            }, childCount: chatMessages.length),
                           );
                         },
                       ),
@@ -150,20 +167,20 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage> with Widg
                         final textValue = textController.text;
                         if (textValue.isNotEmpty) {
                           context.read<ChatPastFelicitupBloc>().add(
-                                ChatPastFelicitupEvent.sendMessage(
-                                  ChatMessageModel(
-                                    id: '${felicitup?.id}-${currentUser?.id}',
-                                    message: textValue,
-                                    sendedBy: currentUser?.id ?? '',
-                                    userName: currentUser?.firstName ?? '',
-                                    sendedAt: DateTime.now(),
-                                    userImg: currentUser?.userImg,
-                                  ),
-                                  felicitup!,
-                                  currentUser?.id ?? '',
-                                  currentUser?.firstName ?? '',
-                                ),
-                              );
+                            ChatPastFelicitupEvent.sendMessage(
+                              ChatMessageModel(
+                                id: '${felicitup?.id}-${currentUser?.id}',
+                                message: textValue,
+                                sendedBy: currentUser?.id ?? '',
+                                userName: currentUser?.firstName ?? '',
+                                sendedAt: DateTime.now(),
+                                userImg: currentUser?.userImg,
+                              ),
+                              felicitup!,
+                              currentUser?.id ?? '',
+                              currentUser?.firstName ?? '',
+                            ),
+                          );
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             _scrollToBottom();
                           });
@@ -171,17 +188,12 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage> with Widg
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                'No puedes enviar mensajes vacíos',
-                              ),
+                              content: Text('No puedes enviar mensajes vacíos'),
                             ),
                           );
                         }
                       },
-                      icon: Icon(
-                        Icons.send,
-                        color: context.colors.primary,
-                      ),
+                      icon: Icon(Icons.send, color: context.colors.primary),
                     ),
                     hintText: 'Escribe un mensaje',
                     hintStyle: context.styles.paragraph.copyWith(

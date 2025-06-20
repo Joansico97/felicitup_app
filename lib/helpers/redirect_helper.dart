@@ -1,5 +1,4 @@
 import 'package:felicitup_app/core/router/router.dart';
-import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/bloc/details_felicitup_dashboard_bloc.dart';
@@ -28,7 +27,6 @@ void redirectHelper({required Map<String, dynamic> data}) {
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
-      logger.debug(CustomRouter().router.routerDelegate.state.matchedLocation);
       CustomRouter().router.go(
         RouterPaths.messageFelicitup,
         extra: {'felicitupId': felicitupId, 'chatId': chatId},

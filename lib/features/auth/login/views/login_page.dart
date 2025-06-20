@@ -40,7 +40,12 @@ class LoginPage extends StatelessWidget {
 
         if (state.status == LoginStatus.success) {
           context.read<AppBloc>().add(AppEvent.loadUserData());
-          context.go(RouterPaths.felicitupsDashboard);
+          if (state.isFirstTime) {
+            context.read<LoginBloc>().add(LoginEvent.changeFirstTimeRedirect());
+            context.go(RouterPaths.onBoarding);
+          } else {
+            context.go(RouterPaths.felicitupsDashboard);
+          }
         }
       },
       child: GestureDetector(

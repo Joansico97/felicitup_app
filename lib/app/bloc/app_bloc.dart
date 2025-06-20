@@ -224,7 +224,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       await _userRepository.asignCurrentChatId('');
       await _authRepository.logout();
-      _globalTimer?.cancel();
       emit(
         state.copyWith(
           isLoading: false,

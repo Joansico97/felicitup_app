@@ -2,6 +2,7 @@ part of 'router.dart';
 
 class RouterPaths {
   static const String init = '/init';
+  static const String onBoarding = '/onBoarding';
   static const String home = '/home';
   static const String createFelicitup = '/createFelicitup';
   static const String felicitupsDashboard = '/felicitupsDashboard';
@@ -48,9 +49,11 @@ class RouterPaths {
   static const String phoneVerifyInt = '/phoneVerifyInt';
   static const String updatePage = '/updatePage';
   static const String deleteAccount = '/deleteAccount';
+  static const String frequentQuestions = '/frequentQuestions';
 
   List<String> get noAuthenticated => [
     init,
+    onBoarding,
     login,
     register,
     termsConditions,

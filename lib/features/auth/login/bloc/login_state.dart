@@ -8,11 +8,16 @@ class LoginState with _$LoginState {
     required bool isLoading,
     required LoginStatus status,
     required String errorMessage,
+    required bool isFirstTime,
   }) = _LoginState;
 
   factory LoginState.initial() => LoginState(
-        isLoading: false,
-        status: LoginStatus.initial,
-        errorMessage: '',
-      );
+    isLoading: false,
+    status: LoginStatus.initial,
+    errorMessage: '',
+    isFirstTime: true,
+  );
+
+  factory LoginState.fromJson(Map<String, dynamic> json) =>
+      _$LoginStateFromJson(json);
 }
