@@ -1,4 +1,3 @@
-import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
@@ -6,12 +5,14 @@ import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 part 'register_event.dart';
 part 'register_state.dart';
 part 'register_bloc.freezed.dart';
+part 'register_bloc.g.dart';
 
-class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
+class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
   RegisterBloc({
     required AuthRepository authRepository,
     required UserRepository userRepository,
@@ -24,6 +25,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
         changeStatus: (event) => _changeStatus(emit, event.status),
+        previousStep: (_) => _previousStep(emit),
         googleLoginEvent: (_) => _googleLoginEvent(emit),
         appleLoginEvent: (_) => _appleLoginEvent(emit),
         initRegister:
@@ -38,6 +40,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
               event.birthDate,
             ),
         validateCode: (value) => _validateCode(emit, value.code),
+        verificationCompleted:
+            (event) => _verificationCompleted(emit, event.verificationId),
+        verificationFailed: (event) => _verificationFailed(emit, event.error),
         savePhoneInfo:
             (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
         initValidation: (_) => _initValidation(emit),
@@ -60,6 +65,12 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(state.copyWith(status: status));
   }
 
+  _previousStep(Emitter<RegisterState> emit) {
+    if (state.currentStep > 0) {
+      emit(state.copyWith(currentStep: state.currentStep - 1));
+    }
+  }
+
   _initRegister(
     Emitter<RegisterState> emit,
     String name,
@@ -73,6 +84,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(
       state.copyWith(
         status: RegisterStatus.formFinished,
+        currentStep: state.currentStep + 1,
         name: name,
         lastName: lastName,
         email: email,
@@ -90,9 +102,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     String isoCode,
   ) async {
     try {
-      emit(
-        state.copyWith(isLoading: true, status: RegisterStatus.formFinished),
-      );
+      emit(state.copyWith(isLoading: true, currentStep: state.currentStep + 1));
+
       final exist = await checkPhoneExist(phone: phone);
       if (exist) {
         emit(
@@ -119,28 +130,18 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   _initValidation(Emitter<RegisterState> emit) async {
-    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
+    emit(state.copyWith(isLoading: true));
 
     try {
       await _authRepository.verifyPhone(
         phone: state.phone!,
         onCodeSent: (verificationId) {
-          emit(
-            state.copyWith(
-              verificationId: verificationId,
-              isLoading: false,
-              status: RegisterStatus.validateCode,
-            ),
-          );
+          if (isClosed) return;
+          add(RegisterEvent.verificationCompleted(verificationId));
         },
         onError: (error) {
-          emit(
-            state.copyWith(
-              isLoading: false,
-              status: RegisterStatus.error,
-              errorMessage: error.toString(),
-            ),
-          );
+          if (isClosed) return;
+          add(RegisterEvent.verificationFailed(error.toString()));
         },
       );
     } catch (e) {
@@ -154,8 +155,29 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
+  _verificationCompleted(Emitter<RegisterState> emit, String verificationId) {
+    emit(
+      state.copyWith(
+        verificationId: verificationId,
+        isLoading: false,
+        status: RegisterStatus.validateCode,
+      ),
+    );
+  }
+
+  _verificationFailed(Emitter<RegisterState> emit, String error) {
+    emit(
+      state.copyWith(
+        isLoading: false,
+        status: RegisterStatus.error,
+        errorMessage: error,
+        currentStep: 0,
+      ),
+    );
+  }
+
   _validateCode(Emitter<RegisterState> emit, String code) async {
-    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
+    emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.confirmVerification(
         verificationId: state.verificationId!,
@@ -173,7 +195,12 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           );
         },
         (r) {
-          emit(state.copyWith(isLoading: false, status: RegisterStatus.none));
+          emit(
+            state.copyWith(
+              isLoading: false,
+              currentStep: state.currentStep + 1,
+            ),
+          );
           add(RegisterEvent.registerEvent(true));
         },
       );
@@ -279,7 +306,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   _googleLoginEvent(Emitter<RegisterState> emit) async {
-    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
+    emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.signInWithGoogle();
 
@@ -342,7 +369,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   _appleLoginEvent(Emitter<RegisterState> emit) async {
-    emit(state.copyWith(isLoading: true, status: RegisterStatus.none));
+    emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.signInWithApple();
 
@@ -448,5 +475,15 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       'genre': '',
       'provider': 'federated',
     });
+  }
+
+  @override
+  RegisterState? fromJson(Map<String, dynamic> json) {
+    return RegisterState.fromJson(json);
+  }
+
+  @override
+  Map<String, dynamic>? toJson(RegisterState state) {
+    return state.toJson();
   }
 }

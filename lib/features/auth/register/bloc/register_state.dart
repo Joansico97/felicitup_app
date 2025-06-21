@@ -16,6 +16,7 @@ enum RegisterStatus {
 class RegisterState with _$RegisterState {
   const factory RegisterState({
     required bool isLoading,
+    required int currentStep,
     required RegisterStatus status,
     required String errorMessage,
     String? name,
@@ -36,5 +37,9 @@ class RegisterState with _$RegisterState {
     isLoading: false,
     status: RegisterStatus.initial,
     errorMessage: '',
+    currentStep: 0,
   );
+
+  factory RegisterState.fromJson(Map<String, dynamic> json) =>
+      _$RegisterStateFromJson(json);
 }

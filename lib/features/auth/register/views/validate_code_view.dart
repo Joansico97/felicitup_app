@@ -20,14 +20,13 @@ class _ValidateCodeViewState extends State<ValidateCodeView> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
       child: Column(
         children: [
           CollapsedHeader(
             title: '',
             onPressed:
                 () => context.read<RegisterBloc>().add(
-                  RegisterEvent.changeStatus(RegisterStatus.formFinished),
+                  RegisterEvent.previousStep(),
                 ),
           ),
           Image.asset(Assets.images.logo.path, height: context.sp(60)),

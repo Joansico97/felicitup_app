@@ -5,6 +5,7 @@ class RegisterEvent with _$RegisterEvent {
   const factory RegisterEvent.changeLoading() = _changeLoading;
   const factory RegisterEvent.changeStatus(RegisterStatus status) =
       _changeStatus;
+  const factory RegisterEvent.previousStep() = _previousStep;
   const factory RegisterEvent.initRegister(
     String name,
     String lastName,
@@ -19,6 +20,10 @@ class RegisterEvent with _$RegisterEvent {
   const factory RegisterEvent.googleLoginEvent() = _googleLoginEvent;
   const factory RegisterEvent.appleLoginEvent() = _appleLoginEvent;
   const factory RegisterEvent.initValidation() = _initValidation;
+  const factory RegisterEvent.verificationCompleted(String verificationId) =
+      _verificationCompleted;
+  const factory RegisterEvent.verificationFailed(String error) =
+      _verificationFailed;
   const factory RegisterEvent.validateCode(String code) = _validateCode;
   const factory RegisterEvent.registerEvent(bool isEmail) = _registerEvent;
   const factory RegisterEvent.setUserInfo(UserCredential credential) =

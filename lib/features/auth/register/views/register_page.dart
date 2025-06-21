@@ -63,15 +63,15 @@ class RegisterPage extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: context.sp(12)),
               child: BlocBuilder<RegisterBloc, RegisterState>(
                 builder: (_, state) {
-                  final status = state.status;
-                  if (status == RegisterStatus.success) {
-                    return FinishRegisterView();
-                  } else if (status == RegisterStatus.initial) {
+                  final currentStep = state.currentStep;
+                  if (currentStep == 0) {
                     return RegisterView();
-                  } else if (status == RegisterStatus.formFinished) {
+                  } else if (currentStep == 1) {
                     return GetUserPhoneView();
-                  } else if (status == RegisterStatus.validateCode) {
+                  } else if (currentStep == 2) {
                     return ValidateCodeView();
+                  } else if (currentStep == 3) {
+                    return FinishRegisterView();
                   } else {
                     return RegisterView();
                   }

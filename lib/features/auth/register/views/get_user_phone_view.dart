@@ -36,7 +36,7 @@ class _GetUserPhoneViewState extends State<GetUserPhoneView> {
               title: '',
               onPressed:
                   () => context.read<RegisterBloc>().add(
-                    RegisterEvent.changeStatus(RegisterStatus.initial),
+                    RegisterEvent.previousStep(),
                   ),
             ),
             // SizedBox(height: context.sp(24)),
