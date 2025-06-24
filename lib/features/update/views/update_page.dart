@@ -1,6 +1,7 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class UpdatePage extends StatelessWidget {
   const UpdatePage({super.key});
@@ -38,6 +39,15 @@ class UpdatePage extends StatelessWidget {
                   SizedBox(height: context.sp(24)),
                   Text(
                     'Actualiza la app para seguir disfrutando de Felicitup',
+                    textAlign: TextAlign.center,
+                    style: context.styles.subtitle,
+                  ),
+                  SizedBox(height: context.sp(24)),
+                  Text(
+                    'Versión actual: ${() async {
+                      final packageInfo = await PackageInfo.fromPlatform();
+                      return '${packageInfo.version}+${packageInfo.buildNumber}';
+                    }()}',
                     textAlign: TextAlign.center,
                     style: context.styles.subtitle,
                   ),

@@ -11,7 +11,7 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(() => SplashBloc())
-    ..registerFactory(() => InitBloc(userRepository: di()))
+    ..registerFactory(() => InitBloc())
     ..registerFactory(() => LoginBloc(authRepository: di(), firestore: di()))
     ..registerFactory(
       () => RegisterBloc(

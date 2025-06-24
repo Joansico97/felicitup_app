@@ -23,15 +23,21 @@ class FrequentQuestionsPage extends StatelessWidget {
             onTap: () async {
               final url = 'https://felicitup.com/guia-de-inicio/';
               final link = Uri.parse(url);
-              if (await canLaunchUrl(link)) {
-                launchUrl(
-                  link,
-                  mode: LaunchMode.inAppBrowserView,
-                  browserConfiguration: BrowserConfiguration(showTitle: true),
-                );
-              } else {
+              try {
+                if (await canLaunchUrl(link)) {
+                  launchUrl(
+                    link,
+                    mode: LaunchMode.inAppBrowserView,
+                    browserConfiguration: BrowserConfiguration(showTitle: true),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('No se puede abrir la URL')),
+                  );
+                }
+              } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('No se puede abrir la URL')),
+                  SnackBar(content: Text('Error al abrir la URL: $e')),
                 );
               }
             },
