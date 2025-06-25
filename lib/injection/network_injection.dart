@@ -5,6 +5,9 @@ void _initNetworkInjection() {
     ..registerLazySingleton<DatabaseHelper>(
       () => DatabaseHelper(firestore: di()),
     )
+    ..registerLazySingleton<UpdateServiceHelper>(
+      () => UpdateServiceHelper(remoteConfig: di()),
+    )
     ..registerLazySingleton<FirebaseFunctionsHelper>(
       () => FirebaseFunctionsHelper(firebaseFunctions: di()),
     )
@@ -14,5 +17,8 @@ void _initNetworkInjection() {
     ..registerLazySingleton<FirebaseFunctions>(() => FirebaseFunctions.instance)
     ..registerLazySingleton<FirebaseStorage>(() => FirebaseStorage.instance)
     ..registerLazySingleton<FirebaseAnalytics>(() => FirebaseAnalytics.instance)
+    ..registerLazySingleton<FirebaseRemoteConfig>(
+      () => FirebaseRemoteConfig.instance,
+    )
     ..registerLazySingleton<LocalStorageHelper>(() => LocalStorageHelper());
 }

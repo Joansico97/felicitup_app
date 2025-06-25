@@ -8,10 +8,11 @@ void _initBlocsInjection() {
         authRepository: di(),
         firebaseAuth: di(),
         firebaseMessaging: di(),
+        updateService: di(),
       ),
     )
     ..registerFactory(() => SplashBloc())
-    ..registerFactory(() => InitBloc(userRepository: di()))
+    ..registerFactory(() => InitBloc())
     ..registerFactory(() => LoginBloc(authRepository: di(), firestore: di()))
     ..registerFactory(
       () => RegisterBloc(

@@ -1,7 +1,7 @@
 name: felicitup_app
 description: 'A new Flutter project.'
 
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   sdk: ^3.7.2
@@ -35,6 +35,7 @@ dependencies:
   firebase_crashlytics: ^4.3.3
   firebase_messaging: ^15.2.4
   firebase_storage: ^12.4.4
+  firebase_remote_config: ^5.4.5
 
   # Packages
   either_dart: ^1.0.0
@@ -52,6 +53,7 @@ dependencies:
   sign_in_with_apple: ^6.1.4
   sms_autofill: ^2.4.1
   package_info_plus: ^8.3.0
+  version: ^3.0.2
 
   # Utils
   image_picker: ^1.1.2
