@@ -29,13 +29,13 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires camera access to function properly.</string>
+	<string>$(PRODUCT_NAME) would like to have access to the camera to record the videos.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>This app requires contacts access to function properly.</string>
+	<string>$(PRODUCT_NAME) would like to have access to contacts so that you can invite your friends.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone access to function properly.</string>
+	<string>$(PRODUCT_NAME) would like to have access to the microphone so I can record the audio of the videos you generate.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app requires files access to function properly.</string>
+	<string>$(PRODUCT_NAME) would like access to your photo gallery for profile image.</string>
 	<key>FirebasePhoneAuthMultiFactorEnabled</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
