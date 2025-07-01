@@ -29,13 +29,13 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>$(PRODUCT_NAME) would like to have access to the camera to record the videos.</string>
+	<string>$(PRODUCT_NAME) would like to have access to the camera to record your congratulatory video messages and create celebratory mixes for your friends.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>$(PRODUCT_NAME) would like to have access to contacts so that you can invite your friends.</string>
+	<string>$(PRODUCT_NAME) would like to have access to your contacts so you can easily find your friends who already use Felicitup and add their birthdays to your calendar. We will only use your contacts to help you connect within the app and will never share them.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>$(PRODUCT_NAME) would like to have access to the microphone so I can record the audio of the videos you generate.</string>
+	<string>$(PRODUCT_NAME) would like to have access to the microphone so that your greeting videos include sound, so your friends can hear your voice and your good wishes!</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>$(PRODUCT_NAME) would like access to your photo gallery for profile image.</string>
+	<string>$(PRODUCT_NAME) would like to have access to your gallery so that you can choose your best profile picture and share proof when notifying the jackpot payment in the felicitups management.</string>
 	<key>FirebasePhoneAuthMultiFactorEnabled</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
