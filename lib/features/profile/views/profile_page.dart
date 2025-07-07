@@ -81,7 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 width: context.sp(300),
                 child: PrimaryButton(
                   onTap: () => context.go(RouterPaths.deleteAccount),
-                  label: 'Elimiar cuenta',
+                  label: 'Eliminar cuenta',
                   isActive: true,
                 ),
               ),

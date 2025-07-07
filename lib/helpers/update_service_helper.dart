@@ -16,7 +16,6 @@ class UpdateServiceHelper {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     final Version currentVersion = Version.parse(packageInfo.version);
     late bool needToUpdate;
-    late String updateMessage;
 
     await _remoteConfig.setConfigSettings(
       RemoteConfigSettings(
@@ -42,12 +41,11 @@ class UpdateServiceHelper {
     final Version requiredVersion = Version.parse(requiredVersionStr);
 
     if (currentVersion < requiredVersion) {
-      updateMessage = _remoteConfig.getString('update_message');
       needToUpdate = true;
     } else {
       needToUpdate = false;
     }
 
-    return {'needToUpdate': needToUpdate, 'updateMessage': updateMessage};
+    return {'needToUpdate': needToUpdate};
   }
 }

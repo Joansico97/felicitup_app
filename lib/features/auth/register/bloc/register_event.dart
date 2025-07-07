@@ -28,5 +28,6 @@ class RegisterEvent with _$RegisterEvent {
   const factory RegisterEvent.registerEvent(bool isEmail) = _registerEvent;
   const factory RegisterEvent.setUserInfo(UserCredential credential) =
       _setUserInfo;
+  const factory RegisterEvent.deleteState() = _deleteState;
   const factory RegisterEvent.finishEvent() = _finishEvent;
 }

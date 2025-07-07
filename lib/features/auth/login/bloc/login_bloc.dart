@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
@@ -157,29 +158,13 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
           );
         },
         (r) async {
-          bool exist = await checkUserExist(email: r.user?.email ?? '');
+          final data = r['credential'] as UserCredential?;
+          final user = data?.user;
+
+          bool exist = await checkUserExist(email: user?.email ?? '');
           if (exist) {
             emit(state.copyWith(isLoading: false, status: LoginStatus.success));
           } else {
-            final user = r.user;
-            final userModel = UserModel(
-              id: user?.uid,
-              firstName: user?.displayName?.split(' ')[0],
-              lastName: user?.displayName?.split(' ')[1],
-              fullName: user?.displayName,
-              userImg: '',
-              email: user?.email,
-              birthDate: DateTime.now(),
-              registerDate: DateTime.now(),
-              phone: '',
-              isoCode: '',
-              friendList: [],
-              giftcardList: [],
-              matchList: [],
-              fcmToken: '',
-            );
-
-            add(LoginEvent.setUserInfo(userModel));
             emit(
               state.copyWith(isLoading: false, status: LoginStatus.federated),
             );

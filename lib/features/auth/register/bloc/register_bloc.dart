@@ -6,6 +6,7 @@ import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 part 'register_event.dart';
 part 'register_state.dart';
@@ -49,6 +50,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
         registerEvent: (_) => _registerEvent(emit),
         setUserInfo: (event) => _setUserInfo(emit, event.credential),
         finishEvent: (_) => _finishEvent(emit),
+        deleteState: (_) => emit(RegisterState.initial()),
       ),
     );
   }
@@ -384,7 +386,10 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
           );
         },
         (r) async {
-          bool exist = await checkUserExist(email: r.user?.email ?? '');
+          final data = r['credential'] as UserCredential?;
+          final user = data?.user;
+
+          bool exist = await checkUserExist(email: user?.email ?? '');
           if (exist) {
             emit(
               state.copyWith(
@@ -393,16 +398,18 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
               ),
             );
           } else {
-            final user = r.user;
+            final appleData = r['data'] as AuthorizationCredentialAppleID?;
             final userModel = UserModel(
               id: user?.uid,
-              firstName: user?.displayName?.split(' ')[0],
-              lastName: user?.displayName?.split(' ')[1],
-              fullName: user?.displayName,
+              firstName: appleData?.givenName ?? '',
+              lastName: appleData?.familyName ?? '',
+              fullName:
+                  '${appleData?.givenName ?? ''} ${appleData?.familyName ?? ''}',
               userImg: '',
-              email: user?.email,
+              email: user?.email ?? '',
               birthDate: DateTime.now(),
               registerDate: DateTime.now(),
+              userIdentifier: appleData?.userIdentifier,
               phone: '',
               isoCode: '',
               friendList: [],
@@ -417,8 +424,8 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
                 isLoading: false,
                 status: RegisterStatus.federated,
                 federatedUser: {
-                  'firstName': user?.displayName?.split(' ')[0] ?? '',
-                  'lastName': user?.displayName?.split(' ')[1] ?? '',
+                  'firstName': appleData?.givenName ?? '',
+                  'lastName': appleData?.familyName ?? '',
                 },
               ),
             );

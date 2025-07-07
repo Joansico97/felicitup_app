@@ -20,6 +20,7 @@ class UserModel with _$UserModel {
     String? fcmToken,
     String? currentChat,
     String? provider,
+    String? userIdentifier,
     int? birthMonth,
     int? birthDay,
     List<ContactModel>? friendList,

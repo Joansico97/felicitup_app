@@ -129,26 +129,24 @@ class AuthFirebaseResource implements AuthRepository {
   }
 
   @override
-  Future<Either<ApiException, UserCredential>> signInWithApple() async {
+  Future<Either<ApiException, Map<String, dynamic>>> signInWithApple() async {
     try {
       final AuthorizationCredentialAppleID appleCredential =
           await SignInWithApple.getAppleIDCredential(
             scopes: [
-              //Solicita los datos que necesites
               AppleIDAuthorizationScopes.email,
               AppleIDAuthorizationScopes.fullName,
             ],
           );
-      final OAuthProvider oAuthProvider = OAuthProvider(
-        "apple.com",
-      ); //Importante, el providerId
+      final OAuthProvider oAuthProvider = OAuthProvider("apple.com");
+
       final AuthCredential credential = oAuthProvider.credential(
         idToken: appleCredential.identityToken,
         accessToken: appleCredential.authorizationCode,
       );
       final response = await _firebaseAuth.signInWithCredential(credential);
 
-      return Right(response);
+      return Right({'credential': response, 'data': appleCredential});
     } on FirebaseAuthException catch (e) {
       return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
