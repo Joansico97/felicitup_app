@@ -37,7 +37,6 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
               event.email,
               event.password,
               event.confirmPassword,
-              event.genre,
               event.birthDate,
             ),
         validateCode: (value) => _validateCode(emit, value.code),
@@ -80,7 +79,6 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
     String email,
     String password,
     String confirmPassword,
-    String genre,
     DateTime birthDate,
   ) {
     emit(
@@ -92,7 +90,6 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
         email: email,
         password: password,
         confirmPassword: confirmPassword,
-        genre: genre,
         birthDate: birthDate,
       ),
     );
@@ -234,12 +231,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
           phone: state.phone!,
           fcmToken: '',
           currentChat: '',
-          userImg:
-              state.genre == 'Masculino'
-                  ? Env.avatar3
-                  : state.genre == 'Femenino'
-                  ? Env.avatar1
-                  : '',
+          userImg: Env.avatar3,
           friendList: [],
           birthdateAlerts: [],
           matchList: [],
@@ -479,7 +471,6 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
       'giftcardList': [],
       'matchList': [],
       'fcmToken': '',
-      'genre': '',
       'provider': 'federated',
     });
   }

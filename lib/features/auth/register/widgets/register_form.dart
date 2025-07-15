@@ -139,53 +139,7 @@ class _RegisterFormState extends State<RegisterForm> {
                 ),
               ),
             ),
-            SizedBox(height: context.sp(12)),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Género',
-                style: context.styles.paragraph.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            SizedBox(height: context.sp(8)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GenreCheckBox(
-                  label: 'Masculino',
-                  boolValue: masculine,
-                  onChanged:
-                      (value) => setState(() {
-                        masculine = value!;
-                        feminine = false;
-                        other = false;
-                      }),
-                ),
-                GenreCheckBox(
-                  label: 'Femenino',
-                  boolValue: feminine,
-                  onChanged:
-                      (value) => setState(() {
-                        feminine = value!;
-                        masculine = false;
-                        other = false;
-                      }),
-                ),
-                GenreCheckBox(
-                  label: 'Otro',
-                  boolValue: other,
-                  onChanged:
-                      (value) => setState(() {
-                        other = value!;
-                        feminine = false;
-                        masculine = false;
-                      }),
-                ),
-              ],
-            ),
-            SizedBox(height: context.sp(8)),
+            SizedBox(height: context.sp(24)),
             RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
@@ -241,17 +195,12 @@ class _RegisterFormState extends State<RegisterForm> {
                       (masculine || feminine || other)) {
                     context.read<RegisterBloc>().add(
                       RegisterEvent.initRegister(
-                        firstNameController.text.trim().capitalize(),
-                        lastNameController.text.trim().capitalize(),
-                        emailController.text.trim(),
-                        passwordController.text.trim(),
-                        repeatPasswordController.text.trim(),
-                        masculine
-                            ? 'Masculino'
-                            : feminine
-                            ? 'Femenino'
-                            : 'Otro',
-                        birthDate!,
+                        name: firstNameController.text.trim().capitalize(),
+                        lastName: lastNameController.text.trim().capitalize(),
+                        email: emailController.text.trim(),
+                        password: passwordController.text.trim(),
+                        confirmPassword: repeatPasswordController.text.trim(),
+                        birthDate: birthDate ?? DateTime.now(),
                       ),
                     );
                   }
@@ -264,34 +213,6 @@ class _RegisterFormState extends State<RegisterForm> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class GenreCheckBox extends StatelessWidget {
-  const GenreCheckBox({
-    super.key,
-    required this.label,
-    required this.boolValue,
-    required this.onChanged,
-  });
-
-  final String label;
-  final bool boolValue;
-  final void Function(bool?) onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(label, style: context.styles.paragraph),
-        Checkbox(
-          value: boolValue,
-          onChanged: (value) => onChanged(value),
-          activeColor: context.colors.orange,
-          checkColor: context.colors.white,
-        ),
-      ],
     );
   }
 }

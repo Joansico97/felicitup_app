@@ -2,7 +2,6 @@ import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
-import 'package:felicitup_app/features/auth/register/widgets/register_form.dart';
 import 'package:felicitup_app/features/auth/register/widgets/register_input_field.dart';
 import 'package:felicitup_app/features/features.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
@@ -120,47 +119,6 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                     ),
                   ),
                   SizedBox(height: context.sp(24)),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Género', style: context.styles.paragraph),
-                  ),
-                  SizedBox(height: context.sp(12)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GenreCheckBox(
-                        label: 'Masculino',
-                        boolValue: masculine,
-                        onChanged:
-                            (value) => setState(() {
-                              masculine = value!;
-                              feminine = false;
-                              other = false;
-                            }),
-                      ),
-                      GenreCheckBox(
-                        label: 'Femenino',
-                        boolValue: feminine,
-                        onChanged:
-                            (value) => setState(() {
-                              feminine = value!;
-                              masculine = false;
-                              other = false;
-                            }),
-                      ),
-                      GenreCheckBox(
-                        label: 'Otro',
-                        boolValue: other,
-                        onChanged:
-                            (value) => setState(() {
-                              other = value!;
-                              feminine = false;
-                              masculine = false;
-                            }),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: context.sp(12)),
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
@@ -218,12 +176,6 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                                   firstNameController.text.trim().capitalize(),
                               lastName:
                                   lastNameController.text.trim().capitalize(),
-                              genre:
-                                  masculine
-                                      ? "Masculino"
-                                      : feminine
-                                      ? "Feminino"
-                                      : "Otro",
                               birthDate: birthDate!,
                             ),
                           );

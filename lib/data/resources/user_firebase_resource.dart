@@ -818,7 +818,6 @@ class UserFirebaseResource implements UserRepository {
   Future<Either<ApiException, void>> setFederatedData({
     required String firstName,
     required String lastName,
-    required String genre,
     required DateTime birthDate,
   }) async {
     final uid = _firebaseAuth.currentUser?.uid;
@@ -831,7 +830,6 @@ class UserFirebaseResource implements UserRepository {
         'firstName': firstName,
         'lastName': lastName,
         'fullName': '$firstName $lastName',
-        'genre': genre,
         'birthDate': birthDate,
         'birthDay': birthDate.day,
         'birthMonth': birthDate.month,

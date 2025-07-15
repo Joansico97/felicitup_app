@@ -37,7 +37,6 @@ class FederatedRegisterBloc
               emit,
               event.name,
               event.lastName,
-              event.genre,
               event.birthDate,
             ),
         savePhoneInfo:
@@ -63,13 +62,11 @@ class FederatedRegisterBloc
     Emitter<FederatedRegisterState> emit,
     String name,
     String lastName,
-    String incommingGenre,
     DateTime birthDate,
   ) async {
     final response = await _userRepository.setFederatedData(
       firstName: name,
       lastName: lastName,
-      genre: incommingGenre,
       birthDate: birthDate.toLocal(),
     );
 

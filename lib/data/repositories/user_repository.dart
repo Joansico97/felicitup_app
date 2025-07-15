@@ -78,7 +78,6 @@ abstract class UserRepository {
   Future<Either<ApiException, void>> setFederatedData({
     required String firstName,
     required String lastName,
-    required String genre,
     required DateTime birthDate,
   });
   Future<Either<ApiException, void>> setUserPhone(

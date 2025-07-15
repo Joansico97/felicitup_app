@@ -20,9 +20,9 @@ class RegisterView extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
       child: Column(
         children: [
-          Image.asset(Assets.images.logo.path, height: context.sp(48)),
+          Image.asset(Assets.images.logo.path, height: context.sp(52)),
           SizedBox(height: context.sp(8)),
-          Image.asset(Assets.images.logoLetter.path, height: context.sp(52)),
+          Image.asset(Assets.images.logoLetter.path, height: context.sp(56)),
           SizedBox(height: context.sp(8)),
           RegisterForm(),
           Row(
