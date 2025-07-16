@@ -61,62 +61,77 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                     hintText: 'Apellidos',
                   ),
                   SizedBox(height: context.sp(12)),
-                  GestureDetector(
-                    onTap: () async {
-                      FocusScope.of(context).unfocus();
-                      final DateTime? pickedDate = await showGenericDatePicker(
-                        context: context,
-                        initialDate: DateTime.now().subtract(
-                          const Duration(days: 365 * 18),
-                        ),
-                        firstDate: DateTime(1939),
-                        lastDate: DateTime.now().subtract(
-                          const Duration(days: 365 * 18),
-                        ),
-                        helpText: 'Selecciona una fecha',
-                        cancelText: 'Cancelar',
-                        confirmText: 'OK',
-                        locale: const Locale('es', 'ES'),
-                      );
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () async {
+                            FocusScope.of(context).unfocus();
+                            final DateTime? pickedDate =
+                                await showGenericDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now().subtract(
+                                    const Duration(days: 365 * 18),
+                                  ),
+                                  firstDate: DateTime(1939),
+                                  lastDate: DateTime.now().subtract(
+                                    const Duration(days: 365 * 18),
+                                  ),
+                                  helpText: 'Selecciona una fecha',
+                                  cancelText: 'Cancelar',
+                                  confirmText: 'OK',
+                                  locale: const Locale('es', 'ES'),
+                                );
 
-                      if (pickedDate == null) return;
+                            if (pickedDate == null) return;
 
-                      setState(() {
-                        birthDate = pickedDate;
-                      });
-                    },
-                    child: Container(
-                      height: context.sp(45),
-                      padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            width: context.sp(1),
-                            color: context.colors.darkGrey,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            birthDate == null
-                                ? 'Fecha Nacimiento'
-                                : DateFormat('dd/MM/yyyy').format(birthDate!),
-                            style: context.styles.paragraph.copyWith(
-                              color:
+                            setState(() {
+                              birthDate = pickedDate;
+                            });
+                          },
+                          child: Container(
+                            height: context.sp(45),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: context.sp(12),
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  width: context.sp(1),
+                                  color: context.colors.darkGrey,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
                                   birthDate == null
-                                      ? context.colors.darkGrey
-                                      : context.colors.black,
+                                      ? 'Fecha Nacimiento'
+                                      : DateFormat(
+                                        'dd/MM/yyyy',
+                                      ).format(birthDate!),
+                                  style: context.styles.paragraph.copyWith(
+                                    color:
+                                        birthDate == null
+                                            ? context.colors.darkGrey
+                                            : context.colors.black,
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.calendar_month_rounded,
+                                  color: context.colors.orange,
+                                ),
+                              ],
                             ),
                           ),
-                          Icon(
-                            Icons.calendar_month_rounded,
-                            color: context.colors.orange,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      CommonTooltip(
+                        message:
+                            'La fecha de nacimiento se recolecta unica y exclusivamente para el registro de la cuenta.',
+                      ),
+                    ],
                   ),
                   SizedBox(height: context.sp(24)),
                   RichText(

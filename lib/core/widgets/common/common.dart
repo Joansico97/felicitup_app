@@ -1,5 +1,6 @@
 export './bottom_modal.dart';
 export './collapsed_header.dart';
+export './common_tooltip.dart';
 export './confirm_double_modal.dart';
 export './confirm_modal.dart';
 export './custom_modal.dart';
