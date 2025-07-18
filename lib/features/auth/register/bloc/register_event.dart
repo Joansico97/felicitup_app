@@ -12,7 +12,6 @@ class RegisterEvent with _$RegisterEvent {
     required String email,
     required String password,
     required String confirmPassword,
-    required DateTime birthDate,
   }) = _initRegister;
   const factory RegisterEvent.savePhoneInfo(String phone, String isoCode) =
       _savePhoneInfo;

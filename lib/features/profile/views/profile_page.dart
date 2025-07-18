@@ -376,12 +376,19 @@ class _ProfilePageState extends State<ProfilePage> {
                         SizedBox(height: context.sp(12)),
                         InfoCard(label: currentUser?.email ?? ''),
                         SizedBox(height: context.sp(12)),
-                        InfoCard(
-                          label: DateFormat(
-                            'dd·MM·yyyy',
-                          ).format(currentUser?.birthDate ?? DateTime.now()),
+                        Visibility(
+                          visible: currentUser?.birthDate != null,
+                          child: Column(
+                            children: [
+                              InfoCard(
+                                label: DateFormat('dd·MM·yyyy').format(
+                                  currentUser?.birthDate ?? DateTime.now(),
+                                ),
+                              ),
+                              SizedBox(height: context.sp(12)),
+                            ],
+                          ),
                         ),
-                        SizedBox(height: context.sp(12)),
                         Container(
                           width: context.sp(300),
                           padding: EdgeInsets.symmetric(

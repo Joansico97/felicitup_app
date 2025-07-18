@@ -7,7 +7,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
@@ -81,74 +80,74 @@ class _RegisterFormState extends State<RegisterForm> {
               isPassword: true,
               hintText: 'Repetir contraseña',
             ),
-            SizedBox(height: context.sp(12)),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      FocusScope.of(context).unfocus();
-                      final DateTime? pickedDate = await showGenericDatePicker(
-                        context: context,
-                        initialDate: DateTime.now().subtract(
-                          const Duration(days: 365 * 18),
-                        ),
-                        firstDate: DateTime(1939),
-                        lastDate: DateTime.now().subtract(
-                          const Duration(days: 365 * 18),
-                        ),
-                        helpText: 'Selecciona una fecha',
-                        cancelText: 'Cancelar',
-                        confirmText: 'OK',
-                        locale: const Locale('es', 'ES'),
-                      );
+            // SizedBox(height: context.sp(12)),
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: GestureDetector(
+            //         onTap: () async {
+            //           FocusScope.of(context).unfocus();
+            //           final DateTime? pickedDate = await showGenericDatePicker(
+            //             context: context,
+            //             initialDate: DateTime.now().subtract(
+            //               const Duration(days: 365 * 18),
+            //             ),
+            //             firstDate: DateTime(1939),
+            //             lastDate: DateTime.now().subtract(
+            //               const Duration(days: 365 * 18),
+            //             ),
+            //             helpText: 'Selecciona una fecha',
+            //             cancelText: 'Cancelar',
+            //             confirmText: 'OK',
+            //             locale: const Locale('es', 'ES'),
+            //           );
 
-                      if (pickedDate == null) return;
+            //           if (pickedDate == null) return;
 
-                      setState(() {
-                        birthDate = pickedDate;
-                      });
-                    },
-                    child: Container(
-                      height: context.sp(45),
-                      padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            width: context.sp(1),
-                            color: context.colors.darkGrey,
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            birthDate == null
-                                ? 'Fecha Nacimiento'
-                                : DateFormat('dd/MM/yyyy').format(birthDate!),
-                            style: context.styles.paragraph.copyWith(
-                              color:
-                                  birthDate == null
-                                      ? context.colors.darkGrey
-                                      : context.colors.black,
-                            ),
-                          ),
-                          Icon(
-                            Icons.calendar_month_rounded,
-                            color: context.colors.orange,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                CommonTooltip(
-                  message:
-                      'La fecha de nacimiento se recolecta unica y exclusivamente para el registro de la cuenta.',
-                ),
-              ],
-            ),
+            //           setState(() {
+            //             birthDate = pickedDate;
+            //           });
+            //         },
+            //         child: Container(
+            //           height: context.sp(45),
+            //           padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
+            //           decoration: BoxDecoration(
+            //             border: Border(
+            //               bottom: BorderSide(
+            //                 width: context.sp(1),
+            //                 color: context.colors.darkGrey,
+            //               ),
+            //             ),
+            //           ),
+            //           child: Row(
+            //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //             children: [
+            //               Text(
+            //                 birthDate == null
+            //                     ? 'Fecha Nacimiento'
+            //                     : DateFormat('dd/MM/yyyy').format(birthDate!),
+            //                 style: context.styles.paragraph.copyWith(
+            //                   color:
+            //                       birthDate == null
+            //                           ? context.colors.darkGrey
+            //                           : context.colors.black,
+            //                 ),
+            //               ),
+            //               Icon(
+            //                 Icons.calendar_month_rounded,
+            //                 color: context.colors.orange,
+            //               ),
+            //             ],
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //     CommonTooltip(
+            //       message:
+            //           'La fecha de nacimiento se recolecta unica y exclusivamente para el registro de la cuenta.',
+            //     ),
+            //   ],
+            // ),
             SizedBox(height: context.sp(24)),
             RichText(
               textAlign: TextAlign.center,
@@ -210,7 +209,6 @@ class _RegisterFormState extends State<RegisterForm> {
                         email: emailController.text.trim(),
                         password: passwordController.text.trim(),
                         confirmPassword: repeatPasswordController.text.trim(),
-                        birthDate: birthDate ?? DateTime.now(),
                       ),
                     );
                   }

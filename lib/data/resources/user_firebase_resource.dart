@@ -764,7 +764,6 @@ class UserFirebaseResource implements UserRepository {
     String phone,
     String isoCode,
     String genre,
-    DateTime birthDate,
   ) async {
     try {
       final uid = _firebaseAuth.currentUser?.uid;
@@ -777,9 +776,9 @@ class UserFirebaseResource implements UserRepository {
         'phone': phone,
         'isoCode': isoCode,
         'genre': genre,
-        'birthDate': birthDate,
-        'birthDay': birthDate.day,
-        'birthMonth': birthDate.month,
+        'birthDate': null,
+        'birthDay': null,
+        'birthMonth': null,
         'birthdateAlerts': [],
         'singleChats': [],
       });
@@ -818,7 +817,6 @@ class UserFirebaseResource implements UserRepository {
   Future<Either<ApiException, void>> setFederatedData({
     required String firstName,
     required String lastName,
-    required DateTime birthDate,
   }) async {
     final uid = _firebaseAuth.currentUser?.uid;
     if (uid == null) {
@@ -830,9 +828,9 @@ class UserFirebaseResource implements UserRepository {
         'firstName': firstName,
         'lastName': lastName,
         'fullName': '$firstName $lastName',
-        'birthDate': birthDate,
-        'birthDay': birthDate.day,
-        'birthMonth': birthDate.month,
+        'birthDate': null,
+        'birthDay': null,
+        'birthMonth': null,
         'birthdateAlerts': [],
         'singleChats': [],
       });
@@ -897,6 +895,52 @@ class UserFirebaseResource implements UserRepository {
 
         transaction.update(userDocRef, {
           'notifications': FieldValue.arrayRemove([itemToRemove]),
+        });
+
+        return Right(null);
+      } on FirebaseException catch (e) {
+        return Left(
+          ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+        );
+      } catch (e) {
+        return Left(ApiException(500, "Error desconocido: ${e.toString()}"));
+      }
+    });
+  }
+
+  @override
+  Future<Either<ApiException, void>> updateUserBirthdate(DateTime date) async {
+    final uid = _firebaseAuth.currentUser?.uid;
+
+    if (uid == null) {
+      return Left(ApiException(401, "Usuario no autenticado"));
+    }
+
+    final userDocRef = _firestore
+        .collection(AppConstants.usersCollection)
+        .doc(uid);
+
+    return FirebaseFirestore.instance.runTransaction<
+      Either<ApiException, void>
+    >((transaction) async {
+      try {
+        final userDoc = await transaction.get(userDocRef);
+
+        if (!userDoc.exists) {
+          return Left(ApiException(404, "Usuario no encontrado"));
+        }
+
+        final userData = userDoc.data();
+        if (userData == null) {
+          return Left(
+            ApiException(404, "Error al obtener la información del usuario"),
+          );
+        }
+
+        transaction.update(userDocRef, {
+          'birthDate': date.toLocal(),
+          'birthDay': date.toLocal().day,
+          'birthMonth': date.toLocal().month,
         });
 
         return Right(null);

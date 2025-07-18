@@ -67,7 +67,6 @@ class FederatedRegisterBloc
     final response = await _userRepository.setFederatedData(
       firstName: name,
       lastName: lastName,
-      birthDate: birthDate.toLocal(),
     );
 
     response.fold(
@@ -156,12 +155,7 @@ class FederatedRegisterBloc
       return response.fold(
         (l) {
           emit(state.copyWith(isLoading: false));
-          emit(
-            state.copyWith(
-              isLoading: false,
-              // currentIndex: state.currentIndex + 1,
-            ),
-          );
+          emit(state.copyWith(isLoading: false));
         },
         (r) async {
           try {
@@ -172,18 +166,12 @@ class FederatedRegisterBloc
               ),
             );
           } catch (e) {
-            // ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            //   SnackBar(
-            //     content: Text(
-            //       '$e',
-            //       style: rootNavigatorKey.currentContext!.styles.paragraph
-            //           .copyWith(
-            //             color: rootNavigatorKey.currentContext!.colors.white,
-            //           ),
-            //     ),
-            //     duration: const Duration(seconds: 5),
-            //   ),
-            // );
+            ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+              SnackBar(
+                content: Text('$e'),
+                duration: const Duration(seconds: 5),
+              ),
+            );
             emit(
               state.copyWith(
                 isLoading: false,

@@ -1,6 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:fast_contacts/fast_contacts.dart';
+import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -16,6 +19,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
         changeCreate: (_) => _changeCreate(emit),
+        setUserBirthdate: (event) => _setUserBirthdate(emit, event.date),
         changeShowButton: (_) => _changeShowButton(emit),
         getAndUpdateContacts: (event) => _getAndUpdateContacts(event.isoCode),
       ),
@@ -77,6 +81,38 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     List<String> friendsPhoneList =
         contactsMapList.map((e) => e['phone'] as String).toList();
     await _userRepository.updateContacts(contactsMapList, friendsPhoneList);
+  }
+
+  _setUserBirthdate(Emitter<HomeState> emit, DateTime date) async {
+    emit(state.copyWith(isLoading: true));
+
+    try {
+      final response = await _userRepository.updateUserBirthdate(date);
+
+      response.fold(
+        (l) {
+          emit(state.copyWith(isLoading: false));
+          throw l;
+        },
+        (r) {
+          emit(state.copyWith(isLoading: false));
+          ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Fecha de cumpleaños actualizada correctamente',
+                style: rootNavigatorKey.currentContext!.styles.paragraph
+                    .copyWith(
+                      color: rootNavigatorKey.currentContext!.colors.white,
+                    ),
+              ),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+    }
   }
 
   Future<List<Contact>> getAllInfoContacts() async {

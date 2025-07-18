@@ -50,6 +50,7 @@ abstract class UserRepository {
   Future<Either<ApiException, void>> updateUserImageFromFile(File file);
   Future<Either<ApiException, void>> updateUserImageFromUrl(String url);
   Future<Either<ApiException, void>> updateUserInfo(UserModel user);
+  Future<Either<ApiException, void>> updateUserBirthdate(DateTime date);
   Future<Either<ApiException, void>> createGiftItem(GiftcarModel item);
   Future<Either<ApiException, void>> editGiftItem({
     required String itemId,
@@ -73,12 +74,10 @@ abstract class UserRepository {
     String phone,
     String isoCode,
     String genre,
-    DateTime birthDate,
   );
   Future<Either<ApiException, void>> setFederatedData({
     required String firstName,
     required String lastName,
-    required DateTime birthDate,
   });
   Future<Either<ApiException, void>> setUserPhone(
     String phone,
