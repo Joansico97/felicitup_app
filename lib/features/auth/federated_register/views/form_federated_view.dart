@@ -72,7 +72,10 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                                 ..onTap = () {
                                   context.push(
                                     RouterPaths.termsPolicies,
-                                    extra: true,
+                                    extra: {
+                                      'isTerms': true,
+                                      'isFromFederated': true,
+                                    },
                                   );
                                 },
                         ),
@@ -90,7 +93,10 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                                 ..onTap = () {
                                   context.push(
                                     RouterPaths.termsPolicies,
-                                    extra: false,
+                                    extra: {
+                                      'isTerms': false,
+                                      'isFromFederated': true,
+                                    },
                                   );
                                 },
                         ),

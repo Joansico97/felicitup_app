@@ -90,7 +90,10 @@ class _RegisterFormState extends State<RegisterForm> {
                           ..onTap = () {
                             context.push(
                               RouterPaths.termsPolicies,
-                              extra: true,
+                              extra: {
+                                'isTerms': true,
+                                'isFromFederated': false,
+                              },
                             );
                           },
                   ),
@@ -105,7 +108,10 @@ class _RegisterFormState extends State<RegisterForm> {
                           ..onTap = () {
                             context.push(
                               RouterPaths.termsPolicies,
-                              extra: false,
+                              extra: {
+                                'isTerms': false,
+                                'isFromFederated': false,
+                              },
                             );
                           },
                   ),

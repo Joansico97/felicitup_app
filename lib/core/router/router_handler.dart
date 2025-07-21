@@ -552,11 +552,14 @@ Page<Widget> _remindersHandler(BuildContext context, GoRouterState state) {
 }
 
 Page<Widget> _termsPoliciesHandler(BuildContext context, GoRouterState state) {
-  final isTerms = state.extra as bool;
+  final data = state.extra as Map<String, dynamic>;
   return CustomTransitionPage(
     child: BlocProvider(
       create: (_) => injection.di<TermsPoliciesBloc>(),
-      child: TermsPoliciesPage(isTerms: isTerms),
+      child: TermsPoliciesPage(
+        isTerms: data['isTerms'] as bool,
+        isFromFederated: data['isFromFederated'] as bool,
+      ),
     ),
     transitionDuration: Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

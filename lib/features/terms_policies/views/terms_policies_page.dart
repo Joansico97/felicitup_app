@@ -8,9 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class TermsPoliciesPage extends StatelessWidget {
-  const TermsPoliciesPage({super.key, required this.isTerms});
+  const TermsPoliciesPage({
+    super.key,
+    required this.isTerms,
+    required this.isFromFederated,
+  });
 
   final bool isTerms;
+  final bool isFromFederated;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +28,11 @@ class TermsPoliciesPage extends StatelessWidget {
                   isTerms
                       ? 'Términos y condiciones de uso'
                       : 'Política de privacidad',
-              onPressed: () async => context.go(RouterPaths.register),
+              onPressed:
+                  () =>
+                      isFromFederated
+                          ? context.go(RouterPaths.federatedRegister)
+                          : context.go(RouterPaths.register),
             ),
             SizedBox(height: context.sp(12)),
             Expanded(child: isTerms ? TermsWidget() : PoliciesWidget()),
