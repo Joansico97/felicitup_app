@@ -18,10 +18,6 @@ class FormFederatedView extends StatefulWidget {
 }
 
 class _FormFederatedViewState extends State<FormFederatedView> {
-  bool masculine = false;
-  bool feminine = false;
-  bool other = false;
-  DateTime? birthDate;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
@@ -108,16 +104,13 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                     child: PrimaryButton(
                       onTap: () {
                         if (firstNameController.text.isNotEmpty &&
-                            lastNameController.text.isNotEmpty &&
-                            birthDate != null &&
-                            (masculine || feminine || other)) {
+                            lastNameController.text.isNotEmpty) {
                           context.read<FederatedRegisterBloc>().add(
                             FederatedRegisterEvent.initRegister(
                               name:
                                   firstNameController.text.trim().capitalize(),
                               lastName:
                                   lastNameController.text.trim().capitalize(),
-                              birthDate: birthDate!,
                             ),
                           );
                         }

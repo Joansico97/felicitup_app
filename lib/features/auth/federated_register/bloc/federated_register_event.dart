@@ -7,7 +7,6 @@ class FederatedRegisterEvent with _$FederatedRegisterEvent {
   const factory FederatedRegisterEvent.initRegister({
     required String name,
     required String lastName,
-    required DateTime birthDate,
   }) = _initRegister;
   const factory FederatedRegisterEvent.savePhoneInfo(
     String phone,
