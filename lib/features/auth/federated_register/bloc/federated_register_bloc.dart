@@ -33,7 +33,12 @@ class FederatedRegisterBloc
         changeLoading: (_) => _changeLoading(emit),
         backStep: (_) => _backStep(emit),
         initRegister:
-            (event) => _initRegister(emit, event.name, event.lastName),
+            (event) => _initRegister(
+              emit,
+              event.name,
+              event.lastName,
+              event.birthDate,
+            ),
         savePhoneInfo:
             (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
         initValidation: (_) => _initValidation(emit),
@@ -57,10 +62,12 @@ class FederatedRegisterBloc
     Emitter<FederatedRegisterState> emit,
     String name,
     String lastName,
+    DateTime? birthDate,
   ) async {
     final response = await _userRepository.setFederatedData(
       firstName: name,
       lastName: lastName,
+      birthDate: birthDate,
     );
 
     response.fold(

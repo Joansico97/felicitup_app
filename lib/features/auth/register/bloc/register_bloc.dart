@@ -37,6 +37,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
               event.email,
               event.password,
               event.confirmPassword,
+              event.birthDate,
             ),
         validateCode: (value) => _validateCode(emit, value.code),
         verificationCompleted:
@@ -78,6 +79,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
     String email,
     String password,
     String confirmPassword,
+    DateTime? birthDate,
   ) {
     emit(
       state.copyWith(
@@ -88,6 +90,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
         email: email,
         password: password,
         confirmPassword: confirmPassword,
+        birthDate: birthDate,
       ),
     );
   }
@@ -236,10 +239,10 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
           giftcardList: [],
           notifications: [],
           singleChats: [],
-          birthDate: null,
+          birthDate: state.birthDate?.toLocal(),
           registerDate: DateTime.now(),
-          birthDay: null,
-          birthMonth: null,
+          birthDay: state.birthDate?.toLocal().day,
+          birthMonth: state.birthDate?.toLocal().month,
           provider: 'email',
         ),
       );
@@ -258,9 +261,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
   }
 
   _registerEvent(Emitter<RegisterState> emit) async {
-    emit(
-      state.copyWith(isLoading: true),
-    ); // Indica que la operación está en progreso
+    emit(state.copyWith(isLoading: true));
 
     try {
       final response = await _authRepository.register(
@@ -330,6 +331,8 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
               userImg: user?.photoURL,
               email: user?.email,
               birthDate: null,
+              birthDay: null,
+              birthMonth: null,
               registerDate: DateTime.now(),
               phone: '',
               isoCode: '',
@@ -397,6 +400,8 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
               userImg: '',
               email: user?.email ?? '',
               birthDate: null,
+              birthDay: null,
+              birthMonth: null,
               registerDate: DateTime.now(),
               userIdentifier: appleData?.userIdentifier,
               phone: '',
@@ -408,6 +413,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
             );
 
             _setUserInfoRegister(userModel);
+
             emit(
               state.copyWith(
                 isLoading: false,
@@ -460,7 +466,9 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
       'fullName': user.fullName,
       'userImg': user.userImg,
       'email': user.email,
-      'birthDate': null,
+      'birthDate': user.birthDate,
+      'birthDay': user.birthDay,
+      'birthMonth': user.birthMonth,
       'registerDate': DateTime.now(),
       'phone': '',
       'isoCode': '',
