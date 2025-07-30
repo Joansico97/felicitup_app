@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crypto/crypto.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
@@ -103,20 +106,44 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
     try {
       emit(state.copyWith(isLoading: true, currentStep: state.currentStep + 1));
 
-      final exist = await checkPhoneExist(phone: phone);
-      if (exist) {
-        emit(
-          state.copyWith(
-            isLoading: false,
-            status: RegisterStatus.error,
-            errorMessage: 'El número de teléfono ya está registrado.',
-          ),
-        );
-        return;
-      }
+      final bytes = utf8.encode(phone);
+      final digest = sha256.convert(bytes);
+      final hashedPhone = digest.toString();
 
-      emit(state.copyWith(isLoading: false, phone: phone, isoCode: isoCode));
-      add(RegisterEvent.initValidation());
+      final exist = await _userRepository.checkPhoneExist(phone: hashedPhone);
+
+      return exist.fold(
+        (l) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              status: RegisterStatus.error,
+              errorMessage: l.message,
+            ),
+          );
+        },
+        (r) {
+          if (r) {
+            emit(
+              state.copyWith(
+                isLoading: false,
+                status: RegisterStatus.error,
+                errorMessage: 'El número de teléfono ya está registrado.',
+              ),
+            );
+          } else {
+            emit(
+              state.copyWith(
+                isLoading: false,
+                hashedPhone: hashedPhone,
+                phone: phone,
+                isoCode: isoCode,
+              ),
+            );
+            add(RegisterEvent.initValidation());
+          }
+        },
+      );
     } catch (e) {
       emit(
         state.copyWith(
@@ -228,7 +255,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
           fullName: '${state.name} ${state.lastName}',
           email: userCredential.user!.email,
           isoCode: state.isoCode!,
-          phone: state.phone!,
+          phone: state.hashedPhone!,
           fcmToken: '',
           currentChat: '',
           userImg: Env.avatar3,
@@ -441,16 +468,6 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
   Future<bool> checkUserExist({required String email}) async {
     final docRef = _firestore.collection(AppConstants.usersCollection);
     final response = await docRef.where('email', isEqualTo: email).get();
-    if (response.docs.isNotEmpty) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  Future<bool> checkPhoneExist({required String phone}) async {
-    final docRef = _firestore.collection(AppConstants.usersCollection);
-    final response = await docRef.where('phone', isEqualTo: phone).get();
     if (response.docs.isNotEmpty) {
       return true;
     } else {

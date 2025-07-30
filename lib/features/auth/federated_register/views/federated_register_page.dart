@@ -29,12 +29,23 @@ class FederatedRegisterPage extends StatelessWidget {
 
     return BlocListener<FederatedRegisterBloc, FederatedRegisterState>(
       listenWhen:
-          (previous, current) => previous.isLoading != current.isLoading,
+          (previous, current) =>
+              previous.isLoading != current.isLoading ||
+              previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
         } else {
           await stopLoadingModal();
+        }
+
+        if (state.status == FederatedRegisterStatus.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage ?? 'Error desconocido'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
         }
       },
       child: GestureDetector(

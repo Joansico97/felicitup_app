@@ -69,6 +69,23 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
+  Future<Either<ApiException, bool>> checkPhoneExist({
+    required String phone,
+  }) async {
+    try {
+      final docRef = _firestore.collection(AppConstants.usersCollection);
+      final response = await docRef.where('phone', isEqualTo: phone).get();
+      if (response.docs.isNotEmpty) {
+        return Right(true);
+      } else {
+        return Right(false);
+      }
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Future<Either<ApiException, void>> sendVerifyEmail() async {
     final maxRetries = 3;
     final initialDelay = Duration(seconds: 1);

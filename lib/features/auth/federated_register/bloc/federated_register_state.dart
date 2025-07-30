@@ -1,13 +1,18 @@
 part of 'federated_register_bloc.dart';
 
+enum FederatedRegisterStatus { none, error, success }
+
 @freezed
 class FederatedRegisterState with _$FederatedRegisterState {
   const factory FederatedRegisterState({
     required bool isLoading,
     required int currentIndex,
+    required FederatedRegisterStatus status,
+    String? errorMessage,
     String? name,
     String? lastName,
     String? phone,
+    String? hashedPhone,
     String? isoCode,
     String? genre,
     String? verificationId,
@@ -15,6 +20,9 @@ class FederatedRegisterState with _$FederatedRegisterState {
     DateTime? birthDate,
   }) = _FederatedRegisterState;
 
-  factory FederatedRegisterState.initial() =>
-      FederatedRegisterState(isLoading: false, currentIndex: 0);
+  factory FederatedRegisterState.initial() => FederatedRegisterState(
+    isLoading: false,
+    currentIndex: 0,
+    status: FederatedRegisterStatus.none,
+  );
 }

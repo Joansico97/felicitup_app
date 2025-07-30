@@ -26,6 +26,7 @@ class RegisterState with _$RegisterState {
     String? confirmPassword,
     String? genre,
     String? phone,
+    String? hashedPhone,
     String? isoCode,
     String? verificationId,
     DateTime? birthDate,

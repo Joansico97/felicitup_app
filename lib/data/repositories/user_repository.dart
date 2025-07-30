@@ -7,6 +7,7 @@ import 'package:felicitup_app/data/models/models.dart';
 abstract class UserRepository {
   Future<Either<ApiException, Map<String, dynamic>>> getUserData(String userId);
   Future<Either<ApiException, bool>> checkVerifyStatus();
+  Future<Either<ApiException, bool>> checkPhoneExist({required String phone});
   Future<Either<ApiException, void>> sendVerifyEmail();
   Future<Either<ApiException, Map<String, dynamic>>> getUserDataByPhone(
     String phone,

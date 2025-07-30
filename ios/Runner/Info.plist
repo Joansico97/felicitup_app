@@ -31,7 +31,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>$(PRODUCT_NAME) would like to have access to the camera to record your congratulatory video messages and create celebratory mixes for your friends.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>$(PRODUCT_NAME) would like to have access to your contacts so you can easily find your friends who already use Felicitup and add their birthdays to your calendar. We will only use your contacts to help you connect within the app and will never share them.</string>
+	<string>$(PRODUCT_NAME) needs access to your contacts to find friends, connect with them within the app and help you remember and organize group greetings. Your contacts will be hashed (transformed into unrecognizable codes) and securely uploaded to our servers to facilitate these functions.Password update flow completed.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>$(PRODUCT_NAME) would like to have access to the microphone so that your greeting videos include sound, so your friends can hear your voice and your good wishes!</string>
 	<key>NSPhotoLibraryUsageDescription</key>

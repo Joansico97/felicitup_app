@@ -1,8 +1,10 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/utils/logger.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/home/bloc/home_bloc.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +27,71 @@ class _HomePageState extends State<HomePage> {
     context.read<AppBloc>().add(AppEvent.initializeNotifications());
   }
 
+  Future<void> requestContactsPermissionWithModal() async {
+    final result = await showDialog<bool>(
+      context: rootNavigatorKey.currentContext!,
+      barrierDismissible: false,
+      builder:
+          (_) => AlertDialog(
+            title: Text(
+              'Acceso a tus Contactos para una Mejor Experiencia en FELICITUP',
+              style: context.styles.header2,
+            ),
+            content: RichText(
+              text: TextSpan(
+                text:
+                    'Para que FELICITUP pueda ayudarte a recordar cumpleaños de tus amigos y familiares, y para que puedas crear fácilmente Felicitups grupales, necesitamos acceder a tu lista de contactos.',
+                style: context.styles.paragraph,
+                children: [
+                  TextSpan(
+                    text:
+                        '\n\nLos números de teléfono/correos electrónicos de tus contactos serán hasheados (transformados en códigos irreconocibles) en tu dispositivo y subidos de forma segura a nuestros servidores. Esto nos permite encontrar automáticamente a tus contactos que ya usan FELICITUP para facilitar las invitaciones y los recordatorios. Nunca subimos nombres ni otra información sensible sin cifrar',
+                    style: context.styles.paragraph.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(
+                    text:
+                        '\n\nEste proceso es esencial para la funcionalidad de matchmaking y para asegurar que recibas recordatorios precisos para tu círculo social.',
+                    style: context.styles.paragraph,
+                  ),
+                  TextSpan(
+                    text:
+                        '\n\nPuedes obtener más información visitando nuestra "Política de Seguridad"',
+                    style: context.styles.paragraph.copyWith(
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer:
+                        TapGestureRecognizer()
+                          ..onTap = () {
+                            logger.debug('voy a la URL');
+                          },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => rootNavigatorKey.currentContext!.pop(false),
+                child: Text('Cancelar', style: context.styles.buttons),
+              ),
+              TextButton(
+                onPressed: () => rootNavigatorKey.currentContext!.pop(true),
+                child: Text('Aceptar', style: context.styles.buttons),
+              ),
+            ],
+          ),
+    );
+
+    if (result == true) {
+      final currentUser = context.read<AppBloc>().state.currentUser;
+
+      context.read<HomeBloc>().add(
+        HomeEvent.getAndUpdateContacts(currentUser?.isoCode ?? ''),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AppBloc, AppState>(
@@ -33,9 +100,6 @@ class _HomePageState extends State<HomePage> {
       listener: (_, state) {
         context.read<AppBloc>().add(
           AppEvent.updateMatchList(state.currentUser?.friendsPhoneList ?? []),
-        );
-        context.read<HomeBloc>().add(
-          HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
         );
 
         if (state.currentUser?.birthDate == null) {
@@ -80,6 +144,10 @@ class _HomePageState extends State<HomePage> {
         }
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (state.currentUser != null &&
+              (state.currentUser?.friendsPhoneList?.isEmpty ?? false)) {
+            requestContactsPermissionWithModal();
+          }
           if (state.currentUser != null && state.currentUser!.phone!.isEmpty) {
             context.go(RouterPaths.phoneVerifyInt);
           }

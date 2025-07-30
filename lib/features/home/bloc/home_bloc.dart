@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
+import 'package:crypto/crypto.dart';
 import 'package:fast_contacts/fast_contacts.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
@@ -10,6 +13,13 @@ import 'package:permission_handler/permission_handler.dart';
 part 'home_event.dart';
 part 'home_state.dart';
 part 'home_bloc.freezed.dart';
+
+class HashedContact {
+  final String displayName;
+  final String hashedPhone;
+
+  HashedContact({required this.displayName, required this.hashedPhone});
+}
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc({required UserRepository userRepository})
@@ -41,24 +51,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   _getAndUpdateContacts(String isoCode) async {
-    final contacts = await getAllInfoContacts();
+    final contacts = await getHashedContacts(isoCode);
+
     List<Map<String, dynamic>> contactsMapList =
         contacts
-            .where((e) => e.displayName.isNotEmpty && e.phones.isNotEmpty)
+            .where((e) => e.displayName.isNotEmpty && e.hashedPhone.isNotEmpty)
             .map((e) {
-              return {
-                'displayName': e.displayName,
-                'phone': e.phones.first.number
-                    .replaceAll('-', '')
-                    .replaceAll('(', '')
-                    .replaceAll(')', '')
-                    .replaceAll(' ', ''),
-              };
+              return {'displayName': e.displayName, 'phone': e.hashedPhone};
             })
             .toList();
 
     RegExp nameRegex = RegExp(r'\d{3,}');
-
     contactsMapList.removeWhere(
       (element) =>
           element['displayName'] == null || element['displayName'].isEmpty,
@@ -67,19 +70,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       (element) => nameRegex.hasMatch(element['displayName'] ?? ''),
     );
 
-    for (var element in contactsMapList) {
-      if (element['phone'][0] == '0' && element['phone'][1] == '0') {
-        String number = element['phone'];
-        number = number.substring(2);
-        element['phone'] = '+$number';
-      } else if (element['phone'][0] != '+') {
-        String number = element['phone'];
-        element['phone'] = isoCode + number;
-      }
-    }
-
     List<String> friendsPhoneList =
         contactsMapList.map((e) => e['phone'] as String).toList();
+
     await _userRepository.updateContacts(contactsMapList, friendsPhoneList);
   }
 
@@ -115,25 +108,45 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  Future<List<Contact>> getAllInfoContacts() async {
+  Future<List<HashedContact>> getHashedContacts(String isoCode) async {
     bool isGranted = await _checkContactsPermission();
 
     if (isGranted) {
       final packageContacts = await FastContacts.getAllContacts();
-      final List<Contact> contacts = [...packageContacts];
-      contacts.removeWhere((element) => element.displayName.isEmpty);
-      contacts.sort(
+
+      List<HashedContact> hashedContacts = [];
+
+      for (var contact in packageContacts) {
+        if (contact.displayName.isEmpty || contact.phones.isEmpty) continue;
+
+        String phoneNumber = contact.phones[0].number;
+        if (phoneNumber.length < 8) continue;
+
+        String normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+
+        if (!normalizedPhone.startsWith('+')) {
+          normalizedPhone = '+$isoCode$normalizedPhone';
+        }
+
+        var bytes = utf8.encode(normalizedPhone);
+        var digest = sha256.convert(bytes);
+        String hashedPhone = digest.toString();
+
+        hashedContacts.add(
+          HashedContact(
+            displayName: contact.displayName,
+            hashedPhone: hashedPhone,
+          ),
+        );
+      }
+
+      hashedContacts.sort(
         (a, b) => a.displayName.toLowerCase().trim().compareTo(
           b.displayName.toLowerCase().trim(),
         ),
       );
-      contacts.removeWhere(
-        (element) =>
-            element.phones.isNotEmpty
-                ? element.phones[0].number.length < 8
-                : false,
-      );
-      return contacts;
+
+      return hashedContacts;
     }
 
     return [];
@@ -141,6 +154,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<bool> _checkContactsPermission() async {
     final contactsPermissionStatus = await Permission.contacts.status;
+
     if (contactsPermissionStatus.isDenied) {
       final newPermissionStatus = await Permission.contacts.request();
       if (newPermissionStatus.isGranted) {
