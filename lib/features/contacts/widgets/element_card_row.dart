@@ -1,4 +1,3 @@
-import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
@@ -24,17 +23,14 @@ class ElementCardRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // padding: size.symmetric(.05, .02),
       padding: EdgeInsets.symmetric(
-        horizontal: context.sp(20),
-        vertical: context.sp(10),
+        horizontal: context.sp(24),
+        vertical: context.sp(12),
       ),
       width: context.fullWidth,
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: context.colors.orange.valueOpacity(.1),
-          ),
+          bottom: BorderSide(color: context.colors.orange.valueOpacity(.1)),
         ),
       ),
       child: Row(
@@ -57,81 +53,65 @@ class ElementCardRow extends StatelessWidget {
           SizedBox(width: context.sp(24)),
           SizedBox(
             width: context.sp(150),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  contact.displayName ?? '',
-                  style: context.styles.subtitle,
-                ),
-                Text(
-                  contact.phone.replaceAll(' ', '').replaceAll('(', '').replaceAll(')', '').replaceAll('-', ''),
-                  style: context.styles.smallText,
-                )
-              ],
+            child: Text(
+              contact.displayName ?? '',
+              style: context.styles.subtitle,
             ),
           ),
           const Spacer(),
           isRegistered
-              ? const Icon(
-                  Icons.check,
-                  color: Colors.green,
-                )
+              ? const Icon(Icons.check, color: Colors.green)
               : TextButton(
-                  onPressed: () async {
-                    await Clipboard.setData(
-                      const ClipboardData(
-                        text:
-                            '¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.',
-                      ),
-                    );
-                    showConfirmModal(
-                      title:
-                          'Hemos copiado a tu portapapeles la invitación para que puedas invitar a tus amigos mediante Whatsapp.',
-                      onAccept: () async {
-                        final user = context.read<AppBloc>().state.currentUser;
-                        String number = contact.phone
-                            .replaceAll(' ', '')
-                            .replaceAll('(', '')
-                            .replaceAll(')', '')
-                            .replaceAll('-', '');
-                        if (number[0] == '0' && number[1] == '0') {
-                          number = number.substring(2);
-                          number = '+$number';
-                        } else if (number[0] != '+') {
-                          number = '${user?.isoCode}$number';
-                        }
+                onPressed: () async {
+                  await Clipboard.setData(
+                    const ClipboardData(
+                      text:
+                          '¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.',
+                    ),
+                  );
+                  showConfirmModal(
+                    title:
+                        'Hemos copiado a tu portapapeles la invitación para que puedas invitar a tus amigos mediante Whatsapp.',
+                    onAccept: () async {
+                      final url = Uri.parse("whatsapp://app");
 
-                        final Uri url = Uri.parse('http://wa.me/$number');
+                      if (await canLaunchUrl(url)) {
                         await launchUrl(
                           url,
-                          mode: LaunchMode.inAppBrowserView,
+                          mode: LaunchMode.externalApplication,
                         );
-                      },
-                    );
-                  },
-                  child: Text(
-                    'Invitar',
-                    style: context.styles.smallText.copyWith(
-                      color: context.colors.darkBlue,
-                    ),
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'No se pudo abrir WhatsApp. Asegúrate de que la aplicación esté instalada.',
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                        // Aquí podrías mostrar un SnackBar o un AlertDialog al usuario.
+                      }
+                    },
+                  );
+                },
+                child: Text(
+                  'Invitar',
+                  style: context.styles.smallText.copyWith(
+                    color: context.colors.darkBlue,
                   ),
                 ),
+              ),
           SizedBox(width: context.sp(8)),
           GestureDetector(
             onTap: () {
               if (isRegistered) {
-                context.read<ContactsBloc>().add(ContactsEvent.getInfoSingleContact(contact.phone));
+                context.read<ContactsBloc>().add(
+                  ContactsEvent.getInfoSingleContact(contact.phone),
+                );
               }
-              _showContactDetails(
-                contact,
-                isRegistered,
-                context,
-              );
+              _showContactDetails(contact, isRegistered, context);
             },
-            child: Icon(
-              Icons.drag_indicator,
-            ),
+            child: Icon(Icons.drag_indicator),
           ),
         ],
       ),
@@ -147,17 +127,19 @@ void _showContactDetails(
   showDialog(
     context: context,
     useSafeArea: false,
-    builder: (_) => BlocProvider.value(
-      value: context.read<ContactsBloc>(),
-      child: BlocBuilder<ContactsBloc, ContactsState>(
-        builder: (_, state) {
-          return DetailsContactView(
-            contact: contact,
-            isRegistered: isRegistered,
-            giftcardList: isRegistered ? state.dataSingleUsers?.giftcardList : [],
-          );
-        },
-      ),
-    ),
+    builder:
+        (_) => BlocProvider.value(
+          value: context.read<ContactsBloc>(),
+          child: BlocBuilder<ContactsBloc, ContactsState>(
+            builder: (_, state) {
+              return DetailsContactView(
+                contact: contact,
+                isRegistered: isRegistered,
+                giftcardList:
+                    isRegistered ? state.dataSingleUsers?.giftcardList : [],
+              );
+            },
+          ),
+        ),
   );
 }

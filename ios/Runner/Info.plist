@@ -80,6 +80,11 @@
 	<string>comgooglemaps-x-callback</string>
 	<string>firebase</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+	<string>https</string>
+	<string>whatsapp</string>
+	</array>
 </dict>
 
 </plist>

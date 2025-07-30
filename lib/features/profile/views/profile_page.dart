@@ -14,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -27,8 +26,6 @@ class _ProfilePageState extends State<ProfilePage> {
   File? imageFile;
   String? avatarUrl;
   bool canSave = false;
-  String phone = '';
-  String isoCode = '';
   String label = '';
   late List<String> listAvatares;
 
@@ -79,6 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               SizedBox(
                 width: context.sp(300),
+                height: context.sp(50),
                 child: PrimaryButton(
                   onTap: () => context.go(RouterPaths.deleteAccount),
                   label: 'Eliminar cuenta',
@@ -88,6 +86,7 @@ class _ProfilePageState extends State<ProfilePage> {
               SizedBox(height: context.sp(12)),
               SizedBox(
                 width: context.sp(300),
+                height: context.sp(50),
                 child: BlocBuilder<ProfileBloc, ProfileState>(
                   builder: (_, state) {
                     return PrimaryButton(
@@ -110,12 +109,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ? '${nameController.text} ${lastNameController.text}'
                                       : currentUser?.fullName,
                               email: currentUser?.email,
-                              isoCode:
-                                  isoCode.isNotEmpty
-                                      ? isoCode
-                                      : currentUser?.isoCode,
-                              phone:
-                                  phone.isNotEmpty ? phone : currentUser?.phone,
+                              isoCode: currentUser?.isoCode,
+                              phone: currentUser?.phone,
                               userImg: currentUser?.userImg,
                               fcmToken: currentUser?.fcmToken,
                               currentChat: currentUser?.currentChat,
@@ -326,6 +321,38 @@ class _ProfilePageState extends State<ProfilePage> {
                                         child: Image.network(
                                           avatarUrl!,
                                           fit: BoxFit.cover,
+                                          loadingBuilder: (
+                                            context,
+                                            child,
+                                            loadingProgress,
+                                          ) {
+                                            if (loadingProgress == null) {
+                                              return child;
+                                            }
+                                            return Center(
+                                              child: CircularProgressIndicator(
+                                                value:
+                                                    loadingProgress
+                                                                .expectedTotalBytes !=
+                                                            null
+                                                        ? loadingProgress
+                                                                .cumulativeBytesLoaded /
+                                                            (loadingProgress
+                                                                    .expectedTotalBytes ??
+                                                                1)
+                                                        : null,
+                                              ),
+                                            );
+                                          },
+                                          errorBuilder:
+                                              (
+                                                context,
+                                                error,
+                                                stackTrace,
+                                              ) => Text(
+                                                currentUser?.fullName![0] ?? '',
+                                                style: context.styles.header1,
+                                              ),
                                         ),
                                       ),
                                     )
@@ -387,40 +414,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               SizedBox(height: context.sp(12)),
                             ],
-                          ),
-                        ),
-                        Container(
-                          width: context.sp(300),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: context.sp(16),
-                            vertical: context.sp(16),
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.colors.lightGrey,
-                            borderRadius: BorderRadius.circular(context.sp(8)),
-                          ),
-                          child: IntlPhoneField(
-                            languageCode: 'es',
-                            decoration: InputDecoration(
-                              labelText: getLabel(
-                                currentUser?.isoCode ?? '',
-                                currentUser?.phone ?? '',
-                              ),
-                              labelStyle: context.styles.smallText,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            initialCountryCode:
-                                (currentUser?.isoCode ?? '') == '+34'
-                                    ? 'ES'
-                                    : 'CO',
-                            onChanged: (value) {
-                              setState(() {
-                                phone = value.completeNumber;
-                                isoCode = value.countryCode;
-                              });
-                            },
                           ),
                         ),
                       ],

@@ -102,52 +102,60 @@ class _HomePageState extends State<HomePage> {
           AppEvent.updateMatchList(state.currentUser?.friendsPhoneList ?? []),
         );
 
-        if (state.currentUser?.birthDate == null) {
-          showConfirmModal(
-            title: '¡Que no se te pase tu cumpleaños! 🎂',
-            content:
-                'Añade tu fecha de nacimiento y Felicitup te ayudará a planificar tu celebración con antelación. Nunca más te quedarás sin tu fiesta.',
-            label: 'Añadir mi fecha',
-            onAccept: () async {
-              DateTime? birthDate;
-
-              await showDialog(
-                context: context,
-                builder:
-                    (_) => AlertDialog(
-                      title: Text(
-                        '¿Cuándo es tu cumpleaños?',
-                        style: context.styles.header2,
-                      ),
-                      content: DatePickerWidget(
-                        onSelectNewDate: (date) {
-                          birthDate = date;
-                        },
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            context.read<HomeBloc>().add(
-                              HomeEvent.setUserBirthdate(
-                                date: birthDate ?? DateTime.now(),
-                              ),
-                            );
-                            context.pop();
-                          },
-                          child: Text('Aceptar', style: context.styles.buttons),
-                        ),
-                      ],
-                    ),
-              );
-            },
-          );
-        }
-
         WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (state.currentUser?.birthDate == null) {
+            showConfirmModal(
+              title: '¡Que no se te pase tu cumpleaños! 🎂',
+              content:
+                  'Añade tu fecha de nacimiento y Felicitup te ayudará a planificar tu celebración con antelación. Nunca más te quedarás sin tu fiesta.',
+              label: 'Añadir mi fecha',
+              onAccept: () async {
+                DateTime? birthDate;
+
+                await showDialog(
+                  context: context,
+                  builder:
+                      (_) => AlertDialog(
+                        title: Text(
+                          '¿Cuándo es tu cumpleaños?',
+                          style: context.styles.header2,
+                        ),
+                        content: DatePickerWidget(
+                          onSelectNewDate: (date) {
+                            birthDate = date;
+                          },
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              context.read<HomeBloc>().add(
+                                HomeEvent.setUserBirthdate(
+                                  date: birthDate ?? DateTime.now(),
+                                ),
+                              );
+                              context.pop();
+                            },
+                            child: Text(
+                              'Aceptar',
+                              style: context.styles.buttons,
+                            ),
+                          ),
+                        ],
+                      ),
+                );
+              },
+            );
+          }
+
           if (state.currentUser != null &&
               (state.currentUser?.friendsPhoneList?.isEmpty ?? false)) {
             requestContactsPermissionWithModal();
+          } else {
+            context.read<HomeBloc>().add(
+              HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
+            );
           }
+
           if (state.currentUser != null && state.currentUser!.phone!.isEmpty) {
             context.go(RouterPaths.phoneVerifyInt);
           }
