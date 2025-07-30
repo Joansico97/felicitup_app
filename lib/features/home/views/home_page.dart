@@ -1,7 +1,6 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
-import 'package:felicitup_app/core/utils/logger.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/home/bloc/home_bloc.dart';
 import 'package:flutter/gestures.dart';
@@ -9,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.childView});
@@ -63,8 +63,30 @@ class _HomePageState extends State<HomePage> {
                     ),
                     recognizer:
                         TapGestureRecognizer()
-                          ..onTap = () {
-                            logger.debug('voy a la URL');
+                          ..onTap = () async {
+                            final url = Uri.parse(
+                              "https://felicitup.com/politica-privacidad/#contactos-agenda",
+                            );
+
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(
+                                url,
+                                mode: LaunchMode.inAppBrowserView,
+                                browserConfiguration: BrowserConfiguration(
+                                  showTitle: true,
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'No se pudo abrir WhatsApp. Asegúrate de que la aplicación esté instalada.',
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                              // Aquí podrías mostrar un SnackBar o un AlertDialog al usuario.
+                            }
                           },
                   ),
                 ],
@@ -103,7 +125,8 @@ class _HomePageState extends State<HomePage> {
         );
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (state.currentUser?.birthDate == null) {
+          if (state.currentUser != null &&
+              state.currentUser?.birthDate == null) {
             showConfirmModal(
               title: '¡Que no se te pase tu cumpleaños! 🎂',
               content:
