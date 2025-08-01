@@ -21,6 +21,15 @@ class RegisterForm extends StatefulWidget {
 class _RegisterFormState extends State<RegisterForm> {
   bool isObscure = true;
   bool isRepObscure = true;
+
+  bool get isActive {
+    return emailController.text.isNotEmpty &&
+        passwordController.text.isNotEmpty &&
+        repeatPasswordController.text.isNotEmpty &&
+        firstNameController.text.isNotEmpty &&
+        lastNameController.text.isNotEmpty;
+  }
+
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -53,28 +62,43 @@ class _RegisterFormState extends State<RegisterForm> {
             CustomTextFormField(
               controller: firstNameController,
               hintText: 'Nombre',
+              onChanged: (_) {
+                setState(() {});
+              },
             ),
             SizedBox(height: context.sp(6)),
             CustomTextFormField(
               controller: lastNameController,
               hintText: 'Apellidos',
+              onChanged: (_) {
+                setState(() {});
+              },
             ),
             SizedBox(height: context.sp(6)),
             CustomTextFormField(
               controller: emailController,
               isEmail: true,
               hintText: 'Email',
+              onChanged: (_) {
+                setState(() {});
+              },
             ),
             SizedBox(height: context.sp(6)),
             CustomTextFormField(
               controller: passwordController,
               isPassword: true,
               hintText: 'Contraseña',
+              onChanged: (_) {
+                setState(() {});
+              },
             ),
             SizedBox(height: context.sp(6)),
             CustomTextFormField(
               controller: repeatPasswordController,
               isPassword: true,
+              onChanged: (_) {
+                setState(() {});
+              },
               hintText: 'Repetir contraseña',
             ),
             Visibility(
@@ -208,27 +232,36 @@ class _RegisterFormState extends State<RegisterForm> {
               width: context.sp(172),
               child: PrimaryButton(
                 onTap: () {
-                  if (passwordController.text.isNotEmpty &&
-                      repeatPasswordController.text.isNotEmpty &&
-                      passwordController.text ==
-                          repeatPasswordController.text &&
-                      emailController.text.isNotEmpty &&
-                      firstNameController.text.isNotEmpty &&
-                      lastNameController.text.isNotEmpty) {
-                    context.read<RegisterBloc>().add(
-                      RegisterEvent.initRegister(
-                        name: firstNameController.text.trim().capitalize(),
-                        lastName: lastNameController.text.trim().capitalize(),
-                        email: emailController.text.trim(),
-                        password: passwordController.text.trim(),
-                        confirmPassword: repeatPasswordController.text.trim(),
-                        birthDate: birthDate,
+                  if (!_formKey.currentState!.validate()) {
+                    return;
+                  }
+
+                  if (passwordController.text !=
+                      repeatPasswordController.text) {
+                    ScaffoldMessenger.of(
+                      rootNavigatorKey.currentContext!,
+                    ).showSnackBar(
+                      SnackBar(
+                        content: Text('Las contraseñas no coinciden'),
+                        duration: const Duration(seconds: 2),
                       ),
                     );
+                    return;
                   }
+
+                  context.read<RegisterBloc>().add(
+                    RegisterEvent.initRegister(
+                      name: firstNameController.text.trim().capitalize(),
+                      lastName: lastNameController.text.trim().capitalize(),
+                      email: emailController.text.trim(),
+                      password: passwordController.text.trim(),
+                      confirmPassword: repeatPasswordController.text.trim(),
+                      birthDate: birthDate,
+                    ),
+                  );
                 },
                 label: 'Continuar',
-                isActive: true,
+                isActive: isActive,
               ),
             ),
             SizedBox(height: context.sp(8)),

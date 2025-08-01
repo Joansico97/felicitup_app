@@ -39,9 +39,10 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     // Define el keyboardType según el tipo de campo
-    final keyboardType = widget.isEmail
-        ? TextInputType.emailAddress
-        : widget.isPassword
+    final keyboardType =
+        widget.isEmail
+            ? TextInputType.emailAddress
+            : widget.isPassword
             ? TextInputType.visiblePassword
             : TextInputType.text;
 
@@ -64,42 +65,35 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             color: context.colors.darkGrey,
           ),
           border: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colors.darkGrey,
-            ),
+            borderSide: BorderSide(color: context.colors.darkGrey),
           ),
           focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colors.orange,
-            ),
+            borderSide: BorderSide(color: context.colors.orange),
           ),
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colors.darkGrey,
-            ),
+            borderSide: BorderSide(color: context.colors.darkGrey),
           ),
           errorBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colors.error,
-            ),
+            borderSide: BorderSide(color: context.colors.error),
           ),
           contentPadding: EdgeInsets.symmetric(
             horizontal: context.sp(16),
             vertical: context.sp(12),
           ),
-          suffixIcon: widget.isPassword
-              ? IconButton(
-                  icon: Icon(
-                    _obscureText ? Icons.visibility : Icons.visibility_off,
-                    color: context.colors.orange,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureText = !_obscureText;
-                    });
-                  },
-                )
-              : null,
+          suffixIcon:
+              widget.isPassword
+                  ? IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility : Icons.visibility_off,
+                      color: context.colors.orange,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                  )
+                  : null,
           // ...?widget.decoration?.toMap(), // Combina con la decoración personalizada si se proporciona
         ),
         style: context.styles.paragraph.copyWith(
@@ -132,12 +126,14 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   bool _isValidEmail(String email) {
     // Expresión regular para validar correos
     final emailRegex = RegExp(
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');
+      r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
+    );
     return emailRegex.hasMatch(email);
   }
 
   bool _isValidPassword(String password) {
-    String pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!\@\#\$%\^&\*\(\)\-_\[\]\{\}]).{8,}$';
+    String pattern =
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!\@\#\$%\^&\*\(\)\-_\[\]\{\}]).{8,}$';
     RegExp regex = RegExp(pattern);
     // Validación básica de contraseña (al menos 8 caracteres)
     return regex.hasMatch(password) || password.length >= 8;

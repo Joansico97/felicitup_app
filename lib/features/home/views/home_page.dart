@@ -128,9 +128,9 @@ class _HomePageState extends State<HomePage> {
           if (state.currentUser != null &&
               state.currentUser?.birthDate == null) {
             showConfirmModal(
-              title: '¡Que no se te pase tu cumpleaños! 🎂',
+              title: '¡QUE NADIE SE OLVIDE DE TU CUMPLE! 🎂',
               content:
-                  'Añade tu fecha de nacimiento y Felicitup te ayudará a planificar tu celebración con antelación. Nunca más te quedarás sin tu fiesta.',
+                  'Dinos tu fecha de cumpleaños y tus contactos nunca se olvidarán de felicitarte. Además podrán enviarte una FELICITUP!',
               label: 'Añadir mi fecha',
               onAccept: () async {
                 DateTime? birthDate;
