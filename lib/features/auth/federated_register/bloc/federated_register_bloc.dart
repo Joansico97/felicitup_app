@@ -7,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'federated_register_event.dart';
@@ -62,13 +63,10 @@ class FederatedRegisterBloc
     String lastName,
     DateTime? birthDate,
   ) async {
-    final userId = _firebaseAuth.currentUser?.uid;
+    await _setFormData(name, lastName, birthDate);
+
     emit(
-      state.copyWith(
-        isLoading: false,
-        currentIndex: state.currentIndex + 1,
-        userId: userId,
-      ),
+      state.copyWith(isLoading: false, currentIndex: state.currentIndex + 1),
     );
   }
 
@@ -160,6 +158,12 @@ class FederatedRegisterBloc
 
       return response.fold(
         (l) {
+          FirebaseCrashlytics.instance.recordError(
+            l,
+            StackTrace.current,
+            reason: 'Error al validar el código de verificación',
+          );
+
           emit(
             state.copyWith(
               isLoading: false,
@@ -183,8 +187,12 @@ class FederatedRegisterBloc
                 isLoading: false,
                 status: FederatedRegisterStatus.error,
                 errorMessage: e.toString(),
-                // currentIndex: state.currentIndex + 1,
               ),
+            );
+            FirebaseCrashlytics.instance.recordError(
+              e,
+              StackTrace.current,
+              reason: 'Error al validar el código de verificación',
             );
           }
         },
@@ -204,6 +212,12 @@ class FederatedRegisterBloc
           status: FederatedRegisterStatus.error,
           errorMessage: e.toString(),
         ),
+      );
+
+      FirebaseCrashlytics.instance.recordError(
+        e,
+        StackTrace.current,
+        reason: 'Error al validar el código de verificación',
       );
     }
   }
@@ -241,5 +255,15 @@ class FederatedRegisterBloc
     } else {
       return false;
     }
+  }
+
+  _setFormData(String name, String lastName, DateTime? birthDate) async {
+    await _userRepository.setUserInfoRemaining(
+      name,
+      lastName,
+      state.phone ?? '',
+      state.isoCode ?? '',
+      state.genre ?? '',
+    );
   }
 }
