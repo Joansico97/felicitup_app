@@ -788,8 +788,9 @@ class UserFirebaseResource implements UserRepository {
         return Left(ApiException(401, 'User not authenticated'));
       }
       await _client.update(AppConstants.usersCollection, document: uid, {
-        'name': name,
+        'firstName': name,
         'lastName': lastName,
+        'fullName': '$name $lastName',
         'phone': phone,
         'isoCode': isoCode,
         'genre': genre,

@@ -172,29 +172,13 @@ class FederatedRegisterBloc
             ),
           );
         },
-        (r) async {
-          try {
-            emit(
-              state.copyWith(
-                isLoading: false,
-                currentIndex: state.currentIndex + 1,
-              ),
-            );
-            add(FederatedRegisterEvent.setUserInfoRemaning());
-          } catch (e) {
-            emit(
-              state.copyWith(
-                isLoading: false,
-                status: FederatedRegisterStatus.error,
-                errorMessage: e.toString(),
-              ),
-            );
-            FirebaseCrashlytics.instance.recordError(
-              e,
-              StackTrace.current,
-              reason: 'Error al validar el código de verificación',
-            );
-          }
+        (r) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              currentIndex: state.currentIndex + 1,
+            ),
+          );
         },
       );
     } on TimeoutException {
@@ -258,12 +242,10 @@ class FederatedRegisterBloc
   }
 
   _setFormData(String name, String lastName, DateTime? birthDate) async {
-    await _userRepository.setUserInfoRemaining(
-      name,
-      lastName,
-      state.phone ?? '',
-      state.isoCode ?? '',
-      state.genre ?? '',
+    await _userRepository.setFederatedData(
+      firstName: name,
+      lastName: lastName,
+      birthDate: birthDate,
     );
   }
 }

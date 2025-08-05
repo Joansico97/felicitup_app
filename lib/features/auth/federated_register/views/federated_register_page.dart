@@ -54,37 +54,39 @@ class FederatedRegisterPage extends StatelessWidget {
           body: SafeArea(
             child: Column(
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: context.sp(12)),
-                  child: BlocBuilder<
-                    FederatedRegisterBloc,
-                    FederatedRegisterState
-                  >(
-                    builder: (_, state) {
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder: (widget, animation) {
-                          final slideAnimation = Tween<Offset>(
-                            begin: const Offset(1.0, 0.0),
-                            end: Offset.zero,
-                          ).animate(animation);
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: context.sp(12)),
+                    child: BlocBuilder<
+                      FederatedRegisterBloc,
+                      FederatedRegisterState
+                    >(
+                      builder: (_, state) {
+                        return AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (widget, animation) {
+                            final slideAnimation = Tween<Offset>(
+                              begin: const Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(animation);
 
-                          final fadeAnimation = Tween<double>(
-                            begin: 0.0,
-                            end: 1.0,
-                          ).animate(animation);
+                            final fadeAnimation = Tween<double>(
+                              begin: 0.0,
+                              end: 1.0,
+                            ).animate(animation);
 
-                          return FadeTransition(
-                            opacity: fadeAnimation,
-                            child: SlideTransition(
-                              position: slideAnimation,
-                              child: widget,
-                            ),
-                          );
-                        },
-                        child: getView(state.currentIndex),
-                      );
-                    },
+                            return FadeTransition(
+                              opacity: fadeAnimation,
+                              child: SlideTransition(
+                                position: slideAnimation,
+                                child: widget,
+                              ),
+                            );
+                          },
+                          child: getView(state.currentIndex),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],
