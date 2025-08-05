@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
@@ -170,10 +172,18 @@ class _HomePageState extends State<HomePage> {
             );
           }
 
-          if (state.currentUser != null &&
-              (state.currentUser?.friendsPhoneList?.isEmpty ?? false)) {
-            requestContactsPermissionWithModal();
-          } else {
+          if (Platform.isIOS) {
+            if (state.currentUser != null &&
+                (state.currentUser?.friendsPhoneList?.isEmpty ?? false)) {
+              requestContactsPermissionWithModal();
+            } else {
+              context.read<HomeBloc>().add(
+                HomeEvent.getAndUpdateContacts(
+                  state.currentUser?.isoCode ?? '',
+                ),
+              );
+            }
+          } else if (Platform.isAndroid) {
             context.read<HomeBloc>().add(
               HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
             );
