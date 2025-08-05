@@ -179,6 +179,7 @@ class FederatedRegisterBloc
               currentIndex: state.currentIndex + 1,
             ),
           );
+          add(const FederatedRegisterEvent.setUserInfoRemaning());
         },
       );
     } on TimeoutException {
@@ -216,12 +217,14 @@ class FederatedRegisterBloc
         state.isoCode ?? '',
         userId ?? '',
       );
-
-      emit(
-        state.copyWith(isLoading: false, currentIndex: state.currentIndex + 1),
-      );
     } catch (e) {
-      emit(state.copyWith(isLoading: false));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          status: FederatedRegisterStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
