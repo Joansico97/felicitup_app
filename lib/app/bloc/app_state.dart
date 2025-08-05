@@ -6,6 +6,8 @@ class AppState with _$AppState {
     required bool isLoading,
     required bool showRememberSection,
     required AuthorizationStatus status,
+    TermsPoliciesModel? termsAndConditions,
+    TermsPoliciesModel? privacyPolicy,
     bool? isVerified,
     UserModel? currentUser,
     Map<String, dynamic>? federatedData,

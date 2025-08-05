@@ -34,6 +34,9 @@ class FelicitupApp extends StatelessWidget {
         RepositoryProvider<ChatRepository>(
           create: (_) => injection.di<ChatFirebaseResource>(),
         ),
+        RepositoryProvider<GeneralDataRepository>(
+          create: (_) => injection.di<GeneralDataFirebaseResource>(),
+        ),
       ],
       child: BlocProvider<AppBloc>(
         create: (_) => appBloc..add(const AppEvent.checkAppStatus()),

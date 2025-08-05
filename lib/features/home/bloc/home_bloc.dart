@@ -155,7 +155,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<bool> _checkContactsPermission() async {
     final contactsPermissionStatus = await Permission.contacts.status;
 
-    if (contactsPermissionStatus.isDenied) {
+    if (!contactsPermissionStatus.isGranted) {
       final newPermissionStatus = await Permission.contacts.request();
       if (newPermissionStatus.isGranted) {
         return true;

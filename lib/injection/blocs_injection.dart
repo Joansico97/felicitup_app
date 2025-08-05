@@ -101,7 +101,7 @@ void _initBlocsInjection() {
         firestore: di(),
       ),
     )
-    ..registerFactory(() => TermsPoliciesBloc())
+    ..registerFactory(() => TermsPoliciesBloc(generalDataRepository: di()))
     ..registerFactory(
       () => DetailsPastFelicitupDashboardBloc(
         felicitupRepository: di(),
