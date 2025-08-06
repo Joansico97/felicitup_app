@@ -14,9 +14,8 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 part 'register_event.dart';
 part 'register_state.dart';
 part 'register_bloc.freezed.dart';
-part 'register_bloc.g.dart';
 
-class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
+class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   RegisterBloc({
     required AuthRepository authRepository,
     required UserRepository userRepository,
@@ -104,7 +103,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
     String isoCode,
   ) async {
     try {
-      emit(state.copyWith(isLoading: true, currentStep: state.currentStep + 1));
+      emit(state.copyWith(isLoading: true));
 
       final bytes = utf8.encode(phone);
       final digest = sha256.convert(bytes);
@@ -138,6 +137,7 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
                 hashedPhone: hashedPhone,
                 phone: phone,
                 isoCode: isoCode,
+                currentStep: state.currentStep + 1,
               ),
             );
             add(RegisterEvent.initValidation());
@@ -495,15 +495,5 @@ class RegisterBloc extends HydratedBloc<RegisterEvent, RegisterState> {
       'fcmToken': '',
       'provider': 'federated',
     });
-  }
-
-  @override
-  RegisterState? fromJson(Map<String, dynamic> json) {
-    return RegisterState.fromJson(json);
-  }
-
-  @override
-  Map<String, dynamic>? toJson(RegisterState state) {
-    return state.toJson();
   }
 }

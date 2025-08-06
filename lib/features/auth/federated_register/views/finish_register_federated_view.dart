@@ -1,12 +1,29 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
-import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/buttons/primary_button.dart';
+import 'package:felicitup_app/features/auth/auth.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class FinishRegisterFederatedView extends StatelessWidget {
+class FinishRegisterFederatedView extends StatefulWidget {
   const FinishRegisterFederatedView({super.key});
+
+  @override
+  State<FinishRegisterFederatedView> createState() =>
+      _FinishRegisterFederatedViewState();
+}
+
+class _FinishRegisterFederatedViewState
+    extends State<FinishRegisterFederatedView> {
+  @override
+  void initState() {
+    Future.delayed(Duration(seconds: 2), () {
+      context.read<FederatedRegisterBloc>().add(
+        FederatedRegisterEvent.changeLoading(),
+      );
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +32,12 @@ class FinishRegisterFederatedView extends StatelessWidget {
       persistentFooterButtons: [
         SizedBox(
           height: context.sp(50),
-          width: context.sp(400),
+          width: context.sp(250),
           child: PrimaryButton(
-            onTap: () => context.go(RouterPaths.onBoarding),
+            onTap:
+                () => context.read<FederatedRegisterBloc>().add(
+                  FederatedRegisterEvent.finishEvent(),
+                ),
             isBig: false,
             label: 'Acceder',
             isActive: true,

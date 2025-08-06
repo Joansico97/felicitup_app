@@ -54,7 +54,7 @@ class FederatedRegisterBloc
   final FirebaseFirestore _firestore;
 
   _changeLoading(Emitter<FederatedRegisterState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
+    emit(state.copyWith(isLoading: false));
   }
 
   _initRegister(
@@ -229,9 +229,9 @@ class FederatedRegisterBloc
   }
 
   _finishEvent(Emitter<FederatedRegisterState> emit) async {
-    emit(state.copyWith(isLoading: true));
-    await Future.delayed(Duration(seconds: 1), () {});
-    emit(state.copyWith(isLoading: false));
+    emit(
+      state.copyWith(isLoading: false, status: FederatedRegisterStatus.success),
+    );
   }
 
   Future<bool> checkPhoneExist({required String phone}) async {

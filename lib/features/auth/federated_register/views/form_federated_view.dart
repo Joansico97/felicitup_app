@@ -41,7 +41,7 @@ class _FormFederatedViewState extends State<FormFederatedView> {
       persistentFooterButtons: [
         SizedBox(
           height: context.sp(50),
-          width: context.sp(400),
+          width: context.sp(250),
           child: PrimaryButton(
             onTap: () {
               if (firstNameController.text.isNotEmpty &&

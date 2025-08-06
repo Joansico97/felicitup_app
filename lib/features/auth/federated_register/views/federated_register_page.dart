@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/auth/federated_register/bloc/federated_register_bloc.dart';
 import 'package:felicitup_app/features/auth/federated_register/views/views.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class FederatedRegisterPage extends StatelessWidget {
   const FederatedRegisterPage({super.key});
@@ -47,6 +49,11 @@ class FederatedRegisterPage extends StatelessWidget {
             ),
           );
         }
+
+        if (state.status == FederatedRegisterStatus.success &&
+            context.mounted) {
+          context.go(RouterPaths.onBoarding);
+        }
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -56,6 +63,8 @@ class FederatedRegisterPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Container(
+                    height: context.fullHeight,
+                    width: context.fullWidth,
                     padding: EdgeInsets.symmetric(vertical: context.sp(12)),
                     child: BlocBuilder<
                       FederatedRegisterBloc,

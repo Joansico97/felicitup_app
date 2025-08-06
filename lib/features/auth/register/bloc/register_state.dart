@@ -40,7 +40,4 @@ class RegisterState with _$RegisterState {
     errorMessage: '',
     currentStep: 0,
   );
-
-  factory RegisterState.fromJson(Map<String, dynamic> json) =>
-      _$RegisterStateFromJson(json);
 }

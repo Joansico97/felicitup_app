@@ -24,7 +24,7 @@ class _PhoneFederatedViewState extends State<PhoneFederatedView> {
       persistentFooterButtons: [
         SizedBox(
           height: context.sp(50),
-          width: context.sp(400),
+          width: context.sp(250),
           child: PrimaryButton(
             onTap: () {
               context.read<FederatedRegisterBloc>().add(

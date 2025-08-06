@@ -179,10 +179,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   _requestManualPermissions(Emitter<AppState> emit) async {
     final settings = await _firebaseMessaging.getNotificationSettings();
 
-    if (settings.authorizationStatus == AuthorizationStatus.notDetermined ||
-        settings.authorizationStatus == AuthorizationStatus.denied) {
+    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
       await requestPermission(emit);
     }
+
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       add(AppEvent.getFCMToken());
       emit(state.copyWith(status: AuthorizationStatus.authorized));
@@ -202,7 +202,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   _initializeNotifications(Emitter<AppState> emit) async {
     final settings = await _firebaseMessaging.getNotificationSettings();
 
-    if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
+    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
       await requestPermission(emit);
     }
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
