@@ -103,7 +103,7 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                       ),
                       children: [
                         TextSpan(
-                          text: 'A la espera',
+                          text: 'Pagado',
                           style: context.styles.paragraph,
                         ),
                       ],
