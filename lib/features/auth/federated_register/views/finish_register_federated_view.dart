@@ -48,7 +48,6 @@ class _FinishRegisterFederatedViewState
         height: context.fullHeight,
         width: context.fullWidth,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Image.asset(Assets.images.logo.path, height: context.sp(60)),
             SizedBox(height: context.sp(23)),
