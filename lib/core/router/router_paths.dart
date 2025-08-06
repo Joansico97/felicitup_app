@@ -50,6 +50,7 @@ class RouterPaths {
   static const String updatePage = '/updatePage';
   static const String deleteAccount = '/deleteAccount';
   static const String frequentQuestions = '/frequentQuestions';
+  static const String completeUserData = '/completeUserData';
 
   List<String> get noAuthenticated => [
     init,

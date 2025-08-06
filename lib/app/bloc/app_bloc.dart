@@ -102,6 +102,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         },
         (data) {
           final user = UserModel.fromJson(data);
+          if (user.firstName == null) {
+            rootNavigatorKey.currentContext!.go(RouterPaths.completeUserData);
+          }
           emit(state.copyWith(isLoading: false, currentUser: user));
         },
       );

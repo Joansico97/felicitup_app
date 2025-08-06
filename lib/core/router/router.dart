@@ -222,6 +222,11 @@ class CustomRouter {
         pageBuilder: _deleteAccountHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.completeUserData,
+        pageBuilder: _completeUserDataHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
     ],
   );
 

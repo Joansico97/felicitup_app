@@ -50,6 +50,10 @@ abstract class UserRepository {
   Future<Either<ApiException, void>> updateMatchList(List<String> ids);
   Future<Either<ApiException, void>> updateUserImageFromFile(File file);
   Future<Either<ApiException, void>> updateUserImageFromUrl(String url);
+  Future<Either<ApiException, void>> completeeUserInfo(
+    String firstName,
+    String lastName,
+  );
   Future<Either<ApiException, void>> updateUserInfo(UserModel user);
   Future<Either<ApiException, void>> updateUserBirthdate(DateTime date);
   Future<Either<ApiException, void>> createGiftItem(GiftcarModel item);

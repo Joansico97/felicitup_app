@@ -132,5 +132,8 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(() => OnBoardingBloc())
-    ..registerFactory(() => FrequentQuestionsBloc());
+    ..registerFactory(() => FrequentQuestionsBloc())
+    ..registerFactory(
+      () => CompleteUserDataBloc(userRepository: di(), firebaseAuth: di()),
+    );
 }
