@@ -27,6 +27,30 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     context.read<AppBloc>().add(AppEvent.loadUserData());
     context.read<AppBloc>().add(AppEvent.initializeNotifications());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Leemos el estado actual del AppBloc una sola vez
+      final currentState = context.read<AppBloc>().state;
+      _checkAndRequestContactPermissions(currentState);
+    });
+  }
+
+  void _checkAndRequestContactPermissions(AppState state) {
+    // Esta es la lógica que tenías en el BlocListener
+    if (Platform.isIOS) {
+      if (state.currentUser != null &&
+          (state.currentUser?.friendsPhoneList?.isEmpty ?? false)) {
+        requestContactsPermissionWithModal();
+      } else {
+        context.read<HomeBloc>().add(
+          HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
+        );
+      }
+    }
+    if (Platform.isAndroid) {
+      context.read<HomeBloc>().add(
+        HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
+      );
+    }
   }
 
   Future<void> requestContactsPermissionWithModal() async {
@@ -126,73 +150,51 @@ class _HomePageState extends State<HomePage> {
           AppEvent.updateMatchList(state.currentUser?.friendsPhoneList ?? []),
         );
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (state.currentUser != null &&
-              state.currentUser?.birthDate == null) {
-            showConfirmModal(
-              title: '¡QUE NADIE SE OLVIDE DE TU CUMPLE! 🎂',
-              content:
-                  'Dinos tu fecha de cumpleaños y tus contactos nunca se olvidarán de felicitarte. Además podrán enviarte una FELICITUP!',
-              label: 'Añadir mi fecha',
-              onAccept: () async {
-                DateTime? birthDate;
+        if (state.currentUser != null && state.currentUser?.birthDate == null) {
+          showConfirmModal(
+            title: '¡QUE NADIE SE OLVIDE DE TU CUMPLE! 🎂',
+            content:
+                'Dinos tu fecha de cumpleaños y tus contactos nunca se olvidarán de felicitarte. Además podrán enviarte una FELICITUP!',
+            label: 'Añadir mi fecha',
+            onAccept: () async {
+              DateTime? birthDate;
 
-                await showDialog(
-                  context: context,
-                  builder:
-                      (_) => AlertDialog(
-                        title: Text(
-                          '¿Cuándo es tu cumpleaños?',
-                          style: context.styles.header2,
-                        ),
-                        content: DatePickerWidget(
-                          onSelectNewDate: (date) {
-                            birthDate = date;
-                          },
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              context.read<HomeBloc>().add(
-                                HomeEvent.setUserBirthdate(
-                                  date: birthDate ?? DateTime.now(),
-                                ),
-                              );
-                              context.pop();
-                            },
-                            child: Text(
-                              'Aceptar',
-                              style: context.styles.buttons,
-                            ),
-                          ),
-                        ],
+              await showDialog(
+                context: context,
+                builder:
+                    (_) => AlertDialog(
+                      title: Text(
+                        '¿Cuándo es tu cumpleaños?',
+                        style: context.styles.header2,
                       ),
-                );
-              },
-            );
-          } else if (state.currentUser != null &&
-              state.currentUser!.phone!.isEmpty) {
-            context.go(RouterPaths.phoneVerifyInt);
-          }
-
-          if (Platform.isIOS) {
-            if (state.currentUser != null &&
-                (state.currentUser?.friendsPhoneList?.isEmpty ?? false)) {
-              requestContactsPermissionWithModal();
-            } else {
-              context.read<HomeBloc>().add(
-                HomeEvent.getAndUpdateContacts(
-                  state.currentUser?.isoCode ?? '',
-                ),
+                      content: DatePickerWidget(
+                        onSelectNewDate: (date) {
+                          birthDate = date;
+                        },
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            context.read<HomeBloc>().add(
+                              HomeEvent.setUserBirthdate(
+                                date: birthDate ?? DateTime.now(),
+                              ),
+                            );
+                            context.pop();
+                          },
+                          child: Text('Aceptar', style: context.styles.buttons),
+                        ),
+                      ],
+                    ),
               );
-            }
-          }
-          if (Platform.isAndroid) {
-            context.read<HomeBloc>().add(
-              HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
-            );
-          }
-        });
+            },
+          );
+        } else if (state.currentUser != null &&
+            state.currentUser!.phone!.isEmpty) {
+          context.go(RouterPaths.phoneVerifyInt);
+        }
+
+        _checkAndRequestContactPermissions(state);
       },
       child: Scaffold(
         drawer: const DrawerApp(),
