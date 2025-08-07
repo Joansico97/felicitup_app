@@ -170,6 +170,9 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             );
+          } else if (state.currentUser != null &&
+              state.currentUser!.phone!.isEmpty) {
+            context.go(RouterPaths.phoneVerifyInt);
           }
 
           if (Platform.isIOS) {
@@ -183,14 +186,11 @@ class _HomePageState extends State<HomePage> {
                 ),
               );
             }
-          } else if (Platform.isAndroid) {
+          }
+          if (Platform.isAndroid) {
             context.read<HomeBloc>().add(
               HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
             );
-          }
-
-          if (state.currentUser != null && state.currentUser!.phone!.isEmpty) {
-            context.go(RouterPaths.phoneVerifyInt);
           }
         });
       },
