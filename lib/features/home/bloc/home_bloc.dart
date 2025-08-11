@@ -31,7 +31,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         changeCreate: (_) => _changeCreate(emit),
         setUserBirthdate: (event) => _setUserBirthdate(emit, event.date),
         changeShowButton: (_) => _changeShowButton(emit),
-        getAndUpdateContacts: (event) => _getAndUpdateContacts(event.isoCode),
+        getAndUpdateContacts: (event) =>
+            _getAndUpdateContacts(emit, event.isoCode),
       ),
     );
   }
@@ -50,16 +51,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(state.copyWith(showButton: !state.showButton));
   }
 
-  _getAndUpdateContacts(String isoCode) async {
+  _getAndUpdateContacts(Emitter<HomeState> emit, String isoCode) async {
     final contacts = await getHashedContacts(isoCode);
 
-    List<Map<String, dynamic>> contactsMapList =
-        contacts
-            .where((e) => e.displayName.isNotEmpty && e.hashedPhone.isNotEmpty)
-            .map((e) {
-              return {'displayName': e.displayName, 'phone': e.hashedPhone};
-            })
-            .toList();
+    List<Map<String, dynamic>> contactsMapList = contacts
+        .where((e) => e.displayName.isNotEmpty && e.hashedPhone.isNotEmpty)
+        .map((e) {
+          return {'displayName': e.displayName, 'phone': e.hashedPhone};
+        })
+        .toList();
 
     RegExp nameRegex = RegExp(r'\d{3,}');
     contactsMapList.removeWhere(
@@ -70,10 +70,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       (element) => nameRegex.hasMatch(element['displayName'] ?? ''),
     );
 
-    List<String> friendsPhoneList =
-        contactsMapList.map((e) => e['phone'] as String).toList();
+    List<String> friendsPhoneList = contactsMapList
+        .map((e) => e['phone'] as String)
+        .toList();
 
     await _userRepository.updateContacts(contactsMapList, friendsPhoneList);
+    emit(state.copyWith(status: HomeStatus.contactsUpdateSuccess));
   }
 
   _setUserBirthdate(Emitter<HomeState> emit, DateTime date) async {
