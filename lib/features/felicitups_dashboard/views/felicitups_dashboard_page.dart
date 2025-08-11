@@ -39,26 +39,31 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
     return Scaffold(
       backgroundColor: context.colors.background,
       drawer: const DrawerApp(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: BlocBuilder<HomeBloc, HomeState>(
-        buildWhen:
-            (previous, current) =>
-                previous.showButton != current.showButton ||
-                previous.create != current.create,
-        builder: (_, state) {
-          return FloatingActionButton(
-            onPressed: () {
-              context.go(RouterPaths.createFelicitup);
-            },
-            backgroundColor: context.colors.lightGrey,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(context.sp(50)),
+      persistentFooterAlignment: AlignmentDirectional.center,
+      persistentFooterButtons: [
+        BlocBuilder<HomeBloc, HomeState>(
+          buildWhen: (previous, current) =>
+              previous.showButton != current.showButton ||
+              previous.create != current.create,
+          builder: (_, state) => GestureDetector(
+            onTap: () => context.go(RouterPaths.createFelicitup),
+            child: Container(
+              height: context.sp(48),
+              width: context.sp(48),
+              decoration: BoxDecoration(
+                color: context.colors.lightGrey,
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset(
+                Assets.images.logo.path,
+                scale: context.sp(11),
+              ),
             ),
-            child: Image.asset(Assets.images.logo.path, scale: context.sp(11)),
-          );
-        },
-      ),
+          ),
+        ),
+      ],
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      extendBody: true,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -66,14 +71,13 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
             CommonHeader(),
             BlocBuilder<AppBloc, AppState>(
               builder: (_, stateApp) {
-                final birthdateAlerts =
-                    stateApp.currentUser?.birthdateAlerts
-                        ?.where(
-                          (alert) => alert.targetDate!.isAfter(
-                            DateTime.now().subtract(const Duration(days: 1)),
-                          ),
-                        )
-                        .toList();
+                final birthdateAlerts = stateApp.currentUser?.birthdateAlerts
+                    ?.where(
+                      (alert) => alert.targetDate!.isAfter(
+                        DateTime.now().subtract(const Duration(days: 1)),
+                      ),
+                    )
+                    .toList();
                 return Visibility(
                   visible:
                       (birthdateAlerts?.isNotEmpty ?? false) &&
@@ -102,21 +106,21 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                         padding: EdgeInsets.symmetric(
                           horizontal: context.sp(24),
                         ),
-                        child: BlocBuilder<
-                          FelicitupsDashboardBloc,
-                          FelicitupsDashboardState
-                        >(
-                          builder: (_, state) {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _FelicitupsDashboardHeaderOption(
-                                  label: 'EN CURSO',
-                                  isActive: state.listBoolsTap[0],
-                                  textColor: context.colors.orange,
-                                  activeColor: context.colors.orange,
-                                  onActive:
-                                      () => context
+                        child:
+                            BlocBuilder<
+                              FelicitupsDashboardBloc,
+                              FelicitupsDashboardState
+                            >(
+                              builder: (_, state) {
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _FelicitupsDashboardHeaderOption(
+                                      label: 'EN CURSO',
+                                      isActive: state.listBoolsTap[0],
+                                      textColor: context.colors.orange,
+                                      activeColor: context.colors.orange,
+                                      onActive: () => context
                                           .read<FelicitupsDashboardBloc>()
                                           .add(
                                             FelicitupsDashboardEvent.changeListBoolsTap(
@@ -124,15 +128,14 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                                               felicitupsDashboardPageController,
                                             ),
                                           ),
-                                ),
-                                SizedBox(width: context.sp(14)),
-                                _FelicitupsDashboardHeaderOption(
-                                  label: 'PASADOS',
-                                  isActive: state.listBoolsTap[1],
-                                  textColor: context.colors.orange,
-                                  activeColor: context.colors.orange,
-                                  onActive:
-                                      () => context
+                                    ),
+                                    SizedBox(width: context.sp(14)),
+                                    _FelicitupsDashboardHeaderOption(
+                                      label: 'PASADOS',
+                                      isActive: state.listBoolsTap[1],
+                                      textColor: context.colors.orange,
+                                      activeColor: context.colors.orange,
+                                      onActive: () => context
                                           .read<FelicitupsDashboardBloc>()
                                           .add(
                                             FelicitupsDashboardEvent.changeListBoolsTap(
@@ -140,11 +143,11 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                                               felicitupsDashboardPageController,
                                             ),
                                           ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
                       ),
                       SizedBox(height: context.sp(12)),
                       Expanded(
