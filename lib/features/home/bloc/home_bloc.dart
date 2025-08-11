@@ -118,7 +118,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       List<HashedContact> hashedContacts = [];
 
-      for (var contact in packageContacts) {
+      for (final contact in packageContacts) {
         if (contact.displayName.isEmpty || contact.phones.isEmpty) continue;
 
         String phoneNumber = contact.phones[0].number;
@@ -127,11 +127,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         String normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
 
         if (!normalizedPhone.startsWith('+')) {
-          normalizedPhone = '+$isoCode$normalizedPhone';
+          normalizedPhone = '$isoCode$normalizedPhone';
         }
 
-        var bytes = utf8.encode(normalizedPhone);
-        var digest = sha256.convert(bytes);
+        final bytes = utf8.encode(normalizedPhone);
+        final digest = sha256.convert(bytes);
         String hashedPhone = digest.toString();
 
         hashedContacts.add(
