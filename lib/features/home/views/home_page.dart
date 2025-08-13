@@ -144,13 +144,13 @@ class _HomePageState extends State<HomePage> {
           listenWhen: (previous, current) =>
               previous.status != current.status &&
               current.status == HomeStatus.contactsUpdateSuccess,
-          listener: (context, state) {
+          listener: (_, state) {
             context.read<AppBloc>().add(AppEvent.loadUserData());
           },
         ),
         BlocListener<AppBloc, AppState>(
           listenWhen: (previous, current) =>
-              previous.currentUser != current.currentUser,
+              previous.currentUser == null && current.currentUser != null,
           listener: (_, state) {
             context.read<AppBloc>().add(
               AppEvent.updateMatchList(
@@ -167,7 +167,6 @@ class _HomePageState extends State<HomePage> {
                 label: 'Añadir mi fecha',
                 onAccept: () async {
                   DateTime? birthDate;
-
                   await showDialog(
                     context: context,
                     builder: (_) => AlertDialog(

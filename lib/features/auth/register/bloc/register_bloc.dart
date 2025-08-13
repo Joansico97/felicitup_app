@@ -31,22 +31,21 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         previousStep: (_) => _previousStep(emit),
         googleLoginEvent: (_) => _googleLoginEvent(emit),
         appleLoginEvent: (_) => _appleLoginEvent(emit),
-        initRegister:
-            (event) => _initRegister(
-              emit,
-              event.name,
-              event.lastName,
-              event.email,
-              event.password,
-              event.confirmPassword,
-              event.birthDate,
-            ),
+        initRegister: (event) => _initRegister(
+          emit,
+          event.name,
+          event.lastName,
+          event.email,
+          event.password,
+          event.confirmPassword,
+          event.birthDate,
+        ),
         validateCode: (value) => _validateCode(emit, value.code),
-        verificationCompleted:
-            (event) => _verificationCompleted(emit, event.verificationId),
+        verificationCompleted: (event) =>
+            _verificationCompleted(emit, event.verificationId),
         verificationFailed: (event) => _verificationFailed(emit, event.error),
-        savePhoneInfo:
-            (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
+        savePhoneInfo: (event) =>
+            _savePhoneInfo(emit, event.phone, event.isoCode),
         initValidation: (_) => _initValidation(emit),
         registerEvent: (_) => _registerEvent(emit),
         setUserInfo: (event) => _setUserInfo(emit, event.credential),
@@ -156,7 +155,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   _initValidation(Emitter<RegisterState> emit) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.initial));
 
     try {
       await _authRepository.verifyPhone(
@@ -203,7 +202,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   _validateCode(Emitter<RegisterState> emit, String code) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.initial));
     try {
       final response = await _authRepository.confirmVerification(
         verificationId: state.verificationId!,

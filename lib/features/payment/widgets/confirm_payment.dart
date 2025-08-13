@@ -106,15 +106,14 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                     value: selectedPaymentStatus,
                     style: context.styles.paragraph,
                     isExpanded: true,
-                    items:
-                        paymentStatusList.map<DropdownMenuItem<String>>((
-                          String value,
-                        ) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value, style: context.styles.paragraph),
-                          );
-                        }).toList(),
+                    items: paymentStatusList.map<DropdownMenuItem<String>>((
+                      String value,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value, style: context.styles.paragraph),
+                      );
+                    }).toList(),
                     onChanged: (String? newValue) {
                       if (newValue != null) {
                         setState(() {
@@ -186,15 +185,14 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                     value: selectedPaymentMethod,
                     style: context.styles.paragraph,
                     isExpanded: true,
-                    items:
-                        paymentMethodList.map<DropdownMenuItem<String>>((
-                          String value,
-                        ) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value, style: context.styles.paragraph),
-                          );
-                        }).toList(),
+                    items: paymentMethodList.map<DropdownMenuItem<String>>((
+                      String value,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value, style: context.styles.paragraph),
+                      );
+                    }).toList(),
                     onChanged: (String? newValue) {
                       setState(() {
                         selectedPaymentMethod = newValue!;
@@ -250,32 +248,29 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                       ),
                       color: context.colors.white,
                     ),
-                    child:
-                        selectedImage != null
-                            ? ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                context.sp(30),
+                    child: selectedImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(context.sp(30)),
+                            child: Image.file(
+                              selectedImage!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.camera_alt_outlined,
+                                color: context.colors.darkGrey,
                               ),
-                              child: Image.file(
-                                selectedImage!,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                            : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.camera_alt_outlined,
+                              Text(
+                                'Subir comprobante',
+                                style: context.styles.paragraph.copyWith(
                                   color: context.colors.darkGrey,
                                 ),
-                                Text(
-                                  'Subir comprobante',
-                                  style: context.styles.paragraph.copyWith(
-                                    color: context.colors.darkGrey,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
                 SizedBox(height: context.sp(14)),
@@ -283,6 +278,28 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                   width: context.sp(300),
                   child: PrimaryButton(
                     onTap: () {
+                      if (selectedPaymentMethod.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Por favor, selecciona un método de pago.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (selectedPaymentStatus.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Por favor, selecciona un estado de pago.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+
                       context.read<PaymentBloc>().add(
                         PaymentEvent.updatePaymentInfo(
                           widget.felicitup.id,
