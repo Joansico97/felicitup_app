@@ -21,6 +21,8 @@ class ConfirmPayment extends StatefulWidget {
 class _ConfirmPaymentState extends State<ConfirmPayment> {
   String selectedPaymentStatus = 'Estado del pago';
   String selectedPaymentMethod = 'Medio de pago';
+  String? paymentStatus;
+  String? paymentMethod;
   DateTime? selectedDate;
   File? selectedImage;
   bool isFormValid = false;
@@ -118,6 +120,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                       if (newValue != null) {
                         setState(() {
                           selectedPaymentStatus = newValue;
+                          paymentStatus = newValue;
                         });
                       }
                     },
@@ -196,6 +199,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                     onChanged: (String? newValue) {
                       setState(() {
                         selectedPaymentMethod = newValue!;
+                        paymentMethod = newValue;
                       });
                       // ref.read(felicitupDetailsEventProvider.notifier).setPaymentStatus(newValue!);
                     },
@@ -278,7 +282,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                   width: context.sp(300),
                   child: PrimaryButton(
                     onTap: () {
-                      if (selectedPaymentMethod.isEmpty) {
+                      if (selectedPaymentMethod == 'Medio de pago') {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
@@ -289,7 +293,7 @@ class _ConfirmPaymentState extends State<ConfirmPayment> {
                         return;
                       }
 
-                      if (selectedPaymentStatus.isEmpty) {
+                      if (selectedPaymentStatus == 'Estado del pago') {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(

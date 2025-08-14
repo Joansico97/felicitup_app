@@ -247,7 +247,7 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                                   errorBuilder: (context, error, stackTrace) {
                                     return Center(
                                       child: Text(
-                                        'Cargando imagen...',
+                                        'Bote sin foto',
                                         style: context.styles.paragraph,
                                       ),
                                     );
