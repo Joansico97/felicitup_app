@@ -39,8 +39,6 @@ class _DetailsContactViewState extends State<DetailsContactView> {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AppBloc>().state.currentUser;
-
     return Scaffold(
       body: SafeArea(
         child: Column(
