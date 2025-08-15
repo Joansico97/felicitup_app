@@ -148,16 +148,24 @@ class _HomePageState extends State<HomePage> {
             context.read<AppBloc>().add(AppEvent.loadUserData());
           },
         ),
+
         BlocListener<AppBloc, AppState>(
           listenWhen: (previous, current) =>
-              previous.currentUser == null && current.currentUser != null,
+              previous.currentUser?.friendsPhoneList !=
+              current.currentUser?.friendsPhoneList,
           listener: (_, state) {
             context.read<AppBloc>().add(
               AppEvent.updateMatchList(
                 state.currentUser?.friendsPhoneList ?? [],
               ),
             );
+          },
+        ),
 
+        BlocListener<AppBloc, AppState>(
+          listenWhen: (previous, current) =>
+              previous.currentUser == null && current.currentUser != null,
+          listener: (_, state) {
             if (state.currentUser != null &&
                 state.currentUser?.birthDate == null) {
               showConfirmModal(
