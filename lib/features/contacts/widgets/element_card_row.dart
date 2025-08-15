@@ -62,45 +62,48 @@ class ElementCardRow extends StatelessWidget {
           isRegistered
               ? const Icon(Icons.check, color: Colors.green)
               : TextButton(
-                onPressed: () async {
-                  await Clipboard.setData(
-                    const ClipboardData(
-                      text:
-                          '¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.',
-                    ),
-                  );
-                  showConfirmModal(
-                    title:
-                        'Hemos copiado a tu portapapeles la invitación para que puedas invitar a tus amigos mediante Whatsapp.',
-                    onAccept: () async {
-                      final url = Uri.parse("whatsapp://app");
+                  onPressed: () async {
+                    await Clipboard.setData(
+                      const ClipboardData(
+                        text:
+                            ''''¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.
+                          Descágala desde app store aquí: https://apps.apple.com/co/app/felicitup/id6743689559?l=en-GB
+                          Descágala desde play store aquí: https://play.google.com/store/apps/details?id=com.felicitup.felicitup_app&pcampaignid=web_share
+                          ''',
+                      ),
+                    );
+                    showConfirmModal(
+                      title:
+                          'Hemos copiado a tu portapapeles la invitación para que puedas invitar a tus amigos mediante Whatsapp.',
+                      onAccept: () async {
+                        final url = Uri.parse("whatsapp://app");
 
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(
-                          url,
-                          mode: LaunchMode.externalApplication,
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'No se pudo abrir WhatsApp. Asegúrate de que la aplicación esté instalada.',
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(
+                            url,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'No se pudo abrir WhatsApp. Asegúrate de que la aplicación esté instalada.',
+                              ),
+                              duration: const Duration(seconds: 2),
                             ),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                        // Aquí podrías mostrar un SnackBar o un AlertDialog al usuario.
-                      }
-                    },
-                  );
-                },
-                child: Text(
-                  'Invitar',
-                  style: context.styles.smallText.copyWith(
-                    color: context.colors.darkBlue,
+                          );
+                          // Aquí podrías mostrar un SnackBar o un AlertDialog al usuario.
+                        }
+                      },
+                    );
+                  },
+                  child: Text(
+                    'Invitar',
+                    style: context.styles.smallText.copyWith(
+                      color: context.colors.darkBlue,
+                    ),
                   ),
                 ),
-              ),
           SizedBox(width: context.sp(8)),
           GestureDetector(
             onTap: () {
@@ -127,19 +130,19 @@ void _showContactDetails(
   showDialog(
     context: context,
     useSafeArea: false,
-    builder:
-        (_) => BlocProvider.value(
-          value: context.read<ContactsBloc>(),
-          child: BlocBuilder<ContactsBloc, ContactsState>(
-            builder: (_, state) {
-              return DetailsContactView(
-                contact: contact,
-                isRegistered: isRegistered,
-                giftcardList:
-                    isRegistered ? state.dataSingleUsers?.giftcardList : [],
-              );
-            },
-          ),
-        ),
+    builder: (_) => BlocProvider.value(
+      value: context.read<ContactsBloc>(),
+      child: BlocBuilder<ContactsBloc, ContactsState>(
+        builder: (_, state) {
+          return DetailsContactView(
+            contact: contact,
+            isRegistered: isRegistered,
+            giftcardList: isRegistered
+                ? state.dataSingleUsers?.giftcardList
+                : [],
+          );
+        },
+      ),
+    ),
   );
 }

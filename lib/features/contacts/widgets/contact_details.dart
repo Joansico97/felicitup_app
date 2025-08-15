@@ -82,30 +82,34 @@ class _DetailsContactViewState extends State<DetailsContactView> {
                       await Clipboard.setData(
                         const ClipboardData(
                           text:
-                              '¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.',
+                              ''''¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.
+                          Descágala desde app store aquí: https://apps.apple.com/co/app/felicitup/id6743689559?l=en-GB
+                          Descágala desde play store aquí: https://play.google.com/store/apps/details?id=com.felicitup.felicitup_app&pcampaignid=web_share
+                          ''',
                         ),
                       );
                       showConfirmModal(
                         title:
                             'Hemos copiado a tu portapapeles la invitación para que puedas invitar a tus amigos mediante Whatsapp.',
                         onAccept: () async {
-                          String number = widget.contact.phone
-                              .replaceAll(' ', '')
-                              .replaceAll('(', '')
-                              .replaceAll(')', '')
-                              .replaceAll('-', '');
-                          if (number[0] == '0' && number[1] == '0') {
-                            number = number.substring(2);
-                            number = '+$number';
-                          } else if (number[0] != '+') {
-                            number = '${user?.isoCode}$number';
-                          }
+                          final url = Uri.parse("whatsapp://app");
 
-                          final Uri url = Uri.parse('http://wa.me/$number');
-                          await launchUrl(
-                            url,
-                            mode: LaunchMode.inAppBrowserView,
-                          );
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(
+                              url,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'No se pudo abrir WhatsApp. Asegúrate de que la aplicación esté instalada.',
+                                ),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                            // Aquí podrías mostrar un SnackBar o un AlertDialog al usuario.
+                          }
                         },
                       );
                     },
@@ -130,53 +134,50 @@ class _DetailsContactViewState extends State<DetailsContactView> {
             SizedBox(height: context.sp(12)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
-              child:
-                  widget.isRegistered
-                      ? SizedBox(
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              ...List.generate(
-                                widget.giftcardList?.length ?? 0,
-                                (index) => ListTile(
-                                  leading: Icon(
-                                    Icons.card_giftcard,
-                                    color: context.colors.orange,
+              child: widget.isRegistered
+                  ? SizedBox(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            ...List.generate(
+                              widget.giftcardList?.length ?? 0,
+                              (index) => ListTile(
+                                leading: Icon(
+                                  Icons.card_giftcard,
+                                  color: context.colors.orange,
+                                ),
+                                title: Text(
+                                  widget.giftcardList?[index].productName ?? '',
+                                  style: context.styles.paragraph,
+                                ),
+                                subtitle: Text(
+                                  '\$${widget.giftcardList?[index].productValue ?? 0}',
+                                  style: context.styles.paragraph.copyWith(
+                                    color: context.colors.text,
                                   ),
-                                  title: Text(
-                                    widget.giftcardList?[index].productName ??
-                                        '',
-                                    style: context.styles.paragraph,
+                                ),
+                                trailing: GestureDetector(
+                                  onTap: () => _showNewsDetail(
+                                    widget.giftcardList?[index] ??
+                                        GiftcarModel(),
                                   ),
-                                  subtitle: Text(
-                                    '\$${widget.giftcardList?[index].productValue ?? 0}',
-                                    style: context.styles.paragraph.copyWith(
-                                      color: context.colors.text,
-                                    ),
-                                  ),
-                                  trailing: GestureDetector(
-                                    onTap:
-                                        () => _showNewsDetail(
-                                          widget.giftcardList?[index] ??
-                                              GiftcarModel(),
-                                        ),
-                                    child: Icon(
-                                      Icons.drag_indicator,
-                                      color: Colors.black,
-                                    ),
+                                  child: Icon(
+                                    Icons.drag_indicator,
+                                    color: Colors.black,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      )
-                      : Text(
-                        'Invita y conecta con tu contacto para ver su lista de deseos',
-                        style: context.styles.paragraph.copyWith(
-                          color: context.colors.text,
+                            ),
+                          ],
                         ),
                       ),
+                    )
+                  : Text(
+                      'Invita y conecta con tu contacto para ver su lista de deseos',
+                      style: context.styles.paragraph.copyWith(
+                        color: context.colors.text,
+                      ),
+                    ),
             ),
             // Padding(
             //   padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
@@ -247,13 +248,12 @@ void _showNewsDetail(GiftcarModel singleNew) {
   showDialog(
     context: rootNavigatorKey.currentContext!,
     useSafeArea: false,
-    builder:
-        (_) => GiftcardDetails(
-          title: singleNew.productName ?? "",
-          body: singleNew.productDescription ?? "",
-          price: singleNew.productValue ?? "",
-          links: singleNew.links ?? [],
-          callbackFuncion: () => rootNavigatorKey.currentContext!.pop(),
-        ),
+    builder: (_) => GiftcardDetails(
+      title: singleNew.productName ?? "",
+      body: singleNew.productDescription ?? "",
+      price: singleNew.productValue ?? "",
+      links: singleNew.links ?? [],
+      callbackFuncion: () => rootNavigatorKey.currentContext!.pop(),
+    ),
   );
 }
