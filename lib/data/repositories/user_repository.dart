@@ -25,6 +25,7 @@ abstract class UserRepository {
   Future<Either<ApiException, String>> uploadVideoFile(
     File file,
     String destination,
+    String id,
   );
   Future<Either<ApiException, void>> sendNotification({
     required String userId,

@@ -144,8 +144,9 @@ class UserFirebaseResource implements UserRepository {
       final response = await _client.get(AppConstants.usersCollection);
       if (response != null) {
         final users = response as List<Map<String, dynamic>>;
-        final usersData =
-            users.where((user) => usersIds.contains(user['id'])).toList();
+        final usersData = users
+            .where((user) => usersIds.contains(user['id']))
+            .toList();
         return Right(usersData);
       } else {
         return Left(ApiException(404, 'Users not found'));
@@ -174,12 +175,12 @@ class UserFirebaseResource implements UserRepository {
       }
 
       firebaseUsers.addAll(response);
-      final Set<Map<String, dynamic>> usersSet =
-          firebaseUsers.map((e) => e).toSet();
-      List<Map<String, dynamic>> matchingUsers =
-          usersSet.where((user) {
-            return phones.any((phone) => user['phone'] == phone);
-          }).toList();
+      final Set<Map<String, dynamic>> usersSet = firebaseUsers
+          .map((e) => e)
+          .toSet();
+      List<Map<String, dynamic>> matchingUsers = usersSet.where((user) {
+        return phones.any((phone) => user['phone'] == phone);
+      }).toList();
       for (final user in matchingUsers) {
         users.add(UserModel.fromJson(user));
       }
@@ -225,13 +226,14 @@ class UserFirebaseResource implements UserRepository {
   Future<Either<ApiException, String>> uploadVideoFile(
     File file,
     String destination,
+    String id,
   ) async {
     try {
       final uid = _firebaseAuth.currentUser?.uid;
       if (uid == null) {
         return Left(ApiException(401, 'User not authenticated'));
       }
-      final String videoFileName = "$uid/$destination/${uid}_$destination.mp4";
+      final String videoFileName = "$uid/$destination/${uid}_$id.mp4";
       Reference storageRef = _firebaseStorage.ref(videoFileName);
       final UploadTask videoUploadTask = storageRef.putFile(
         File(file.path),
@@ -884,9 +886,9 @@ class UserFirebaseResource implements UserRepository {
         'firstName': firstName,
         'lastName': lastName,
         'fullName': '$firstName $lastName',
-        'birthDate': birthDate?.toLocal(),
-        'birthDay': birthDate?.toLocal().day,
-        'birthMonth': birthDate?.toLocal().month,
+        'birthDate': birthDate?.toUtc(),
+        'birthDay': birthDate?.toUtc().day,
+        'birthMonth': birthDate?.toUtc().month,
         'birthdateAlerts': [],
         'singleChats': [],
       });
@@ -994,9 +996,9 @@ class UserFirebaseResource implements UserRepository {
         }
 
         transaction.update(userDocRef, {
-          'birthDate': date.toLocal(),
-          'birthDay': date.toLocal().day,
-          'birthMonth': date.toLocal().month,
+          'birthDate': date.toUtc(),
+          'birthDay': date.toUtc().day,
+          'birthMonth': date.toUtc().month,
         });
 
         return Right(null);
@@ -1026,8 +1028,9 @@ class UserFirebaseResource implements UserRepository {
             final List<Map<String, dynamic>> listData = List.from(
               data['giftcardList'],
             );
-            final List<GiftcarModel> listGiftcard =
-                listData.map((e) => GiftcarModel.fromJson(e)).toList();
+            final List<GiftcarModel> listGiftcard = listData
+                .map((e) => GiftcarModel.fromJson(e))
+                .toList();
             return Right(listGiftcard);
           });
     } catch (e) {

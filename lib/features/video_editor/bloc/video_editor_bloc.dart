@@ -7,6 +7,7 @@ import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 
 part 'video_editor_event.dart';
@@ -29,24 +30,23 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         changeLoading: (event) => _changeLoading(emit),
         setUrlVideo: (event) => _setUrlVideo(emit, event.url),
         getFelicitupInfo: (event) => _getFelicitupInfo(emit, event.felicitupId),
-        uploadUserVideo:
-            (event) => _uploadUserVideo(emit, event.felicitupId, event.file),
-        updateParticipantInfo:
-            (event) => _updateParticipantInfo(event.felicitupId, event.url),
-        initializeVideoController:
-            (event) => _initializeVideoController(emit, event.url),
+        uploadUserVideo: (event) =>
+            _uploadUserVideo(emit, event.felicitupId, event.file),
+        updateParticipantInfo: (event) =>
+            _updateParticipantInfo(event.felicitupId, event.url),
+        initializeVideoController: (event) =>
+            _initializeVideoController(emit, event.url),
         disposeVideoController: (event) => _disposeVideoController(emit),
         generateThumbnail: (event) => _generateThumbnail(event.filePath),
         setDuraton: (event) => _setDuraton(emit, event.duration),
         setPosition: (event) => _setPosition(emit, event.position),
         changeFullScreen: (event) => _changeFullScreen(emit),
-        reportUserVideo:
-            (event) => _reportUserVideo(
-              emit,
-              event.felicitupId,
-              event.userId,
-              event.videoUrl,
-            ),
+        reportUserVideo: (event) => _reportUserVideo(
+          emit,
+          event.felicitupId,
+          event.userId,
+          event.videoUrl,
+        ),
       ),
     );
   }
@@ -87,7 +87,12 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final result = await _userRepository.uploadVideoFile(file, 'videos');
+      final uniqueId = const Uuid().v4();
+      final result = await _userRepository.uploadVideoFile(
+        file,
+        'videos',
+        uniqueId,
+      );
       return result.fold(
         (error) => logger.error('Error uploading video: $error'),
         (url) {

@@ -123,11 +123,10 @@ class FelicitupFirebaseResource implements FelicitupRepository {
     String felicitupId,
   ) async {
     try {
-      final data =
-          await _firestore
-              .collection(AppConstants.feclitiupsCollection)
-              .doc(felicitupId)
-              .get();
+      final data = await _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId)
+          .get();
       if (data.data() == null) {
         return Left(ApiException(1000, 'Felicitup not found'));
       }
@@ -345,8 +344,7 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       }
       final userId = _firebaseAuth.currentUser!.uid;
 
-      final felicitupData =
-          felicitup.data() as Map<String, dynamic>; //Cast a Map
+      final felicitupData = felicitup.data() as Map<String, dynamic>;
       final invitedUserDetails =
           felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
       final userIndex = invitedUserDetails.indexWhere(
@@ -638,10 +636,12 @@ class FelicitupFirebaseResource implements FelicitupRepository {
           .where('invitedUsers', arrayContains: userId)
           .snapshots()
           .map((event) {
-            final List<Map<String, dynamic>> documents =
-                event.docs.map((e) => e.data()).toList();
-            final List<FelicitupModel> listFelicitups =
-                documents.map((e) => FelicitupModel.fromJson(e)).toList();
+            final List<Map<String, dynamic>> documents = event.docs
+                .map((e) => e.data())
+                .toList();
+            final List<FelicitupModel> listFelicitups = documents
+                .map((e) => FelicitupModel.fromJson(e))
+                .toList();
             return Right(
               listFelicitups
                   .where((element) => element.status == 'inProgress')
@@ -663,10 +663,12 @@ class FelicitupFirebaseResource implements FelicitupRepository {
           .where('invitedUsers', arrayContains: userId)
           .snapshots()
           .map((event) {
-            final List<Map<String, dynamic>> documents =
-                event.docs.map((e) => e.data()).toList();
-            final List<FelicitupModel> listFelicitups =
-                documents.map((e) => FelicitupModel.fromJson(e)).toList();
+            final List<Map<String, dynamic>> documents = event.docs
+                .map((e) => e.data())
+                .toList();
+            final List<FelicitupModel> listFelicitups = documents
+                .map((e) => FelicitupModel.fromJson(e))
+                .toList();
             return Right(
               listFelicitups
                   .where((element) => element.status == 'Finished')
@@ -695,8 +697,9 @@ class FelicitupFirebaseResource implements FelicitupRepository {
             final List<Map<String, dynamic>> invitedUsers = List.from(
               data['invitedUserDetails'],
             );
-            final List<InvitedModel> listInvited =
-                invitedUsers.map((e) => InvitedModel.fromJson(e)).toList();
+            final List<InvitedModel> listInvited = invitedUsers
+                .map((e) => InvitedModel.fromJson(e))
+                .toList();
             return Right(listInvited);
           });
     } catch (e) {
@@ -721,8 +724,9 @@ class FelicitupFirebaseResource implements FelicitupRepository {
             final List<Map<String, dynamic>> messageData = List.from(
               data['messages'],
             );
-            final List<ChatMessageModel> listMessages =
-                messageData.map((e) => ChatMessageModel.fromJson(e)).toList();
+            final List<ChatMessageModel> listMessages = messageData
+                .map((e) => ChatMessageModel.fromJson(e))
+                .toList();
             return Right(listMessages);
           });
     } catch (e) {

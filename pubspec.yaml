@@ -52,6 +52,7 @@ dependencies:
   sign_in_with_apple: ^6.1.4
   sms_autofill: ^2.4.1
   package_info_plus: ^8.3.0
+  uuid: ^4.5.1
   version: ^3.0.2
 
   # Utils
