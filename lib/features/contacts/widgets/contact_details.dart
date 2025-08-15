@@ -1,4 +1,3 @@
-import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
@@ -6,7 +5,6 @@ import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/contacts/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
