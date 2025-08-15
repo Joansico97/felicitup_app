@@ -2,7 +2,7 @@ part of 'app_bloc.dart';
 
 @freezed
 class AppEvent with _$AppEvent {
-  const factory AppEvent.changeLoading() = _changeLoading;
+  const factory AppEvent.onAppStarted() = _onAppStarted;
   const factory AppEvent.closeRememberSection() = _closeRememberSection;
   const factory AppEvent.checkAppStatus() = _checkAppStatus;
   const factory AppEvent.loadUserData() = _loadUserData;

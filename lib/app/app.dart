@@ -39,7 +39,9 @@ class FelicitupApp extends StatelessWidget {
         ),
       ],
       child: BlocProvider<AppBloc>(
-        create: (_) => appBloc..add(const AppEvent.checkAppStatus()),
+        create: (_) => appBloc
+          ..add(const AppEvent.checkAppStatus())
+          ..add(const AppEvent.onAppStarted()),
         child: BlocBuilder<AppBloc, AppState>(
           builder: (_, state) {
             return MediaQuery(
@@ -60,9 +62,8 @@ class FelicitupApp extends StatelessWidget {
                 supportedLocales: IntlTrans.delegate.supportedLocales,
                 theme: AppTheme().getTheme(),
                 routerConfig: router,
-                builder:
-                    (context, child) =>
-                        HandleNotificationsInteractions(child: child!),
+                builder: (context, child) =>
+                    HandleNotificationsInteractions(child: child!),
               ),
             );
           },
@@ -85,8 +86,8 @@ class HandleNotificationsInteractions extends StatefulWidget {
 class _HandleNotificationsInteractionsState
     extends State<HandleNotificationsInteractions> {
   Future<void> setupInteractedMessage() async {
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance
+        .getInitialMessage();
 
     if (initialMessage != null) {
       _handleMessage(initialMessage);

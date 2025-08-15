@@ -33,21 +33,21 @@ class AppBloc extends Bloc<AppEvent, AppState> {
        super(AppState.initial()) {
     on<AppEvent>(
       (event, emit) => event.map(
-        changeLoading: (_) => _changeLoading(emit),
+        onAppStarted: (_) => _onAppStarted(emit),
         checkAppStatus: (_) => _checkAppStatus(emit),
         closeRememberSection: (_) => _closeRememberSection(emit),
         loadUserData: (_) => _loadUserData(emit),
-        loadProvUserData:
-            (event) => _loadProvUserData(emit, event.federatedData),
+        loadProvUserData: (event) =>
+            _loadProvUserData(emit, event.federatedData),
         updateMatchList: (event) => _updateMatchList(event.phoneList),
         initializeNotifications: (_) => _initializeNotifications(emit),
         requestManualPermissions: (_) => _requestManualPermissions(emit),
         deleterPermissions: (_) => _deleterPermissions(emit),
-        handleRemoteMessage:
-            (event) => handleRemoteMessage(event.message, emit),
+        handleRemoteMessage: (event) =>
+            handleRemoteMessage(event.message, emit),
         getFCMToken: (_) => _getFCMToken(),
-        startGlobalTimer:
-            (event) => _appEventStartGlobalTimer(emit, event.duration),
+        startGlobalTimer: (event) =>
+            _appEventStartGlobalTimer(emit, event.duration),
         stopGlobalTimer: (_) => _stopGlobalTimer(emit),
         globalTimerTick: (_) => _globalTimerTick(emit),
         logout: (_) => _logout(emit),
@@ -62,8 +62,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   final UpdateServiceHelper _updateService;
   Timer? _globalTimer;
 
-  _changeLoading(Emitter<AppState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
+  _onAppStarted(Emitter<AppState> emit) {
+    add(const AppEvent.initializeNotifications());
   }
 
   _checkAppStatus(Emitter<AppState> emit) async {
