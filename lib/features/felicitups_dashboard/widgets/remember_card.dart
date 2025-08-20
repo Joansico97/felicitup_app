@@ -1,4 +1,5 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -46,7 +47,7 @@ class RememberCard extends StatelessWidget {
                   child: image != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(context.sp(20)),
-                          child: Image.network(image!, fit: BoxFit.cover),
+                          child: CommonNetworkImage(imageUrl: image!),
                         )
                       : Icon(
                           Icons.person,

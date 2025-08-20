@@ -1,5 +1,6 @@
 import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/widgets/common/common.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class ContactCardRow extends StatelessWidget {
                         width: context.sp(55),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(context.sp(55)),
-                          child: Image.network(userImg, fit: BoxFit.cover),
+                          child: CommonNetworkImage(imageUrl: userImg),
                         ),
                       )
                     : Text(

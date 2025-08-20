@@ -273,8 +273,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                             BorderRadius.circular(
                                                               context.sp(100),
                                                             ),
-                                                        child: Image.network(
-                                                          listAvatares[index],
+                                                        child: CommonNetworkImage(
+                                                          imageUrl:
+                                                              listAvatares[index],
                                                         ),
                                                       ),
                                                     ),
@@ -319,35 +320,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       borderRadius: BorderRadius.circular(
                                         context.sp(100),
                                       ),
-                                      child: Image.network(
-                                        avatarUrl!,
-                                        fit: BoxFit.cover,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return Center(
-                                            child: CircularProgressIndicator(
-                                              value:
-                                                  loadingProgress
-                                                          .expectedTotalBytes !=
-                                                      null
-                                                  ? loadingProgress
-                                                            .cumulativeBytesLoaded /
-                                                        (loadingProgress
-                                                                .expectedTotalBytes ??
-                                                            1)
-                                                  : null,
-                                            ),
-                                          );
-                                        },
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Text(
-                                                  currentUser?.fullName![0] ??
-                                                      '',
-                                                  style: context.styles.header1,
-                                                ),
+                                      child: CommonNetworkImage(
+                                        imageUrl: avatarUrl!,
                                       ),
                                     ),
                                   )
@@ -373,9 +347,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       borderRadius: BorderRadius.circular(
                                         context.sp(100),
                                       ),
-                                      child: Image.network(
-                                        currentUser?.userImg ?? '',
-                                        fit: BoxFit.cover,
+                                      child: CommonNetworkImage(
+                                        imageUrl: currentUser?.userImg ?? '',
                                       ),
                                     ),
                                   )

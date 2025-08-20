@@ -1,6 +1,7 @@
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/bloc/details_felicitup_dashboard_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -69,26 +70,8 @@ class DetailsHeader extends StatelessWidget {
                               borderRadius: BorderRadius.circular(
                                 context.sp(50),
                               ),
-                              child: Image.network(
-                                felicitup.owner[0].userImg ?? '',
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, error, stackTrace) => Center(
-                                  child: Text(
-                                    felicitup.owner[0].name
-                                        .split(' ')[0]
-                                        .substring(0, 1)
-                                        .toUpperCase(),
-                                    style: context.styles.header2.copyWith(
-                                      color: context.colors.orange,
-                                    ),
-                                  ),
-                                ),
-                                loadingBuilder: (_, child, loadingProgress) {
-                                  if (loadingProgress == null) {
-                                    return child;
-                                  }
-                                  return CircularProgressIndicator();
-                                },
+                              child: CommonNetworkImage(
+                                imageUrl: felicitup.owner[0].userImg ?? '',
                               ),
                             )
                           : Center(

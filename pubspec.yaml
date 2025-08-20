@@ -12,9 +12,12 @@ dependencies:
     sdk: flutter
 
   # Graphics
+  cached_network_image: ^3.4.1
   cupertino_icons: ^1.0.8
   animate_do: ^3.3.8
   flutter_svg: ^2.0.17
+  phosphor_flutter: ^2.1.0
+  shimmer: ^3.0.0
 
   # State Management
   bloc: ^9.0.0

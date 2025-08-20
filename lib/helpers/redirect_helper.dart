@@ -29,7 +29,7 @@ void redirectHelper({required Map<String, dynamic> data}) {
       }
       CustomRouter().router.go(
         RouterPaths.messageFelicitup,
-        extra: {'chatId': chatId},
+        extra: {'felicitupId': felicitupId, 'chatId': chatId},
       );
 
       break;

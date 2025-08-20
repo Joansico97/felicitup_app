@@ -87,9 +87,8 @@ class SummaryView extends StatelessWidget {
                             borderRadius: BorderRadius.circular(
                               context.sp(100),
                             ),
-                            child: Image.network(
-                              listOwner[0].userImg ?? '',
-                              fit: BoxFit.cover,
+                            child: CommonNetworkImage(
+                              imageUrl: listOwner[0].userImg ?? '',
                             ),
                           ),
                         );

@@ -1,5 +1,6 @@
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -61,9 +62,8 @@ class FelicitupCard extends StatelessWidget {
                           width: context.sp(65),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(100),
-                            child: Image.network(
-                              felicitup.owner[0].userImg ?? '',
-                              fit: BoxFit.cover,
+                            child: CommonNetworkImage(
+                              imageUrl: felicitup.owner[0].userImg!,
                             ),
                           ),
                         )

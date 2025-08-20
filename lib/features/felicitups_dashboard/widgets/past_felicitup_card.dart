@@ -132,10 +132,8 @@ class PastFelicitupWidget extends StatelessWidget {
                           width: context.sp(200),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(context.sp(10)),
-                            child: Image.network(
-                              felicitup.thumbnailUrl ??
-                                  'https://picsum.photos/450/600',
-                              fit: BoxFit.fitWidth,
+                            child: CommonNetworkImage(
+                              imageUrl: felicitup.thumbnailUrl ?? '',
                             ),
                           ),
                         ),

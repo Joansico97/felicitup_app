@@ -1,6 +1,7 @@
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/details_past_felicitups/details_past_felicitup_dashboard/bloc/details_past_felicitup_dashboard_bloc.dart';
 import 'package:flutter/material.dart';
@@ -57,15 +58,8 @@ class PastHeader extends StatelessWidget {
                           (felicitup!.owner[0].userImg?.isNotEmpty ?? false)
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(context.sp(50)),
-                          child: Image.network(
-                            felicitup!.owner[0].userImg ?? '',
-                            fit: BoxFit.cover,
-                            loadingBuilder: (_, child, loadingProgress) {
-                              if (loadingProgress == null) {
-                                return child;
-                              }
-                              return CircularProgressIndicator();
-                            },
+                          child: CommonNetworkImage(
+                            imageUrl: felicitup!.owner[0].userImg!,
                           ),
                         )
                       : Center(

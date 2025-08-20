@@ -155,32 +155,33 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                   final listOwner = state.felicitupOwner;
                   return listOwner.isEmpty || listOwner[0].userImg == ''
                       ? SizedBox(
-                        width: context.sp(120),
-                        child: SvgPicture.asset(
-                          Assets.icons.personIcon,
+                          width: context.sp(120),
+                          child: SvgPicture.asset(
+                            Assets.icons.personIcon,
+                            height: context.sp(76),
+                            width: context.sp(76),
+                            colorFilter: ColorFilter.mode(
+                              Color(0xFFDADADA),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        )
+                      : Container(
                           height: context.sp(76),
                           width: context.sp(76),
-                          colorFilter: ColorFilter.mode(
-                            Color(0xFFDADADA),
-                            BlendMode.srcIn,
+                          margin: EdgeInsets.only(
+                            left: context.sp(25),
+                            right: context.sp(25),
                           ),
-                        ),
-                      )
-                      : Container(
-                        height: context.sp(76),
-                        width: context.sp(76),
-                        margin: EdgeInsets.only(
-                          left: context.sp(25),
-                          right: context.sp(25),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(context.sp(100)),
-                          child: Image.network(
-                            listOwner[0].userImg ?? '',
-                            fit: BoxFit.cover,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              context.sp(100),
+                            ),
+                            child: CommonNetworkImage(
+                              imageUrl: listOwner[0].userImg ?? '',
+                            ),
                           ),
-                        ),
-                      );
+                        );
                 },
               ),
               SizedBox(
@@ -215,18 +216,16 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                 children: [
                   ActivityCard(
                     activity: 'Videogrupo',
-                    onTap:
-                        () => context.read<CreateFelicitupBloc>().add(
-                          CreateFelicitupEvent.toggleHasVideo(),
-                        ),
+                    onTap: () => context.read<CreateFelicitupBloc>().add(
+                      CreateFelicitupEvent.toggleHasVideo(),
+                    ),
                     isActive: hasVideo,
                   ),
                   ActivityCard(
                     activity: 'Bote Regalo',
-                    onTap:
-                        () => context.read<CreateFelicitupBloc>().add(
-                          CreateFelicitupEvent.toggleHasBote(),
-                        ),
+                    onTap: () => context.read<CreateFelicitupBloc>().add(
+                      CreateFelicitupEvent.toggleHasBote(),
+                    ),
                     isActive: hasBote,
                   ),
                   Visibility(

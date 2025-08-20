@@ -208,20 +208,8 @@ class SelectContactsView extends StatelessWidget {
                               borderRadius: BorderRadius.circular(
                                 context.sp(100),
                               ),
-                              child: Image.network(
-                                listOwner[0].userImg!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return SvgPicture.asset(
-                                    Assets.icons.personIcon,
-                                    height: context.sp(76),
-                                    width: context.sp(76),
-                                    colorFilter: const ColorFilter.mode(
-                                      Color(0xFFDADADA),
-                                      BlendMode.srcIn,
-                                    ),
-                                  );
-                                },
+                              child: CommonNetworkImage(
+                                imageUrl: listOwner[0].userImg ?? '',
                               ),
                             ),
                           );

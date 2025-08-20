@@ -57,14 +57,13 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
       if (_searchQuery.isEmpty) {
         _filteredFriendList = List.from(widget.initialFriendList);
       } else {
-        _filteredFriendList =
-            widget.initialFriendList
-                .where(
-                  (contact) => (contact.fullName ?? '').toLowerCase().contains(
-                    lowerCaseQuery,
-                  ),
-                )
-                .toList();
+        _filteredFriendList = widget.initialFriendList
+            .where(
+              (contact) => (contact.fullName ?? '').toLowerCase().contains(
+                lowerCaseQuery,
+              ),
+            )
+            .toList();
       }
     });
   }
@@ -193,42 +192,32 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                   return listOwner.isEmpty ||
                           (listOwner[0].userImg ?? '').isEmpty
                       ? SizedBox(
-                        width: context.sp(120),
-                        child: SvgPicture.asset(
-                          Assets.icons.personIcon,
+                          width: context.sp(120),
+                          child: SvgPicture.asset(
+                            Assets.icons.personIcon,
+                            height: context.sp(76),
+                            width: context.sp(76),
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFFDADADA),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        )
+                      : Container(
                           height: context.sp(76),
                           width: context.sp(76),
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xFFDADADA),
-                            BlendMode.srcIn,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: context.sp(22),
                           ),
-                        ),
-                      )
-                      : Container(
-                        height: context.sp(76),
-                        width: context.sp(76),
-                        margin: EdgeInsets.symmetric(
-                          horizontal: context.sp(22),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(context.sp(100)),
-                          child: Image.network(
-                            listOwner[0].userImg!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return SvgPicture.asset(
-                                Assets.icons.personIcon,
-                                height: context.sp(76),
-                                width: context.sp(76),
-                                colorFilter: const ColorFilter.mode(
-                                  Color(0xFFDADADA),
-                                  BlendMode.srcIn,
-                                ),
-                              );
-                            },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              context.sp(100),
+                            ),
+                            child: CommonNetworkImage(
+                              imageUrl: listOwner[0].userImg ?? '',
+                            ),
                           ),
-                        ),
-                      );
+                        );
                 },
               ),
               SizedBox(
@@ -255,8 +244,8 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
         SizedBox(height: context.sp(12)),
         BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
           builder: (buttonContext, state) {
-            final felicitupBlocInstance =
-                buttonContext.read<CreateFelicitupBloc>();
+            final felicitupBlocInstance = buttonContext
+                .read<CreateFelicitupBloc>();
             final listOwner = state.felicitupOwner;
 
             List<UserModel> availableFriendsForParticipation = [
