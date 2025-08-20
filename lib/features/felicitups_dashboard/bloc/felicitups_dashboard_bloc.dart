@@ -37,21 +37,20 @@ class FelicitupsDashboardBloc
     on<FelicitupsDashboardEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
-        deleteFelicitup:
-            (event) => _deleteFelicitup(emit, event.felicitupId, event.chatId),
-        changeListBoolsTap:
-            (event) => _changeListBoolTap(emit, event.index, event.controller),
+        deleteFelicitup: (event) =>
+            _deleteFelicitup(emit, event.felicitupId, event.chatId),
+        changeListBoolsTap: (event) =>
+            _changeListBoolTap(emit, event.index, event.controller),
         setLike: (event) => _setLike(emit, event.felicitupId, event.userId),
-        updateMatchList: (event) => _updateMatchList(event.phones),
-        createSingleChat:
-            (event) => _createSingleChat(emit, event.singleChatData),
+        createSingleChat: (event) =>
+            _createSingleChat(emit, event.singleChatData),
         getRememberStatus: (_) => _getRememberStatus(emit),
         closeRememberSection: (_) => _closeRememberSection(emit),
         deleteBirthdateAlert: (event) => _deleteBirthdateAlert(emit, event.id),
         startListening: (_) => _startListening(emit),
         recivedData: (event) => _recivedData(emit, event.listFelicitups),
-        recivedPastData:
-            (event) => _recivedPastData(emit, event.listFelicitups),
+        recivedPastData: (event) =>
+            _recivedPastData(emit, event.listFelicitups),
       ),
     );
   }
@@ -112,22 +111,6 @@ class FelicitupsDashboardBloc
       await stopLoadingModal();
       unawaited(showErrorModal('Error al dar like'));
     }
-  }
-
-  _updateMatchList(List<String> phonesList) async {
-    List<String> phones = [...phonesList];
-
-    final response = await _userRepository.getListUserDataByPhone(phones);
-
-    response.fold((l) => logger.error(l), (r) async {
-      List<String> ids = [];
-      for (final doc in r) {
-        if (doc.id != null) {
-          ids.add(doc.id!);
-        }
-      }
-      await _userRepository.updateMatchList(ids);
-    });
   }
 
   _createSingleChat(

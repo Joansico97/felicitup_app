@@ -165,19 +165,24 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   _updateMatchList(List<String> phonesList) async {
-    List<String> phones = [...phonesList];
+    if (phonesList.isEmpty) return;
 
-    final response = await _userRepository.getListUserDataByPhone(phones);
+    try {
+      final response = await _userRepository.getListUserDataByPhone(phonesList);
 
-    return response.fold((l) => logger.error(l), (r) async {
-      List<String> ids = [];
-      for (final doc in r) {
-        if (doc.id != null) {
-          ids.add(doc.id!);
+      response.fold((error) => logger.error(error), (users) async {
+        final ids = users
+            .where((doc) => doc.id != null && doc.id!.isNotEmpty)
+            .map((doc) => doc.id!)
+            .toList();
+
+        if (ids.isNotEmpty) {
+          await _userRepository.updateMatchList(ids);
         }
-      }
-      await _userRepository.updateMatchList(ids);
-    });
+      });
+    } catch (e) {
+      logger.error('Error updating match list: $e');
+    }
   }
 
   _requestManualPermissions(Emitter<AppState> emit) async {

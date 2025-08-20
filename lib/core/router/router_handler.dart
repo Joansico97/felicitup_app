@@ -156,10 +156,9 @@ Page<Widget> _felicitupNotificationHandler(
 
   return CustomTransitionPage(
     child: BlocProvider(
-      create:
-          (_) =>
-              injection.di<FelicitupNotificationBloc>()
-                ..add(FelicitupNotificationEvent.getFelicitupData(data)),
+      create: (_) =>
+          injection.di<FelicitupNotificationBloc>()
+            ..add(FelicitupNotificationEvent.getFelicitupData(data)),
       child: FelicitupNotificationPage(),
     ),
     transitionDuration: Duration(milliseconds: 500),
@@ -231,15 +230,14 @@ Page<Widget> _detailsFelicitupDashboardHandler(
     child: MultiBlocProvider(
       providers: [
         BlocProvider(
-          create:
-              (_) =>
-                  injection.di<DetailsFelicitupDashboardBloc>()..add(
-                    data?['felicitupId'] == null
-                        ? DetailsFelicitupDashboardEvent.noEvent()
-                        : DetailsFelicitupDashboardEvent.startListening(
-                          data!['felicitupId'] as String,
-                        ),
-                  ),
+          create: (_) => injection.di<DetailsFelicitupDashboardBloc>()
+            ..add(
+              data?['felicitupId'] == null
+                  ? DetailsFelicitupDashboardEvent.noEvent()
+                  : DetailsFelicitupDashboardEvent.startListening(
+                      data!['felicitupId'] as String,
+                    ),
+            ),
         ),
         BlocProvider(create: (_) => injection.di<InfoFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<MessageFelicitupBloc>()),
@@ -280,15 +278,24 @@ Widget _messageFelicitupHandler(BuildContext context, GoRouterState state) {
 }
 
 Widget _peopleFelicitupHandler(BuildContext context, GoRouterState state) {
-  return PeopleFelicitupPage();
+  final data = state.extra as Map<String, dynamic>?;
+  return PeopleFelicitupPage(
+    key: ValueKey('PeopleFelicitupPage_${data?['felicitupId']}'),
+  );
 }
 
 Widget _videoFelicitupHandler(BuildContext context, GoRouterState state) {
-  return VideoFelicitupPage();
+  final data = state.extra as Map<String, dynamic>?;
+  return VideoFelicitupPage(
+    key: ValueKey('VideoFelicitupPage_${data?['felicitupId']}'),
+  );
 }
 
 Widget _boteFelicitupHandler(BuildContext context, GoRouterState state) {
-  return BoteFelicitupPage();
+  final data = state.extra as Map<String, dynamic>?;
+  return BoteFelicitupPage(
+    key: ValueKey('BoteFelicitupPage_${data?['felicitupId']}'),
+  );
 }
 
 Page<Widget> _paymentHandler(BuildContext context, GoRouterState state) {
@@ -404,9 +411,8 @@ Page<Widget> _deleteAccountHandler(BuildContext context, GoRouterState state) {
 Page<Widget> _wishListHandler(BuildContext context, GoRouterState state) {
   return CustomTransitionPage(
     child: BlocProvider(
-      create:
-          (_) =>
-              injection.di<WishListBloc>()..add(WishListEvent.startListening()),
+      create: (_) =>
+          injection.di<WishListBloc>()..add(WishListEvent.startListening()),
       child: WishListPage(),
     ),
     transitionDuration: Duration(milliseconds: 500),
@@ -428,9 +434,8 @@ Page<Widget> _wishListEditHandler(BuildContext context, GoRouterState state) {
 
   return CustomTransitionPage(
     child: BlocProvider(
-      create:
-          (_) =>
-              injection.di<WishListBloc>()..add(WishListEvent.startListening()),
+      create: (_) =>
+          injection.di<WishListBloc>()..add(WishListEvent.startListening()),
       child: WishListEditPage(wishListItem: data),
     ),
     transitionDuration: Duration(milliseconds: 500),
@@ -647,15 +652,14 @@ Page<Widget> _detailsPastFelicitupDashboardHandler(
     child: MultiBlocProvider(
       providers: [
         BlocProvider(
-          create:
-              (_) =>
-                  injection.di<DetailsPastFelicitupDashboardBloc>()..add(
-                    data?['felicitupId'] == null
-                        ? DetailsPastFelicitupDashboardEvent.noEvent()
-                        : DetailsPastFelicitupDashboardEvent.getFelicitupInfo(
-                          data!['felicitupId'] as String,
-                        ),
-                  ),
+          create: (_) => injection.di<DetailsPastFelicitupDashboardBloc>()
+            ..add(
+              data?['felicitupId'] == null
+                  ? DetailsPastFelicitupDashboardEvent.noEvent()
+                  : DetailsPastFelicitupDashboardEvent.getFelicitupInfo(
+                      data!['felicitupId'] as String,
+                    ),
+            ),
         ),
         BlocProvider(create: (_) => injection.di<MainPastFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<ChatPastFelicitupBloc>()),

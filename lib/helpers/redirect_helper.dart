@@ -41,7 +41,10 @@ void redirectHelper({required Map<String, dynamic> data}) {
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
-      CustomRouter().router.go(RouterPaths.boteFelicitup);
+      CustomRouter().router.go(
+        RouterPaths.boteFelicitup,
+        extra: {'felicitupId': felicitupId},
+      );
 
       break;
 
@@ -65,7 +68,10 @@ void redirectHelper({required Map<String, dynamic> data}) {
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
-      CustomRouter().router.go(RouterPaths.peopleFelicitup);
+      CustomRouter().router.go(
+        RouterPaths.peopleFelicitup,
+        extra: {'felicitupId': felicitupId},
+      );
       break;
     case PushMessageType.video:
       if (CustomRouter().router.routerDelegate.state.matchedLocation ==
@@ -74,7 +80,10 @@ void redirectHelper({required Map<String, dynamic> data}) {
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
-      CustomRouter().router.go(RouterPaths.videoFelicitup);
+      CustomRouter().router.go(
+        RouterPaths.videoFelicitup,
+        extra: {'felicitupId': felicitupId},
+      );
 
       break;
     case PushMessageType.past:
