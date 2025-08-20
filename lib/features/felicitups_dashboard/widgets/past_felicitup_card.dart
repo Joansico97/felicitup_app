@@ -12,6 +12,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+enum MenuOption { opcion1, opcion2, opcion3 }
+
 class PastFelicitupWidget extends StatelessWidget {
   const PastFelicitupWidget({
     super.key,
@@ -355,30 +357,82 @@ class PastFelicitupWidget extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: context.sp(8)),
-                GestureDetector(
-                  onTap: () => context.go(
-                    RouterPaths.mainPastFelicitup,
-                    extra: {'felicitupId': felicitup.id},
-                  ),
-                  child: Row(
-                    children: [
-                      Column(
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () => context.go(
+                        RouterPaths.mainPastFelicitup,
+                        extra: {'felicitupId': felicitup.id},
+                      ),
+                      child: Row(
                         children: [
-                          Text('Ver más', style: context.styles.smallText),
-                          Container(
-                            height: context.sp(1),
-                            width: context.sp(45),
+                          Text(
+                            'Ver más',
+                            style: context.styles.smallText.copyWith(
+                              decoration: TextDecoration.underline,
+                              decorationThickness: context.sp(1.5),
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
                             color: Colors.black,
+                            size: context.sp(12),
                           ),
                         ],
                       ),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: Colors.black,
-                        size: context.sp(12),
+                    ),
+                    Theme(
+                      data: ThemeData(
+                        popupMenuTheme: PopupMenuThemeData(
+                          color: context.colors.grey,
+                          elevation: context.sp(8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(context.sp(8)),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                      child: PopupMenuButton<MenuOption>(
+                        icon: Icon(Icons.more_vert),
+                        onSelected: (MenuOption result) {
+                          switch (result) {
+                            case MenuOption.opcion1:
+                              showConfirmModal(
+                                title: 'Eliminar felicitup',
+                                content:
+                                    '¿Estás seguro de eliminar esta felicitup? Si la eliminas no podrás recuperarla.',
+                                onAccept: () async {},
+                              );
+                              break;
+                            case MenuOption.opcion2:
+                              break;
+                            case MenuOption.opcion3:
+                              break;
+                          }
+                        },
+                        itemBuilder: (_) {
+                          final currentUser = context
+                              .read<AppBloc>()
+                              .state
+                              .currentUser;
+
+                          return [
+                            if (felicitup.owner.any(
+                              (owner) => owner.id == (currentUser?.id ?? ''),
+                            ))
+                              PopupMenuItem(
+                                value: MenuOption.opcion1,
+                                child: Text(
+                                  'Eliminar felicitup',
+                                  style: context.styles.paragraph,
+                                ),
+                              ),
+                          ];
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

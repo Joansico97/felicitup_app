@@ -41,10 +41,7 @@ void redirectHelper({required Map<String, dynamic> data}) {
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
-      CustomRouter().router.go(
-        RouterPaths.boteFelicitup,
-        extra: {'felicitupId': felicitupId},
-      );
+      CustomRouter().router.go(RouterPaths.boteFelicitup);
 
       break;
 

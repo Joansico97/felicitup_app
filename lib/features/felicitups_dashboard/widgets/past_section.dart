@@ -17,9 +17,7 @@ class PastSection extends StatelessWidget {
             ? Center(
                 child: Container(
                   padding: EdgeInsets.all(context.sp(20)),
-                  margin: EdgeInsets.symmetric(
-                    horizontal: context.sp(20),
-                  ),
+                  margin: EdgeInsets.symmetric(horizontal: context.sp(20)),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(context.sp(30)),
@@ -36,13 +34,9 @@ class PastSection extends StatelessWidget {
                   children: [
                     ...List.generate(
                       listFelicitupsPast.length,
-                      (index) => GestureDetector(
-                        onTap: () {},
-                        onLongPress: () {},
-                        child: PastFelicitupWidget(
-                          felicitup: listFelicitupsPast[index],
-                          date: listFelicitupsPast[index].date,
-                        ),
+                      (index) => PastFelicitupWidget(
+                        felicitup: listFelicitupsPast[index],
+                        date: listFelicitupsPast[index].date,
                       ),
                     ),
                   ],

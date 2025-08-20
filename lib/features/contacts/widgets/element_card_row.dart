@@ -114,7 +114,11 @@ class ElementCardRow extends StatelessWidget {
               }
               _showContactDetails(contact, isRegistered, context);
             },
-            child: Icon(Icons.drag_indicator),
+            child: Icon(
+              isRegistered
+                  ? Icons.card_giftcard_outlined
+                  : Icons.drag_indicator,
+            ),
           ),
         ],
       ),

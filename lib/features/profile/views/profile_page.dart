@@ -385,7 +385,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                           ),
                         ),
-                        SizedBox(height: context.sp(32)),
+                        SizedBox(height: context.sp(36)),
                         EditInputField(
                           controller: nameController,
                           hintText: currentUser?.firstName ?? '',
@@ -444,6 +444,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                             currentUser?.birthDate ??
                                             DateTime.now(),
                                       ),
+                                  icon: Icons.edit,
                                 ),
                               ),
                               SizedBox(height: context.sp(12)),
@@ -464,9 +465,10 @@ class _ProfilePageState extends State<ProfilePage> {
 }
 
 class InfoCard extends StatelessWidget {
-  const InfoCard({super.key, required this.label});
+  const InfoCard({super.key, required this.label, this.icon});
 
   final String label;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -480,11 +482,17 @@ class InfoCard extends StatelessWidget {
         color: context.colors.lightGrey,
         borderRadius: BorderRadius.circular(context.sp(8)),
       ),
-      child: Text(
-        label,
-        style: context.styles.paragraph.copyWith(
-          color: context.colors.darkGrey,
-        ),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: context.styles.paragraph.copyWith(
+              color: context.colors.darkGrey,
+            ),
+          ),
+          Spacer(),
+          icon != null ? Icon(icon, size: context.sp(20)) : SizedBox.shrink(),
+        ],
       ),
     );
   }
