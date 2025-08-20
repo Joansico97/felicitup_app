@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
+import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/env.dart';
@@ -33,6 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final lastNameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
+  DateTime? editedBirthdate;
 
   String getLabel(String isoCode, String phone) {
     if (isoCode == '+1') {
@@ -53,10 +55,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final currentUser = context.read<AppBloc>().state.currentUser;
 
     return BlocListener<ProfileBloc, ProfileState>(
-      listenWhen:
-          (previous, current) =>
-              previous.isLoading != current.isLoading ||
-              previous.status != current.status,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading ||
+          previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -95,19 +96,17 @@ class _ProfilePageState extends State<ProfilePage> {
                           ProfileEvent.updateUserInfo(
                             UserModel(
                               id: currentUser?.id,
-                              firstName:
-                                  nameController.text.isNotEmpty
-                                      ? nameController.text
-                                      : currentUser?.firstName,
-                              lastName:
-                                  lastNameController.text.isNotEmpty
-                                      ? lastNameController.text
-                                      : currentUser?.lastName,
+                              firstName: nameController.text.isNotEmpty
+                                  ? nameController.text
+                                  : currentUser?.firstName,
+                              lastName: lastNameController.text.isNotEmpty
+                                  ? lastNameController.text
+                                  : currentUser?.lastName,
                               fullName:
                                   nameController.text.isNotEmpty &&
-                                          lastNameController.text.isNotEmpty
-                                      ? '${nameController.text} ${lastNameController.text}'
-                                      : currentUser?.fullName,
+                                      lastNameController.text.isNotEmpty
+                                  ? '${nameController.text} ${lastNameController.text}'
+                                  : currentUser?.fullName,
                               email: currentUser?.email,
                               isoCode: currentUser?.isoCode,
                               phone: currentUser?.phone,
@@ -121,7 +120,13 @@ class _ProfilePageState extends State<ProfilePage> {
                               giftcardList: currentUser?.giftcardList,
                               notifications: currentUser?.notifications,
                               singleChats: currentUser?.singleChats,
-                              birthDate: currentUser?.birthDate,
+                              birthDate:
+                                  editedBirthdate ?? currentUser?.birthDate,
+                              birthDay:
+                                  editedBirthdate?.day ?? currentUser?.birthDay,
+                              birthMonth:
+                                  editedBirthdate?.month ??
+                                  currentUser?.birthMonth,
                               registerDate: currentUser?.registerDate,
                             ),
                           ),
@@ -144,8 +149,8 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 CollapsedHeader(
                   title: 'Perfil',
-                  onPressed:
-                      () async => context.go(RouterPaths.felicitupsDashboard),
+                  onPressed: () async =>
+                      context.go(RouterPaths.felicitupsDashboard),
                 ),
                 Expanded(
                   child: SingleChildScrollView(
@@ -229,21 +234,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ...List.generate(
                                               listAvatares.length,
                                               (index) => GestureDetector(
-                                                onTap:
-                                                    () => setState(() {
-                                                      imageFile = null;
-                                                      avatarUrl =
-                                                          listAvatares[index];
-                                                      context
-                                                          .read<ProfileBloc>()
-                                                          .add(
-                                                            ProfileEvent.updateUserImageFromUrl(
-                                                              avatarUrl!,
-                                                            ),
-                                                          );
-                                                      canSave = true;
-                                                      context.pop();
-                                                    }),
+                                                onTap: () => setState(() {
+                                                  imageFile = null;
+                                                  avatarUrl =
+                                                      listAvatares[index];
+                                                  context.read<ProfileBloc>().add(
+                                                    ProfileEvent.updateUserImageFromUrl(
+                                                      avatarUrl!,
+                                                    ),
+                                                  );
+                                                  canSave = true;
+                                                  context.pop();
+                                                }),
                                                 child: ChipTheme(
                                                   data: ChipThemeData(
                                                     deleteIconBoxConstraints:
@@ -309,85 +311,78 @@ class _ProfilePageState extends State<ProfilePage> {
                               shape: BoxShape.circle,
                               color: context.colors.lightGrey,
                             ),
-                            child:
-                                avatarUrl != null
-                                    ? SizedBox(
-                                      height: context.sp(200),
-                                      width: context.sp(200),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          context.sp(100),
-                                        ),
-                                        child: Image.network(
-                                          avatarUrl!,
-                                          fit: BoxFit.cover,
-                                          loadingBuilder: (
-                                            context,
-                                            child,
-                                            loadingProgress,
-                                          ) {
-                                            if (loadingProgress == null) {
-                                              return child;
-                                            }
-                                            return Center(
-                                              child: CircularProgressIndicator(
-                                                value:
-                                                    loadingProgress
-                                                                .expectedTotalBytes !=
-                                                            null
-                                                        ? loadingProgress
-                                                                .cumulativeBytesLoaded /
-                                                            (loadingProgress
-                                                                    .expectedTotalBytes ??
-                                                                1)
-                                                        : null,
-                                              ),
-                                            );
-                                          },
-                                          errorBuilder:
-                                              (
-                                                context,
-                                                error,
-                                                stackTrace,
-                                              ) => Text(
-                                                currentUser?.fullName![0] ?? '',
-                                                style: context.styles.header1,
-                                              ),
-                                        ),
+                            child: avatarUrl != null
+                                ? SizedBox(
+                                    height: context.sp(200),
+                                    width: context.sp(200),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                        context.sp(100),
                                       ),
-                                    )
-                                    : imageFile != null
-                                    ? SizedBox(
-                                      height: context.sp(200),
-                                      width: context.sp(200),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          context.sp(100),
-                                        ),
-                                        child: Image.file(
-                                          imageFile!,
-                                          fit: BoxFit.cover,
-                                        ),
+                                      child: Image.network(
+                                        avatarUrl!,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value:
+                                                  loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        (loadingProgress
+                                                                .expectedTotalBytes ??
+                                                            1)
+                                                  : null,
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Text(
+                                                  currentUser?.fullName![0] ??
+                                                      '',
+                                                  style: context.styles.header1,
+                                                ),
                                       ),
-                                    )
-                                    : currentUser?.userImg != ''
-                                    ? SizedBox(
-                                      height: context.sp(200),
-                                      width: context.sp(200),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          context.sp(100),
-                                        ),
-                                        child: Image.network(
-                                          currentUser?.userImg ?? '',
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    )
-                                    : Text(
-                                      currentUser?.fullName![0] ?? '',
-                                      style: context.styles.header1,
                                     ),
+                                  )
+                                : imageFile != null
+                                ? SizedBox(
+                                    height: context.sp(200),
+                                    width: context.sp(200),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                        context.sp(100),
+                                      ),
+                                      child: Image.file(
+                                        imageFile!,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  )
+                                : currentUser?.userImg != ''
+                                ? SizedBox(
+                                    height: context.sp(200),
+                                    width: context.sp(200),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                        context.sp(100),
+                                      ),
+                                      child: Image.network(
+                                        currentUser?.userImg ?? '',
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    currentUser?.fullName![0] ?? '',
+                                    style: context.styles.header1,
+                                  ),
                           ),
                         ),
                         SizedBox(height: context.sp(32)),
@@ -407,9 +402,48 @@ class _ProfilePageState extends State<ProfilePage> {
                           visible: currentUser?.birthDate != null,
                           child: Column(
                             children: [
-                              InfoCard(
-                                label: DateFormat('dd·MM·yyyy').format(
-                                  currentUser?.birthDate ?? DateTime.now(),
+                              GestureDetector(
+                                onTap: () async {
+                                  DateTime? birthDate;
+                                  await showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      title: Text(
+                                        '¿Cuándo es tu cumpleaños?',
+                                        style: context.styles.header2,
+                                      ),
+                                      content: DatePickerWidget(
+                                        onSelectNewDate: (date) {
+                                          birthDate = date;
+                                        },
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              editedBirthdate = birthDate;
+                                            });
+                                            context.pop();
+                                          },
+                                          child: Text(
+                                            'Aceptar',
+                                            style: context.styles.buttons,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: InfoCard(
+                                  label:
+                                      DateFormat(
+                                        AppConstants.birthDateFormat,
+                                        'es',
+                                      ).format(
+                                        editedBirthdate ??
+                                            currentUser?.birthDate ??
+                                            DateTime.now(),
+                                      ),
                                 ),
                               ),
                               SizedBox(height: context.sp(12)),

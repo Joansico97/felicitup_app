@@ -1,4 +1,5 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
+import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
@@ -61,7 +62,10 @@ class PastFelicitupWidget extends StatelessWidget {
                 ),
                 SizedBox(height: context.sp(8)),
                 Text(
-                  DateFormat('dd·MM·yyyy').format(date),
+                  DateFormat(
+                    AppConstants.birthDateFormat,
+                    'es_ES',
+                  ).format(date),
                   style: context.styles.smallText,
                 ),
                 SizedBox(height: context.sp(8)),
@@ -104,13 +108,12 @@ class PastFelicitupWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap:
-                      () => context.go(
-                        (felicitup.finalVideoUrl?.isNotEmpty ?? false)
-                            ? RouterPaths.videoPastFelicitup
-                            : RouterPaths.mainPastFelicitup,
-                        extra: {'felicitupId': felicitup.id},
-                      ),
+                  onTap: () => context.go(
+                    (felicitup.finalVideoUrl?.isNotEmpty ?? false)
+                        ? RouterPaths.videoPastFelicitup
+                        : RouterPaths.mainPastFelicitup,
+                    extra: {'felicitupId': felicitup.id},
+                  ),
                   child: Container(
                     height: context.sp(240),
                     width: context.sp(200),
@@ -168,8 +171,8 @@ class PastFelicitupWidget extends StatelessWidget {
                       builder: (_, state) {
                         final user = context.read<AppBloc>().state.currentUser;
                         return IconButton(
-                          onPressed:
-                              () => context.read<FelicitupsDashboardBloc>().add(
+                          onPressed: () =>
+                              context.read<FelicitupsDashboardBloc>().add(
                                 FelicitupsDashboardEvent.setLike(
                                   felicitup.id,
                                   user?.id ?? '',
@@ -179,21 +182,19 @@ class PastFelicitupWidget extends StatelessWidget {
                             felicitup.likes!.contains(user?.id ?? '')
                                 ? Icons.favorite
                                 : Icons.favorite_outline,
-                            color:
-                                felicitup.likes!.contains(user?.id ?? '')
-                                    ? context.colors.error
-                                    : context.colors.black.valueOpacity(.5),
+                            color: felicitup.likes!.contains(user?.id ?? '')
+                                ? context.colors.error
+                                : context.colors.black.valueOpacity(.5),
                             size: context.sp(20),
                           ),
                         );
                       },
                     ),
                     IconButton(
-                      onPressed:
-                          () => context.go(
-                            RouterPaths.chatPastFelicitup,
-                            extra: {'felicitupId': felicitup.id},
-                          ),
+                      onPressed: () => context.go(
+                        RouterPaths.chatPastFelicitup,
+                        extra: {'felicitupId': felicitup.id},
+                      ),
                       icon: Icon(
                         Icons.message_outlined,
                         color: Colors.black.withAlpha((.5 * 255).toInt()),
@@ -341,10 +342,9 @@ class PastFelicitupWidget extends StatelessWidget {
                 ),
                 RichText(
                   text: TextSpan(
-                    text:
-                        felicitup.owner.length > 2
-                            ? '#felicitup${felicitup.owner[0].name.split(' ')[0]}${felicitup.owner.length - 1}'
-                            : '#felicitup${felicitup.owner[0].name.split(' ')[0]}',
+                    text: felicitup.owner.length > 2
+                        ? '#felicitup${felicitup.owner[0].name.split(' ')[0]}${felicitup.owner.length - 1}'
+                        : '#felicitup${felicitup.owner[0].name.split(' ')[0]}',
                     style: context.styles.smallText,
                     children: [
                       TextSpan(
@@ -356,11 +356,10 @@ class PastFelicitupWidget extends StatelessWidget {
                 ),
                 SizedBox(height: context.sp(8)),
                 GestureDetector(
-                  onTap:
-                      () => context.go(
-                        RouterPaths.mainPastFelicitup,
-                        extra: {'felicitupId': felicitup.id},
-                      ),
+                  onTap: () => context.go(
+                    RouterPaths.mainPastFelicitup,
+                    extra: {'felicitupId': felicitup.id},
+                  ),
                   child: Row(
                     children: [
                       Column(

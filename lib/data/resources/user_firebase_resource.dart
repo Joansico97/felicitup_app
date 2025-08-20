@@ -887,8 +887,8 @@ class UserFirebaseResource implements UserRepository {
         'lastName': lastName,
         'fullName': '$firstName $lastName',
         'birthDate': birthDate?.toUtc(),
-        'birthDay': birthDate?.toUtc().day,
-        'birthMonth': birthDate?.toUtc().month,
+        'birthDay': birthDate?.day,
+        'birthMonth': birthDate?.month,
         'birthdateAlerts': [],
         'singleChats': [],
       });
@@ -997,8 +997,8 @@ class UserFirebaseResource implements UserRepository {
 
         transaction.update(userDocRef, {
           'birthDate': date.toUtc(),
-          'birthDay': date.toUtc().day,
-          'birthMonth': date.toUtc().month,
+          'birthDay': date.day,
+          'birthMonth': date.month,
         });
 
         return Right(null);

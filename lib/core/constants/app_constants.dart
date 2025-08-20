@@ -7,4 +7,5 @@ class AppConstants {
   static const String singleChatsCollection = 'SingleChats';
   static const String usersInvitedInformationCollection =
       'UsersInvitedInformation';
+  static const String birthDateFormat = 'MMM·dd·yyyy';
 }

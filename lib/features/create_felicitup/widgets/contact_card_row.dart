@@ -1,3 +1,4 @@
+import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
@@ -41,20 +42,19 @@ class ContactCardRow extends StatelessWidget {
                   color: context.colors.lightGrey,
                   shape: BoxShape.circle,
                 ),
-                child:
-                    userImg.isNotEmpty
-                        ? SizedBox(
-                          height: context.sp(55),
-                          width: context.sp(55),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(context.sp(55)),
-                            child: Image.network(userImg, fit: BoxFit.cover),
-                          ),
-                        )
-                        : Text(
-                          name.isNotEmpty ? name[0].toUpperCase() : '',
-                          style: context.styles.header2,
+                child: userImg.isNotEmpty
+                    ? SizedBox(
+                        height: context.sp(55),
+                        width: context.sp(55),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(context.sp(55)),
+                          child: Image.network(userImg, fit: BoxFit.cover),
                         ),
+                      )
+                    : Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : '',
+                        style: context.styles.header2,
+                      ),
               ),
               SizedBox(width: context.sp(24)),
               Column(
@@ -70,7 +70,10 @@ class ContactCardRow extends StatelessWidget {
                   ),
                   SizedBox(height: context.sp(5)),
                   Text(
-                    DateFormat('dd·MM·yyyy').format(date),
+                    DateFormat(
+                      AppConstants.birthDateFormat,
+                      'es_ES',
+                    ).format(date),
                     style: context.styles.smallText,
                   ),
                 ],

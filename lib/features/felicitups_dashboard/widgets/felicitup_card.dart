@@ -1,13 +1,11 @@
+import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class FelicitupCard extends StatelessWidget {
-  const FelicitupCard({
-    super.key,
-    required this.felicitup,
-  });
+  const FelicitupCard({super.key, required this.felicitup});
 
   final FelicitupModel felicitup;
 
@@ -55,7 +53,9 @@ class FelicitupCard extends StatelessWidget {
                       width: context.sp(2),
                     ),
                   ),
-                  child: felicitup.owner.length == 1 && (felicitup.owner[0].userImg?.isNotEmpty ?? false)
+                  child:
+                      felicitup.owner.length == 1 &&
+                          (felicitup.owner[0].userImg?.isNotEmpty ?? false)
                       ? SizedBox(
                           height: context.sp(65),
                           width: context.sp(65),
@@ -102,44 +102,33 @@ class FelicitupCard extends StatelessWidget {
                         // width: context.sp(25),
                         child: Stack(
                           children: [
-                            CircleIcon(
-                              color: context.colors.ligthOrange,
-                            ),
+                            CircleIcon(color: context.colors.ligthOrange),
                             Row(
                               children: [
-                                SizedBox(
-                                  width: context.sp(10),
-                                ),
-                                CircleIcon(
-                                  color: context.colors.ligthOrange,
-                                ),
+                                SizedBox(width: context.sp(10)),
+                                CircleIcon(color: context.colors.ligthOrange),
                               ],
                             ),
                             Row(
                               children: [
-                                SizedBox(
-                                  width: context.sp(20),
-                                ),
-                                CircleIcon(
-                                  color: context.colors.ligthOrange,
-                                ),
+                                SizedBox(width: context.sp(20)),
+                                CircleIcon(color: context.colors.ligthOrange),
                               ],
                             ),
                             Row(
                               children: [
-                                SizedBox(
-                                  width: context.sp(30),
-                                ),
-                                CircleIcon(
-                                  color: context.colors.ligthOrange,
-                                ),
+                                SizedBox(width: context.sp(30)),
+                                CircleIcon(color: context.colors.ligthOrange),
                               ],
                             ),
                           ],
                         ),
                       ),
                       Text(
-                        DateFormat('dd·MM·yyyy').format(felicitup.date),
+                        DateFormat(
+                          AppConstants.birthDateFormat,
+                          'es',
+                        ).format(felicitup.date),
                         style: context.styles.smallText.copyWith(
                           color: context.colors.primary,
                         ),
@@ -162,9 +151,7 @@ class FelicitupCard extends StatelessWidget {
                     Container(
                       // height: context.sp(70),
                       width: context.sp(60),
-                      padding: EdgeInsets.symmetric(
-                        vertical: context.sp(15),
-                      ),
+                      padding: EdgeInsets.symmetric(vertical: context.sp(15)),
                       // height: size.width(.2),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(context.sp(10)),
@@ -176,9 +163,7 @@ class FelicitupCard extends StatelessWidget {
                           felicitup.hasVideo
                               ? Column(
                                   children: [
-                                    IconInfo(
-                                      icon: Icons.play_arrow,
-                                    ),
+                                    IconInfo(icon: Icons.play_arrow),
                                     SizedBox(height: context.sp(5)),
                                   ],
                                 )
@@ -186,16 +171,12 @@ class FelicitupCard extends StatelessWidget {
                           felicitup.hasBote
                               ? Column(
                                   children: [
-                                    IconInfo(
-                                      icon: Icons.euro,
-                                    ),
+                                    IconInfo(icon: Icons.euro),
                                     SizedBox(height: context.sp(5)),
                                   ],
                                 )
                               : const SizedBox(),
-                          IconInfo(
-                            icon: Icons.people_outline,
-                          ),
+                          IconInfo(icon: Icons.people_outline),
                         ],
                       ),
                     ),
@@ -204,7 +185,7 @@ class FelicitupCard extends StatelessWidget {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -212,10 +193,7 @@ class FelicitupCard extends StatelessWidget {
 }
 
 class CircleIcon extends StatelessWidget {
-  const CircleIcon({
-    super.key,
-    required this.color,
-  });
+  const CircleIcon({super.key, required this.color});
 
   final Color color;
 
@@ -228,10 +206,7 @@ class CircleIcon extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: context.colors.lightGrey,
-        border: Border.all(
-          color: context.colors.ligthOrange,
-          width: 2,
-        ),
+        border: Border.all(color: context.colors.ligthOrange, width: 2),
       ),
       child: Icon(
         Icons.people_outline,
@@ -243,10 +218,7 @@ class CircleIcon extends StatelessWidget {
 }
 
 class IconInfo extends StatelessWidget {
-  const IconInfo({
-    super.key,
-    required this.icon,
-  });
+  const IconInfo({super.key, required this.icon});
 
   final IconData icon;
 
@@ -258,16 +230,9 @@ class IconInfo extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: context.colors.primary,
-          width: 1,
-        ),
+        border: Border.all(color: context.colors.primary, width: 1),
       ),
-      child: Icon(
-        icon,
-        color: context.colors.primary,
-        size: context.sp(10),
-      ),
+      child: Icon(icon, color: context.colors.primary, size: context.sp(10)),
     );
   }
 }
