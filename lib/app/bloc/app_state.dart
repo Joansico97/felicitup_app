@@ -8,6 +8,7 @@ class AppState with _$AppState {
     required AuthorizationStatus status,
     TermsPoliciesModel? termsAndConditions,
     TermsPoliciesModel? privacyPolicy,
+    Map<String, dynamic>? pendingNotificationPayload,
     bool? isVerified,
     UserModel? currentUser,
     Map<String, dynamic>? federatedData,

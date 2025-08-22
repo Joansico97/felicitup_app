@@ -85,25 +85,25 @@ class HandleNotificationsInteractions extends StatefulWidget {
 
 class _HandleNotificationsInteractionsState
     extends State<HandleNotificationsInteractions> {
-  Future<void> setupInteractedMessage() async {
+  Future<void> _setupInteractedMessage() async {
     RemoteMessage? initialMessage = await FirebaseMessaging.instance
         .getInitialMessage();
 
     if (initialMessage != null) {
-      _handleMessage(initialMessage);
+      context.read<AppBloc>().add(
+        AppEvent.notificationReceived(initialMessage.data),
+      );
     }
 
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
-  }
-
-  void _handleMessage(RemoteMessage message) async {
-    redirectHelper(data: message.data);
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      redirectHelper(data: message.data);
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    setupInteractedMessage();
+    _setupInteractedMessage();
   }
 
   @override

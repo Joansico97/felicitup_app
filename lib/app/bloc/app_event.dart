@@ -12,6 +12,9 @@ class AppEvent with _$AppEvent {
       _updateMatchList;
   const factory AppEvent.initializeNotifications() = _initializeNotifications;
   const factory AppEvent.requestManualPermissions() = _requestManualPermissions;
+  const factory AppEvent.notificationReceived(Map<String, dynamic> payload) =
+      _notificationReceived;
+  const factory AppEvent.clearPendingNotification() = _clearPendingNotification;
   const factory AppEvent.deleterPermissions() = _deleterPermissions;
   const factory AppEvent.handleRemoteMessage(RemoteMessage message) =
       _handleRemoteMessage;

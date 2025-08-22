@@ -41,6 +41,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             _loadProvUserData(emit, event.federatedData),
         updateMatchList: (event) => _updateMatchList(event.phoneList),
         initializeNotifications: (_) => _initializeNotifications(emit),
+        notificationReceived: (event) =>
+            _notificationReceived(emit, event.payload),
+        clearPendingNotification: (_) => clearPendingNotification(emit),
         requestManualPermissions: (_) => _requestManualPermissions(emit),
         deleterPermissions: (_) => _deleterPermissions(emit),
         handleRemoteMessage: (event) =>
@@ -162,6 +165,17 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         ),
       );
     }
+  }
+
+  void _notificationReceived(
+    Emitter<AppState> emit,
+    Map<String, dynamic> payload,
+  ) {
+    emit(state.copyWith(pendingNotificationPayload: payload));
+  }
+
+  void clearPendingNotification(Emitter<AppState> emit) {
+    emit(state.copyWith(pendingNotificationPayload: null));
   }
 
   _updateMatchList(List<String> phonesList) async {

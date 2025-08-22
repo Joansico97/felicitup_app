@@ -5,6 +5,7 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/home/bloc/home_bloc.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -151,8 +152,17 @@ class _HomePageState extends State<HomePage> {
         BlocListener<AppBloc, AppState>(
           listenWhen: (previous, current) =>
               previous.currentUser?.friendsPhoneList !=
-              current.currentUser?.friendsPhoneList,
+                  current.currentUser?.friendsPhoneList ||
+              previous.pendingNotificationPayload !=
+                  current.pendingNotificationPayload,
           listener: (_, state) {
+            if (state.pendingNotificationPayload != null) {
+              redirectHelper(data: state.pendingNotificationPayload!);
+
+              context.read<AppBloc>().add(
+                const AppEvent.clearPendingNotification(),
+              );
+            }
             context.read<AppBloc>().add(
               AppEvent.updateMatchList(
                 state.currentUser?.friendsPhoneList ?? [],
