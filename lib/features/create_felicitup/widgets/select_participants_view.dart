@@ -243,9 +243,8 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
         ),
         SizedBox(height: context.sp(12)),
         BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
-          builder: (buttonContext, state) {
-            final felicitupBlocInstance = buttonContext
-                .read<CreateFelicitupBloc>();
+          builder: (_, state) {
+            final felicitupBlocInstance = context.read<CreateFelicitupBloc>();
             final listOwner = state.felicitupOwner;
 
             List<UserModel> availableFriendsForParticipation = [
@@ -255,16 +254,10 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
               (friend) => listOwner.any((owner) => owner.id == friend.id),
             );
 
-            availableFriendsForParticipation.removeWhere(
-              (friend) => state.invitedContacts.any(
-                (invited) => invited.id == friend.id,
-              ),
-            );
-
             return PrimarySmallButton(
               onTap: () {
                 commoBottomModal(
-                  context: buttonContext,
+                  context: context,
                   changeClose: true,
                   body: ParticipantSearchList(
                     initialFriendList: availableFriendsForParticipation,
@@ -274,7 +267,9 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                   ),
                 );
               },
-              label: 'Buscar participantes',
+              label: state.invitedContacts.isEmpty
+                  ? 'Buscar participantes'
+                  : 'Editar participantes',
               isActive: true,
               isCollapsed: true,
             );

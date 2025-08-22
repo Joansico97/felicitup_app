@@ -273,9 +273,9 @@ class SelectContactsView extends StatelessWidget {
               List<UserModel> availableFriendsForOwnerSelection = [
                 ...state.friendList,
               ];
-              availableFriendsForOwnerSelection.removeWhere(
-                (friend) => listOwner.any((owner) => owner.id == friend.id),
-              );
+              // availableFriendsForOwnerSelection.removeWhere(
+              //   (friend) => listOwner.any((owner) => owner.id == friend.id),
+              // );
 
               return SizedBox(
                 width: context.sp(200),
