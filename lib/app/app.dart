@@ -17,8 +17,9 @@ class FelicitupApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final router = CustomRouter().router;
     final appBloc = injection.di<AppBloc>();
+
+    final router = CustomRouter().router;
 
     return MultiRepositoryProvider(
       providers: [

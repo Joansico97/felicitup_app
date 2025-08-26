@@ -182,35 +182,13 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
   }
 }
 
-class InfoFelicitupPage extends StatefulWidget {
+class InfoFelicitupPage extends StatelessWidget {
   const InfoFelicitupPage({super.key});
 
-  @override
-  State<InfoFelicitupPage> createState() => _InfoFelicitupPageState();
-}
-
-class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (detailsFelicitupNavigatorKey.currentContext != null && mounted) {
-        detailsFelicitupNavigatorKey.currentContext!
-            .read<DetailsFelicitupDashboardBloc>()
-            .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(0));
-      }
-    });
-  }
-
+  // @override
   @override
   Widget build(BuildContext context) {
     final currentUser = context.read<AppBloc>().state.currentUser;
-    if (currentUser == null) {
-      return Scaffold(
-        backgroundColor: context.colors.background,
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -230,7 +208,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    if (felicitup.createdBy == currentUser.id)
+                    if (felicitup.createdBy == currentUser?.id)
                       Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -313,7 +291,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                           ),
                         ],
                       ),
-                    if (felicitup.createdBy == currentUser.id)
+                    if (felicitup.createdBy == currentUser?.id)
                       Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -377,7 +355,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                           ),
                         ],
                       ),
-                    if (felicitup.createdBy == currentUser.id)
+                    if (felicitup.createdBy == currentUser?.id)
                       Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -392,7 +370,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                     felicitup.id,
                                   ),
                                 );
-                                if (mounted &&
+                                if (context.mounted &&
                                     rootNavigatorKey.currentContext != null) {
                                   GoRouter.of(
                                     rootNavigatorKey.currentContext!,

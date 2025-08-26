@@ -223,7 +223,11 @@ Page<Widget> _detailsFelicitupDashboardHandler(
   GoRouterState state,
   Widget child,
 ) {
-  final data = state.extra as Map<String, dynamic>?;
+  final extra = state.extra as Map<String, dynamic>?;
+  final felicitupId = extra?['felicitupId'] as String?;
+  final fromNotification = extra?['fromNotification'] as bool? ?? false;
+  final targetSubRoute = extra?['targetSubRoute'] as String?;
+  final chatId = extra?['chatId'] as String?;
 
   return CustomTransitionPage(
     key: state.pageKey,
@@ -232,13 +236,14 @@ Page<Widget> _detailsFelicitupDashboardHandler(
         BlocProvider(
           create: (_) => injection.di<DetailsFelicitupDashboardBloc>()
             ..add(
-              data?['felicitupId'] == null
-                  ? DetailsFelicitupDashboardEvent.noEvent()
-                  : DetailsFelicitupDashboardEvent.startListening(
-                      data!['felicitupId'] as String,
-                    ),
+              DetailsFelicitupDashboardEvent.startListening(
+                felicitupId ?? '',
+                initialSubRoute: fromNotification ? targetSubRoute : null,
+                chatId: chatId,
+              ),
             ),
         ),
+
         BlocProvider(create: (_) => injection.di<InfoFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<MessageFelicitupBloc>()),
         BlocProvider(create: (_) => injection.di<PeopleFelicitupBloc>()),
@@ -246,12 +251,12 @@ Page<Widget> _detailsFelicitupDashboardHandler(
         BlocProvider(create: (_) => injection.di<BoteFelicitupBloc>()),
       ],
       child: DetailsFelicitupDashboardPage(
-        key: ValueKey('DetailsFelicitupDashboardPage${data?['chatId']}'),
         childView: child,
-        fromNotification: data?['fromNotification'] ?? false,
+        fromNotification: fromNotification,
+        chatId: chatId,
       ),
     ),
-    transitionDuration: Duration(milliseconds: 500),
+    transitionDuration: const Duration(milliseconds: 500),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
       const end = Offset.zero;

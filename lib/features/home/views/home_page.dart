@@ -25,12 +25,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    context.read<AppBloc>().add(AppEvent.loadUserData());
+
     context.read<AppBloc>().add(AppEvent.initializeNotifications());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final currentState = context.read<AppBloc>().state;
-      _checkAndRequestContactPermissions(currentState);
-    });
   }
 
   void _checkAndRequestContactPermissions(AppState state) {
@@ -156,13 +152,19 @@ class _HomePageState extends State<HomePage> {
               previous.pendingNotificationPayload !=
                   current.pendingNotificationPayload,
           listener: (_, state) {
+            // Maneja la redirección por notificación de forma segura.
             if (state.pendingNotificationPayload != null) {
-              redirectHelper(data: state.pendingNotificationPayload!);
-
-              context.read<AppBloc>().add(
-                const AppEvent.clearPendingNotification(),
-              );
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  redirectHelper(data: state.pendingNotificationPayload!);
+                  context.read<AppBloc>().add(
+                    const AppEvent.clearPendingNotification(),
+                  );
+                }
+              });
             }
+
+            // Actualiza la matchList cada vez que la lista de amigos cambie.
             context.read<AppBloc>().add(
               AppEvent.updateMatchList(
                 state.currentUser?.friendsPhoneList ?? [],

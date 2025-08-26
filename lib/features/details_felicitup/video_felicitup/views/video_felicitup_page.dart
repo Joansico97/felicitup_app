@@ -19,7 +19,6 @@ class VideoFelicitupPage extends StatefulWidget {
 
 class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
   void _startTimer(BuildContext context) {
-    // Inicia el temporizador con una duración, por ejemplo, 60 segundos
     context.read<AppBloc>().add(
       const AppEvent.startGlobalTimer(duration: Duration(seconds: 180)),
     );
@@ -28,11 +27,11 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
   @override
   void initState() {
     super.initState();
-    final felicitup =
-        context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-    detailsFelicitupNavigatorKey.currentContext!
+    final felicitup = context
         .read<DetailsFelicitupDashboardBloc>()
-        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(3));
+        .state
+        .felicitup;
+
     context.read<VideoFelicitupBloc>().add(
       VideoFelicitupEvent.startListening(felicitup?.id ?? ''),
     );
@@ -41,8 +40,8 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<VideoFelicitupBloc, VideoFelicitupState>(
-      listenWhen:
-          (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -59,12 +58,9 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
           );
         }
       },
-      child: BlocBuilder<
-        DetailsFelicitupDashboardBloc,
-        DetailsFelicitupDashboardState
-      >(
-        buildWhen:
-            (previous, current) => previous.felicitup != current.felicitup,
+      child: BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+        buildWhen: (previous, current) =>
+            previous.felicitup != current.felicitup,
         builder: (_, state) {
           final felicitup = state.felicitup;
           final currentUser = context.read<AppBloc>().state.currentUser;
@@ -95,49 +91,43 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                 builder: (_, state) {
                                   return FloatingActionButton.extended(
                                     heroTag: '3',
-                                    onPressed:
-                                        !state.isGlobalTimerActive
-                                            ? () => showConfirmModal(
-                                              title:
-                                                  'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
-                                              onAccept: () async {
-                                                final listVideos =
-                                                    felicitup.invitedUserDetails
-                                                        .map(
-                                                          (e) =>
-                                                              e
-                                                                  .videoData
-                                                                  ?.videoUrl,
-                                                        )
-                                                        .where(
-                                                          (url) =>
-                                                              url != null &&
-                                                              url.isNotEmpty,
-                                                        )
-                                                        .cast<String>()
-                                                        .toList();
+                                    onPressed: !state.isGlobalTimerActive
+                                        ? () => showConfirmModal(
+                                            title:
+                                                'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
+                                            onAccept: () async {
+                                              final listVideos = felicitup
+                                                  .invitedUserDetails
+                                                  .map(
+                                                    (e) =>
+                                                        e.videoData?.videoUrl,
+                                                  )
+                                                  .where(
+                                                    (url) =>
+                                                        url != null &&
+                                                        url.isNotEmpty,
+                                                  )
+                                                  .cast<String>()
+                                                  .toList();
 
-                                                if (context.mounted) {
-                                                  _startTimer(context);
+                                              if (context.mounted) {
+                                                _startTimer(context);
 
-                                                  context
-                                                      .read<
-                                                        VideoFelicitupBloc
-                                                      >()
-                                                      .add(
-                                                        VideoFelicitupEvent.mergeVideos(
-                                                          felicitup.id,
-                                                          listVideos,
-                                                        ),
-                                                      );
-                                                }
-                                              },
-                                            )
-                                            : null,
-                                    backgroundColor:
-                                        !state.isGlobalTimerActive
-                                            ? context.colors.orange
-                                            : context.colors.grey,
+                                                context
+                                                    .read<VideoFelicitupBloc>()
+                                                    .add(
+                                                      VideoFelicitupEvent.mergeVideos(
+                                                        felicitup.id,
+                                                        listVideos,
+                                                      ),
+                                                    );
+                                              }
+                                            },
+                                          )
+                                        : null,
+                                    backgroundColor: !state.isGlobalTimerActive
+                                        ? context.colors.orange
+                                        : context.colors.grey,
                                     label: Row(
                                       children: [
                                         Icon(
@@ -169,23 +159,23 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                 heroTag: '4',
                                 onPressed:
                                     felicitup.finalVideoUrl != null &&
-                                            felicitup.finalVideoUrl!.isNotEmpty
-                                        ? () {
-                                          context.go(
-                                            RouterPaths.videoEditor,
-                                            extra: {
-                                              'felicitupId': felicitup.id,
-                                              'videoUrl':
-                                                  felicitup.finalVideoUrl ?? '',
-                                            },
-                                          );
-                                        }
-                                        : null,
+                                        felicitup.finalVideoUrl!.isNotEmpty
+                                    ? () {
+                                        context.go(
+                                          RouterPaths.videoEditor,
+                                          extra: {
+                                            'felicitupId': felicitup.id,
+                                            'videoUrl':
+                                                felicitup.finalVideoUrl ?? '',
+                                          },
+                                        );
+                                      }
+                                    : null,
                                 backgroundColor:
                                     felicitup.finalVideoUrl != null &&
-                                            felicitup.finalVideoUrl!.isNotEmpty
-                                        ? context.colors.orange
-                                        : context.colors.grey,
+                                        felicitup.finalVideoUrl!.isNotEmpty
+                                    ? context.colors.orange
+                                    : context.colors.grey,
                                 label: Row(
                                   children: [
                                     Icon(
@@ -209,14 +199,10 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                     SizedBox(height: context.sp(12)),
                     FloatingActionButton.extended(
                       heroTag: '9',
-                      onPressed:
-                          () => context.go(
-                            RouterPaths.videoEditor,
-                            extra: {
-                              'felicitupId': felicitup.id,
-                              'videoUrl': '',
-                            },
-                          ),
+                      onPressed: () => context.go(
+                        RouterPaths.videoEditor,
+                        extra: {'felicitupId': felicitup.id, 'videoUrl': ''},
+                      ),
                       backgroundColor: context.colors.orange,
                       label: Padding(
                         padding: EdgeInsets.symmetric(
@@ -270,91 +256,88 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                       return Expanded(
                         child: ListView.builder(
                           itemCount: invitedUsers?.length ?? 0,
-                          itemBuilder:
-                              (_, index) => Column(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      context.go(
-                                        RouterPaths.videoEditor,
-                                        extra: {
-                                          'felicitupId': felicitup.id,
-                                          'videoUrl':
-                                              invitedUsers?[index]
-                                                  .videoData
-                                                  ?.videoUrl ??
-                                              '',
-                                        },
-                                      );
+                          itemBuilder: (_, index) => Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  context.go(
+                                    RouterPaths.videoEditor,
+                                    extra: {
+                                      'felicitupId': felicitup.id,
+                                      'videoUrl':
+                                          invitedUsers?[index]
+                                              .videoData
+                                              ?.videoUrl ??
+                                          '',
                                     },
-                                    child: DetailsRow(
-                                      prefixChild: Row(
-                                        children: [
-                                          Container(
-                                            height: context.sp(23),
-                                            width: context.sp(23),
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: context.colors.lightGrey,
-                                            ),
-                                            child: Text(
-                                              invitedUsers?[index].name![0]
-                                                      .toUpperCase() ??
-                                                  '',
-                                              style: context.styles.subtitle,
-                                            ),
-                                          ),
-                                          SizedBox(width: context.sp(14)),
-                                          Text(
-                                            invitedUsers?[index].name ?? '',
-                                            style: context.styles.smallText
-                                                .copyWith(
-                                                  color:
-                                                      invitedUsers?[index]
-                                                                  .videoData
-                                                                  ?.videoUrl
-                                                                  ?.isEmpty ??
-                                                              false
-                                                          ? context.colors.text
-                                                          : context
-                                                              .colors
-                                                              .primary,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      sufixChild: Container(
-                                        padding: EdgeInsets.all(context.sp(5)),
+                                  );
+                                },
+                                child: DetailsRow(
+                                  prefixChild: Row(
+                                    children: [
+                                      Container(
+                                        height: context.sp(23),
+                                        width: context.sp(23),
+                                        alignment: Alignment.center,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color:
-                                              invitedUsers?[index]
-                                                          .videoData
-                                                          ?.videoUrl
-                                                          ?.isNotEmpty ??
-                                                      false
-                                                  ? context.colors.softOrange
-                                                  : context.colors.text,
+                                          color: context.colors.lightGrey,
                                         ),
-                                        child: Icon(
-                                          Icons.play_arrow,
-                                          color:
-                                              invitedUsers?[index]
-                                                          .videoData
-                                                          ?.videoUrl
-                                                          ?.isNotEmpty ??
-                                                      false
-                                                  ? Colors.white
-                                                  : context.colors.text,
-                                          size: context.sp(11),
+                                        child: Text(
+                                          invitedUsers?[index].name![0]
+                                                  .toUpperCase() ??
+                                              '',
+                                          style: context.styles.subtitle,
                                         ),
                                       ),
+                                      SizedBox(width: context.sp(14)),
+                                      Text(
+                                        invitedUsers?[index].name ?? '',
+                                        style: context.styles.smallText
+                                            .copyWith(
+                                              color:
+                                                  invitedUsers?[index]
+                                                          .videoData
+                                                          ?.videoUrl
+                                                          ?.isEmpty ??
+                                                      false
+                                                  ? context.colors.text
+                                                  : context.colors.primary,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                  sufixChild: Container(
+                                    padding: EdgeInsets.all(context.sp(5)),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color:
+                                          invitedUsers?[index]
+                                                  .videoData
+                                                  ?.videoUrl
+                                                  ?.isNotEmpty ??
+                                              false
+                                          ? context.colors.softOrange
+                                          : context.colors.text,
+                                    ),
+                                    child: Icon(
+                                      Icons.play_arrow,
+                                      color:
+                                          invitedUsers?[index]
+                                                  .videoData
+                                                  ?.videoUrl
+                                                  ?.isNotEmpty ??
+                                              false
+                                          ? Colors.white
+                                          : context.colors.text,
+                                      size: context.sp(11),
                                     ),
                                   ),
-                                  SizedBox(height: context.sp(12)),
-                                ],
+                                ),
                               ),
+                              SizedBox(height: context.sp(12)),
+                            ],
+                          ),
                         ),
                       );
                     },

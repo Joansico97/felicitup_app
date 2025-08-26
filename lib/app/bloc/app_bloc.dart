@@ -67,6 +67,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   _onAppStarted(Emitter<AppState> emit) {
     add(const AppEvent.initializeNotifications());
+    add(const AppEvent.loadUserData());
   }
 
   _checkAppStatus(Emitter<AppState> emit) async {

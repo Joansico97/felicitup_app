@@ -33,8 +33,10 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
 
   void assignid() {
     if (context.mounted) {
-      final felicitup =
-          context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+      final felicitup = context
+          .read<DetailsFelicitupDashboardBloc>()
+          .state
+          .felicitup;
       context.read<MessageFelicitupBloc>().add(
         MessageFelicitupEvent.asignCurrentChat(felicitup?.chatId ?? ''),
       );
@@ -63,15 +65,17 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
   @override
   void initState() {
     super.initState();
-    detailsFelicitupNavigatorKey.currentContext!
-        .read<DetailsFelicitupDashboardBloc>()
-        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(1));
+
     WidgetsBinding.instance.addObserver(this);
     assignid();
-    final felicitup =
-        context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-    final currentChatId =
-        context.read<MessageFelicitupBloc>().state.currentChatId;
+    final felicitup = context
+        .read<DetailsFelicitupDashboardBloc>()
+        .state
+        .felicitup;
+    final currentChatId = context
+        .read<MessageFelicitupBloc>()
+        .state
+        .currentChatId;
     if (currentChatId.isNotEmpty) {
       context.read<MessageFelicitupBloc>().add(
         MessageFelicitupEvent.startListening(currentChatId),

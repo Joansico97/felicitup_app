@@ -417,11 +417,12 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   ) async {
     try {
       final uid = _firebaseAuth.currentUser!.uid;
-      await _firebaseFunctionsHelper.mergeVideos(
-        videoUrls: listUrlVideos,
-        felicitupId: felicitupId,
-        userId: uid,
-      );
+      await _firestore.collection('videoMergeJobs').doc(felicitupId).set({
+        'userId': uid,
+        'videoUrls': listUrlVideos,
+        'status': 'pending',
+        'createdAt': DateTime.now(),
+      });
       return Right(null);
     } on FirebaseException catch (e) {
       return Left(
