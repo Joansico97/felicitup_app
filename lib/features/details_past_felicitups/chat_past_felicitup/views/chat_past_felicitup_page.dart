@@ -28,8 +28,10 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage>
 
   void assignid() {
     if (context.mounted) {
-      final felicitup =
-          context.read<DetailsPastFelicitupDashboardBloc>().state.felicitup;
+      final felicitup = context
+          .read<DetailsPastFelicitupDashboardBloc>()
+          .state
+          .felicitup;
       context.read<ChatPastFelicitupBloc>().add(
         ChatPastFelicitupEvent.asignCurrentChat(felicitup?.chatId ?? ''),
       );
@@ -60,8 +62,10 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     assignid();
-    final felicitup =
-        context.read<DetailsPastFelicitupDashboardBloc>().state.felicitup;
+    final felicitup = context
+        .read<DetailsPastFelicitupDashboardBloc>()
+        .state
+        .felicitup;
     context.read<ChatPastFelicitupBloc>().add(
       ChatPastFelicitupEvent.startListening(felicitup?.chatId ?? ''),
     );
@@ -141,9 +145,9 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage>
                                     chatMessages[index].sendedBy ==
                                     currentUser?.id,
                                 date: chatMessages[index].sendedAt,
-                                textContent: chatMessages[index].message,
-                                id: chatMessages[index].sendedBy,
-                                name: chatMessages[index].userName,
+                                textContent: chatMessages[index].message ?? '',
+                                id: chatMessages[index].sendedBy ?? '',
+                                name: chatMessages[index].userName ?? '',
                                 userImg: chatMessages[index].userImg,
                               );
                             }, childCount: chatMessages.length),

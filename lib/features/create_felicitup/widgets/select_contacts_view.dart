@@ -182,6 +182,8 @@ class SelectContactsView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                  buildWhen: (previous, current) =>
+                      previous.felicitupOwner != current.felicitupOwner,
                   builder: (_, state) {
                     final listOwner = state.felicitupOwner;
                     return listOwner.isEmpty ||
@@ -223,6 +225,8 @@ class SelectContactsView extends StatelessWidget {
                       Text('| Paso 01', style: context.styles.menu),
                       SizedBox(height: context.sp(8)),
                       BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                        buildWhen: (previous, current) =>
+                            previous.felicitupOwner != current.felicitupOwner,
                         builder: (_, state) {
                           final listOwner = state.felicitupOwner;
                           return Text(
@@ -241,6 +245,9 @@ class SelectContactsView extends StatelessWidget {
                       ),
                       SizedBox(height: context.sp(8)),
                       BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                        buildWhen: (previous, current) =>
+                            previous.friendList != current.friendList ||
+                            previous.felicitupOwner != current.felicitupOwner,
                         builder: (_, state) {
                           final listOwner = state.felicitupOwner;
                           final selectedDate = state.selectedDate;

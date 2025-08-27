@@ -141,6 +141,10 @@ class UserFirebaseResource implements UserRepository {
     List<String> usersIds,
   ) async {
     try {
+      if (usersIds.isEmpty) {
+        return const Right([]);
+      }
+
       final response = await _client.get(AppConstants.usersCollection);
       if (response != null) {
         final users = response as List<Map<String, dynamic>>;

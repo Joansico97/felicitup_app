@@ -29,15 +29,17 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   void initState() {
     super.initState();
 
-    List<String> listData = [
-      ...context.read<AppBloc>().state.currentUser?.matchList ?? [],
-    ];
-    listData.removeWhere(
-      (element) => element == context.read<AppBloc>().state.currentUser?.id,
-    );
-    context.read<CreateFelicitupBloc>().add(
-      CreateFelicitupEvent.loadFriendsData(listData),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appState = context.read<AppBloc>().state;
+      if (appState.currentUser?.matchList != null) {
+        List<String> listData = [...appState.currentUser!.matchList!];
+        listData.removeWhere((element) => element == appState.currentUser?.id);
+
+        context.read<CreateFelicitupBloc>().add(
+          CreateFelicitupEvent.loadFriendsData(listData),
+        );
+      }
+    });
 
     pages = [
       SelectContactsView(),
@@ -50,26 +52,47 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CreateFelicitupBloc, CreateFelicitupState>(
-      listenWhen: (previous, current) =>
-          previous.isLoading != current.isLoading ||
-          previous.status != current.status,
-      listener: (_, state) async {
-        if (state.isLoading) {
-          unawaited(startLoadingModal());
-        } else {
-          await stopLoadingModal();
-        }
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AppBloc, AppState>(
+          listenWhen: (previous, current) =>
+              previous.currentUser?.matchList != current.currentUser?.matchList,
+          listener: (context, state) {
+            if (state.currentUser?.matchList?.isNotEmpty ?? false) {
+              List<String> listData = [...state.currentUser!.matchList!];
+              listData.removeWhere(
+                (element) => element == state.currentUser?.id,
+              );
 
-        if (state.status == CreateStatus.success) {
-          showFinishModal(() {
-            context.read<CreateFelicitupBloc>().add(
-              const CreateFelicitupEvent.deleteCurrentFelicitup(),
-            );
-            context.go(RouterPaths.felicitupsDashboard);
-          });
-        }
-      },
+              context.read<CreateFelicitupBloc>().add(
+                CreateFelicitupEvent.loadFriendsData(listData),
+              );
+            }
+          },
+        ),
+
+        BlocListener<CreateFelicitupBloc, CreateFelicitupState>(
+          listenWhen: (previous, current) =>
+              previous.isLoading != current.isLoading ||
+              previous.status != current.status,
+          listener: (_, state) async {
+            if (state.isLoading) {
+              unawaited(startLoadingModal());
+            } else {
+              await stopLoadingModal();
+            }
+
+            if (state.status == CreateStatus.success) {
+              showFinishModal(() {
+                context.read<CreateFelicitupBloc>().add(
+                  const CreateFelicitupEvent.deleteCurrentFelicitup(),
+                );
+                context.go(RouterPaths.felicitupsDashboard);
+              });
+            }
+          },
+        ),
+      ],
       child: BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
         builder: (_, state) {
           return Scaffold(

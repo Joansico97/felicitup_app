@@ -9,13 +9,14 @@ part 'chat_message_model.g.dart';
 @freezed
 class ChatMessageModel with _$ChatMessageModel {
   const factory ChatMessageModel({
-    required String id,
-    required String message,
-    required String sendedBy,
-    required String userName,
+    String? id,
+    String? message,
+    String? sendedBy,
+    String? userName,
     String? userImg,
     @TimestampConverter() required DateTime sendedAt,
   }) = _ChatMessageModel;
 
-  factory ChatMessageModel.fromJson(Map<String, dynamic> json) => _$ChatMessageModelFromJson(json);
+  factory ChatMessageModel.fromJson(Map<String, dynamic> json) =>
+      _$ChatMessageModelFromJson(json);
 }

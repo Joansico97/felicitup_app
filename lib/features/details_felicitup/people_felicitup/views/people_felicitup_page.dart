@@ -203,12 +203,13 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
   @override
   void initState() {
     super.initState();
-
+    detailsFelicitupNavigatorKey.currentContext!
+        .read<DetailsFelicitupDashboardBloc>()
+        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(2));
     final felicitup = context
         .read<DetailsFelicitupDashboardBloc>()
         .state
         .felicitup;
-
     context.read<PeopleFelicitupBloc>().add(
       PeopleFelicitupEvent.startListening(felicitup?.id ?? ''),
     );
@@ -342,11 +343,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                   );
 
                               if (currentUser == null) {
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    color: context.colors.orange,
-                                  ),
-                                );
+                                return Center(child: SizedBox.shrink());
                               }
 
                               if (currentInvitedUser?.assistanceStatus ==
@@ -495,14 +492,18 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                             builder: (_, state) {
                               final currentUser = state.currentUser;
 
+                              if (currentUser == null) {
+                                return SizedBox.shrink();
+                              }
+
                               return Column(
                                 children: [
                                   GestureDetector(
                                     onTap: () {
                                       if (invitedUsers?[index].id ==
-                                              currentUser?.id &&
+                                              currentUser.id &&
                                           felicitup.createdBy !=
-                                              currentUser?.id) {
+                                              currentUser.id) {
                                         showConfirDoublemModal(
                                           title:
                                               'Participarás en la felicitup?',
@@ -532,7 +533,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                                             ),
                                                         name:
                                                             currentUser
-                                                                ?.firstName ??
+                                                                .firstName ??
                                                             '',
                                                       ),
                                                     ),
@@ -548,8 +549,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                                       AssistanceStatus.rejected,
                                                     ),
                                                 name:
-                                                    currentUser?.firstName ??
-                                                    '',
+                                                    currentUser.firstName ?? '',
                                               ),
                                             );
                                             context.go(
@@ -561,9 +561,9 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                     },
                                     onLongPress: () {
                                       if (felicitup.createdBy ==
-                                              currentUser?.id &&
+                                              currentUser.id &&
                                           invitedUsers?[index].id !=
-                                              currentUser?.id) {
+                                              currentUser.id) {
                                         showConfirDoublemModal(
                                           title: 'Eliminar participante?',
                                           label1: 'Eliminar',
@@ -594,11 +594,27 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                               shape: BoxShape.circle,
                                               color: context.colors.lightGrey,
                                             ),
-                                            child: Text(
-                                              invitedUsers?[index].name?[0]
-                                                      .toUpperCase() ??
-                                                  'Usuario sin nombre',
-                                              style: context.styles.subtitle,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadiusGeometry.circular(
+                                                    context.sp(100),
+                                                  ),
+                                              child: CommonNetworkImage(
+                                                imageUrl:
+                                                    invitedUsers?[index]
+                                                        .userImage ??
+                                                    '',
+                                                errorWidget: Center(
+                                                  child: Text(
+                                                    invitedUsers?[index]
+                                                            .name![0]
+                                                            .toUpperCase() ??
+                                                        '',
+                                                    style:
+                                                        context.styles.subtitle,
+                                                  ),
+                                                ),
+                                              ),
                                             ),
                                           ),
                                           SizedBox(width: context.sp(14)),

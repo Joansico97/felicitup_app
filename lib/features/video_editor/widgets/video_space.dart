@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 
 class VideoSpace extends StatelessWidget {
@@ -57,39 +56,11 @@ class VideoSpace extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            errorWidget: (_, url, error) => Container(
-                              height: context.sp(194),
-                              width: context.sp(330),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(
-                                  context.sp(8),
-                                ),
-                                color: context.colors.orange,
-                              ),
-                              child: PhosphorIcon(
-                                PhosphorIcons.imageBroken(
-                                  PhosphorIconsStyle.fill,
-                                ),
-                                size: context.sp(60),
-                                color: context.colors.lightGrey,
-                              ),
+                            errorWidget: (_, url, error) => Text(
+                              name?.split(' ')[0] ?? '',
+                              style: context.styles.subtitle,
                             ),
                           )
-                        // ? Image.network(
-                        //     screenshotImage ?? '',
-                        //     fit: BoxFit.cover,
-                        //     loadingBuilder: (context, child, loadingProgress) => loadingProgress == null
-                        //         ? child
-                        //         : Center(
-                        //             child: CircularProgressIndicator(),
-                        //           ),
-                        //     errorBuilder: (context, error, stackTrace) => Center(
-                        //       child: Text(
-                        //         name?.split(' ')[0] ?? '',
-                        //         style: context.styles.subtitle,
-                        //       ),
-                        //     ),
-                        //   )
                         : Container(
                             color: context.colors.grey,
                             child: Center(

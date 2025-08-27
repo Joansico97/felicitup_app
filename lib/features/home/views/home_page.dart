@@ -27,6 +27,13 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     context.read<AppBloc>().add(AppEvent.initializeNotifications());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final appState = context.read<AppBloc>().state;
+      if (appState.currentUser != null) {
+        _checkAndRequestContactPermissions(appState);
+      }
+    });
   }
 
   void _checkAndRequestContactPermissions(AppState state) {
@@ -147,10 +154,8 @@ class _HomePageState extends State<HomePage> {
 
         BlocListener<AppBloc, AppState>(
           listenWhen: (previous, current) =>
-              previous.currentUser?.friendsPhoneList !=
-                  current.currentUser?.friendsPhoneList ||
               previous.pendingNotificationPayload !=
-                  current.pendingNotificationPayload,
+              current.pendingNotificationPayload,
           listener: (_, state) {
             // Maneja la redirección por notificación de forma segura.
             if (state.pendingNotificationPayload != null) {
@@ -163,8 +168,14 @@ class _HomePageState extends State<HomePage> {
                 }
               });
             }
+          },
+        ),
 
-            // Actualiza la matchList cada vez que la lista de amigos cambie.
+        BlocListener<AppBloc, AppState>(
+          listenWhen: (previous, current) =>
+              previous.currentUser?.friendsPhoneList !=
+              current.currentUser?.friendsPhoneList,
+          listener: (_, state) {
             context.read<AppBloc>().add(
               AppEvent.updateMatchList(
                 state.currentUser?.friendsPhoneList ?? [],
@@ -175,7 +186,13 @@ class _HomePageState extends State<HomePage> {
 
         BlocListener<AppBloc, AppState>(
           listenWhen: (previous, current) =>
-              previous.currentUser == null && current.currentUser != null,
+              (previous.currentUser == null && current.currentUser != null) ||
+              (previous.currentUser != null &&
+                  current.currentUser != null &&
+                  (previous.currentUser?.friendsPhoneList !=
+                          current.currentUser?.friendsPhoneList ||
+                      previous.currentUser?.birthDate !=
+                          current.currentUser?.birthDate)),
           listener: (_, state) {
             if (state.currentUser != null &&
                 state.currentUser?.birthDate == null) {

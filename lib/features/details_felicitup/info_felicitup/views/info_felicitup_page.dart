@@ -182,10 +182,26 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
   }
 }
 
-class InfoFelicitupPage extends StatelessWidget {
+class InfoFelicitupPage extends StatefulWidget {
   const InfoFelicitupPage({super.key});
 
-  // @override
+  @override
+  State<InfoFelicitupPage> createState() => _InfoFelicitupPageState();
+}
+
+class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (detailsFelicitupNavigatorKey.currentContext != null && mounted) {
+        detailsFelicitupNavigatorKey.currentContext!
+            .read<DetailsFelicitupDashboardBloc>()
+            .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(0));
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = context.read<AppBloc>().state.currentUser;

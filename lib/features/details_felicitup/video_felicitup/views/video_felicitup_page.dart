@@ -31,7 +31,9 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
         .read<DetailsFelicitupDashboardBloc>()
         .state
         .felicitup;
-
+    detailsFelicitupNavigatorKey.currentContext!
+        .read<DetailsFelicitupDashboardBloc>()
+        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(3));
     context.read<VideoFelicitupBloc>().add(
       VideoFelicitupEvent.startListening(felicitup?.id ?? ''),
     );
@@ -283,11 +285,25 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                           shape: BoxShape.circle,
                                           color: context.colors.lightGrey,
                                         ),
-                                        child: Text(
-                                          invitedUsers?[index].name![0]
-                                                  .toUpperCase() ??
-                                              '',
-                                          style: context.styles.subtitle,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadiusGeometry.circular(
+                                                context.sp(100),
+                                              ),
+                                          child: CommonNetworkImage(
+                                            imageUrl:
+                                                invitedUsers?[index]
+                                                    .userImage ??
+                                                '',
+                                            errorWidget: Center(
+                                              child: Text(
+                                                invitedUsers?[index].name![0]
+                                                        .toUpperCase() ??
+                                                    '',
+                                                style: context.styles.subtitle,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                       SizedBox(width: context.sp(14)),

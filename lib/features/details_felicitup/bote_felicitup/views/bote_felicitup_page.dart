@@ -158,6 +158,9 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
   @override
   void initState() {
     super.initState();
+    detailsFelicitupNavigatorKey.currentContext!
+        .read<DetailsFelicitupDashboardBloc>()
+        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(4));
 
     final felicitup = context
         .read<DetailsFelicitupDashboardBloc>()
@@ -170,18 +173,6 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
 
   @override
   Widget build(BuildContext context) {
-    // return BlocBuilder<
-
-    // >(
-    //   buildWhen: (previous, current) => previous.felicitup != current.felicitup,
-    //   builder: (_, state) {
-    //     final felicitup = state.felicitup;
-    //     final currentUser = context.read<AppBloc>().state.currentUser;
-
-    //     return
-    //   },
-    // );
-
     return Scaffold(
       backgroundColor: context.colors.background,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -405,11 +396,25 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                           shape: BoxShape.circle,
                                           color: context.colors.lightGrey,
                                         ),
-                                        child: Text(
-                                          invitedUsers?[index].name![0]
-                                                  .toUpperCase() ??
-                                              '',
-                                          style: context.styles.subtitle,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadiusGeometry.circular(
+                                                context.sp(100),
+                                              ),
+                                          child: CommonNetworkImage(
+                                            imageUrl:
+                                                invitedUsers?[index]
+                                                    .userImage ??
+                                                '',
+                                            errorWidget: Center(
+                                              child: Text(
+                                                invitedUsers?[index].name![0]
+                                                        .toUpperCase() ??
+                                                    '',
+                                                style: context.styles.subtitle,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                       SizedBox(width: context.sp(14)),

@@ -1,13 +1,11 @@
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/data/models/models.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/bloc/details_felicitup_dashboard_bloc.dart';
 
 void redirectHelper({required Map<String, dynamic> data}) {
-  // 1. OBTENER LA INSTANCIA GLOBAL DEL ROUTER
-  // (Esto asume que tu CustomRouter tiene un getter estático o es un singleton)
   final router = CustomRouter().router;
-
-  // 2. PARSEO DE DATOS DE LA NOTIFICACIÓN
-  final String type = data['type'] ?? '';
+  final String type = data['type'];
   final pushMessageType = pushMessageTypeToEnum(type);
   final felicitupId = data['felicitupId'] ?? '';
   final chatId = data['chatId'] ?? '';
@@ -15,93 +13,79 @@ void redirectHelper({required Map<String, dynamic> data}) {
   final friendId = data['friendId'] ?? '';
   final userImage = data['userImage'] ?? '';
 
-  String? targetPath;
-  dynamic extraData;
-
-  // 3. DETERMINAR LA RUTA Y LOS DATOS EXTRA (SIN NAVEGAR AÚN)
   switch (pushMessageType) {
     case PushMessageType.felicitup:
-      targetPath = RouterPaths.felicitupNotification;
-      extraData = felicitupId;
+      router.go(RouterPaths.felicitupNotification, extra: felicitupId);
       break;
+
     case PushMessageType.chat:
-      targetPath = RouterPaths.messageFelicitup;
-      extraData = {'felicitupId': felicitupId, 'chatId': chatId};
+      if (router.routerDelegate.state.matchedLocation ==
+          RouterPaths.messageFelicitup) {
+        detailsFelicitupNavigatorKey.currentContext!
+            .read<DetailsFelicitupDashboardBloc>()
+            .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
+      }
+      router.go(
+        RouterPaths.messageFelicitup,
+        extra: {'felicitupId': felicitupId, 'chatId': chatId},
+      );
+
       break;
+
     case PushMessageType.payment:
-      targetPath = RouterPaths.boteFelicitup;
-      extraData = {'felicitupId': felicitupId};
+      if (router.routerDelegate.state.matchedLocation ==
+          RouterPaths.boteFelicitup) {
+        detailsFelicitupNavigatorKey.currentContext!
+            .read<DetailsFelicitupDashboardBloc>()
+            .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
+      }
+      router.go(RouterPaths.boteFelicitup, extra: {'felicitupId': felicitupId});
+
       break;
+
     case PushMessageType.singleChat:
-      targetPath = RouterPaths.singleChat;
-      extraData = {
-        'data': SingleChatModel(
-          chatId: chatId,
-          userName: name,
-          friendId: friendId,
-          userImage: userImage,
-        ),
-      };
+      final chatModel = SingleChatModel(
+        chatId: chatId,
+        userName: name,
+        friendId: friendId,
+        userImage: userImage,
+      );
+      router.go(RouterPaths.singleChat, extra: {'data': chatModel});
       break;
+
     case PushMessageType.participation:
-      targetPath = RouterPaths.peopleFelicitup;
-      extraData = {'felicitupId': felicitupId};
+      if (router.routerDelegate.state.matchedLocation ==
+          RouterPaths.peopleFelicitup) {
+        detailsFelicitupNavigatorKey.currentContext!
+            .read<DetailsFelicitupDashboardBloc>()
+            .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
+      }
+      router.go(
+        RouterPaths.peopleFelicitup,
+        extra: {'felicitupId': felicitupId},
+      );
       break;
     case PushMessageType.video:
-      targetPath = RouterPaths.videoFelicitup;
-      extraData = {'felicitupId': felicitupId};
+      if (router.routerDelegate.state.matchedLocation ==
+          RouterPaths.videoFelicitup) {
+        detailsFelicitupNavigatorKey.currentContext!
+            .read<DetailsFelicitupDashboardBloc>()
+            .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
+      }
+      router.go(
+        RouterPaths.videoFelicitup,
+        extra: {'felicitupId': felicitupId},
+      );
+
       break;
     case PushMessageType.past:
-      targetPath = RouterPaths.chatPastFelicitup;
-      extraData = {'felicitupId': felicitupId};
+      router.go(
+        RouterPaths.chatPastFelicitup,
+        extra: {'felicitupId': felicitupId},
+      );
       break;
     case PushMessageType.reminder:
-      targetPath = RouterPaths.reminders;
-      extraData = null;
+      CustomRouter().router.go(RouterPaths.reminders);
       break;
-  }
-
-  // 4. LÓGICA DE NAVEGACIÓN CONDICIONAL
-  // Definimos las rutas que pertenecen a cada ShellRoute.
-  const detailsFelicitupShellRoutes = [
-    RouterPaths.infoFelicitup,
-    RouterPaths.messageFelicitup,
-    RouterPaths.peopleFelicitup,
-    RouterPaths.videoFelicitup,
-    RouterPaths.boteFelicitup,
-  ];
-
-  const pastDetailsFelicitupShellRoutes = [
-    RouterPaths.mainPastFelicitup,
-    RouterPaths.chatPastFelicitup,
-    RouterPaths.peoplePastFelicitup,
-    RouterPaths.videoPastFelicitup,
-  ];
-
-  if (detailsFelicitupShellRoutes.contains(targetPath)) {
-    // CASO 1: La ruta pertenece al ShellRoute de detalles.
-    // Navegamos a la PRIMERA ruta hija (`infoFelicitup`) para que se construya el Shell.
-    router.go(
-      RouterPaths.infoFelicitup,
-      extra: {
-        'felicitupId': felicitupId,
-        'fromNotification': true,
-        'targetSubRoute': targetPath, // <- Le pasamos la ruta final deseada
-        'chatId': chatId,
-      },
-    );
-  } else if (pastDetailsFelicitupShellRoutes.contains(targetPath)) {
-    // CASO 2: La ruta pertenece al ShellRoute de felicitups pasados.
-    router.go(
-      RouterPaths.mainPastFelicitup, // <- Navegamos a su primera ruta hija
-      extra: {
-        'felicitupId': felicitupId,
-        'fromNotification': true,
-        'targetSubRoute': targetPath, // <- Le pasamos la ruta final deseada
-      },
-    );
-  } else {
-    // CASO 3: Es una ruta normal e independiente. Navegamos directamente.
-    router.go(targetPath, extra: extraData);
   }
 }

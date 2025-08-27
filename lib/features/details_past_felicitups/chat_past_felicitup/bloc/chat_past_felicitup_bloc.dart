@@ -12,15 +12,16 @@ part 'chat_past_felicitup_event.dart';
 part 'chat_past_felicitup_state.dart';
 part 'chat_past_felicitup_bloc.freezed.dart';
 
-class ChatPastFelicitupBloc extends Bloc<ChatPastFelicitupEvent, ChatPastFelicitupState> {
+class ChatPastFelicitupBloc
+    extends Bloc<ChatPastFelicitupEvent, ChatPastFelicitupState> {
   ChatPastFelicitupBloc({
     required FelicitupRepository felicitupRepository,
     required UserRepository userRepository,
     required ChatRepository chatRepository,
-  })  : _felicitupRepository = felicitupRepository,
-        _userRepository = userRepository,
-        _chatRepository = chatRepository,
-        super(ChatPastFelicitupState.initial()) {
+  }) : _felicitupRepository = felicitupRepository,
+       _userRepository = userRepository,
+       _chatRepository = chatRepository,
+       super(ChatPastFelicitupState.initial()) {
     on<ChatPastFelicitupEvent>(
       (events, emit) => events.map(
         asignCurrentChat: (event) => _asignCurrentChat(emit, event.chatId),
@@ -37,7 +38,8 @@ class ChatPastFelicitupBloc extends Bloc<ChatPastFelicitupEvent, ChatPastFelicit
     );
   }
 
-  StreamSubscription<Either<ApiException, List<ChatMessageModel>>>? _chatMessagesSubscription;
+  StreamSubscription<Either<ApiException, List<ChatMessageModel>>>?
+  _chatMessagesSubscription;
   final FelicitupRepository _felicitupRepository;
   final UserRepository _userRepository;
   final ChatRepository _chatRepository;
@@ -58,49 +60,59 @@ class ChatPastFelicitupBloc extends Bloc<ChatPastFelicitupEvent, ChatPastFelicit
     String userName,
   ) async {
     try {
-      final response = await _chatRepository.sendMessage(felicitup.chatId, chatMessage);
+      if (chatMessage.id == null ||
+          chatMessage.message == null ||
+          chatMessage.sendedBy == null ||
+          chatMessage.userName == null ||
+          (chatMessage.userName?.isEmpty ?? false)) {
+        return;
+      }
 
-      response.fold(
-        (l) {},
-        (r) async {
-          List<String> ids = [...felicitup.invitedUsers];
-          ids.remove(userId);
-
-          for (String id in ids) {
-            await _userRepository.sendNotification(
-              userId: id,
-              title: 'Nuevo mensaje de $userName',
-              message: chatMessage.message,
-              currentChat: felicitup.chatId,
-              data: DataMessageModel(
-                type: enumToPushMessageType(PushMessageType.past),
-                felicitupId: felicitup.id,
-                chatId: felicitup.chatId,
-                name: '',
-                friendId: '',
-                userImage: '',
-              ),
-            );
-          }
-        },
+      final response = await _chatRepository.sendMessage(
+        felicitup.chatId,
+        chatMessage,
       );
+
+      response.fold((l) {}, (r) async {
+        List<String> ids = [...felicitup.invitedUsers];
+        ids.remove(userId);
+
+        for (String id in ids) {
+          await _userRepository.sendNotification(
+            userId: id,
+            title: 'Nuevo mensaje de $userName',
+            message: chatMessage.message!,
+            currentChat: felicitup.chatId,
+            data: DataMessageModel(
+              type: enumToPushMessageType(PushMessageType.past),
+              felicitupId: felicitup.id,
+              chatId: felicitup.chatId,
+              name: '',
+              friendId: '',
+              userImage: '',
+            ),
+          );
+        }
+      });
     } catch (e) {
       logger.error('Error enviando el mensaje, $e');
     }
   }
 
   _startListening(Emitter<ChatPastFelicitupState> emit, String chatId) {
-    _chatMessagesSubscription = _felicitupRepository.getChatMessages(chatId).listen((either) {
-      either.fold(
-        (error) {},
-        (messages) {
-          add(ChatPastFelicitupEvent.recivedData(messages));
-        },
-      );
-    });
+    _chatMessagesSubscription = _felicitupRepository
+        .getChatMessages(chatId)
+        .listen((either) {
+          either.fold((error) {}, (messages) {
+            add(ChatPastFelicitupEvent.recivedData(messages));
+          });
+        });
   }
 
-  Future<void> _recivedData(Emitter<ChatPastFelicitupState> emit, List<ChatMessageModel> listMessages) async {
+  Future<void> _recivedData(
+    Emitter<ChatPastFelicitupState> emit,
+    List<ChatMessageModel> listMessages,
+  ) async {
     emit(state.copyWith(messages: listMessages));
   }
 

@@ -16,6 +16,8 @@ class VideoEditorEvent with _$VideoEditorEvent {
   const factory VideoEditorEvent.uploadUserVideo(
     String felicitupId,
     File file,
+    String userId,
+    String userName,
   ) = _uploadUserVideo;
   const factory VideoEditorEvent.generateThumbnail(String filePath) =
       _generateThumbnail;
@@ -28,4 +30,9 @@ class VideoEditorEvent with _$VideoEditorEvent {
     String felicitupId,
     String url,
   ) = _updateParticipantInfo;
+  const factory VideoEditorEvent.sendNotification(
+    String userId,
+    String userName,
+    String felicitupId,
+  ) = _sendNotification;
 }

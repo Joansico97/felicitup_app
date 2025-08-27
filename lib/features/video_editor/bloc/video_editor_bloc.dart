@@ -30,8 +30,13 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         changeLoading: (event) => _changeLoading(emit),
         setUrlVideo: (event) => _setUrlVideo(emit, event.url),
         getFelicitupInfo: (event) => _getFelicitupInfo(emit, event.felicitupId),
-        uploadUserVideo: (event) =>
-            _uploadUserVideo(emit, event.felicitupId, event.file),
+        uploadUserVideo: (event) => _uploadUserVideo(
+          emit,
+          event.felicitupId,
+          event.file,
+          event.userId,
+          event.userName,
+        ),
         updateParticipantInfo: (event) =>
             _updateParticipantInfo(event.felicitupId, event.url),
         initializeVideoController: (event) =>
@@ -46,6 +51,12 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
           event.felicitupId,
           event.userId,
           event.videoUrl,
+        ),
+        sendNotification: (event) => _sendNotification(
+          emit,
+          event.userId,
+          event.userName,
+          event.felicitupId,
         ),
       ),
     );
@@ -84,6 +95,8 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     Emitter<VideoEditorState> emit,
     String felicitupId,
     File file,
+    String userId,
+    String userName,
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
@@ -99,6 +112,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
           add(VideoEditorEvent.initializeVideoController(url));
           add(VideoEditorEvent.getFelicitupInfo(felicitupId));
+          add(VideoEditorEvent.sendNotification(userId, userName, felicitupId));
           emit(state.copyWith(isLoading: false, currentSelectedVideo: url));
         },
       );
@@ -211,5 +225,31 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
   Future<void> close() {
     state.videoPlayerController?.dispose();
     return super.close();
+  }
+
+  _sendNotification(
+    Emitter<VideoEditorState> emit,
+    String userId,
+    String userName,
+    String felicitupId,
+  ) async {
+    try {
+      await _userRepository.sendNotification(
+        userId: userId,
+        title: 'Nuevo vídeo',
+        message: '$userName ha grabado un nuevo vídeo',
+        currentChat: '',
+        data: DataMessageModel(
+          type: enumToPushMessageType(PushMessageType.chat),
+          felicitupId: felicitupId,
+          chatId: '',
+          name: '',
+          friendId: '',
+          userImage: '',
+        ),
+      );
+    } catch (e) {
+      logger.error(e.toString());
+    }
   }
 }

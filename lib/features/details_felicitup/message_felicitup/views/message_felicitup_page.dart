@@ -65,7 +65,9 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
   @override
   void initState() {
     super.initState();
-
+    detailsFelicitupNavigatorKey.currentContext!
+        .read<DetailsFelicitupDashboardBloc>()
+        .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(1));
     WidgetsBinding.instance.addObserver(this);
     assignid();
     final felicitup = context
@@ -160,9 +162,10 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
                                       chatMessages[index].sendedBy ==
                                       currentUser?.id,
                                   date: chatMessages[index].sendedAt,
-                                  textContent: chatMessages[index].message,
-                                  id: chatMessages[index].sendedBy,
-                                  name: chatMessages[index].userName,
+                                  textContent:
+                                      chatMessages[index].message ?? '',
+                                  id: chatMessages[index].sendedBy ?? '',
+                                  name: chatMessages[index].userName ?? '',
                                   userImg: chatMessages[index].userImg,
                                 );
                               }, childCount: chatMessages.length),

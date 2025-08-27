@@ -35,17 +35,17 @@ class CreateFelicitupBloc
         jumpToStep: (event) => _jumpToStep(emit, event.index),
         toggleHasVideo: (_) => _toggleHasVideo(emit),
         toggleHasBote: (_) => _toggleHasBote(emit),
-        changeBoteQuantity:
-            (event) => _changeBoteQuantity(emit, event.quantity),
+        changeBoteQuantity: (event) =>
+            _changeBoteQuantity(emit, event.quantity),
         changeEventReason: (event) => _changeEventReason(emit, event.reason),
-        changeFelicitupDate:
-            (event) => _changeFelicitupDate(emit, event.felicitupDate),
-        changeFelicitupOwner:
-            (event) => _changeFelicitupOwner(emit, event.felicitupOwner),
+        changeFelicitupDate: (event) =>
+            _changeFelicitupDate(emit, event.felicitupDate),
+        changeFelicitupOwner: (event) =>
+            _changeFelicitupOwner(emit, event.felicitupOwner),
         addParticipant: (event) => _addParticipant(emit, event.participant),
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
-        createFelicitup:
-            (event) => _createFelicitup(emit, event.felicitupMessage),
+        createFelicitup: (event) =>
+            _createFelicitup(emit, event.felicitupMessage),
         searchEvent: (event) => _searchEvent(emit, event.value),
         sendNotification: (event) => _sendNotification(event.felicitupId),
       ),
@@ -236,6 +236,11 @@ class CreateFelicitupBloc
     Emitter<CreateFelicitupState> emit,
     List<String> usersIds,
   ) async {
+    if (usersIds.isEmpty) {
+      emit(state.copyWith(isLoading: false, friendList: []));
+      return;
+    }
+
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -295,8 +300,9 @@ class CreateFelicitupBloc
         AppConstants.feclitiupsCollection,
       );
       final listOwners = state.felicitupOwner.map((e) => e.toJson()).toList();
-      final participants =
-          state.invitedContacts.map((e) => e.toJson()).toList();
+      final participants = state.invitedContacts
+          .map((e) => e.toJson())
+          .toList();
 
       final response = await _felicitupRepository.createFelicitup(
         id: felicitupId,
@@ -355,16 +361,13 @@ class CreateFelicitupBloc
   }
 
   _searchEvent(Emitter<CreateFelicitupState> emit, String value) {
-    final listProv =
-        state.friendList.where((element) {
-          return element.fullName != null &&
-              value
-                  .toLowerCase()
-                  .split('')
-                  .every(
-                    (char) => element.fullName!.toLowerCase().contains(char),
-                  );
-        }).toList();
+    final listProv = state.friendList.where((element) {
+      return element.fullName != null &&
+          value
+              .toLowerCase()
+              .split('')
+              .every((char) => element.fullName!.toLowerCase().contains(char));
+    }).toList();
     emit(state.copyWith(friendList: listProv));
   }
 }
