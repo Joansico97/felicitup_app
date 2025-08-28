@@ -56,12 +56,16 @@ class VideoSpace extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            errorWidget: (_, url, error) => Text(
-                              name?.split(' ')[0] ?? '',
-                              style: context.styles.subtitle,
+                            errorWidget: (_, url, error) => Center(
+                              child: Text(
+                                name?.split(' ')[0] ?? '',
+                                style: context.styles.subtitle,
+                              ),
                             ),
                           )
                         : Container(
+                            height: context.fullHeight,
+                            width: context.sp(100),
                             color: context.colors.grey,
                             child: Center(
                               child: Text(

@@ -48,6 +48,7 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.inactive:
+        deleteId();
         break;
       case AppLifecycleState.paused:
         deleteId();
@@ -56,8 +57,10 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
         assignid();
         break;
       case AppLifecycleState.detached:
+        deleteId();
         break;
       case AppLifecycleState.hidden:
+        deleteId();
         break;
     }
   }

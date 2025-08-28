@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 /* eslint-disable quotes */
 /* eslint-disable require-jsdoc */
 /* eslint-disable max-len */
@@ -516,7 +517,7 @@ exports.mergeVideos = functions.https.onCall({
     await watermarkFile.download({destination: watermarkTempPath});
 
     // Aplicar la marca de agua
-    await addWatermark(outputFilePath, watermarkedFilePath, watermarkTempPath);
+    // await addWatermark(outputFilePath, watermarkedFilePath, watermarkTempPath);
 
     // Subir el video con marca de agua
     await bucket.upload(watermarkedFilePath, {destination: watermarkDestinationPath});
@@ -588,391 +589,6 @@ exports.mergeVideos = functions.https.onCall({
   }
 });
 
-exports.processVideoMerge = onDocumentCreated("videoMergeJobs/{felicitupId}", async (event) => {
-  const snap = event.data;
-  if (!snap) {
-    console.log("No data associated with the event");
-    return;
-  }
-
-  const jobData = snap.data();
-  const {videoUrls, userId} = jobData;
-  const {felicitupId} = event.params;
-
-  console.log(`Starting video merge job: ${felicitupId} for user: ${userId}`);
-
-  if (!videoUrls || !Array.isArray(videoUrls) || videoUrls.length === 0) {
-    console.error("Invalid video URLs in job:", felicitupId, videoUrls);
-    await snap.ref.update({
-      status: "failed",
-      error: "Invalid video URLs",
-      updatedAt: new Date(),
-    });
-    return;
-  }
-
-  await snap.ref.update({
-    status: "processing",
-    startedAt: new Date(),
-    totalVideos: videoUrls.length,
-  });
-
-  const tempDir = os.tmpdir();
-  const outputFileName = `merged-${Date.now()}.mp4`;
-  const outputFilePath = path.join(tempDir, outputFileName);
-  const tempFiles = [];
-  const processedFiles = [];
-  let watermarkTempPath = null;
-
-  try {
-    // 1. Descargar y normalizar cada video
-    console.log(`Downloading and processing ${videoUrls.length} videos`);
-
-    for (const [index, url] of videoUrls.entries()) {
-      const tempFilePath = path.join(tempDir, `source-${index}-${Date.now()}.mp4`);
-      const processedPath = path.join(tempDir, `processed-${index}-${Date.now()}.mp4`);
-
-      console.log(`Processing video ${index + 1}/${videoUrls.length}: ${url}`);
-
-      try {
-        // Descargar el video
-        const file = bucket.file(url);
-        await file.download({destination: tempFilePath});
-        console.log(`Downloaded video ${index + 1}`);
-
-        // Normalizar el video
-        console.log(`Normalizing video ${index + 1}`);
-        await normalizeVideo(tempFilePath, processedPath);
-        console.log(`Normalized video ${index + 1}`);
-
-        processedFiles.push(processedPath);
-        tempFiles.push(tempFilePath);
-
-        // Actualizar progreso
-        await snap.ref.update({
-          processedVideos: index + 1,
-          updatedAt: new Date(),
-        });
-      } catch (videoError) {
-        console.error(`Error processing video ${index + 1}:`, videoError);
-        throw new Error(`Failed to process video ${index + 1}: ${videoError.message}`);
-      }
-    }
-
-    // 2. Concatenar los videos normalizados
-    console.log("Concatenating normalized videos...");
-    await concatVideos(processedFiles, outputFilePath);
-    console.log("Videos concatenated successfully");
-
-    // 3. Subir el resultado original
-    const destinationPath = `videos/${felicitupId}/${outputFileName}`;
-    await bucket.upload(outputFilePath, {destination: destinationPath});
-    console.log("Original video uploaded");
-
-    // 4. Generar y subir video con marca de agua
-    console.log("Adding watermark to the final video...");
-    const watermarkedFileName = `export-${outputFileName}`;
-    const watermarkedFilePath = path.join(tempDir, watermarkedFileName);
-    let watermarkDestinationPath = `videos/${felicitupId}/${watermarkedFileName}`; // ✅ Cambiado a let
-
-    try {
-      // Descargar watermark
-      const watermarkFile = bucket.file("watermark.png");
-      watermarkTempPath = path.join(tempDir, `watermark-${Date.now()}.png`);
-      await watermarkFile.download({destination: watermarkTempPath});
-      console.log("Watermark downloaded");
-
-      // Aplicar marca de agua
-      await addWatermark(outputFilePath, watermarkedFilePath, watermarkTempPath);
-      console.log("Watermark applied");
-
-      // Subir video con marca de agua
-      await bucket.upload(watermarkedFilePath, {destination: watermarkDestinationPath});
-      console.log("Watermarked video uploaded");
-    } catch (watermarkError) {
-      console.error("Watermark processing failed, continuing without watermark:", watermarkError);
-      // Continuar sin marca de agua pero registrar el error
-      watermarkDestinationPath = destinationPath; // ✅ Ahora funciona
-    }
-
-    // 5. Generar y subir thumbnail
-    console.log("Generating thumbnail...");
-    const thumbnailFileName = `thumbnail-${Date.now()}.jpg`;
-    const thumbnailTempPath = path.join(tempDir, thumbnailFileName);
-    const thumbnailDestinationPath = `thumbnails/${felicitupId}/${thumbnailFileName}`;
-
-    await generateThumbnail(outputFilePath, thumbnailTempPath);
-    await bucket.upload(thumbnailTempPath, {destination: thumbnailDestinationPath});
-    console.log("Thumbnail uploaded");
-
-    // 6. Obtener URLs
-    const [url] = await bucket.file(destinationPath).getSignedUrl({
-      action: "read",
-      expires: "03-01-2500",
-    });
-
-    const [thumbnailUrl] = await bucket.file(thumbnailDestinationPath).getSignedUrl({
-      action: "read",
-      expires: "03-01-2500",
-    });
-
-    let exportVideoUrl = url;
-    if (watermarkDestinationPath !== destinationPath) {
-      const [watermarkedUrl] = await bucket.file(watermarkDestinationPath).getSignedUrl({
-        action: "read",
-        expires: "03-01-2500",
-      });
-      exportVideoUrl = watermarkedUrl;
-    }
-
-    // 7. Actualizar Firestore
-    await admin.firestore().collection("Felicitups").doc(felicitupId).update({
-      finalVideoUrl: url,
-      thumbnailUrl: thumbnailUrl,
-      exportVideoUrl: exportVideoUrl,
-      updatedAt: new Date(),
-    });
-
-    console.log("Firestore updated successfully");
-
-    // 8. Enviar notificación
-    try {
-      const userDoc = await admin.firestore().collection("Users").doc(userId).get();
-      if (userDoc.exists && userDoc.data().fcmToken) {
-        await admin.messaging().send({
-          token: userDoc.data().fcmToken,
-          notification: {
-            title: "¡Tu video está listo!",
-            body: "La combinación de videos se ha completado exitosamente.",
-          },
-          data: {
-            "type": "video",
-            "felicitupId": felicitupId,
-            "chatId": "",
-            "name": "",
-            "friendId": "",
-            "userImage": "",
-          },
-        });
-        console.log("Notification sent");
-      }
-    } catch (notificationError) {
-      console.warn("Failed to send notification:", notificationError);
-    }
-
-    // 9. Marcar trabajo como completado
-    await snap.ref.update({
-      status: "completed",
-      finishedAt: new Date(),
-      result: {
-        finalVideoUrl: url,
-        thumbnailUrl: thumbnailUrl,
-        exportVideoUrl: exportVideoUrl,
-      },
-    });
-
-    console.log(`Job ${felicitupId} completed successfully.`);
-  } catch (error) {
-    console.error("Error in mergeVideos:", error);
-
-    // Actualizar estado de error
-    await snap.ref.update({
-      status: "failed",
-      error: error.message,
-      failedAt: new Date(),
-    });
-
-    // También actualizar el documento Felicitups si existe
-    try {
-      await admin.firestore().collection("Felicitups").doc(felicitupId).update({
-        processingStatus: "failed",
-        error: error.message,
-        updatedAt: new Date(),
-      });
-    } catch (updateError) {
-      console.error("Failed to update Felicitups document:", updateError);
-    }
-
-    throw new functions.https.HttpsError("internal", "Video processing failed", error.message);
-  } finally {
-    // Limpieza más robusta
-    const allTempFiles = [
-      ...tempFiles,
-      ...processedFiles,
-      outputFilePath,
-      watermarkTempPath,
-    ].filter((file) => file && typeof file === 'string');
-
-    for (const file of allTempFiles) {
-      try {
-        if (fs.existsSync(file)) {
-          fs.unlinkSync(file);
-          console.log(`Deleted temp file: ${file}`);
-        }
-      } catch (e) {
-        console.warn(`Could not delete temp file ${file}:`, e);
-      }
-    }
-  }
-});
-
-// // Función addWatermark corregida
-// async function addWatermark(inputPath, outputPath, watermarkPath) {
-//   return new Promise((resolve, reject) => {
-//     ffmpeg(inputPath)
-//         .input(watermarkPath)
-//         .complexFilter([
-//           '[1:v] scale=200:-1 [wm]',
-//           '[0:v][wm] overlay=main_w-overlay_w-10:main_h-overlay_h-10'
-//         ])
-//         .outputOptions([
-//           '-c:v', 'libx264',
-//           '-c:a', 'copy', // Mantener el audio original
-//           '-preset', 'fast',
-//           '-movflags', '+faststart',
-//         ])
-//         .on('start', (cmd) => console.log('Applying watermark:', cmd))
-//         .on('progress', (progress) => {
-//           if (progress.percent) {
-//             console.log(`Watermark progress: ${progress.percent}%`);
-//           }
-//         })
-//         .on('end', () => {
-//           console.log('Watermark applied successfully.');
-//           resolve();
-//         })
-//         .on('error', (err, stdout, stderr) => {
-//           console.error('Error applying watermark:', err, stderr);
-//           reject(new Error(`Error applying watermark: ${stderr || err.message}`));
-//         })
-//         .save(outputPath);
-//   });
-// }
-
-// --- NUEVA FUNCIÓN PARA AÑADIR MARCA DE AGUA ---
-/**
- * Aplica una marca de agua a un video.
- * @param {string} inputPath - Ruta del video de entrada.
- * @param {string} outputPath - Ruta donde se guardará el video con marca de agua.
- * @param {string} watermarkPath - Ruta de la imagen de la marca de agua.
- * @return {Promise<void>}
- */
-async function addWatermark(inputPath, outputPath, watermarkPath) {
-  return new Promise((resolve, reject) => {
-    ffmpeg(inputPath)
-        .input(watermarkPath)
-        .complexFilter([
-          // Posiciona la marca de agua en la esquina inferior derecha con un margen de 10px
-          "[1:v] scale=200:-1 [wm]; [0:v][wm] overlay=main_w-overlay_w-10:main_h-overlay_h-10",
-        ])
-        .outputOptions([
-          '-c:v', 'libx264',
-          '-c:a', 'aac',
-          '-preset', 'fast',
-          '-movflags', '+faststart',
-        ])
-        .on('start', (cmd) => console.log('Applying watermark:', cmd))
-        .on('end', () => {
-          console.log('Watermark applied successfully.');
-          resolve();
-        })
-        .on('error', (err, stdout, stderr) => {
-          console.error('Error applying watermark:', stderr);
-          reject(new Error(`Error applying watermark: ${stderr || err.message}`));
-        })
-        .save(outputPath);
-  });
-}
-
-// Modifica la función normalizeVideo para manejar codecs desconocidos
-async function normalizeVideo(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    const command = ffmpeg(inputPath)
-        .inputOptions([
-          '-ignore_unknown', // Ignora streams desconocidos
-          '-analyzeduration 10M', // Aumenta tiempo de análisis
-          '-probesize 10M', // Aumenta tamaño de sondeo
-        ])
-        .videoCodec('libx264')
-        .audioCodec('aac')
-        .outputOptions([
-          '-map 0:v', // Solo el stream de video
-          '-map 0:a:0?', // Solo el primer stream de audio (si existe)
-          '-movflags +faststart',
-          '-preset fast',
-          '-strict experimental', // Permite codecs experimentales
-        ])
-        .videoFilter('scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1')
-        .audioFilter('aresample=async=1000')
-        .on('start', (cmd) => console.log('Ejecutando:', cmd))
-        .on('progress', (progress) => console.log(`Progreso: ${progress.percent}%`))
-        .on('end', () => {
-          console.log('Normalización completada');
-          resolve();
-        })
-        .on('error', (err) => {
-          console.error('Error en normalización:', err);
-          reject(new Error(`Error al normalizar video: ${err.message}`));
-        });
-
-    command.save(outputPath);
-  });
-}
-
-// Función concatVideos actualizada
-async function concatVideos(videoPaths, outputFilePath) {
-  return new Promise((resolve, reject) => {
-    const command = ffmpeg();
-
-    // Añadir inputs con opciones para manejar codecs especiales
-    videoPaths.forEach((path) => {
-      command.input(path)
-          .inputOptions([
-            '-ignore_unknown',
-            '-analyzeduration 10M',
-            '-probesize 10M',
-          ]);
-    });
-
-    // Configurar filtros complejos
-    command.complexFilter([
-      {
-        filter: 'concat',
-        options: {
-          n: videoPaths.length,
-          v: 1,
-          a: 1,
-        },
-        inputs: videoPaths.map((_, i) => `[${i}:v] [${i}:a]`).join(' '),
-        outputs: '[outv][outa]',
-      },
-    ])
-        .outputOptions([
-          '-map', '[outv]',
-          '-map', '[outa]',
-          '-c:v', 'libx264',
-          '-c:a', 'aac',
-          '-preset', 'fast',
-          '-movflags', '+faststart',
-          '-shortest',
-          '-strict', 'experimental',
-        ])
-        .on('start', (cmd) => console.log('Ejecutando concatenación:', cmd))
-        .on('progress', (progress) => console.log(`Progreso: ${progress.percent}%`))
-        .on('end', () => {
-          console.log('Concatenación completada');
-          resolve();
-        })
-        .on('error', (err, stdout, stderr) => {
-          console.error('Error en concatenación:', stderr);
-          reject(new Error(`Error al concatenar videos: ${stderr || err.message}`));
-        });
-
-    command.save(outputFilePath);
-  });
-}
-
-// Función para obtener metadatos (versión segura)
 async function getVideoMetadata(filePath) {
   return new Promise((resolve, reject) => {
     execFile('ffprobe', [
@@ -995,14 +611,467 @@ async function getVideoMetadata(filePath) {
   });
 }
 
+exports.processVideoMerge = onDocumentCreated(
+    {
+      document: "videoMergeJobs/{felicitupId}",
+      timeoutSeconds: 540,
+      memory: "2GB",
+      region: "us-central1",
+      maxInstances: 2,
+    },
+    async (event) => {
+      const snap = event.data;
+      if (!snap) {
+        console.log("No data associated with the event");
+        return;
+      }
+
+      const jobData = snap.data();
+      const {videoUrls, userId} = jobData;
+      const {felicitupId} = event.params;
+
+      console.log(`Starting video merge job: ${felicitupId} for user: ${userId}`);
+
+      if (!videoUrls || !Array.isArray(videoUrls) || videoUrls.length === 0) {
+        console.error("Invalid video URLs in job:", felicitupId, videoUrls);
+        await snap.ref.update({
+          status: "failed",
+          error: "Invalid video URLs",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return;
+      }
+
+      await snap.ref.update({
+        status: "processing",
+        startedAt: admin.firestore.FieldValue.serverTimestamp(),
+        totalVideos: videoUrls.length,
+        processedVideos: 0,
+      });
+
+      const tempDir = os.tmpdir();
+      const outputFileName = `merged-${Date.now()}.mp4`;
+      const outputFilePath = path.join(tempDir, outputFileName);
+      const tempFiles = [];
+      const processedFiles = [];
+
+      try {
+      // 1. Descargar y normalizar cada video
+        console.log(`Downloading and processing ${videoUrls.length} videos`);
+
+        for (const [index, url] of videoUrls.entries()) {
+          const tempFilePath = path.join(tempDir, `source-${index}-${Date.now()}.mp4`);
+          const processedPath = path.join(tempDir, `processed-${index}-${Date.now()}.mp4`);
+
+          console.log(`Processing video ${index + 1}/${videoUrls.length}: ${url}`);
+
+          try {
+          // Descargar el video
+            const file = bucket.file(url);
+            await file.download({destination: tempFilePath});
+            console.log(`Downloaded video ${index + 1}`);
+
+            // Normalizar el video
+            console.log(`Normalizing video ${index + 1}`);
+            await normalizeVideo(tempFilePath, processedPath);
+            console.log(`Normalized video ${index + 1}`);
+
+            processedFiles.push(processedPath);
+            tempFiles.push(tempFilePath);
+
+            // Limpiar archivo fuente inmediatamente
+            try {
+              if (fs.existsSync(tempFilePath)) {
+                fs.unlinkSync(tempFilePath);
+                console.log(`Deleted source file: ${tempFilePath}`);
+              }
+            } catch (e) {
+              console.warn(`Could not delete source file: ${e}`);
+            }
+
+            // Actualizar progreso
+            await snap.ref.update({
+              processedVideos: index + 1,
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+          } catch (videoError) {
+            console.error(`Error processing video ${index + 1}:`, videoError);
+            throw new Error(`Failed to process video ${index + 1}: ${videoError.message}`);
+          }
+        }
+
+        // 2. Concatenar los videos normalizados
+        console.log("Concatenating normalized videos...");
+        await concatVideos(processedFiles, outputFilePath);
+        console.log("Videos concatenated successfully");
+
+        // Limpiar archivos procesados inmediatamente
+        for (const processedFile of processedFiles) {
+          try {
+            if (fs.existsSync(processedFile)) {
+              fs.unlinkSync(processedFile);
+              console.log(`Deleted processed file: ${processedFile}`);
+            }
+          } catch (e) {
+            console.warn(`Could not delete processed file: ${e}`);
+          }
+        }
+
+        // 3. Subir el resultado original
+        const destinationPath = `videos/${felicitupId}/${outputFileName}`;
+        await bucket.upload(outputFilePath, {destination: destinationPath});
+        console.log("Original video uploaded");
+
+        // 4. Procesar marca de agua (versión simplificada)
+        console.log("Processing watermark...");
+        let exportVideoUrl = null;
+
+        try {
+          exportVideoUrl = await processWatermarkSimple(
+              outputFilePath,
+              felicitupId,
+              tempDir,
+          );
+          console.log("Watermark processed successfully");
+        } catch (watermarkError) {
+          console.error("Watermark processing failed, using original video:", watermarkError);
+          // Obtener URL del video original como fallback
+          const [originalUrl] = await bucket.file(destinationPath).getSignedUrl({
+            action: "read",
+            expires: "03-01-2500",
+          });
+          exportVideoUrl = originalUrl;
+        }
+
+        // 5. Generar y subir thumbnail
+        console.log("Generating thumbnail...");
+        const thumbnailUrl = await generateAndUploadThumbnail(
+            outputFilePath,
+            felicitupId,
+            tempDir,
+        );
+        console.log("Thumbnail uploaded");
+
+        // 6. Obtener URL del video final
+        const [finalVideoUrl] = await bucket.file(destinationPath).getSignedUrl({
+          action: "read",
+          expires: "03-01-2500",
+        });
+
+        // 7. Actualizar Firestore
+        await admin.firestore().collection("Felicitups").doc(felicitupId).update({
+          finalVideoUrl: finalVideoUrl,
+          thumbnailUrl: thumbnailUrl,
+          exportVideoUrl: exportVideoUrl,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          processingStatus: "completed",
+        });
+
+        console.log("Firestore updated successfully");
+
+        // 8. Enviar notificación
+        await sendNotification(userId, felicitupId);
+
+        // 9. Marcar trabajo como completado
+        await snap.ref.update({
+          status: "completed",
+          finishedAt: admin.firestore.FieldValue.serverTimestamp(),
+          result: {
+            finalVideoUrl: finalVideoUrl,
+            thumbnailUrl: thumbnailUrl,
+            exportVideoUrl: exportVideoUrl,
+          },
+        });
+
+        console.log(`Job ${felicitupId} completed successfully.`);
+      } catch (error) {
+        console.error("Error in mergeVideos:", error);
+
+        await snap.ref.update({
+          status: "failed",
+          error: error.message,
+          failedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        try {
+          await admin.firestore().collection("Felicitups").doc(felicitupId).update({
+            processingStatus: "failed",
+            error: error.message,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (updateError) {
+          console.error("Failed to update Felicitups document:", updateError);
+        }
+
+        throw new functions.https.HttpsError("internal", "Video processing failed", error.message);
+      } finally {
+        await cleanupTempFiles([...tempFiles, outputFilePath]);
+      }
+    },
+);
+
+// --- FUNCIONES AUXILIARES ---
+
+/**
+ * Procesar marca de agua (versión simplificada)
+ */
+async function processWatermarkSimple(inputVideoPath, felicitupId, tempDir) {
+  const watermarkFileName = `watermark-${Date.now()}.png`;
+  const watermarkTempPath = path.join(tempDir, watermarkFileName);
+
+  const watermarkedFileName = `export-${path.basename(inputVideoPath)}`;
+  const watermarkedFilePath = path.join(tempDir, watermarkedFileName);
+  const watermarkDestinationPath = `videos/${felicitupId}/${watermarkedFileName}`;
+
+  try {
+    // Descargar watermark
+    console.log("Downloading watermark...");
+    const watermarkFile = bucket.file("watermark.png");
+    await watermarkFile.download({destination: watermarkTempPath});
+    console.log("Watermark downloaded");
+
+    // Verificar que el watermark existe
+    if (!fs.existsSync(watermarkTempPath)) {
+      throw new Error("Watermark file not found after download");
+    }
+
+    // Aplicar marca de agua simplificada
+    console.log("Applying simple watermark...");
+    await applySimpleWatermark(inputVideoPath, watermarkedFilePath, watermarkTempPath);
+    console.log("Simple watermark applied");
+
+    // Subir video con marca de agua
+    console.log("Uploading watermarked video...");
+    await bucket.upload(watermarkedFilePath, {destination: watermarkDestinationPath});
+    console.log("Watermarked video uploaded");
+
+    // Obtener URL
+    const [exportVideoUrl] = await bucket.file(watermarkDestinationPath).getSignedUrl({
+      action: "read",
+      expires: "03-01-2500",
+    });
+
+    return exportVideoUrl;
+  } catch (error) {
+    console.error("Error in simple watermark process:", error);
+    throw error;
+  } finally {
+    // Limpiar archivos temporales
+    try {
+      if (fs.existsSync(watermarkTempPath)) fs.unlinkSync(watermarkTempPath);
+      if (fs.existsSync(watermarkedFilePath)) fs.unlinkSync(watermarkedFilePath);
+    } catch (cleanupError) {
+      console.warn("Error cleaning watermark temp files:", cleanupError);
+    }
+  }
+}
+
+/**
+ * Aplicar marca de agua simplificada
+ */
+async function applySimpleWatermark(inputPath, outputPath, watermarkPath) {
+  return new Promise((resolve, reject) => {
+    const args = [
+      '-i', inputPath,
+      '-i', watermarkPath,
+      '-filter_complex', 'overlay=W-w-10:H-h-10', // Versión simplificada
+      '-c:v', 'libx264',
+      '-c:a', 'copy',
+      '-preset', 'ultrafast',
+      '-crf', '23',
+      '-y',
+      outputPath,
+    ];
+
+    console.log('Executing simple ffmpeg with args:', args);
+
+    const process = execFile('ffmpeg', args, {timeout: 180000}, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Simple FFmpeg error:', stderr);
+        reject(new Error(`Simple FFmpeg failed: ${stderr || error.message}`));
+        return;
+      }
+      console.log('Simple FFmpeg completed successfully');
+      resolve();
+    });
+
+    // Log en tiempo real
+    process.stderr.on('data', (data) => {
+      const output = data.toString();
+      if (output.includes('time=')) {
+        console.log('FFmpeg progress:', output.trim());
+      }
+    });
+
+    process.stdout.on('data', (data) => {
+      console.log('FFmpeg stdout:', data.toString().trim());
+    });
+  });
+}
+
+/**
+ * Generar y subir thumbnail
+ */
+async function generateAndUploadThumbnail(videoPath, felicitupId, tempDir) {
+  const thumbnailFileName = `thumbnail-${Date.now()}.jpg`;
+  const thumbnailTempPath = path.join(tempDir, thumbnailFileName);
+  const thumbnailDestinationPath = `thumbnails/${felicitupId}/${thumbnailFileName}`;
+
+  await generateThumbnail(videoPath, thumbnailTempPath);
+  await bucket.upload(thumbnailTempPath, {destination: thumbnailDestinationPath});
+
+  const [thumbnailUrl] = await bucket.file(thumbnailDestinationPath).getSignedUrl({
+    action: "read",
+    expires: "03-01-2500",
+  });
+
+  // Limpiar thumbnail temporal
+  try {
+    if (fs.existsSync(thumbnailTempPath)) {
+      fs.unlinkSync(thumbnailTempPath);
+    }
+  } catch (e) {
+    console.warn("Could not delete thumbnail temp file:", e);
+  }
+
+  return thumbnailUrl;
+}
+
+/**
+ * Enviar notificación
+ */
+async function sendNotification(userId, felicitupId) {
+  try {
+    const userDoc = await admin.firestore().collection("Users").doc(userId).get();
+    if (userDoc.exists && userDoc.data().fcmToken) {
+      await admin.messaging().send({
+        token: userDoc.data().fcmToken,
+        notification: {
+          title: "¡Tu video está listo!",
+          body: "La combinación de videos se ha completado exitosamente.",
+        },
+        data: {
+          "type": "video",
+          "felicitupId": felicitupId,
+          "chatId": "",
+          "name": "",
+          "friendId": "",
+          "userImage": "",
+        },
+      });
+      console.log("Notification sent");
+    }
+  } catch (notificationError) {
+    console.warn("Failed to send notification:", notificationError);
+  }
+}
+
+/**
+ * Limpieza de archivos temporales
+ */
+async function cleanupTempFiles(files) {
+  for (const file of files) {
+    try {
+      if (file && fs.existsSync(file)) {
+        fs.unlinkSync(file);
+        console.log(`Deleted temp file: ${file}`);
+      }
+    } catch (e) {
+      console.warn(`Could not delete temp file ${file}:`, e);
+    }
+  }
+}
+
+async function normalizeVideo(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const command = ffmpeg(inputPath)
+        .inputOptions([
+          '-ignore_unknown',
+          '-analyzeduration 10M',
+          '-probesize 10M',
+        ])
+        .videoCodec('libx264')
+        .audioCodec('aac')
+        .outputOptions([
+          '-map 0:v',
+          '-map 0:a:0?',
+          '-movflags +faststart',
+          '-preset fast',
+          '-strict experimental',
+        ])
+        .videoFilter('scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1')
+        .audioFilter('aresample=async=1000')
+        .on('start', (cmd) => console.log('Normalizing video:', cmd))
+        .on('end', () => {
+          console.log('Normalization completed');
+          resolve();
+        })
+        .on('error', (err) => {
+          console.error('Error in normalization:', err);
+          reject(new Error(`Error al normalizar video: ${err.message}`));
+        });
+
+    command.save(outputPath);
+  });
+}
+
+async function concatVideos(videoPaths, outputFilePath) {
+  return new Promise((resolve, reject) => {
+    const command = ffmpeg();
+
+    videoPaths.forEach((path) => {
+      command.input(path)
+          .inputOptions([
+            '-ignore_unknown',
+            '-analyzeduration 10M',
+            '-probesize 10M',
+          ]);
+    });
+
+    command.complexFilter([
+      {
+        filter: 'concat',
+        options: {
+          n: videoPaths.length,
+          v: 1,
+          a: 1,
+        },
+        inputs: videoPaths.map((_, i) => `[${i}:v] [${i}:a]`).join(' '),
+        outputs: '[outv][outa]',
+      },
+    ])
+        .outputOptions([
+          '-map', '[outv]',
+          '-map', '[outa]',
+          '-c:v', 'libx264',
+          '-c:a', 'aac',
+          '-preset', 'fast',
+          '-movflags', '+faststart',
+          '-shortest',
+          '-strict', 'experimental',
+        ])
+        .on('start', (cmd) => console.log('Concatenating videos:', cmd))
+        .on('end', () => {
+          console.log('Concatenation completed');
+          resolve();
+        })
+        .on('error', (err, stdout, stderr) => {
+          console.error('Error in concatenation:', stderr);
+          reject(new Error(`Error al concatenar videos: ${stderr || err.message}`));
+        });
+
+    command.save(outputFilePath);
+  });
+}
+
 async function generateThumbnail(videoPath, outputPath) {
   return new Promise((resolve, reject) => {
     execFile('ffmpeg', [
       '-i', videoPath,
-      '-ss', '00:00:01', // Captura en el segundo 1
-      '-vframes', '1', // Solo 1 frame
-      '-q:v', '2', // Calidad del thumbnail (2 es alta calidad)
-      '-vf', 'scale=540:960', // Tamaño reducido para thumbnail
+      '-ss', '00:00:01',
+      '-vframes', '1',
+      '-q:v', '2',
+      '-vf', 'scale=540:960',
       '-y',
       outputPath,
     ], {timeout: 30000}, (error, stdout, stderr) => {
