@@ -615,8 +615,7 @@ exports.processVideoMerge = onDocumentCreated(
     {
       document: "videoMergeJobs/{felicitupId}",
       timeoutSeconds: 540,
-      memory: "2GB",
-      region: "us-central1",
+      memory: "4GB",
       maxInstances: 2,
     },
     async (event) => {
@@ -656,10 +655,12 @@ exports.processVideoMerge = onDocumentCreated(
       const processedFiles = [];
 
       try {
-      // 1. Descargar y normalizar cada video
+      // 1. Descargar y normalizar videos en paralelo (con limitación de concurrencia)
         console.log(`Downloading and processing ${videoUrls.length} videos`);
 
-        for (const [index, url] of videoUrls.entries()) {
+        // Procesar videos con concurrencia limitada para no saturar recursos
+        const concurrencyLimit = 3;
+        const processVideo = async (url, index) => {
           const tempFilePath = path.join(tempDir, `source-${index}-${Date.now()}.mp4`);
           const processedPath = path.join(tempDir, `processed-${index}-${Date.now()}.mp4`);
 
@@ -698,6 +699,12 @@ exports.processVideoMerge = onDocumentCreated(
             console.error(`Error processing video ${index + 1}:`, videoError);
             throw new Error(`Failed to process video ${index + 1}: ${videoError.message}`);
           }
+        };
+
+        // Ejecutar con limitación de concurrencia
+        for (let i = 0; i < videoUrls.length; i += concurrencyLimit) {
+          const chunk = videoUrls.slice(i, i + concurrencyLimit);
+          await Promise.all(chunk.map((url, idx) => processVideo(url, i + idx)));
         }
 
         // 2. Concatenar los videos normalizados
@@ -810,10 +817,126 @@ exports.processVideoMerge = onDocumentCreated(
     },
 );
 
-// --- FUNCIONES AUXILIARES ---
+async function normalizeVideo(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const command = ffmpeg(inputPath)
+        .inputOptions([
+          '-analyzeduration 1M',
+          '-probesize 1M',
+        ])
+        .videoCodec('libx264')
+        .audioCodec('aac')
+        .outputOptions([
+          // Map ONLY video and audio streams, ignore all others
+          '-map', '0:v:0', // Primer stream de video solamente
+          '-map', '0:a:0?', // Primer stream de audio (opcional)
+          '-ignore_unknown', // Ignorar streams desconocidos
+          '-dn', // Descartar metadata
+          '-sn', // Descartar subtítulos
+          '-profile:v', 'baseline',
+          '-level', '3.1',
+          '-pix_fmt', 'yuv420p',
+          '-movflags', '+faststart',
+          '-preset', 'ultrafast',
+          '-crf', '23',
+          '-b:a', '128k',
+          '-ar', '44100',
+          '-max_muxing_queue_size', '1024',
+          '-threads', '2',
+        ])
+        .videoFilter('scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1')
+        .audioFilter('aresample=async=1000')
+        .on('start', (cmd) => console.log('Normalizing video with compatible codecs:', cmd))
+        .on('end', () => {
+          console.log('Normalization with compatible codecs completed');
+          resolve();
+        })
+        .on('error', (err) => {
+          console.error('Error in normalization:', err);
+          reject(new Error(`Error al normalizar video: ${err.message}`));
+        });
+
+    command.save(outputPath);
+  });
+}
 
 /**
- * Procesar marca de agua (versión simplificada)
+ * Concatenar videos con normalización de codecs para compatibilidad entre Android e iOS
+ * Y en el orden correcto (primero al último)
+ */
+async function concatVideos(videoPaths, outputFilePath) {
+  console.log("Starting concatenation with codec normalization...");
+
+  // INVERTIR EL ORDEN DEL ARRAY para que concatene en el orden correcto
+  const reversedVideoPaths = [...videoPaths].reverse();
+  console.log(`Original order: ${videoPaths.length} videos`);
+  console.log(`Reversed order for concatenation`);
+
+  return new Promise((resolve, reject) => {
+    const command = ffmpeg();
+
+    // Agregar todos los inputs con opciones para manejar formatos diversos
+    reversedVideoPaths.forEach((videoPath) => {
+      command.input(videoPath)
+          .inputOptions([
+            '-analyzeduration 1M',
+            '-probesize 1M',
+          ]);
+    });
+
+    // Construir el filtro complex para concatenación
+    const filterComplex = reversedVideoPaths.map((_, i) => {
+      return `[${i}:v] [${i}:a]`;
+    }).join(' ');
+
+    command.complexFilter([
+      {
+        filter: 'concat',
+        options: {
+          n: reversedVideoPaths.length,
+          v: 1,
+          a: 1,
+        },
+        inputs: filterComplex,
+        outputs: '[outv][outa]',
+      },
+    ])
+        .outputOptions([
+          '-map', '[outv]',
+          '-map', '[outa]',
+          '-ignore_unknown', // Ignorar streams desconocidos
+          '-dn', // Descartar metadata
+          '-sn', // Descartar subtítulos
+          '-c:v', 'libx264',
+          '-profile:v', 'baseline',
+          '-level', '3.1',
+          '-pix_fmt', 'yuv420p',
+          '-c:a', 'aac',
+          '-b:a', '128k',
+          '-ar', '44100',
+          '-preset', 'ultrafast',
+          '-movflags', '+faststart',
+          '-shortest',
+          '-threads', '2',
+        ])
+        .on('start', (cmd) => {
+          console.log('Starting reliable concatenation with codec normalization:', cmd);
+        })
+        .on('end', () => {
+          console.log('Concatenation with codec normalization completed successfully');
+          resolve();
+        })
+        .on('error', (err, stdout, stderr) => {
+          console.error('Error in concatenation with codec normalization:', stderr);
+          reject(new Error(`Error al concatenar videos: ${stderr || err.message}`));
+        });
+
+    command.save(outputFilePath);
+  });
+}
+
+/**
+ * Procesar marca de agua (versión optimizada)
  */
 async function processWatermarkSimple(inputVideoPath, felicitupId, tempDir) {
   const watermarkFileName = `watermark-${Date.now()}.png`;
@@ -867,31 +990,33 @@ async function processWatermarkSimple(inputVideoPath, felicitupId, tempDir) {
 }
 
 /**
- * Aplicar marca de agua simplificada
+ * Aplicar marca de agua simplificada (optimizada)
  */
 async function applySimpleWatermark(inputPath, outputPath, watermarkPath) {
   return new Promise((resolve, reject) => {
     const args = [
       '-i', inputPath,
       '-i', watermarkPath,
-      '-filter_complex', 'overlay=W-w-10:H-h-10', // Versión simplificada
+      '-filter_complex', '[1]format=rgba,colorchannelmixer=aa=0.7[wm];[0][wm]overlay=W-w-10:H-h-10:format=auto', // Mejor control de transparencia
       '-c:v', 'libx264',
-      '-c:a', 'copy',
-      '-preset', 'ultrafast',
-      '-crf', '23',
+      '-preset', 'ultrafast', // Más rápido
+      '-crf', '24', // Calidad ligeramente inferior para mayor velocidad
+      '-c:a', 'copy', // Copiar audio en lugar de re-codificar
+      '-movflags', '+faststart',
+      '-threads', '2', // Limitar threads
       '-y',
       outputPath,
     ];
 
-    console.log('Executing simple ffmpeg with args:', args);
+    console.log('Executing optimized ffmpeg with args:', args);
 
-    const process = execFile('ffmpeg', args, {timeout: 180000}, (error, stdout, stderr) => {
+    const process = execFile('ffmpeg', args, {timeout: 120000}, (error, stdout, stderr) => {
       if (error) {
-        console.error('Simple FFmpeg error:', stderr);
-        reject(new Error(`Simple FFmpeg failed: ${stderr || error.message}`));
+        console.error('Optimized FFmpeg error:', stderr);
+        reject(new Error(`Optimized FFmpeg failed: ${stderr || error.message}`));
         return;
       }
-      console.log('Simple FFmpeg completed successfully');
+      console.log('Optimized FFmpeg completed successfully');
       resolve();
     });
 
@@ -910,7 +1035,7 @@ async function applySimpleWatermark(inputPath, outputPath, watermarkPath) {
 }
 
 /**
- * Generar y subir thumbnail
+ * Generar y subir thumbnail (optimizado)
  */
 async function generateAndUploadThumbnail(videoPath, felicitupId, tempDir) {
   const thumbnailFileName = `thumbnail-${Date.now()}.jpg`;
@@ -938,7 +1063,28 @@ async function generateAndUploadThumbnail(videoPath, felicitupId, tempDir) {
 }
 
 /**
- * Enviar notificación
+ * Generar thumbnail (optimizado)
+ */
+async function generateThumbnail(videoPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    execFile('ffmpeg', [
+      '-i', videoPath,
+      '-ss', '00:00:01',
+      '-vframes', '1',
+      '-q:v', '3', // Calidad ligeramente inferior para mayor velocidad
+      '-vf', 'scale=540:960',
+      '-threads', '1', // Solo un thread para thumbnail
+      '-y',
+      outputPath,
+    ], {timeout: 15000}, (error, stdout, stderr) => { // Timeout reducido
+      if (error) return reject(new Error(`FFmpeg thumbnail error: ${stderr}`));
+      resolve();
+    });
+  });
+}
+
+/**
+ * Enviar notificación (sin cambios)
  */
 async function sendNotification(userId, felicitupId) {
   try {
@@ -967,7 +1113,7 @@ async function sendNotification(userId, felicitupId) {
 }
 
 /**
- * Limpieza de archivos temporales
+ * Limpieza de archivos temporales (sin cambios)
  */
 async function cleanupTempFiles(files) {
   for (const file of files) {
@@ -980,105 +1126,6 @@ async function cleanupTempFiles(files) {
       console.warn(`Could not delete temp file ${file}:`, e);
     }
   }
-}
-
-async function normalizeVideo(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    const command = ffmpeg(inputPath)
-        .inputOptions([
-          '-ignore_unknown',
-          '-analyzeduration 10M',
-          '-probesize 10M',
-        ])
-        .videoCodec('libx264')
-        .audioCodec('aac')
-        .outputOptions([
-          '-map 0:v',
-          '-map 0:a:0?',
-          '-movflags +faststart',
-          '-preset fast',
-          '-strict experimental',
-        ])
-        .videoFilter('scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1')
-        .audioFilter('aresample=async=1000')
-        .on('start', (cmd) => console.log('Normalizing video:', cmd))
-        .on('end', () => {
-          console.log('Normalization completed');
-          resolve();
-        })
-        .on('error', (err) => {
-          console.error('Error in normalization:', err);
-          reject(new Error(`Error al normalizar video: ${err.message}`));
-        });
-
-    command.save(outputPath);
-  });
-}
-
-async function concatVideos(videoPaths, outputFilePath) {
-  return new Promise((resolve, reject) => {
-    const command = ffmpeg();
-
-    videoPaths.forEach((path) => {
-      command.input(path)
-          .inputOptions([
-            '-ignore_unknown',
-            '-analyzeduration 10M',
-            '-probesize 10M',
-          ]);
-    });
-
-    command.complexFilter([
-      {
-        filter: 'concat',
-        options: {
-          n: videoPaths.length,
-          v: 1,
-          a: 1,
-        },
-        inputs: videoPaths.map((_, i) => `[${i}:v] [${i}:a]`).join(' '),
-        outputs: '[outv][outa]',
-      },
-    ])
-        .outputOptions([
-          '-map', '[outv]',
-          '-map', '[outa]',
-          '-c:v', 'libx264',
-          '-c:a', 'aac',
-          '-preset', 'fast',
-          '-movflags', '+faststart',
-          '-shortest',
-          '-strict', 'experimental',
-        ])
-        .on('start', (cmd) => console.log('Concatenating videos:', cmd))
-        .on('end', () => {
-          console.log('Concatenation completed');
-          resolve();
-        })
-        .on('error', (err, stdout, stderr) => {
-          console.error('Error in concatenation:', stderr);
-          reject(new Error(`Error al concatenar videos: ${stderr || err.message}`));
-        });
-
-    command.save(outputFilePath);
-  });
-}
-
-async function generateThumbnail(videoPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    execFile('ffmpeg', [
-      '-i', videoPath,
-      '-ss', '00:00:01',
-      '-vframes', '1',
-      '-q:v', '2',
-      '-vf', 'scale=540:960',
-      '-y',
-      outputPath,
-    ], {timeout: 30000}, (error, stdout, stderr) => {
-      if (error) return reject(new Error(`FFmpeg thumbnail error: ${stderr}`));
-      resolve();
-    });
-  });
 }
 
 exports.checkBirthdaysAndCreateAlerts = onSchedule({
