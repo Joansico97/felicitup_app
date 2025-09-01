@@ -658,8 +658,10 @@ exports.processVideoMerge = onDocumentCreated(
       // 1. Descargar y normalizar videos en paralelo (con limitación de concurrencia)
         console.log(`Downloading and processing ${videoUrls.length} videos`);
 
-        // Procesar videos con concurrencia limitada para no saturar recursos
-        const concurrencyLimit = 3;
+        // Procesar videos con concurrencia optimizada
+        const concurrencyLimit = 4; // Aumentado de 3 a 4 para mayor paralelismo
+
+        // Función optimizada para procesar un video
         const processVideo = async (url, index) => {
           const tempFilePath = path.join(tempDir, `source-${index}-${Date.now()}.mp4`);
           const processedPath = path.join(tempDir, `processed-${index}-${Date.now()}.mp4`);
@@ -667,12 +669,12 @@ exports.processVideoMerge = onDocumentCreated(
           console.log(`Processing video ${index + 1}/${videoUrls.length}: ${url}`);
 
           try {
-          // Descargar el video
+            // Descargar el video
             const file = bucket.file(url);
             await file.download({destination: tempFilePath});
             console.log(`Downloaded video ${index + 1}`);
 
-            // Normalizar el video
+            // Normalizar el video con la versión optimizada
             console.log(`Normalizing video ${index + 1}`);
             await normalizeVideo(tempFilePath, processedPath);
             console.log(`Normalized video ${index + 1}`);
@@ -690,21 +692,31 @@ exports.processVideoMerge = onDocumentCreated(
               console.warn(`Could not delete source file: ${e}`);
             }
 
-            // Actualizar progreso
-            await snap.ref.update({
-              processedVideos: index + 1,
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
+            // Actualizar progreso (ahora menos frecuentemente para reducir I/O)
+            if ((index + 1) % concurrencyLimit === 0 || (index + 1) === videoUrls.length) {
+              await snap.ref.update({
+                processedVideos: index + 1,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              });
+            }
           } catch (videoError) {
             console.error(`Error processing video ${index + 1}:`, videoError);
             throw new Error(`Failed to process video ${index + 1}: ${videoError.message}`);
           }
         };
 
-        // Ejecutar con limitación de concurrencia
+        // Función optimizada para procesar batches de videos
+        const processVideoBatch = async (urls, startIndex) => {
+          const promises = urls.map((url, idx) =>
+            processVideo(url, startIndex + idx),
+          );
+          return Promise.all(promises);
+        };
+
+        // Ejecutar con limitación de concurrencia mejorada
         for (let i = 0; i < videoUrls.length; i += concurrencyLimit) {
           const chunk = videoUrls.slice(i, i + concurrencyLimit);
-          await Promise.all(chunk.map((url, idx) => processVideo(url, i + idx)));
+          await processVideoBatch(chunk, i);
         }
 
         // 2. Concatenar los videos normalizados
@@ -821,18 +833,17 @@ async function normalizeVideo(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
     const command = ffmpeg(inputPath)
         .inputOptions([
-          '-analyzeduration 1M',
-          '-probesize 1M',
+          '-analyzeduration 500K', // Reducido de 1M a 500K
+          '-probesize 500K', // Reducido de 1M a 500K
         ])
         .videoCodec('libx264')
         .audioCodec('aac')
         .outputOptions([
-          // Map ONLY video and audio streams, ignore all others
-          '-map', '0:v:0', // Primer stream de video solamente
-          '-map', '0:a:0?', // Primer stream de audio (opcional)
-          '-ignore_unknown', // Ignorar streams desconocidos
-          '-dn', // Descartar metadata
-          '-sn', // Descartar subtítulos
+          '-map', '0:v:0',
+          '-map', '0:a:0?',
+          '-ignore_unknown',
+          '-dn',
+          '-sn',
           '-profile:v', 'baseline',
           '-level', '3.1',
           '-pix_fmt', 'yuv420p',
@@ -841,18 +852,19 @@ async function normalizeVideo(inputPath, outputPath) {
           '-crf', '23',
           '-b:a', '128k',
           '-ar', '44100',
-          '-max_muxing_queue_size', '1024',
+          '-max_muxing_queue_size', '512', // Reducido de 1024
           '-threads', '2',
+          '-x264-params', 'ref=3:bframes=0:scenecut=0', // Optimizaciones específicas
         ])
         .videoFilter('scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1')
         .audioFilter('aresample=async=1000')
-        .on('start', (cmd) => console.log('Normalizing video with compatible codecs:', cmd))
+        .on('start', (cmd) => console.log('Optimized normalization:', cmd))
         .on('end', () => {
-          console.log('Normalization with compatible codecs completed');
+          console.log('Optimized normalization completed');
           resolve();
         })
         .on('error', (err) => {
-          console.error('Error in normalization:', err);
+          console.error('Error in optimized normalization:', err);
           reject(new Error(`Error al normalizar video: ${err.message}`));
         });
 
@@ -860,31 +872,23 @@ async function normalizeVideo(inputPath, outputPath) {
   });
 }
 
-/**
- * Concatenar videos con normalización de codecs para compatibilidad entre Android e iOS
- * Y en el orden correcto (primero al último)
- */
 async function concatVideos(videoPaths, outputFilePath) {
-  console.log("Starting concatenation with codec normalization...");
+  console.log("Starting optimized concatenation...");
 
-  // INVERTIR EL ORDEN DEL ARRAY para que concatene en el orden correcto
   const reversedVideoPaths = [...videoPaths].reverse();
-  console.log(`Original order: ${videoPaths.length} videos`);
-  console.log(`Reversed order for concatenation`);
 
   return new Promise((resolve, reject) => {
     const command = ffmpeg();
+    const totalVideos = reversedVideoPaths.length;
 
-    // Agregar todos los inputs con opciones para manejar formatos diversos
     reversedVideoPaths.forEach((videoPath) => {
       command.input(videoPath)
           .inputOptions([
-            '-analyzeduration 1M',
-            '-probesize 1M',
+            '-analyzeduration 500K',
+            '-probesize 500K',
           ]);
     });
 
-    // Construir el filtro complex para concatenación
     const filterComplex = reversedVideoPaths.map((_, i) => {
       return `[${i}:v] [${i}:a]`;
     }).join(' ');
@@ -904,9 +908,9 @@ async function concatVideos(videoPaths, outputFilePath) {
         .outputOptions([
           '-map', '[outv]',
           '-map', '[outa]',
-          '-ignore_unknown', // Ignorar streams desconocidos
-          '-dn', // Descartar metadata
-          '-sn', // Descartar subtítulos
+          '-ignore_unknown',
+          '-dn',
+          '-sn',
           '-c:v', 'libx264',
           '-profile:v', 'baseline',
           '-level', '3.1',
@@ -918,16 +922,23 @@ async function concatVideos(videoPaths, outputFilePath) {
           '-movflags', '+faststart',
           '-shortest',
           '-threads', '2',
+          '-x264-params', 'ref=3:bframes=0:scenecut=0', // Optimizaciones específicas
         ])
         .on('start', (cmd) => {
-          console.log('Starting reliable concatenation with codec normalization:', cmd);
+          console.log('Starting optimized concatenation:', cmd);
+        })
+        .on('progress', (progress) => {
+          if (progress.percent) {
+            const normalizedPercent = Math.min(Math.round(progress.percent / totalVideos), 100);
+            console.log(`Processing: ${normalizedPercent}% done`);
+          }
         })
         .on('end', () => {
-          console.log('Concatenation with codec normalization completed successfully');
+          console.log('Optimized concatenation completed successfully');
           resolve();
         })
         .on('error', (err, stdout, stderr) => {
-          console.error('Error in concatenation with codec normalization:', stderr);
+          console.error('Error in optimized concatenation:', stderr);
           reject(new Error(`Error al concatenar videos: ${stderr || err.message}`));
         });
 
@@ -989,47 +1000,40 @@ async function processWatermarkSimple(inputVideoPath, felicitupId, tempDir) {
   }
 }
 
-/**
- * Aplicar marca de agua simplificada (optimizada)
- */
 async function applySimpleWatermark(inputPath, outputPath, watermarkPath) {
   return new Promise((resolve, reject) => {
     const args = [
       '-i', inputPath,
       '-i', watermarkPath,
-      '-filter_complex', '[1]format=rgba,colorchannelmixer=aa=0.7[wm];[0][wm]overlay=W-w-10:H-h-10:format=auto', // Mejor control de transparencia
+      '-filter_complex', '[1]format=rgba,colorchannelmixer=aa=0.7,scale=iw*0.2:-1[wm];[0][wm]overlay=W-w-10:H-h-10:format=auto',
       '-c:v', 'libx264',
-      '-preset', 'ultrafast', // Más rápido
-      '-crf', '24', // Calidad ligeramente inferior para mayor velocidad
-      '-c:a', 'copy', // Copiar audio en lugar de re-codificar
+      '-preset', 'ultrafast',
+      '-crf', '24',
+      '-c:a', 'copy',
       '-movflags', '+faststart',
-      '-threads', '2', // Limitar threads
+      '-threads', '2',
+      '-x264-params', 'ref=3:bframes=0:scenecut=0', // Optimizaciones específicas
       '-y',
       outputPath,
     ];
 
-    console.log('Executing optimized ffmpeg with args:', args);
+    console.log('Executing optimized ffmpeg watermark with args:', args);
 
     const process = execFile('ffmpeg', args, {timeout: 120000}, (error, stdout, stderr) => {
       if (error) {
-        console.error('Optimized FFmpeg error:', stderr);
+        console.error('Optimized FFmpeg watermark error:', stderr);
         reject(new Error(`Optimized FFmpeg failed: ${stderr || error.message}`));
         return;
       }
-      console.log('Optimized FFmpeg completed successfully');
+      console.log('Optimized FFmpeg watermark completed successfully');
       resolve();
     });
 
-    // Log en tiempo real
     process.stderr.on('data', (data) => {
       const output = data.toString();
       if (output.includes('time=')) {
-        console.log('FFmpeg progress:', output.trim());
+        console.log('FFmpeg watermark progress:', output.trim());
       }
-    });
-
-    process.stdout.on('data', (data) => {
-      console.log('FFmpeg stdout:', data.toString().trim());
     });
   });
 }
