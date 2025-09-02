@@ -92,10 +92,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   _loadUserData(Emitter<AppState> emit) async {
     emit(state.copyWith(isLoading: true));
 
+    final userId = _firebaseAuth.currentUser?.uid;
+
+    if (userId == null || userId.isEmpty) {
+      return;
+    }
+
     try {
-      final response = await _userRepository.getUserData(
-        _firebaseAuth.currentUser?.uid ?? '',
-      );
+      final response = await _userRepository.getUserData(userId);
 
       response.fold(
         (error) {
