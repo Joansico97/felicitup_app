@@ -12,7 +12,7 @@ admin.initializeApp({
 
 const functions = require("firebase-functions/v2");
 
-const {getDeviceToken, sendPushNotification, sendPushNotificationToListContacts} = require("./notifications/notifications");
+const {sendPushNotification} = require("./notifications/notifications");
 const {getUserDataById} = require("./users/users");
 const {deleteFelicitupTask} = require("./felicitups/send_felicitup_task");
 const {getFelicitupById, getFelicitupRefById} = require("./felicitups/felicitups");
@@ -70,38 +70,41 @@ exports.sendNotification = functions.https.onCall(
     },
     async (data, context) => {
       try {
-      // Accede a los datos dentro de 'data.data':
-        const userId = data.data.userId; // <-- data.data
-        const title = data.data.title; // <-- data.data
-        const message = data.data.message;// <-- data.data
-        const currentChat = data.data.currentChat; // <-- data.data
-        const dataInfo = data.data.dataInfo; // <-- data.data  O data.data.dataInfo, según necesites.
-        console.log("Data recibida en sendNotification:", dataInfo);
+        const userId = data.data.userId;
+        const title = data.data.title;
+        const message = data.data.message;
+        const currentChat = data.data.currentChat;
+        const dataInfo = data.data.dataInfo;
+
+        console.log("Data recibida en sendNotification:", {
+          userId,
+          title,
+          message,
+          currentChat,
+        });
 
         if (!userId) {
           throw new functions.https.HttpsError("invalid-argument", "El ID del usuario es requerido.");
         }
 
-        // ... resto de tu lógica, usando userId, title, message, etc. ...
         const db = admin.firestore();
         const userDoc = await db.collection("Users").doc(userId).get();
 
         if (!userDoc.exists) {
-          throw new functions.https.HttpsError("not-found", "No se encontró el usuario con el ID proporcionado.");
+          console.warn(`Usuario ${userId} no encontrado, omitiendo...`);
+          return {success: false, error: `Usuario ${userId} no encontrado`};
         }
 
         const userData = userDoc.data();
         const token = userData.fcmToken;
 
         if (!token) {
-          throw new functions.https.HttpsError(
-              "not-found",
-              "El usuario no tiene un token de FCM registrado.",
-          );
+          console.warn(`Usuario ${userId} no tiene FCMToken, omitiendo...`);
+          return {success: false, error: `Usuario ${userId} sin FCMToken`};
         }
 
         if (!currentChat || userData.currentChat !== currentChat) {
-          console.log("Enviando notificación a:", token);
+          console.log("Enviando notificación a:", userId, "con token:", token);
           const payload = {
             token,
             notification: {
@@ -110,12 +113,24 @@ exports.sendNotification = functions.https.onCall(
             },
             data: dataInfo,
           };
-          await sendPushNotification(payload);
-          // await admin.messaging().send(payload);
-          return {success: true};
+
+          try {
+            await sendPushNotification(payload);
+            console.log(`Notificación enviada exitosamente a ${userId}`);
+            return {success: true, message: `Notificación enviada a ${userId}`};
+          } catch (notificationError) {
+            console.error(`Error enviando notificación a ${userId}:`, notificationError);
+            return {success: false, error: `Error enviando a ${userId}: ${notificationError.message}`};
+          }
+        } else {
+          console.log(`Usuario ${userId} está en el chat actual, omitiendo notificación`);
+          return {success: false, error: `Usuario ${userId} está en el chat`};
         }
       } catch (error) {
-        functions.console.error("Error en sendNotification:", error, {userId: data && data.data ? data.data.userId : undefined}); // Log estructurado.
+        functions.logger.error("Error en sendNotification:", error, {
+          userId: data ? data.userId : undefined,
+        });
+
         if (error instanceof functions.https.HttpsError) {
           throw error;
         }
@@ -124,54 +139,92 @@ exports.sendNotification = functions.https.onCall(
     },
 );
 
-exports.sendNotificationToList = functions.https.onCall(
-    async (data) => {
+exports.sendNotificationToMultiple = functions.https.onCall(
+    {
+      region: "us-central1",
+      timeoutSeconds: 300,
+      memory: "256MiB",
+    },
+    async (data, context) => {
       try {
-        const userIds = data.data.userIds; // Lista de IDs de usuarios
+        const userIds = data.data.userIds; // Array de IDs de usuarios
         const title = data.data.title;
         const message = data.data.message;
-        const dataInfo = data.data.dataInfo;
         const currentChat = data.data.currentChat;
+        const dataInfo = data.data.dataInfo;
 
-        if (!Array.isArray(userIds)) {
-          console.table(userIds);
-          throw new functions.https.HttpsError("invalid-argument", "La lista de IDs de usuarios no es válida.");
+        if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+          throw new functions.https.HttpsError("invalid-argument", "Se requieren IDs de usuarios válidos.");
         }
 
-        // Obtener los tokens de los usuarios que cumplen con la condición
-        const tokensToSend = [];
+        console.log(`Enviando notificación a ${userIds.length} usuarios`);
+
+        const db = admin.firestore();
+        const results = {
+          success: 0,
+          failed: 0,
+          details: [],
+        };
+
+        // Procesar cada usuario individualmente
         for (const userId of userIds) {
           try {
-            const userData = await getUserDataById(userId);
-            const token = await getDeviceToken(userId);
-            if (token && (!currentChat || userData.currentChat !== currentChat)) {
-              tokensToSend.push(token);
+            const userDoc = await db.collection("Users").doc(userId).get();
+
+            if (!userDoc.exists) {
+              console.warn(`Usuario ${userId} no encontrado, omitiendo...`);
+              results.details.push({userId, status: 'failed', reason: 'Usuario no encontrado'});
+              results.failed++;
+              continue;
             }
-          } catch (error) {
-            console.error(`Error al obtener datos del usuario ${userId}:`, error);
+
+            const userData = userDoc.data();
+            const token = userData.fcmToken;
+
+            if (!token) {
+              console.warn(`Usuario ${userId} no tiene FCMToken, omitiendo...`);
+              results.details.push({userId, status: 'failed', reason: 'Sin FCMToken'});
+              results.failed++;
+              continue;
+            }
+
+            if (!currentChat || userData.currentChat !== currentChat) {
+              console.log("Enviando notificación a:", userId);
+              const payload = {
+                token,
+                notification: {
+                  title: title,
+                  body: message,
+                },
+                data: dataInfo,
+              };
+
+              await sendPushNotification(payload);
+              results.details.push({userId, status: 'success'});
+              results.success++;
+            } else {
+              console.log(`Usuario ${userId} está en el chat actual, omitiendo...`);
+              results.details.push({userId, status: 'skipped', reason: 'En chat actual'});
+            }
+          } catch (userError) {
+            console.error(`Error procesando usuario ${userId}:`, userError);
+            results.details.push({userId, status: 'failed', reason: userError.message});
+            results.failed++;
           }
         }
 
-        if (tokensToSend.length > 0) {
-          const payload = {
-            tokens: tokensToSend,
-            notification: {
-              title: title,
-              body: message,
-            },
-            data: dataInfo,
-          };
-
-          console.log("Sending Notifications to tokens:", tokensToSend);
-          await sendPushNotificationToListContacts(payload);
-        } else {
-          console.log("No se encontraron tokens válidos para enviar notificaciones.");
-        }
-      } catch (e) {
-        console.log("Firebase Notification Failed: " + e.message);
-        throw new functions.https.HttpsError("internal", "Error al enviar notificaciones", e.message);
+        console.log(`Resultado: ${results.success} exitosos, ${results.failed} fallidos`);
+        return {
+          success: true,
+          summary: results,
+          message: `Notificaciones enviadas: ${results.success} exitosas, ${results.failed} fallidas`,
+        };
+      } catch (error) {
+        functions.logger.error("Error en sendNotificationToMultiple:", error);
+        throw new functions.https.HttpsError("internal", "Error al enviar notificaciones", error);
       }
-    });
+    },
+);
 
 exports.sendFelicitup = onCall(
     {

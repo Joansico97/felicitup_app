@@ -38,7 +38,7 @@ class FirebaseFunctionsHelper {
     required Map<String, dynamic> data,
   }) async {
     await _call(
-      'sendNotificationToList',
+      'sendNotificationToMultiple',
       parameters: {
         'userIds': ids,
         'title': title,
