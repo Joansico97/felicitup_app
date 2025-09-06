@@ -46,6 +46,12 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
         setDuraton: (event) => _setDuraton(emit, event.duration),
         setPosition: (event) => _setPosition(emit, event.position),
         changeFullScreen: (event) => _changeFullScreen(emit),
+        normalizeVideo: (event) => _normalizeVideo(
+          emit,
+          url: event.url,
+          userId: event.userId,
+          felicitupId: event.felicitupId,
+        ),
         reportUserVideo: (event) => _reportUserVideo(
           emit,
           event.felicitupId,
@@ -91,6 +97,23 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
+  _normalizeVideo(
+    Emitter<VideoEditorState> emit, {
+    required String url,
+    required String userId,
+    required String felicitupId,
+  }) async {
+    try {
+      await _firebaseFunctionsHelper.normalizeSingleVideo(
+        videoUrl: url,
+        felicitupId: felicitupId,
+        userId: userId,
+      );
+    } catch (e) {
+      logger.error('Error normalizing video: $e');
+    }
+  }
+
   _uploadUserVideo(
     Emitter<VideoEditorState> emit,
     String felicitupId,
@@ -109,6 +132,14 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
       return result.fold(
         (error) => logger.error('Error uploading video: $error'),
         (url) {
+          final correctUrl = extractFilePathFromFirebaseStorageUrl(url);
+          add(
+            VideoEditorEvent.normalizeVideo(
+              url: correctUrl,
+              userId: userId,
+              felicitupId: felicitupId,
+            ),
+          );
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
           add(VideoEditorEvent.initializeVideoController(url));
           add(VideoEditorEvent.getFelicitupInfo(felicitupId));

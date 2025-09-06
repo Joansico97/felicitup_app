@@ -42,10 +42,12 @@ abstract class FelicitupRepository {
     String felicitupId,
     String userId,
   );
+  Future<Either<ApiException, void>> prepareFelicitup(String felicitupId);
   Future<Either<ApiException, void>> mergeVideos(
     String felicitupId,
     List<String> listUrlVideos,
   );
+  Future<Either<ApiException, void>> deleteMergedVideo(String felicitupId);
   Future<Either<ApiException, void>> sendFelicitup(String felicitupId);
   Future<Either<ApiException, void>> updateDateFelicitup(
     String felicitupId,

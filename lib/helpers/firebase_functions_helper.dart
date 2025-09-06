@@ -49,15 +49,15 @@ class FirebaseFunctionsHelper {
     );
   }
 
-  Future<void> mergeVideos({
-    required List<String> videoUrls,
+  Future<void> normalizeSingleVideo({
+    required String videoUrl,
     required String felicitupId,
     required String userId,
   }) async {
     await _call(
-      'mergeVideos',
+      'normalizeSingleVideo',
       parameters: {
-        'videoUrls': videoUrls,
+        'videoUrl': videoUrl,
         'felicitupId': felicitupId,
         'userId': userId,
       },

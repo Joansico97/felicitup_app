@@ -22,6 +22,7 @@ class FelicitupModel with _$FelicitupModel {
     required List<OwnerModel> owner,
     required int boteQuantity,
     String? message,
+    String? error,
     String? status,
     String? thumbnailUrl,
     List<String>? likes,
@@ -29,5 +30,6 @@ class FelicitupModel with _$FelicitupModel {
     required String chatId,
   }) = _FelicitupModel;
 
-  factory FelicitupModel.fromJson(Map<String, dynamic> json) => _$FelicitupModelFromJson(json);
+  factory FelicitupModel.fromJson(Map<String, dynamic> json) =>
+      _$FelicitupModelFromJson(json);
 }

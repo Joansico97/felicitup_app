@@ -16,17 +16,18 @@ class CreateFelicitupState with _$CreateFelicitupState {
     required CreateStatus status,
     int? boteQuantity,
     DateTime? selectedDate,
+    String? errorMessage,
   }) = _CreateFelicitupState;
 
   factory CreateFelicitupState.initial() => CreateFelicitupState(
-        steperIndex: 0,
-        isLoading: false,
-        hasBote: false,
-        hasVideo: false,
-        eventReason: '',
-        felicitupOwner: [],
-        invitedContacts: [],
-        friendList: [],
-        status: CreateStatus.initial,
-      );
+    steperIndex: 0,
+    isLoading: false,
+    hasBote: false,
+    hasVideo: false,
+    eventReason: '',
+    felicitupOwner: [],
+    invitedContacts: [],
+    friendList: [],
+    status: CreateStatus.initial,
+  );
 }

@@ -6,10 +6,9 @@ class VideoFelicitupState with _$VideoFelicitupState {
     required bool isLoading,
     required bool showModal,
     List<InvitedModel>? invitedUsers,
+    String? errorMessage,
   }) = _VideoFelicitupState;
 
-  factory VideoFelicitupState.initial() => VideoFelicitupState(
-        isLoading: false,
-        showModal: false,
-      );
+  factory VideoFelicitupState.initial() =>
+      VideoFelicitupState(isLoading: false, showModal: false);
 }

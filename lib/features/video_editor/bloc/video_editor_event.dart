@@ -13,6 +13,11 @@ class VideoEditorEvent with _$VideoEditorEvent {
   const factory VideoEditorEvent.disposeVideoController() =
       _disposeVideoController;
   const factory VideoEditorEvent.setUrlVideo(String url) = _setUrlVideo;
+  const factory VideoEditorEvent.normalizeVideo({
+    required String url,
+    required String userId,
+    required String felicitupId,
+  }) = _normalizeVideo;
   const factory VideoEditorEvent.uploadUserVideo(
     String felicitupId,
     File file,

@@ -411,18 +411,71 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> prepareFelicitup(
+    String felicitupId,
+  ) async {
+    try {
+      await _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId)
+          .update({
+            'exportVideoUrl': '',
+            'finalVideoUrl': '',
+            'thumbnailUrl': '',
+          });
+
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Future<Either<ApiException, void>> mergeVideos(
     String felicitupId,
     List<String> listUrlVideos,
   ) async {
     try {
       final uid = _firebaseAuth.currentUser!.uid;
-      await _firestore.collection('videoMergeJobs').doc(felicitupId).set({
-        'userId': uid,
-        'videoUrls': listUrlVideos,
-        'status': 'pending',
-        'createdAt': DateTime.now(),
-      });
+
+      await _firestore
+          .collection(AppConstants.videoMergeCollection)
+          .doc(felicitupId)
+          .set({
+            'userId': uid,
+            'videoUrls': listUrlVideos,
+            'status': 'pending',
+            'createdAt': DateTime.now(),
+          });
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> deleteMergedVideo(
+    String felicitupId,
+  ) async {
+    try {
+      await _firestore
+          .collection(AppConstants.videoMergeCollection)
+          .doc(felicitupId)
+          .delete();
+
+      await _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId)
+          .update({'error': null});
+
       return Right(null);
     } on FirebaseException catch (e) {
       return Left(

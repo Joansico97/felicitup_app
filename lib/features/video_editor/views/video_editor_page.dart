@@ -164,7 +164,7 @@ class _VideoEditorPageState extends State<VideoEditorPage>
                           VideoEditorEvent.uploadUserVideo(
                             widget.felicitupId,
                             response,
-                            state.currentFelicitup?.invitedUsers[0] ?? '',
+                            currentUser?.id ?? '',
                             currentUser?.firstName ?? '',
                           ),
                         );

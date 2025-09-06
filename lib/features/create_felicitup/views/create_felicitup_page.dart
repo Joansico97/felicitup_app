@@ -92,6 +92,16 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
             }
           },
         ),
+
+        BlocListener<CreateFelicitupBloc, CreateFelicitupState>(
+          listenWhen: (previous, current) =>
+              previous.errorMessage != current.errorMessage,
+          listener: (_, state) async {
+            if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
+              showErrorModal(state.errorMessage!);
+            }
+          },
+        ),
       ],
       child: BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
         builder: (_, state) {

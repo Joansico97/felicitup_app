@@ -226,10 +226,17 @@ class CreateFelicitupBloc
 
     if (participants.contains(participant)) {
       participants.remove(participant);
+      emit(state.copyWith(invitedContacts: participants));
     } else {
-      participants.add(participant);
+      if (participants.length < 19) {
+        participants.add(participant);
+        emit(state.copyWith(invitedContacts: participants));
+      } else {
+        emit(
+          state.copyWith(errorMessage: 'Solo puedes invitar hasta 19 personas'),
+        );
+      }
     }
-    emit(state.copyWith(invitedContacts: participants));
   }
 
   _loadFriendsData(
