@@ -36,6 +36,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
           event.file,
           event.userId,
           event.userName,
+          event.felicitupCreatorId,
         ),
         updateParticipantInfo: (event) =>
             _updateParticipantInfo(event.felicitupId, event.url),
@@ -120,6 +121,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     File file,
     String userId,
     String userName,
+    String felicitupCreatorId,
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
@@ -143,7 +145,13 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
           add(VideoEditorEvent.initializeVideoController(url));
           add(VideoEditorEvent.getFelicitupInfo(felicitupId));
-          add(VideoEditorEvent.sendNotification(userId, userName, felicitupId));
+          add(
+            VideoEditorEvent.sendNotification(
+              felicitupCreatorId,
+              userName,
+              felicitupId,
+            ),
+          );
           emit(state.copyWith(isLoading: false, currentSelectedVideo: url));
         },
       );

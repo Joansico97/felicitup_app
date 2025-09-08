@@ -25,6 +25,7 @@ class FelicitupModel with _$FelicitupModel {
     String? error,
     String? status,
     String? thumbnailUrl,
+    String? processingStatus,
     List<String>? likes,
     @TimestampConverter() required DateTime limitDate,
     required String chatId,

@@ -23,6 +23,7 @@ class VideoEditorEvent with _$VideoEditorEvent {
     File file,
     String userId,
     String userName,
+    String felicitupCreatorId,
   ) = _uploadUserVideo;
   const factory VideoEditorEvent.generateThumbnail(String filePath) =
       _generateThumbnail;

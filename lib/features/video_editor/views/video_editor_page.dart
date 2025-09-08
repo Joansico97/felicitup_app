@@ -166,6 +166,8 @@ class _VideoEditorPageState extends State<VideoEditorPage>
                             response,
                             currentUser?.id ?? '',
                             currentUser?.firstName ?? '',
+                            state.currentFelicitup?.invitedUserDetails[0].id ??
+                                '',
                           ),
                         );
                       }
