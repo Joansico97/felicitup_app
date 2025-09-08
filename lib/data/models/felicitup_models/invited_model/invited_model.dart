@@ -47,8 +47,11 @@ class InvitedModel with _$InvitedModel {
 
 @freezed
 class VideoDataModel with _$VideoDataModel {
-  const factory VideoDataModel({String? videoUrl, String? videoThumbnail}) =
-      _VideoDataModel;
+  const factory VideoDataModel({
+    String? videoUrl,
+    String? videoThumbnail,
+    String? processingStatus,
+  }) = _VideoDataModel;
 
   factory VideoDataModel.fromJson(Map<String, dynamic> json) =>
       _$VideoDataModelFromJson(json);

@@ -19,7 +19,6 @@ class VideoFelicitupBloc
       super(VideoFelicitupState.initial()) {
     on<VideoFelicitupEvent>(
       (events, emit) => events.map(
-        prepareFelicitup: (event) => _prepareFelicitup(emit, event.felicitupId),
         deleteMergedVideo: (event) =>
             _deleteMergedVideo(emit, event.felicitupId),
         mergeVideos: (event) =>
@@ -33,17 +32,6 @@ class VideoFelicitupBloc
   StreamSubscription<Either<ApiException, List<InvitedModel>>>?
   _invitedUsersSubscription;
   final FelicitupRepository _felicitupRepository;
-
-  _prepareFelicitup(
-    Emitter<VideoFelicitupState> emit,
-    String felicitupId,
-  ) async {
-    try {
-      await _felicitupRepository.prepareFelicitup(felicitupId);
-    } catch (e) {
-      emit(state.copyWith(errorMessage: 'Error al preparar el felicitup'));
-    }
-  }
 
   _deleteMergedVideo(
     Emitter<VideoFelicitupState> emit,

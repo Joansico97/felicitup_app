@@ -507,7 +507,7 @@ exports.normalizeSingleVideo = functions.https.onCall({
   }
 
   try {
-    // 3. Obtener el documento de Felicitups
+    // 1. Obtener el documento de Felicitups
     const felicitupRef = admin.firestore().collection("Felicitups").doc(felicitupId);
     const felicitupDoc = await felicitupRef.get();
 
@@ -518,7 +518,7 @@ exports.normalizeSingleVideo = functions.https.onCall({
     const felicitupData = felicitupDoc.data();
     const invitedUserDetails = felicitupData.invitedUserDetails || [];
 
-    // 4. Buscar el usuario específico en invitedUserDetails
+    // 2. Buscar el usuario específico en invitedUserDetails
     const userIndex = invitedUserDetails.findIndex((user) => user.id === userId);
     console.log('User index found:', userIndex);
 
@@ -526,33 +526,36 @@ exports.normalizeSingleVideo = functions.https.onCall({
       throw new functions.https.HttpsError('not-found', 'User not found in invitedUserDetails');
     }
 
+    // 3. Actualizar estado a "processing" al iniciar
+    await updateUserVideoStatus(felicitupRef, invitedUserDetails, userIndex, "processing");
+
     const tempDir = os.tmpdir();
     const tempFilePath = path.join(tempDir, `source-${Date.now()}.mp4`);
     const processedPath = path.join(tempDir, `processed-${Date.now()}.mp4`);
 
-    // Descargar el video
+    // 4. Descargar el video
     const file = bucket.file(videoUrl);
     await file.download({destination: tempFilePath});
     console.log('Video downloaded for normalization');
 
-    // Normalizar el video
+    // 5. Normalizar el video
     await normalizeVideo(tempFilePath, processedPath);
     console.log('Video normalized for user:', userId);
 
-    // Subir el video normalizado
+    // 6. Subir el video normalizado
     const normalizedFileName = `normalized-${Date.now()}-${path.basename(videoUrl)}`;
     const destinationPath = `normalized-videos/${userId}/${normalizedFileName}`;
 
     await bucket.upload(processedPath, {destination: destinationPath});
     console.log('Normalized video uploaded');
 
-    // Obtener URL firmada del video
+    // 7. Obtener URL firmada del video
     const [normalizedVideoUrl] = await bucket.file(destinationPath).getSignedUrl({
       action: 'read',
       expires: '03-01-2500',
     });
 
-    // Generar y subir thumbnail
+    // 8. Generar y subir thumbnail
     let thumbnailUrl = null;
     try {
       const thumbnailFileName = `thumbnail-${Date.now()}.jpg`;
@@ -578,13 +581,14 @@ exports.normalizeSingleVideo = functions.https.onCall({
       // Continuamos sin thumbnail si falla
     }
 
-    // 6. Actualizar SOLO el videoData manteniendo todos los demás datos
+    // 9. Actualizar el videoData con estado "completed"
     const userToUpdate = invitedUserDetails[userIndex];
 
     const newVideoData = {
       ...userToUpdate.videoData, // Mantenemos los datos existentes de videoData
       videoUrl: normalizedVideoUrl, // Actualizamos la URL del video
       ...(thumbnailUrl && {videoThumbnail: thumbnailUrl}), // Actualizamos thumbnail solo si existe
+      processingStatus: "completed", // Estado completado
     };
 
     const updateData = {
@@ -593,12 +597,12 @@ exports.normalizeSingleVideo = functions.https.onCall({
           {...user, videoData: newVideoData} :
           user,
       ),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
     await felicitupRef.update(updateData);
+    console.log('User video status updated to "completed"');
 
-    // Limpiar archivos temporales
+    // 10. Limpiar archivos temporales
     try {
       if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
       if (fs.existsSync(processedPath)) fs.unlinkSync(processedPath);
@@ -615,7 +619,7 @@ exports.normalizeSingleVideo = functions.https.onCall({
   } catch (error) {
     console.error('Error in normalizeSingleVideo:', error);
 
-    // 7. Actualizar estado de error en Firestore
+    // 11. Actualizar estado de error en Firestore
     try {
       const felicitupRef = admin.firestore().collection("Felicitups").doc(felicitupId);
       const felicitupDoc = await felicitupRef.get();
@@ -639,10 +643,10 @@ exports.normalizeSingleVideo = functions.https.onCall({
                 {...user, videoData: errorVideoData} :
                 user,
             ),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           };
 
           await felicitupRef.update(errorUpdateData);
+          console.log('User video status updated to "failed"');
         }
       }
     } catch (updateError) {
@@ -652,6 +656,33 @@ exports.normalizeSingleVideo = functions.https.onCall({
     throw new functions.https.HttpsError('internal', 'Video normalization failed', error.message);
   }
 });
+
+// --- FUNCIÓN AUXILIAR PARA ACTUALIZAR ESTADO ---
+
+async function updateUserVideoStatus(felicitupRef, invitedUserDetails, userIndex, status) {
+  try {
+    const userToUpdate = invitedUserDetails[userIndex];
+
+    const updatedVideoData = {
+      ...userToUpdate.videoData,
+      processingStatus: status,
+    };
+
+    const updateData = {
+      invitedUserDetails: invitedUserDetails.map((user, index) =>
+        index === userIndex ?
+          {...user, videoData: updatedVideoData} :
+          user,
+      ),
+    };
+
+    await felicitupRef.update(updateData);
+    console.log(`User video status updated to "${status}"`);
+  } catch (updateError) {
+    console.error('Error updating video status:', updateError);
+    // No lanzamos error para no interrumpir el flujo principal
+  }
+}
 
 exports.processVideoMerge = onDocumentCreated(
     {

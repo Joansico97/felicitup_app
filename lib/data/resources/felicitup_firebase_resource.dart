@@ -474,7 +474,12 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       await _firestore
           .collection(AppConstants.feclitiupsCollection)
           .doc(felicitupId)
-          .update({'error': null});
+          .update({
+            'error': null,
+            'exportVideoUrl': '',
+            'finalVideoUrl': '',
+            'thumbnailUrl': '',
+          });
 
       return Right(null);
     } on FirebaseException catch (e) {

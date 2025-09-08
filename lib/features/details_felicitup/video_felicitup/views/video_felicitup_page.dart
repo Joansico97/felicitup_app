@@ -87,96 +87,73 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                               FloatingActionButton.extended(
                                 heroTag: '3',
                                 onPressed: () {
-                                  if (felicitup.finalVideoUrl?.isEmpty ??
-                                      false ||
-                                          felicitup.finalVideoUrl == null) {
-                                    context.read<VideoFelicitupBloc>().add(
-                                      VideoFelicitupEvent.prepareFelicitup(
-                                        felicitup.id,
-                                      ),
-                                    );
+                                  // Validar si algún video está en proceso
+                                  final processingVideos = felicitup
+                                      .invitedUserDetails
+                                      .where(
+                                        (e) =>
+                                            e.videoData?.processingStatus !=
+                                                null &&
+                                            e.videoData?.processingStatus !=
+                                                'completed',
+                                      )
+                                      .toList();
+
+                                  if (processingVideos.isNotEmpty) {
                                     showConfirmModal(
-                                      title:
-                                          'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
-                                      onAccept: () async {
-                                        // final allVideosHaveThumbnail = felicitup
-                                        //     .invitedUserDetails
-                                        //     .every(
-                                        //       (user) =>
-                                        //           user
-                                        //                   .videoData
-                                        //                   ?.videoThumbnail !=
-                                        //               null &&
-                                        //           user
-                                        //               .videoData!
-                                        //               .videoThumbnail!
-                                        //               .isNotEmpty,
-                                        //     );
-
-                                        // if (!allVideosHaveThumbnail) {
-                                        //   if (context.mounted) {
-                                        //     ScaffoldMessenger.of(
-                                        //       context,
-                                        //     ).showSnackBar(
-                                        //       SnackBar(
-                                        //         content: Text(
-                                        //           'Algunos videos aún se están procesando. Espera a que todos estén listos.',
-                                        //         ),
-                                        //         backgroundColor: Colors.orange,
-                                        //       ),
-                                        //     );
-                                        //   }
-                                        //   return;
-                                        // }
-
-                                        final listVideos = felicitup
-                                            .invitedUserDetails
-                                            .map((e) => e.videoData?.videoUrl)
-                                            .where(
-                                              (url) =>
-                                                  url != null && url.isNotEmpty,
-                                            )
-                                            .cast<String>()
-                                            .toList();
-
-                                        if (listVideos.isEmpty) {
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  'No hay videos disponibles para mezclar.',
-                                                ),
-                                                duration: Duration(seconds: 2),
-                                              ),
-                                            );
-                                          }
-                                          return;
-                                        }
-
-                                        if (context.mounted) {
-                                          context
-                                              .read<VideoFelicitupBloc>()
-                                              .add(
-                                                VideoFelicitupEvent.mergeVideos(
-                                                  felicitup.id,
-                                                  listVideos,
-                                                ),
-                                              );
-                                        }
-                                      },
+                                      title: 'Videos en proceso',
+                                      content:
+                                          'Uno o varios videos de los participantes están siendo procesados. Por favor espera a que termine el proceso antes de mezclar los videos.',
+                                      onAccept: () async {},
                                     );
-                                  } else if (felicitup
-                                          .finalVideoUrl
-                                          ?.isNotEmpty ??
-                                      false || felicitup.error != null) {
-                                    context.read<VideoFelicitupBloc>().add(
-                                      VideoFelicitupEvent.deleteMergedVideo(
-                                        felicitup.id,
-                                      ),
-                                    );
+                                    return;
                                   }
+
+                                  context.read<VideoFelicitupBloc>().add(
+                                    VideoFelicitupEvent.deleteMergedVideo(
+                                      felicitup.id,
+                                    ),
+                                  );
+                                  showConfirmModal(
+                                    title:
+                                        'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
+                                    onAccept: () async {
+                                      final listVideos = felicitup
+                                          .invitedUserDetails
+                                          .map((e) => e.videoData?.videoUrl)
+                                          .where(
+                                            (url) =>
+                                                url != null && url.isNotEmpty,
+                                          )
+                                          .cast<String>()
+                                          .toList();
+
+                                      if (listVideos.isEmpty) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'No hay videos disponibles para mezclar.',
+                                              ),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
+                                        return;
+                                      }
+
+                                      if (context.mounted) {
+                                        context.read<VideoFelicitupBloc>().add(
+                                          VideoFelicitupEvent.mergeVideos(
+                                            felicitup.id,
+                                            listVideos,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  );
                                 },
                                 backgroundColor: context.colors.orange,
                                 label: Row(
@@ -187,10 +164,7 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                     ),
                                     SizedBox(width: context.sp(6)),
                                     Text(
-                                      felicitup.finalVideoUrl?.isNotEmpty ??
-                                              false
-                                          ? 'Eliminar Mix'
-                                          : 'Mix',
+                                      'Mix',
                                       style: context.styles.smallText.copyWith(
                                         color: context.colors.white,
                                       ),
