@@ -778,7 +778,8 @@ exports.processVideoMerge = onDocumentCreated(
       });
 
       const tempDir = os.tmpdir();
-      const outputFileName = `merged-${Date.now()}.mp4`;
+      const uniqueId = uuidv4();
+      const outputFileName = `merged-${uniqueId}.mp4`;
       const outputFilePath = path.join(tempDir, outputFileName);
       const tempFiles = [];
 
@@ -794,7 +795,7 @@ exports.processVideoMerge = onDocumentCreated(
             throw new Error(`Invalid file path at index ${index}`);
           }
 
-          const tempFilePath = path.join(tempDir, `source-${index}-${Date.now()}.mp4`);
+          const tempFilePath = path.join(tempDir, `source-${index}-${uniqueId}.mp4`);
 
           console.log(`Downloading video ${index + 1}/${filePaths.length}: ${filePath}`);
 
@@ -1035,7 +1036,8 @@ async function concatVideos(videoPaths, outputFilePath) {
 }
 
 async function generateAndUploadThumbnail(videoPath, felicitupId, tempDir) {
-  const thumbnailFileName = `thumbnail-${Date.now()}.jpg`;
+  const uniqueId = uuidv4();
+  const thumbnailFileName = `thumbnail-${uniqueId}.jpg`;
   const thumbnailTempPath = path.join(tempDir, thumbnailFileName);
   const thumbnailDestinationPath = `thumbnails/${felicitupId}/${thumbnailFileName}`;
 
