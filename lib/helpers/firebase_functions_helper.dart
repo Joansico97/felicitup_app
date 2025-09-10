@@ -64,21 +64,6 @@ class FirebaseFunctionsHelper {
     );
   }
 
-  Future<void> enqueueVideoProcessing({
-    required String videoUrl,
-    required String felicitupId,
-    required String userId,
-  }) async {
-    await _call(
-      'enqueueVideoProcessing',
-      parameters: {
-        'videoUrl': videoUrl,
-        'felicitupId': felicitupId,
-        'userId': userId,
-      },
-    );
-  }
-
   Future<void> disableCurrentUser() async {
     await _call('disableCurrentUser');
   }

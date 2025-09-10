@@ -105,7 +105,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     required String felicitupId,
   }) async {
     try {
-      await _firebaseFunctionsHelper.enqueueVideoProcessing(
+      await _firebaseFunctionsHelper.normalizeSingleVideo(
         videoUrl: url,
         felicitupId: felicitupId,
         userId: userId,

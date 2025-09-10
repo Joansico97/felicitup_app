@@ -5,10 +5,12 @@
 const admin = require("firebase-admin");
 const serviceAccount = require("./serviceAccountMergeKey.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  storageBucket: "felicitup-prod.appspot.com",
-});
+if (admin.apps.length === 0) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: "felicitup-prod.appspot.com",
+  });
+}
 
 const functions = require("firebase-functions/v2");
 
@@ -38,6 +40,7 @@ const path = require("path");
 
 const constants = require("./constants/constants");
 const {onSchedule} = require("firebase-functions/scheduler");
+const {v4: uuidv4} = require('uuid');
 
 const bucket = admin.storage().bucket();
 
@@ -494,433 +497,193 @@ exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
   }
 });
 
-exports.normalizeSingleVideo = functions.https.onCall({
-  region: "us-central1",
-  timeoutSeconds: 540,
-  memory: "512MiB",
-}, async (data, context) => {
-  const {videoUrl, userId, felicitupId} = data.data;
+exports.normalizeSingleVideo = functions.https.onCall(
+    {
+      region: "us-central1",
+      timeoutSeconds: 540,
+      memory: "512MiB",
+    },
+    async (data, context) => {
+      const {videoUrl, userId, felicitupId} = data.data;
 
-  if (!videoUrl || !userId || !felicitupId) {
-    throw new functions.https.HttpsError('invalid-argument', 'videoUrl, userId and felicitupId are required');
-  }
-
-  try {
-    // 3. Obtener el documento de Felicitups
-    const felicitupRef = admin.firestore().collection("Felicitups").doc(felicitupId);
-    const felicitupDoc = await felicitupRef.get();
-
-    if (!felicitupDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Felicitups document not found');
-    }
-
-    const felicitupData = felicitupDoc.data();
-    const invitedUserDetails = felicitupData.invitedUserDetails || [];
-
-    // 4. Buscar el usuario específico en invitedUserDetails
-    const userIndex = invitedUserDetails.findIndex((user) => user.id === userId);
-    console.log('User index found:', userIndex);
-
-    if (userIndex === -1) {
-      throw new functions.https.HttpsError('not-found', 'User not found in invitedUserDetails');
-    }
-
-    // 5. Actualizar estado a "processing" manteniendo todos los demás datos intactos
-    const userToUpdate = invitedUserDetails[userIndex];
-    const processingVideoData = {
-      ...userToUpdate.videoData, // Mantenemos todos los datos existentes
-      processingStatus: "processing", // Solo actualizamos el estado
-    };
-
-    const processingUpdateData = {
-      invitedUserDetails: invitedUserDetails.map((user, index) =>
-        index === userIndex ?
-          {...user, videoData: processingVideoData} :
-          user,
-      ),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    await felicitupRef.update(processingUpdateData);
-    console.log('Processing status set to "processing" for user:', userId);
-
-    const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, `source-${Date.now()}.mp4`);
-    const processedPath = path.join(tempDir, `processed-${Date.now()}.mp4`);
-
-    // Descargar el video
-    const file = bucket.file(videoUrl);
-    await file.download({destination: tempFilePath});
-    console.log('Video downloaded for normalization');
-
-    // Normalizar el video
-    await normalizeVideo(tempFilePath, processedPath);
-    console.log('Video normalized for user:', userId);
-
-    // Subir el video normalizado
-    const normalizedFileName = `normalized-${Date.now()}-${path.basename(videoUrl)}`;
-    const destinationPath = `normalized-videos/${userId}/${normalizedFileName}`;
-
-    await bucket.upload(processedPath, {destination: destinationPath});
-    console.log('Normalized video uploaded');
-
-    // Obtener URL firmada del video
-    const [normalizedVideoUrl] = await bucket.file(destinationPath).getSignedUrl({
-      action: 'read',
-      expires: '03-01-2500',
-    });
-
-    // Generar y subir thumbnail
-    let thumbnailUrl = null;
-    try {
-      const thumbnailFileName = `thumbnail-${Date.now()}.jpg`;
-      const thumbnailTempPath = path.join(tempDir, thumbnailFileName);
-      const thumbnailDestinationPath = `thumbnails/${userId}/${thumbnailFileName}`;
-
-      await generateThumbnail(processedPath, thumbnailTempPath);
-      await bucket.upload(thumbnailTempPath, {destination: thumbnailDestinationPath});
-
-      [thumbnailUrl] = await bucket.file(thumbnailDestinationPath).getSignedUrl({
-        action: 'read',
-        expires: '03-01-2500',
-      });
-
-      console.log('Thumbnail generated and uploaded');
-
-      // Limpiar thumbnail temporal
-      if (fs.existsSync(thumbnailTempPath)) {
-        fs.unlinkSync(thumbnailTempPath);
+      if (!videoUrl || !userId || !felicitupId) {
+        throw new functions.https.HttpsError(
+            "invalid-argument",
+            "videoUrl, userId and felicitupId are required",
+        );
       }
-    } catch (thumbnailError) {
-      console.warn('Thumbnail generation failed:', thumbnailError);
-      // Continuamos sin thumbnail si falla
-    }
 
-    // 6. Actualizar SOLO el videoData manteniendo todos los demás datos y cambiar estado a "completed"
-    const completedVideoData = {
-      ...userToUpdate.videoData, // Mantenemos los datos originales
-      videoUrl: normalizedVideoUrl, // Actualizamos la URL del video
-      ...(thumbnailUrl && {videoThumbnail: thumbnailUrl}), // Actualizamos thumbnail solo si existe
-      processingStatus: "completed", // Cambiamos estado a completed
-    };
-
-    const updateData = {
-      invitedUserDetails: invitedUserDetails.map((user, index) =>
-        index === userIndex ?
-          {...user, videoData: completedVideoData} :
-          user,
-      ),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    await felicitupRef.update(updateData);
-
-    // Limpiar archivos temporales
-    try {
-      if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-      if (fs.existsSync(processedPath)) fs.unlinkSync(processedPath);
-    } catch (cleanupError) {
-      console.warn('Error cleaning temp files:', cleanupError);
-    }
-
-    return {
-      success: true,
-      normalizedVideoUrl: normalizedVideoUrl,
-      thumbnailUrl: thumbnailUrl,
-      message: 'Video normalized successfully',
-    };
-  } catch (error) {
-    console.error('Error in normalizeSingleVideo:', error);
-
-    // 7. Actualizar estado de error en Firestore
-    try {
       const felicitupRef = admin.firestore().collection("Felicitups").doc(felicitupId);
-      const felicitupDoc = await felicitupRef.get();
+      const uniqueId = uuidv4();
 
-      if (felicitupDoc.exists) {
-        const felicitupData = felicitupDoc.data();
-        const invitedUserDetails = felicitupData.invitedUserDetails || [];
-        const userIndex = invitedUserDetails.findIndex((user) => user.id === userId);
-
-        if (userIndex !== -1) {
-          const userToUpdate = invitedUserDetails[userIndex];
-          const errorVideoData = {
-            ...userToUpdate.videoData, // Mantenemos todos los datos existentes
-            processingStatus: "failed", // Solo actualizamos el estado a failed
-            error: error.message,
-          };
-
-          const errorUpdateData = {
-            invitedUserDetails: invitedUserDetails.map((user, index) =>
-              index === userIndex ?
-                {...user, videoData: errorVideoData} :
-                user,
-            ),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          };
-
-          await felicitupRef.update(errorUpdateData);
-        }
-      }
-    } catch (updateError) {
-      console.error('Failed to update Felicitups document with error:', updateError);
-    }
-
-    throw new functions.https.HttpsError('internal', 'Video normalization failed', error.message);
-  }
-});
-
-exports.enqueueVideoProcessing = onCall({
-  region: "us-central1",
-  timeoutSeconds: 30,
-  memory: "256MiB",
-}, async (request) => {
-  const {videoUrl, userId, felicitupId} = request.data;
-
-  if (!videoUrl || !userId || !felicitupId) {
-    throw new functions.https.HttpsError('invalid-argument',
-        'videoUrl, userId and felicitupId are required');
-  }
-
-  // Crear documento en la cola de procesamiento
-  const queueRef = admin.firestore().collection("processingQueue").doc();
-
-  const queueItem = {
-    videoUrl,
-    userId,
-    felicitupId,
-    status: "pending",
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    attempts: 0,
-    maxAttempts: 3,
-  };
-
-  await queueRef.set(queueItem);
-
-  // Actualizar estado inicial en Felicitups
-  const felicitupRef = admin.firestore().collection("Felicitups").doc(felicitupId);
-  const felicitupDoc = await felicitupRef.get();
-
-  if (!felicitupDoc.exists) {
-    throw new functions.https.HttpsError('not-found', 'Felicitups document not found');
-  }
-
-  const felicitupData = felicitupDoc.data();
-  const invitedUserDetails = felicitupData.invitedUserDetails || [];
-  const userIndex = invitedUserDetails.findIndex((user) => user.id === userId);
-
-  if (userIndex === -1) {
-    throw new functions.https.HttpsError('not-found', 'User not found in invitedUserDetails');
-  }
-
-  const userToUpdate = invitedUserDetails[userIndex];
-  const queuedVideoData = {
-    ...userToUpdate.videoData,
-    processingStatus: "queued",
-    queueId: queueRef.id,
-  };
-
-  const updateData = {
-    invitedUserDetails: invitedUserDetails.map((user, index) =>
-      index === userIndex ? {...user, videoData: queuedVideoData} : user,
-    ),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  };
-
-  await felicitupRef.update(updateData);
-
-  return {success: true, queueId: queueRef.id, message: "Video enqueued for processing"};
-});
-
-// Worker que procesa la cola
-exports.processVideoQueue = onDocumentCreated({
-  region: "us-central1",
-  timeoutSeconds: 540,
-  memory: "512MiB",
-  document: "processingQueue/{queueId}",
-}, async (event) => {
-  const queueData = event.data.data();
-
-  // Solo procesar items pendientes
-  if (queueData.status !== "pending") {
-    return;
-  }
-
-  const {videoUrl, userId, felicitupId, attempts, maxAttempts} = queueData;
-  const queueRef = event.data.ref;
-
-  try {
-    // Marcar como procesando
-    await queueRef.update({
-      status: "processing",
-      startedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    // Actualizar estado en Felicitups
-    const felicitupRef = admin.firestore().collection("Felicitups").doc(felicitupId);
-    const felicitupDoc = await felicitupRef.get();
-
-    if (!felicitupDoc.exists) {
-      throw new Error('Felicitups document not found');
-    }
-
-    const felicitupData = felicitupDoc.data();
-    const invitedUserDetails = felicitupData.invitedUserDetails || [];
-    const userIndex = invitedUserDetails.findIndex((user) => user.id === userId);
-
-    if (userIndex === -1) {
-      throw new Error('User not found in invitedUserDetails');
-    }
-
-    const userToUpdate = invitedUserDetails[userIndex];
-    const processingVideoData = {
-      ...userToUpdate.videoData,
-      processingStatus: "processing",
-    };
-
-    const processingUpdateData = {
-      invitedUserDetails: invitedUserDetails.map((user, index) =>
-        index === userIndex ? {...user, videoData: processingVideoData} : user,
-      ),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    await felicitupRef.update(processingUpdateData);
-
-    // Procesar el video (tu lógica original de normalización)
-    const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, `source-${Date.now()}.mp4`);
-    const processedPath = path.join(tempDir, `processed-${Date.now()}.mp4`);
-
-    // Descargar el video
-    const file = bucket.file(videoUrl);
-    await file.download({destination: tempFilePath});
-
-    // Normalizar el video
-    await normalizeVideo(tempFilePath, processedPath);
-
-    // Subir el video normalizado
-    const normalizedFileName = `normalized-${Date.now()}-${path.basename(videoUrl)}`;
-    const destinationPath = `normalized-videos/${userId}/${normalizedFileName}`;
-    await bucket.upload(processedPath, {destination: destinationPath});
-
-    const [normalizedVideoUrl] = await bucket.file(destinationPath).getSignedUrl({
-      action: 'read',
-      expires: '03-01-2500',
-    });
-
-    let thumbnailUrl = null;
-    try {
-      const thumbnailFileName = `thumbnail-${Date.now()}.jpg`;
-      const thumbnailTempPath = path.join(tempDir, thumbnailFileName);
-      const thumbnailDestinationPath = `thumbnails/${userId}/${thumbnailFileName}`;
-
-      await generateThumbnail(processedPath, thumbnailTempPath);
-      await bucket.upload(thumbnailTempPath, {destination: thumbnailDestinationPath});
-
-      [thumbnailUrl] = await bucket.file(thumbnailDestinationPath).getSignedUrl({
-        action: 'read',
-        expires: '03-01-2500',
-      });
-
-      console.log('Thumbnail generated and uploaded');
-
-      // Limpiar thumbnail temporal
-      if (fs.existsSync(thumbnailTempPath)) {
-        fs.unlinkSync(thumbnailTempPath);
-      }
-    } catch (thumbnailError) {
-      console.warn('Thumbnail generation failed:', thumbnailError);
-      // Continuamos sin thumbnail si falla
-    }
-
-    // Actualizar estado a completado
-    const completedVideoData = {
-      ...userToUpdate.videoData,
-      videoUrl: normalizedVideoUrl,
-      ...(thumbnailUrl && {videoThumbnail: thumbnailUrl}),
-      processingStatus: "completed",
-    };
-
-    const finalUpdateData = {
-      invitedUserDetails: invitedUserDetails.map((user, index) =>
-        index === userIndex ? {...user, videoData: completedVideoData} : user,
-      ),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    await felicitupRef.update(finalUpdateData);
-
-    // Marcar como completado en la cola
-    await queueRef.update({
-      status: "completed",
-      completedAt: admin.firestore.FieldValue.serverTimestamp(),
-      normalizedVideoUrl: normalizedVideoUrl,
-      thumbnailUrl: thumbnailUrl,
-    });
-
-    // Limpiar archivos temporales
-    try {
-      if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-      if (fs.existsSync(processedPath)) fs.unlinkSync(processedPath);
-    } catch (cleanupError) {
-      console.warn('Error cleaning temp files:', cleanupError);
-    }
-  } catch (error) {
-    console.error('Error processing video:', error);
-
-    // Manejar reintentos
-    const newAttempts = attempts + 1;
-
-    if (newAttempts >= maxAttempts) {
-      // Máximo de intentos alcanzado, marcar como fallido
-      await queueRef.update({
-        status: "failed",
-        error: error.message,
-        failedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      // Actualizar estado de error en Felicitups
       try {
-        const felicitupRef = admin.firestore().collection("Felicitups").doc(felicitupId);
-        const felicitupDoc = await felicitupRef.get();
+      // ---------------------------------
+      // 1. Marcar estado inicial = "processing"
+      // ---------------------------------
+        await admin.firestore().runTransaction(async (t) => {
+          const doc = await t.get(felicitupRef);
+          if (!doc.exists) {
+            throw new functions.https.HttpsError("not-found", "Felicitups document not found");
+          }
 
-        if (felicitupDoc.exists) {
-          const felicitupData = felicitupDoc.data();
-          const invitedUserDetails = felicitupData.invitedUserDetails || [];
-          const userIndex = invitedUserDetails.findIndex((user) => user.id === userId);
+          const data = doc.data();
+          const invitedUserDetails = data.invitedUserDetails || [];
+          const userIndex = invitedUserDetails.findIndex((u) => u.id === userId);
+          if (userIndex === -1) {
+            throw new functions.https.HttpsError("not-found", "User not found in invitedUserDetails");
+          }
 
-          if (userIndex !== -1) {
-            const userToUpdate = invitedUserDetails[userIndex];
-            const errorVideoData = {
+          const userToUpdate = invitedUserDetails[userIndex];
+          invitedUserDetails[userIndex] = {
+            ...userToUpdate,
+            videoData: {
+              ...(userToUpdate.videoData || {}), // 🔑 evita undefined
+              processingStatus: "processing",
+            },
+          };
+
+          t.update(felicitupRef, {
+            invitedUserDetails,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        });
+
+        console.log("Processing status set to 'processing' for user:", userId);
+
+        // ---------------------------------
+        // 2. Preparar paths únicos
+        // ---------------------------------
+        const tempDir = os.tmpdir();
+        const tempFilePath = path.join(tempDir, `source-${uniqueId}.mp4`);
+        const processedPath = path.join(tempDir, `processed-${uniqueId}.mp4`);
+        const normalizedFileName = `normalized-${uniqueId}-${path.basename(videoUrl)}`;
+        const destinationPath = `normalized-videos/${userId}/${normalizedFileName}`;
+
+        // ---------------------------------
+        // 3. Descargar video
+        // ---------------------------------
+        const file = bucket.file(videoUrl);
+        await file.download({destination: tempFilePath});
+        console.log("Video downloaded");
+
+        // ---------------------------------
+        // 4. Normalizar video
+        // ---------------------------------
+        await normalizeVideo(tempFilePath, processedPath);
+
+        // ---------------------------------
+        // 5. Subir video normalizado
+        // ---------------------------------
+        await bucket.upload(processedPath, {destination: destinationPath});
+        const [normalizedVideoUrl] = await bucket.file(destinationPath).getSignedUrl({
+          action: "read",
+          expires: "03-01-2500",
+        });
+
+        // ---------------------------------
+        // 6. Generar thumbnail
+        // ---------------------------------
+        let thumbnailUrl = null;
+        try {
+          const thumbnailFileName = `thumbnail-${uniqueId}.jpg`;
+          const thumbnailTempPath = path.join(tempDir, thumbnailFileName);
+          const thumbnailDestinationPath = `thumbnails/${userId}/${thumbnailFileName}`;
+
+          await generateThumbnail(processedPath, thumbnailTempPath);
+          await bucket.upload(thumbnailTempPath, {destination: thumbnailDestinationPath});
+
+          [thumbnailUrl] = await bucket.file(thumbnailDestinationPath).getSignedUrl({
+            action: "read",
+            expires: "03-01-2500",
+          });
+
+          if (fs.existsSync(thumbnailTempPath)) fs.unlinkSync(thumbnailTempPath);
+          console.log("Thumbnail generated");
+        } catch (thumbErr) {
+          console.warn("Thumbnail generation failed:", thumbErr);
+        }
+
+        // ---------------------------------
+        // 7. Marcar estado final = "completed"
+        // ---------------------------------
+        await admin.firestore().runTransaction(async (t) => {
+          const doc = await t.get(felicitupRef);
+          if (!doc.exists) return;
+
+          const data = doc.data();
+          const invitedUserDetails = data.invitedUserDetails || [];
+          const userIndex = invitedUserDetails.findIndex((u) => u.id === userId);
+          if (userIndex === -1) return;
+
+          const userToUpdate = invitedUserDetails[userIndex];
+          invitedUserDetails[userIndex] = {
+            ...userToUpdate,
+            videoData: {
+              ...userToUpdate.videoData,
+              videoUrl: normalizedVideoUrl,
+              ...(thumbnailUrl && {videoThumbnail: thumbnailUrl}),
+              processingStatus: "completed",
+            },
+          };
+
+          t.update(felicitupRef, {
+            invitedUserDetails,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        });
+
+        // ---------------------------------
+        // 8. Limpieza
+        // ---------------------------------
+        for (const f of [tempFilePath, processedPath]) {
+          try {
+            if (fs.existsSync(f)) fs.unlinkSync(f);
+          } catch (err) {
+            console.warn("Cleanup error:", err);
+          }
+        }
+
+        return {
+          success: true,
+          normalizedVideoUrl,
+          thumbnailUrl,
+          message: "Video normalized successfully",
+        };
+      } catch (error) {
+        console.error("Error in normalizeSingleVideo:", error);
+
+        // ---------------------------------
+        // 9. Marcar estado final = "failed"
+        // ---------------------------------
+        await admin.firestore().runTransaction(async (t) => {
+          const doc = await t.get(felicitupRef);
+          if (!doc.exists) return;
+
+          const data = doc.data();
+          const invitedUserDetails = data.invitedUserDetails || [];
+          const userIndex = invitedUserDetails.findIndex((u) => u.id === userId);
+          if (userIndex === -1) return;
+
+          const userToUpdate = invitedUserDetails[userIndex];
+          invitedUserDetails[userIndex] = {
+            ...userToUpdate,
+            videoData: {
               ...userToUpdate.videoData,
               processingStatus: "failed",
               error: error.message,
-            };
+            },
+          };
 
-            const errorUpdateData = {
-              invitedUserDetails: invitedUserDetails.map((user, index) =>
-                index === userIndex ? {...user, videoData: errorVideoData} : user,
-              ),
-              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-            };
+          t.update(felicitupRef, {
+            invitedUserDetails,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        });
 
-            await felicitupRef.update(errorUpdateData);
-          }
-        }
-      } catch (updateError) {
-        console.error('Failed to update error status:', updateError);
+        throw new functions.https.HttpsError("internal", "Video normalization failed", error.message);
       }
-    } else {
-      // Reintentar
-      await queueRef.update({
-        status: "pending",
-        attempts: newAttempts,
-        nextRetry: admin.firestore.FieldValue.serverTimestamp(),
-      });
-    }
-  }
-});
+    },
+);
 
 exports.processVideoMerge = onDocumentCreated(
     {
