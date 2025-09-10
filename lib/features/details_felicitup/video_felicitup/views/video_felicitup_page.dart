@@ -108,11 +108,6 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                     return;
                                   }
 
-                                  context.read<VideoFelicitupBloc>().add(
-                                    VideoFelicitupEvent.deleteMergedVideo(
-                                      felicitup.id,
-                                    ),
-                                  );
                                   showConfirmModal(
                                     title:
                                         'Estás seguro de querer mixear los videos de ${felicitup.reason} de ${felicitup.owner.first.name}?',
@@ -144,12 +139,18 @@ class _VideoFelicitupPageState extends State<VideoFelicitupPage> {
                                       }
 
                                       if (context.mounted) {
-                                        context.read<VideoFelicitupBloc>().add(
-                                          VideoFelicitupEvent.mergeVideos(
-                                            felicitup.id,
-                                            listVideos,
-                                          ),
-                                        );
+                                        context.read<VideoFelicitupBloc>()
+                                          ..add(
+                                            VideoFelicitupEvent.deleteMergedVideo(
+                                              felicitup.id,
+                                            ),
+                                          )
+                                          ..add(
+                                            VideoFelicitupEvent.mergeVideos(
+                                              felicitup.id,
+                                              listVideos,
+                                            ),
+                                          );
                                       }
                                     },
                                   );

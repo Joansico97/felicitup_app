@@ -501,7 +501,7 @@ exports.normalizeSingleVideo = functions.https.onCall(
     {
       region: "us-central1",
       timeoutSeconds: 540,
-      memory: "512MiB",
+      memory: "2GiB",
     },
     async (data, context) => {
       const {videoUrl, userId, felicitupId} = data.data;
