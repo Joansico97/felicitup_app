@@ -159,7 +159,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     if (!contactsPermissionStatus.isGranted) {
       final newPermissionStatus = await Permission.contacts.request();
-      if (newPermissionStatus.isGranted) {
+      if (newPermissionStatus.isGranted || newPermissionStatus.isLimited) {
         return true;
       } else {
         return false;

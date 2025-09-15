@@ -72,9 +72,9 @@ class ContactCardRow extends StatelessWidget {
                   SizedBox(height: context.sp(5)),
                   Text(
                     DateFormat(
-                      AppConstants.birthDateFormat,
+                      AppConstants.birthDateFormatWithoutYear,
                       'es_ES',
-                    ).format(date),
+                    ).format(date).capitalize(),
                     style: context.styles.smallText,
                   ),
                 ],

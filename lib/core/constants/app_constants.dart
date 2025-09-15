@@ -9,4 +9,5 @@ class AppConstants {
       'UsersInvitedInformation';
   static const String videoMergeCollection = 'VideoMergeJobs';
   static const String birthDateFormat = 'MMM·dd·yyyy';
+  static const String birthDateFormatWithoutYear = 'MMM·dd';
 }

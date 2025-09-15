@@ -51,6 +51,8 @@ class FelicitupsDashboardBloc
         recivedData: (event) => _recivedData(emit, event.listFelicitups),
         recivedPastData: (event) =>
             _recivedPastData(emit, event.listFelicitups),
+        deletePastFelicitup: (event) =>
+            _deletePastFelicitup(emit, event.felicitupId),
       ),
     );
   }
@@ -155,6 +157,20 @@ class FelicitupsDashboardBloc
       emit(state.copyWith(isLoading: false));
     } catch (e) {
       emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  _deletePastFelicitup(
+    Emitter<FelicitupsDashboardState> emit,
+    String felicitupId,
+  ) async {
+    final userId = _firebaseAuth.currentUser!.uid;
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+
+    try {
+      await _felicitupRepository.deleteAllPastFelicitups(felicitupId, userId);
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
 

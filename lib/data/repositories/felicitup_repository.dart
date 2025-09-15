@@ -70,6 +70,10 @@ abstract class FelicitupRepository {
     String videoUrl,
     String userId,
   );
+  Future<Either<ApiException, void>> deleteAllPastFelicitups(
+    String felicitupId,
+    String userId,
+  );
   Stream<Either<ApiException, FelicitupModel>> streamSingleFelicitup(
     String userId,
   );

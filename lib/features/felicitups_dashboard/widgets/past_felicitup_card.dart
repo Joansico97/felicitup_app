@@ -400,7 +400,13 @@ class PastFelicitupWidget extends StatelessWidget {
                                 title: 'Eliminar felicitup',
                                 content:
                                     '¿Estás seguro de eliminar esta felicitup? Si la eliminas no podrás recuperarla.',
-                                onAccept: () async {},
+                                onAccept: () async {
+                                  context.read<FelicitupsDashboardBloc>().add(
+                                    FelicitupsDashboardEvent.deletePastFelicitup(
+                                      felicitupId: felicitup.id,
+                                    ),
+                                  );
+                                },
                               );
                               break;
                             case MenuOption.opcion2:
@@ -410,22 +416,14 @@ class PastFelicitupWidget extends StatelessWidget {
                           }
                         },
                         itemBuilder: (_) {
-                          final currentUser = context
-                              .read<AppBloc>()
-                              .state
-                              .currentUser;
-
                           return [
-                            if (felicitup.owner.any(
-                              (owner) => owner.id == (currentUser?.id ?? ''),
-                            ))
-                              PopupMenuItem(
-                                value: MenuOption.opcion1,
-                                child: Text(
-                                  'Eliminar felicitup',
-                                  style: context.styles.paragraph,
-                                ),
+                            PopupMenuItem(
+                              value: MenuOption.opcion1,
+                              child: Text(
+                                'Eliminar felicitup',
+                                style: context.styles.paragraph,
                               ),
+                            ),
                           ];
                         },
                       ),

@@ -383,6 +383,7 @@ async function completeFelicitup(felicitupId) {
         await felicitupRef.update({
           invitedUserDetails: admin.firestore.FieldValue.arrayUnion(newElement),
           invitedUsers: admin.firestore.FieldValue.arrayUnion(ownerData.id),
+          sentAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
 
@@ -465,6 +466,7 @@ exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
         await docRef.update({
           invitedUserDetails: admin.firestore.FieldValue.arrayUnion(newElement),
           invitedUsers: admin.firestore.FieldValue.arrayUnion(id),
+          sentAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
         console.log(`User ${ownerName} added to felicitup ${felicitupId}`);

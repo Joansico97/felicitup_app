@@ -80,7 +80,7 @@ void redirectHelper({required Map<String, dynamic> data}) {
       break;
     case PushMessageType.past:
       router.go(
-        RouterPaths.chatPastFelicitup,
+        RouterPaths.mainPastFelicitup,
         extra: {'felicitupId': felicitupId},
       );
       break;

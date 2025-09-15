@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
@@ -145,16 +146,38 @@ class UserFirebaseResource implements UserRepository {
         return const Right([]);
       }
 
-      final response = await _client.get(AppConstants.usersCollection);
-      if (response != null) {
-        final users = response as List<Map<String, dynamic>>;
-        final usersData = users
-            .where((user) => usersIds.contains(user['id']))
-            .toList();
-        return Right(usersData);
-      } else {
-        return Left(ApiException(404, 'Users not found'));
+      // 1. Dividir la lista de IDs en trozos de 30
+      final chunks = usersIds.slices(30);
+
+      // 2. Crear una lista de Futures, uno para cada consulta 'whereIn'
+      final futures = chunks.map((chunk) {
+        return _firestore
+            .collection(AppConstants.usersCollection)
+            // Usamos 'FieldPath.documentId' para consultar por el ID del documento
+            // Si tienes un campo 'id' dentro del documento, usa 'id' en su lugar.
+            .where(FieldPath.documentId, whereIn: chunk)
+            .get();
+      }).toList();
+
+      // 3. Ejecutar todas las consultas en paralelo y esperar los resultados
+      final snapshots = await Future.wait(futures);
+
+      // 4. Combinar los resultados de todas las consultas en una sola lista
+      final List<Map<String, dynamic>> usersData = [];
+      for (final snapshot in snapshots) {
+        for (final doc in snapshot.docs) {
+          // Asegúrate de agregar el ID del documento a los datos si no está dentro del mapa
+          final data = doc.data();
+          data['id'] = doc.id;
+          usersData.add(data);
+        }
       }
+
+      if (usersData.isEmpty) {
+        return Left(ApiException(404, 'No users found for the given IDs'));
+      }
+
+      return Right(usersData);
     } on FirebaseException catch (e) {
       return Left(
         ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
@@ -413,6 +436,9 @@ class UserFirebaseResource implements UserRepository {
           'phone': user.phone,
           'isoCode': user.isoCode,
           'fullName': '${user.firstName} ${user.lastName}',
+          'birthDate': user.birthDate?.toUtc(),
+          'birthDay': user.birthDay,
+          'birthMonth': user.birthMonth,
         });
       });
       return Right(null);

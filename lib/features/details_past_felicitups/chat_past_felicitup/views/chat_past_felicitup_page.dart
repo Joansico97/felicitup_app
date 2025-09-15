@@ -127,7 +127,7 @@ class _ChatPastFelicitupPageState extends State<ChatPastFelicitupPage>
                           chatMessages.removeWhere((element) {
                             if (ownerIds.contains(currentUser?.id)) {
                               return element.sendedAt.isBefore(
-                                felicitup?.date ?? DateTime.now(),
+                                felicitup?.sentAt ?? DateTime.now(),
                               );
                             } else {
                               return false;

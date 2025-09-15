@@ -254,9 +254,9 @@ class SelectContactsView extends StatelessWidget {
 
                           return Text(
                             selectedDate != null
-                                ? 'Fecha envío felicitUp:\n${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(selectedDate)} - ${DateFormat('HH:mm').format(selectedDate)}'
+                                ? 'Fecha envío felicitUp:\n${DateFormat(AppConstants.birthDateFormatWithoutYear, 'es_ES').format(selectedDate).capitalize()} - ${DateFormat('HH:mm').format(selectedDate)}'
                                 : listOwner.isNotEmpty
-                                ? 'Fecha envío felicitUp:\n${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(listOwner[0].date)} - ${DateFormat('HH:mm').format(listOwner[0].date)}'
+                                ? 'Fecha envío felicitUp:\n${DateFormat(AppConstants.birthDateFormatWithoutYear, 'es_ES').format(listOwner[0].date).capitalize()} - ${DateFormat('HH:mm').format(listOwner[0].date)}'
                                 : 'Selecciona la persona a la que irá destinada la Felicitup.',
                             style: context.styles.paragraph,
                             maxLines: 3,

@@ -389,6 +389,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                         onSelectNewDate: (date) {
                                           birthDate = date;
                                         },
+                                        initialDate:
+                                            currentUser?.birthDate ??
+                                            DateTime.now(),
                                       ),
                                       actions: [
                                         TextButton(

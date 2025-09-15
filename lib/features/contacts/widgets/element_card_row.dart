@@ -76,7 +76,7 @@ class ElementCardRow extends StatelessWidget {
                       title:
                           'Hemos copiado a tu portapapeles la invitación para que puedas invitar a tus amigos mediante Whatsapp.',
                       onAccept: () async {
-                        final url = Uri.parse("whatsapp://app");
+                        final Uri url = Uri.parse("whatsapp://app");
 
                         if (await canLaunchUrl(url)) {
                           await launchUrl(
@@ -85,14 +85,12 @@ class ElementCardRow extends StatelessWidget {
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                               content: Text(
                                 'No se pudo abrir WhatsApp. Asegúrate de que la aplicación esté instalada.',
                               ),
-                              duration: const Duration(seconds: 2),
                             ),
                           );
-                          // Aquí podrías mostrar un SnackBar o un AlertDialog al usuario.
                         }
                       },
                     );

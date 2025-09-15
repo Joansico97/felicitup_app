@@ -8,6 +8,7 @@ class FelicitupsDashboardState with _$FelicitupsDashboardState {
     required List<bool> listBoolsTap,
     required List<FelicitupModel> listFelicitups,
     required List<FelicitupModel> listFelicitupsPast,
+    String? errorMessage,
   }) = _FelicitupsDashboardState;
 
   factory FelicitupsDashboardState.initial() => FelicitupsDashboardState(

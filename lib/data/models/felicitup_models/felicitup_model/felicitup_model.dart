@@ -15,6 +15,7 @@ class FelicitupModel with _$FelicitupModel {
     required String reason,
     String? finalVideoUrl,
     @TimestampConverter() required DateTime date,
+    @TimestampConverter() DateTime? sentAt,
     required bool hasBote,
     required bool hasVideo,
     required List<String> invitedUsers,
