@@ -3,16 +3,21 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:crypto/crypto.dart';
+import 'package:fast_contacts/fast_contacts.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:felicitup_app/features/home/bloc/home_bloc.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 part 'app_event.dart';
 part 'app_state.dart';
@@ -37,6 +42,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         checkAppStatus: (_) => _checkAppStatus(emit),
         closeRememberSection: (_) => _closeRememberSection(emit),
         loadUserData: (_) => _loadUserData(emit),
+        syncContacts: (event) => _syncContacts(emit, event.isoCode),
+        updateMatchListFromContacts: (_) => _updateMatchListFromContacts(emit),
         loadProvUserData: (event) =>
             _loadProvUserData(emit, event.federatedData),
         updateMatchList: (event) => _updateMatchList(event.phoneList),
@@ -115,11 +122,57 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             rootNavigatorKey.currentContext!.go(RouterPaths.completeUserData);
           }
           emit(state.copyWith(isLoading: false, currentUser: user));
+          add(AppEvent.syncContacts(user.isoCode ?? ''));
         },
       );
     } catch (e) {
       logger.error(e);
       emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  Future<void> _syncContacts(Emitter<AppState> emit, String isoCode) async {
+    try {
+      final List<HashedContact> contacts = await getHashedContacts(isoCode);
+      final List<String> phones = contacts.map((c) => c.hashedPhone).toList();
+
+      final response = await _userRepository.updateContacts(
+        contacts
+            .map((c) => {'displayName': c.displayName, 'phone': c.hashedPhone})
+            .toList(),
+        phones,
+      );
+
+      response.fold(
+        (error) => logger.error('Failed to sync contacts: ${error.message}'),
+        (_) {
+          add(AppEvent.updateMatchListFromContacts());
+        },
+      );
+      logger.info('Contacts synchronized successfully.');
+    } catch (e) {
+      logger.error('Error syncing contacts: $e');
+    }
+  }
+
+  Future<void> _updateMatchListFromContacts(Emitter<AppState> emit) async {
+    final friendsPhones = state.currentUser?.friendsPhoneList ?? [];
+    if (friendsPhones.isEmpty) {
+      logger.info('No friend phones to update match list.');
+      return;
+    }
+
+    try {
+      final response = await _userRepository.updateMatchListFromPhones(
+        friendsPhones,
+      );
+      response.fold(
+        (error) =>
+            logger.error('Failed to update match list: ${error.message}'),
+        (_) => logger.info('Match list updated from contacts successfully.'),
+      );
+    } catch (e) {
+      logger.error('Error updating match list: $e');
     }
   }
 
@@ -139,7 +192,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       ),
     );
     _globalTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      // Agrega un evento interno para cada tick
       add(const AppEvent.globalTimerTick());
     });
   }
@@ -187,20 +239,21 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     if (phonesList.isEmpty) return;
 
     try {
-      final response = await _userRepository.getListUserDataByPhone(phonesList);
+      final response = await _userRepository.updateMatchListFromPhones(
+        phonesList,
+      );
 
-      response.fold((error) => logger.error(error), (users) async {
-        final ids = users
-            .where((doc) => doc.id != null && doc.id!.isNotEmpty)
-            .map((doc) => doc.id!)
-            .toList();
-
-        if (ids.isNotEmpty) {
-          await _userRepository.updateMatchList(ids);
-        }
-      });
+      response.fold((error) {
+        logger.error('Error updating match list from phones: ${error.message}');
+        ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+          SnackBar(
+            content: Text('Error updating match list: ${error.message}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }, (_) => logger.info('Match list updated successfully!'));
     } catch (e) {
-      logger.error('Error updating match list: $e');
+      logger.error('An unexpected error occurred: $e');
     }
   }
 
@@ -246,6 +299,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     emit(state.copyWith(isLoading: true));
     try {
       await _userRepository.asignCurrentChatId('');
+      await _userRepository.setFCMToken('');
       await _authRepository.logout();
       emit(
         state.copyWith(
@@ -306,8 +360,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         message.data,
       );
     }
-
-    // emit(state.copyWith(notifications: [notification, ...state.notifications ?? []]));
   }
 
   void _onForegroundMessage(Emitter<AppState> emit) {
@@ -402,5 +454,66 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   ) async {
     final resp = jsonDecode(response.payload ?? '{}');
     redirectHelper(data: resp);
+  }
+
+  Future<List<HashedContact>> getHashedContacts(String isoCode) async {
+    bool isGranted = await _checkContactsPermission();
+
+    if (isGranted) {
+      final packageContacts = await FastContacts.getAllContacts();
+
+      List<HashedContact> hashedContacts = [];
+
+      for (final contact in packageContacts) {
+        if (contact.displayName.isEmpty || contact.phones.isEmpty) continue;
+
+        String phoneNumber = contact.phones[0].number;
+        if (phoneNumber.length < 8) continue;
+
+        String normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+
+        if (!normalizedPhone.startsWith('+')) {
+          normalizedPhone = '$isoCode$normalizedPhone';
+        }
+
+        final bytes = utf8.encode(normalizedPhone);
+        final digest = sha256.convert(bytes);
+        String hashedPhone = digest.toString();
+
+        hashedContacts.add(
+          HashedContact(
+            displayName: contact.displayName,
+            hashedPhone: hashedPhone,
+          ),
+        );
+      }
+
+      hashedContacts.sort(
+        (a, b) => a.displayName.toLowerCase().trim().compareTo(
+          b.displayName.toLowerCase().trim(),
+        ),
+      );
+
+      return hashedContacts;
+    }
+
+    return [];
+  }
+
+  Future<bool> _checkContactsPermission() async {
+    final contactsPermissionStatus = await Permission.contacts.status;
+
+    if (!contactsPermissionStatus.isGranted) {
+      final newPermissionStatus = await Permission.contacts.request();
+      if (newPermissionStatus.isGranted || newPermissionStatus.isLimited) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (contactsPermissionStatus.isPermanentlyDenied) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }

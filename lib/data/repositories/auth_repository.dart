@@ -14,7 +14,6 @@ abstract class AuthRepository {
   Future<Either<ApiException, void>> logout();
   Future<Either<ApiException, UserCredential>> signInWithGoogle();
   Future<Either<ApiException, Map<String, dynamic>>> signInWithApple();
-  Future<Either<ApiException, String>> setFCMToken({required String token});
   Future<Either<ApiException, String>> updateCurrentChat({
     required String chatId,
   });

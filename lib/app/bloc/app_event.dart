@@ -8,6 +8,9 @@ class AppEvent with _$AppEvent {
   const factory AppEvent.loadUserData() = _loadUserData;
   const factory AppEvent.loadProvUserData(Map<String, dynamic> federatedData) =
       _loadProvUserData;
+  const factory AppEvent.syncContacts(String isoCode) = _syncContacts;
+  const factory AppEvent.updateMatchListFromContacts() =
+      _updateMatchListFromContacts;
   const factory AppEvent.updateMatchList(List<String> phoneList) =
       _updateMatchList;
   const factory AppEvent.initializeNotifications() = _initializeNotifications;

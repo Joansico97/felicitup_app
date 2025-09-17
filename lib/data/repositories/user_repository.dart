@@ -6,7 +6,6 @@ import 'package:felicitup_app/data/models/models.dart';
 
 abstract class UserRepository {
   Future<Either<ApiException, Map<String, dynamic>>> getUserData(String userId);
-  Future<Either<ApiException, bool>> checkVerifyStatus();
   Future<Either<ApiException, bool>> checkPhoneExist({required String phone});
   Future<Either<ApiException, void>> sendVerifyEmail();
   Future<Either<ApiException, Map<String, dynamic>>> getUserDataByPhone(
@@ -49,6 +48,9 @@ abstract class UserRepository {
     List<String> phones,
   );
   Future<Either<ApiException, void>> updateMatchList(List<String> ids);
+  Future<Either<ApiException, void>> updateMatchListFromPhones(
+    List<String> phones,
+  );
   Future<Either<ApiException, void>> updateUserImageFromFile(File file);
   Future<Either<ApiException, void>> updateUserImageFromUrl(String url);
   Future<Either<ApiException, void>> completeeUserInfo(

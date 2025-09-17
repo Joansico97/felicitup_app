@@ -91,25 +91,6 @@ class AuthFirebaseResource implements AuthRepository {
   }
 
   @override
-  Future<Either<ApiException, String>> setFCMToken({
-    required String token,
-  }) async {
-    try {
-      final userId = _firebaseAuth.currentUser?.uid;
-      if (userId == null) {
-        return Left(ApiException(400, 'User not logged in'));
-      }
-      _client.update(AppConstants.appTitle, {
-        'fcmToken': token,
-      }, document: userId);
-
-      return const Right('');
-    } catch (e) {
-      return Left(ApiException(400, e.toString()));
-    }
-  }
-
-  @override
   Future<Either<ApiException, String>> updateCurrentChat({
     required String chatId,
   }) async {
