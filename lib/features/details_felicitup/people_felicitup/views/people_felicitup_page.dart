@@ -11,7 +11,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class PeoplePageModalSearchList extends StatefulWidget {
-  const PeoplePageModalSearchList({super.key});
+  const PeoplePageModalSearchList({super.key, required this.ids});
+  final List<String> ids;
 
   @override
   State<PeoplePageModalSearchList> createState() =>
@@ -23,6 +24,7 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
   List<UserModel> _filteredFriendList = [];
   List<UserModel> _originalFriendList = [];
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode(); // ← Agrega FocusNode
 
   @override
   void initState() {
@@ -30,11 +32,17 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
     _searchController.addListener(() {
       _filterContacts(_searchController.text);
     });
+
+    // Enfocar automáticamente el campo de búsqueda
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_searchFocusNode);
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose(); // ← No olvides dispose
     super.dispose();
   }
 
@@ -63,29 +71,18 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
       listenWhen: (previous, current) =>
           previous.friendList != current.friendList,
       listener: (_, state) {
-        final felicitup = context
-            .read<DetailsFelicitupDashboardBloc>()
-            .state
-            .felicitup;
-        if (felicitup == null) return;
+        final newFriendList = List<UserModel>.from(state.friendList);
 
-        final ownerIds = felicitup.owner.map((o) => o.id).toSet();
-        final invitedUserIds = felicitup.invitedUsers.toSet();
+        newFriendList.removeWhere((friend) => widget.ids.contains(friend.id));
 
-        final availableFriends = state.friendList.where((friend) {
-          final isOwner = ownerIds.contains(friend.id);
-          final isAlreadyInvited = invitedUserIds.contains(friend.id);
-          return !isOwner && !isAlreadyInvited;
-        }).toList();
-
-        availableFriends.sort(
+        newFriendList.sort(
           (a, b) => (a.fullName ?? '').toLowerCase().compareTo(
             (b.fullName ?? '').toLowerCase(),
           ),
         );
 
         setState(() {
-          _originalFriendList = availableFriends;
+          _originalFriendList = newFriendList;
           _filterContacts(_searchQuery);
         });
       },
@@ -94,100 +91,106 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
           final currentSelectedParticipantsFromBloc =
               peopleState.invitedContacts;
 
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: EdgeInsets.only(
-                  bottom: context.sp(12),
-                  left: context.sp(12),
-                  right: context.sp(12),
-                  top: context.sp(12),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  style: context.styles.paragraph,
-                  decoration: InputDecoration(
-                    fillColor: context.colors.white,
-                    filled: true,
-                    hintText: 'Buscar participante...',
-                    hintStyle: context.styles.paragraph.copyWith(
-                      color: context.colors.darkGrey,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: context.colors.darkGrey,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(context.sp(10)),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(context.sp(10)),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(context.sp(10)),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: context.sp(10),
-                      horizontal: context.sp(15),
-                    ),
+          return SingleChildScrollView(
+            // ← Envuelve todo en SingleChildScrollView
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: EdgeInsets.only(
+                    bottom: context.sp(12),
+                    left: context.sp(12),
+                    right: context.sp(12),
+                    top: context.sp(12),
                   ),
-                  onChanged: _filterContacts,
-                ),
-              ),
-              if (_filteredFriendList.isEmpty && _searchQuery.isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: context.sp(20)),
-                  child: Text(
-                    'No se encontraron contactos para "$_searchQuery"',
-                    style: context.styles.paragraph.copyWith(
-                      color: Colors.grey[700],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              else
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _filteredFriendList.length,
-                  itemBuilder: (context, index) {
-                    final contact = _filteredFriendList[index];
-
-                    final bool isSelected = currentSelectedParticipantsFromBloc
-                        .any((participant) => participant.id == contact.id);
-                    return GestureDetector(
-                      onTap: () {
-                        final participant = InvitedModel(
-                          id: contact.id ?? '',
-                          name: contact.fullName ?? 'Usuario sin nombre',
-                          userImage: contact.userImg ?? '',
-                          assistanceStatus: enumToStringAssistance(
-                            AssistanceStatus.pending,
-                          ),
-                          paid: enumToStringPayment(PaymentStatus.pending),
-                          videoData: VideoDataModel(
-                            videoUrl: '',
-                            videoThumbnail: '',
-                          ),
-                          idInformation: '',
-                        );
-
-                        context.read<PeopleFelicitupBloc>().add(
-                          PeopleFelicitupEvent.addParticipant(participant),
-                        );
-                      },
-                      child: ContactCardRow(
-                        contact: contact,
-                        isSelected: isSelected,
+                  child: TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode, // ← Usa el FocusNode
+                    style: context.styles.paragraph,
+                    decoration: InputDecoration(
+                      fillColor: context.colors.white,
+                      filled: true,
+                      hintText: 'Buscar participante...',
+                      hintStyle: context.styles.paragraph.copyWith(
+                        color: context.colors.darkGrey,
                       ),
-                    );
-                  },
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: context.colors.darkGrey,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(context.sp(10)),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(context.sp(10)),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(context.sp(10)),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: context.sp(10),
+                        horizontal: context.sp(15),
+                      ),
+                    ),
+                    onChanged: _filterContacts,
+                  ),
                 ),
-            ],
+                if (_filteredFriendList.isEmpty && _searchQuery.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: context.sp(20)),
+                    child: Text(
+                      'No se encontraron contactos para "$_searchQuery"',
+                      style: context.styles.paragraph.copyWith(
+                        color: Colors.grey[700],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                else
+                  ListView.builder(
+                    shrinkWrap: true, // ← Importante
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _filteredFriendList.length,
+                    itemBuilder: (context, index) {
+                      final contact = _filteredFriendList[index];
+                      final bool isSelected =
+                          currentSelectedParticipantsFromBloc.any(
+                            (participant) => participant.id == contact.id,
+                          );
+
+                      return GestureDetector(
+                        onTap: () {
+                          final participant = InvitedModel(
+                            id: contact.id ?? '',
+                            name: contact.fullName ?? 'Usuario sin nombre',
+                            userImage: contact.userImg ?? '',
+                            assistanceStatus: enumToStringAssistance(
+                              AssistanceStatus.pending,
+                            ),
+                            paid: enumToStringPayment(PaymentStatus.pending),
+                            videoData: VideoDataModel(
+                              videoUrl: '',
+                              videoThumbnail: '',
+                            ),
+                            idInformation: '',
+                          );
+
+                          context.read<PeopleFelicitupBloc>().add(
+                            PeopleFelicitupEvent.addParticipant(participant),
+                          );
+                        },
+                        child: ContactCardRow(
+                          contact: contact,
+                          isSelected: isSelected,
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
           );
         },
       ),
@@ -214,6 +217,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
         .read<DetailsFelicitupDashboardBloc>()
         .state
         .felicitup;
+
     context.read<PeopleFelicitupBloc>().add(
       PeopleFelicitupEvent.startListening(felicitup?.id ?? ''),
     );
@@ -292,6 +296,11 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                         ),
                                       );
 
+                                      final combinedIds = [
+                                        ...felicitup.owner.map((o) => o.id),
+                                        ...felicitup.invitedUsers,
+                                      ];
+
                                       commoBottomModal(
                                         context:
                                             rootNavigatorKey.currentContext!,
@@ -304,10 +313,13 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                           );
                                           context.pop();
                                         },
+                                        moreSpace: true,
                                         body: BlocProvider.value(
                                           value: context
                                               .read<PeopleFelicitupBloc>(),
-                                          child: PeoplePageModalSearchList(),
+                                          child: PeoplePageModalSearchList(
+                                            ids: combinedIds,
+                                          ),
                                         ),
                                       );
                                     },

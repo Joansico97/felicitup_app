@@ -260,6 +260,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                   commoBottomModal(
                                     context: rootNavigatorKey.currentContext!,
                                     hasBottomButton: true,
+                                    moreSpace: true,
                                     onTap: () async {
                                       bloc.add(
                                         InfoFelicitupEvent.updateFelicitupOwners(
