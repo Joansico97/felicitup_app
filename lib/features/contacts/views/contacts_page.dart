@@ -22,19 +22,13 @@ class _ContactsPageState extends State<ContactsPage> {
   @override
   void initState() {
     super.initState();
-    final currentUser = context.read<AppBloc>().state.currentUser;
-    if (currentUser != null) {
-      context.read<ContactsBloc>().add(ContactsEvent.generateListData(
-            currentUser.friendList ?? [],
-            currentUser.friendsPhoneList ?? [],
-          ));
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<ContactsBloc, ContactsState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -44,33 +38,43 @@ class _ContactsPageState extends State<ContactsPage> {
       },
       child: Scaffold(
         body: SafeArea(
-          child: Column(
-            children: [
-              CollapsedHeader(
-                title: 'Contactos',
-                onPressed: () async => context.go(RouterPaths.felicitupsDashboard),
-              ),
-              SizedBox(height: context.sp(12)),
-              Expanded(
-                child: BlocBuilder<ContactsBloc, ContactsState>(
-                  buildWhen: (previous, current) => previous.dataList != current.dataList,
-                  builder: (_, state) {
-                    final listData = state.dataList;
+          child: RefreshIndicator(
+            onRefresh: () async {
+              final currentUser = context.read<AppBloc>().state.currentUser;
 
-                    return ListView.builder(
-                      itemCount: listData?.length ?? 0,
-                      itemBuilder: (_, index) => ElementCardRow(
-                        contact: listData?[index]['contact'] as ContactModel,
-                        isRegistered: listData?[index]['isRegistered'] as bool,
-                        giftcars: index <= (state.listDataUsers?.length ?? 0)
-                            ? (state.listDataUsers?[index].giftcardList)
-                            : null,
-                      ),
-                    );
-                  },
+              if (currentUser != null) {
+                context.read<AppBloc>().add(AppEvent.loadContacts());
+              }
+            },
+            child: Column(
+              children: [
+                CollapsedHeader(
+                  title: 'Contactos',
+                  onPressed: () async =>
+                      context.go(RouterPaths.felicitupsDashboard),
                 ),
-              ),
-            ],
+                SizedBox(height: context.sp(12)),
+                Expanded(
+                  child: BlocBuilder<AppBloc, AppState>(
+                    buildWhen: (previous, current) =>
+                        previous.dataList != current.dataList,
+                    builder: (_, state) {
+                      final listData = state.dataList;
+
+                      return ListView.builder(
+                        itemCount: listData?.length ?? 0,
+                        itemBuilder: (_, index) => ElementCardRow(
+                          contact: listData?[index]['contact'] as ContactModel,
+                          isRegistered:
+                              listData?[index]['isRegistered'] as bool,
+                          giftcars: null,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

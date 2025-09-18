@@ -11,14 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class PeoplePageModalSearchList extends StatefulWidget {
-  final List<UserModel> initialFriendList;
-  final PeopleFelicitupBloc peopleFelicitupBloc;
-  const PeoplePageModalSearchList({
-    super.key,
-    required this.initialFriendList,
-
-    required this.peopleFelicitupBloc,
-  });
+  const PeoplePageModalSearchList({super.key});
 
   @override
   State<PeoplePageModalSearchList> createState() =>
@@ -28,19 +21,12 @@ class PeoplePageModalSearchList extends StatefulWidget {
 class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
   String _searchQuery = '';
   List<UserModel> _filteredFriendList = [];
+  List<UserModel> _originalFriendList = [];
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-
-    widget.initialFriendList.sort(
-      (a, b) => (a.fullName ?? '').toLowerCase().compareTo(
-        (b.fullName ?? '').toLowerCase(),
-      ),
-    );
-    _filteredFriendList = List.from(widget.initialFriendList);
-
     _searchController.addListener(() {
       _filterContacts(_searchController.text);
     });
@@ -54,12 +40,13 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
 
   void _filterContacts(String query) {
     final lowerCaseQuery = query.toLowerCase();
+
     setState(() {
       _searchQuery = lowerCaseQuery;
       if (_searchQuery.isEmpty) {
-        _filteredFriendList = List.from(widget.initialFriendList);
+        _filteredFriendList = List.from(_originalFriendList);
       } else {
-        _filteredFriendList = widget.initialFriendList
+        _filteredFriendList = _originalFriendList
             .where(
               (contact) => (contact.fullName ?? '').toLowerCase().contains(
                 lowerCaseQuery,
@@ -72,121 +59,138 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.initialFriendList.isEmpty && _searchQuery.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.all(context.sp(16)),
-          child: Text(
-            'No hay más contactos para agregar como participantes.',
-            style: context.styles.paragraph,
-            textAlign: TextAlign.center,
+    return BlocListener<PeopleFelicitupBloc, PeopleFelicitupState>(
+      listenWhen: (previous, current) =>
+          previous.friendList != current.friendList,
+      listener: (_, state) {
+        final felicitup = context
+            .read<DetailsFelicitupDashboardBloc>()
+            .state
+            .felicitup;
+        if (felicitup == null) return;
+
+        final ownerIds = felicitup.owner.map((o) => o.id).toSet();
+        final invitedUserIds = felicitup.invitedUsers.toSet();
+
+        final availableFriends = state.friendList.where((friend) {
+          final isOwner = ownerIds.contains(friend.id);
+          final isAlreadyInvited = invitedUserIds.contains(friend.id);
+          return !isOwner && !isAlreadyInvited;
+        }).toList();
+
+        availableFriends.sort(
+          (a, b) => (a.fullName ?? '').toLowerCase().compareTo(
+            (b.fullName ?? '').toLowerCase(),
           ),
-        ),
-      );
-    }
-
-    return BlocBuilder<PeopleFelicitupBloc, PeopleFelicitupState>(
-      bloc: widget.peopleFelicitupBloc,
-
-      builder: (context, peopleState) {
-        final currentSelectedParticipantsFromBloc = peopleState.invitedContacts;
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: EdgeInsets.only(
-                bottom: context.sp(12),
-                left: context.sp(12),
-                right: context.sp(12),
-                top: context.sp(12),
-              ),
-              child: TextField(
-                controller: _searchController,
-                style: context.styles.paragraph,
-                decoration: InputDecoration(
-                  fillColor: context.colors.white,
-                  filled: true,
-                  hintText: 'Buscar participante...',
-                  hintStyle: context.styles.paragraph.copyWith(
-                    color: context.colors.darkGrey,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: context.colors.darkGrey,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(context.sp(10)),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(context.sp(10)),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(context.sp(10)),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: context.sp(10),
-                    horizontal: context.sp(15),
-                  ),
-                ),
-                onChanged: _filterContacts,
-              ),
-            ),
-            if (_filteredFriendList.isEmpty && _searchQuery.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: context.sp(20)),
-                child: Text(
-                  'No se encontraron contactos para "$_searchQuery"',
-                  style: context.styles.paragraph.copyWith(
-                    color: Colors.grey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _filteredFriendList.length,
-                itemBuilder: (context, index) {
-                  final contact = _filteredFriendList[index];
-
-                  final bool isSelected = currentSelectedParticipantsFromBloc
-                      .any((participant) => participant.id == contact.id);
-                  return GestureDetector(
-                    onTap: () {
-                      final participant = InvitedModel(
-                        id: contact.id ?? '',
-                        name: contact.fullName ?? 'Usuario sin nombre',
-                        userImage: contact.userImg ?? '',
-                        assistanceStatus: enumToStringAssistance(
-                          AssistanceStatus.pending,
-                        ),
-                        paid: enumToStringPayment(PaymentStatus.pending),
-                        videoData: VideoDataModel(
-                          videoUrl: '',
-                          videoThumbnail: '',
-                        ),
-                        idInformation: '',
-                      );
-
-                      widget.peopleFelicitupBloc.add(
-                        PeopleFelicitupEvent.addParticipant(participant),
-                      );
-                    },
-                    child: ContactCardRow(
-                      contact: contact,
-                      isSelected: isSelected,
-                    ),
-                  );
-                },
-              ),
-          ],
         );
+
+        setState(() {
+          _originalFriendList = availableFriends;
+          _filterContacts(_searchQuery);
+        });
       },
+      child: BlocBuilder<PeopleFelicitupBloc, PeopleFelicitupState>(
+        builder: (_, peopleState) {
+          final currentSelectedParticipantsFromBloc =
+              peopleState.invitedContacts;
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.only(
+                  bottom: context.sp(12),
+                  left: context.sp(12),
+                  right: context.sp(12),
+                  top: context.sp(12),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  style: context.styles.paragraph,
+                  decoration: InputDecoration(
+                    fillColor: context.colors.white,
+                    filled: true,
+                    hintText: 'Buscar participante...',
+                    hintStyle: context.styles.paragraph.copyWith(
+                      color: context.colors.darkGrey,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: context.colors.darkGrey,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(context.sp(10)),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(context.sp(10)),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(context.sp(10)),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: context.sp(10),
+                      horizontal: context.sp(15),
+                    ),
+                  ),
+                  onChanged: _filterContacts,
+                ),
+              ),
+              if (_filteredFriendList.isEmpty && _searchQuery.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: context.sp(20)),
+                  child: Text(
+                    'No se encontraron contactos para "$_searchQuery"',
+                    style: context.styles.paragraph.copyWith(
+                      color: Colors.grey[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _filteredFriendList.length,
+                  itemBuilder: (context, index) {
+                    final contact = _filteredFriendList[index];
+
+                    final bool isSelected = currentSelectedParticipantsFromBloc
+                        .any((participant) => participant.id == contact.id);
+                    return GestureDetector(
+                      onTap: () {
+                        final participant = InvitedModel(
+                          id: contact.id ?? '',
+                          name: contact.fullName ?? 'Usuario sin nombre',
+                          userImage: contact.userImg ?? '',
+                          assistanceStatus: enumToStringAssistance(
+                            AssistanceStatus.pending,
+                          ),
+                          paid: enumToStringPayment(PaymentStatus.pending),
+                          videoData: VideoDataModel(
+                            videoUrl: '',
+                            videoThumbnail: '',
+                          ),
+                          idInformation: '',
+                        );
+
+                        context.read<PeopleFelicitupBloc>().add(
+                          PeopleFelicitupEvent.addParticipant(participant),
+                        );
+                      },
+                      child: ContactCardRow(
+                        contact: contact,
+                        isSelected: isSelected,
+                      ),
+                    );
+                  },
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -264,8 +268,6 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                     previous.invitedContacts !=
                                     current.invitedContacts,
                                 builder: (_, state) {
-                                  final bloc = context
-                                      .read<PeopleFelicitupBloc>();
                                   final friendList = [...state.friendList];
                                   friendList.removeWhere(
                                     (friend) => felicitup.owner.any(
@@ -284,6 +286,12 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
 
                                   return FloatingActionButton.extended(
                                     onPressed: () {
+                                      context.read<PeopleFelicitupBloc>().add(
+                                        PeopleFelicitupEvent.loadFriendsData(
+                                          currentUser?.matchList ?? [],
+                                        ),
+                                      );
+
                                       commoBottomModal(
                                         context:
                                             rootNavigatorKey.currentContext!,
@@ -299,10 +307,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                         body: BlocProvider.value(
                                           value: context
                                               .read<PeopleFelicitupBloc>(),
-                                          child: PeoplePageModalSearchList(
-                                            initialFriendList: friendList,
-                                            peopleFelicitupBloc: bloc,
-                                          ),
+                                          child: PeoplePageModalSearchList(),
                                         ),
                                       );
                                     },

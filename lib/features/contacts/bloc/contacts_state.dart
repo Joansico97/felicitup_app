@@ -4,12 +4,10 @@ part of 'contacts_bloc.dart';
 class ContactsState with _$ContactsState {
   const factory ContactsState({
     required bool isLoading,
-    List<Map<String, dynamic>>? dataList,
-    List<UserModel>? listDataUsers,
+    required bool isFirstTime,
     UserModel? dataSingleUsers,
   }) = _ContactsState;
 
-  factory ContactsState.initial() => ContactsState(
-        isLoading: false,
-      );
+  factory ContactsState.initial() =>
+      ContactsState(isLoading: false, isFirstTime: true);
 }

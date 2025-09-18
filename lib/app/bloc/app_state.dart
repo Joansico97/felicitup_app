@@ -4,11 +4,13 @@ part of 'app_bloc.dart';
 class AppState with _$AppState {
   const factory AppState({
     required bool isLoading,
+    required bool reloadContacts,
     required bool showRememberSection,
     required AuthorizationStatus status,
     TermsPoliciesModel? termsAndConditions,
     TermsPoliciesModel? privacyPolicy,
     Map<String, dynamic>? pendingNotificationPayload,
+    List<Map<String, dynamic>>? dataList,
     bool? isVerified,
     UserModel? currentUser,
     Map<String, dynamic>? federatedData,
@@ -21,6 +23,7 @@ class AppState with _$AppState {
 
   factory AppState.initial() => AppState(
     isLoading: false,
+    reloadContacts: true,
     showRememberSection: true,
     status: AuthorizationStatus.notDetermined,
     counter: 0,

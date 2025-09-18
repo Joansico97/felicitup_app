@@ -37,8 +37,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
        _updateService = updateService,
        super(AppState.initial()) {
     on<AppEvent>(
-      (event, emit) => event.map(
+      (events, emit) => events.map(
         onAppStarted: (_) => _onAppStarted(emit),
+        changeLoadContacts: (_) => _changeLoadContacts(emit),
+        loadContacts: (_) => _loadContacts(emit),
         checkAppStatus: (_) => _checkAppStatus(emit),
         closeRememberSection: (_) => _closeRememberSection(emit),
         loadUserData: (_) => _loadUserData(emit),
@@ -75,6 +77,80 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   _onAppStarted(Emitter<AppState> emit) {
     add(const AppEvent.initializeNotifications());
     add(const AppEvent.loadUserData());
+  }
+
+  _changeLoadContacts(Emitter<AppState> emit) {
+    emit(state.copyWith(reloadContacts: true));
+  }
+
+  _loadContacts(Emitter<AppState> emit) async {
+    emit(state.copyWith(isLoading: true));
+
+    try {
+      final ids = state.currentUser?.friendsPhoneList ?? [];
+      final contacts = state.currentUser?.friendList ?? [];
+
+      final response = await _userRepository.getListUserDataByPhone(ids);
+      response.fold(
+        (l) {
+          emit(state.copyWith(isLoading: false, dataList: []));
+        },
+        (r) {
+          final registeredPhonesSet = r.map((e) => e.phone ?? '').toSet();
+
+          final List<Map<String, dynamic>> registeredList = [];
+          final List<Map<String, dynamic>> unregisteredList = [];
+
+          for (final contact in contacts) {
+            final bool isRegistered = registeredPhonesSet.contains(
+              contact.phone,
+            );
+
+            final contactData = {
+              'contact': contact,
+              'isRegistered': isRegistered,
+            };
+
+            if (isRegistered) {
+              registeredList.add(contactData);
+            } else {
+              unregisteredList.add(contactData);
+            }
+          }
+
+          int sortByName(Map<String, dynamic> a, Map<String, dynamic> b) {
+            final aName = (a['contact'] as ContactModel).displayName ?? '';
+            final bName = (b['contact'] as ContactModel).displayName ?? '';
+            return aName.toLowerCase().compareTo(bName.toLowerCase());
+          }
+
+          registeredList.sort(sortByName);
+          unregisteredList.sort(sortByName);
+
+          // 5. Combina las listas. Los registrados aparecerán primero.
+          final List<Map<String, dynamic>> finalDataList = [
+            ...registeredList,
+            ...unregisteredList,
+          ];
+
+          emit(state.copyWith(isLoading: false, dataList: finalDataList));
+
+          if (finalDataList.isNotEmpty && finalDataList != state.dataList) {
+            emit(
+              state.copyWith(
+                isLoading: false,
+                dataList: finalDataList,
+                reloadContacts: false,
+              ),
+            );
+          } else {
+            emit(state.copyWith(isLoading: false, reloadContacts: false));
+          }
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, dataList: []));
+    }
   }
 
   _checkAppStatus(Emitter<AppState> emit) async {
@@ -146,6 +222,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       response.fold(
         (error) => logger.error('Failed to sync contacts: ${error.message}'),
         (_) {
+          add(AppEvent.loadContacts());
           add(AppEvent.updateMatchListFromContacts());
         },
       );

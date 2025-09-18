@@ -50,9 +50,6 @@ class _DetailsFelicitupDashboardPageState
     context.read<InfoFelicitupBloc>().add(
       InfoFelicitupEvent.loadFriendsData(currentUser?.matchList ?? []),
     );
-    context.read<PeopleFelicitupBloc>().add(
-      PeopleFelicitupEvent.loadFriendsData(currentUser?.matchList ?? []),
-    );
   }
 
   final List<Widget> pagesComplete = [
