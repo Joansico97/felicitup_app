@@ -57,9 +57,14 @@ class _ContactsPageState extends State<ContactsPage> {
                 Expanded(
                   child: BlocBuilder<AppBloc, AppState>(
                     buildWhen: (previous, current) =>
-                        previous.dataList != current.dataList,
+                        previous.dataList != current.dataList ||
+                        previous.isLoadingContacts != current.isLoadingContacts,
                     builder: (_, state) {
                       final listData = state.dataList;
+
+                      if (state.isLoadingContacts) {
+                        return Center(child: CircularProgressIndicator());
+                      }
 
                       return ListView.builder(
                         itemCount: listData?.length ?? 0,

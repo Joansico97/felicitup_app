@@ -10,6 +10,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
@@ -26,8 +27,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    context.read<AppBloc>().add(AppEvent.initializeNotifications());
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final appState = context.read<AppBloc>().state;
       if (appState.currentUser != null) {
@@ -37,20 +36,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _checkAndRequestContactPermissions(AppState state) {
-    if (Platform.isIOS) {
-      if (state.currentUser != null &&
-          (state.currentUser?.friendsPhoneList?.isEmpty ?? false)) {
-        requestContactsPermissionWithModal();
-      } else {
-        context.read<HomeBloc>().add(
-          HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
-        );
-      }
-    }
-    if (Platform.isAndroid) {
+    if (state.contactsPermissionStatus.isGranted ||
+        state.contactsPermissionStatus.isLimited) {
       context.read<HomeBloc>().add(
         HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
       );
+      return;
+    } else {
+      if (Platform.isIOS) {
+        if (state.currentUser != null &&
+            (state.currentUser?.friendsPhoneList?.isEmpty ?? false)) {
+          requestContactsPermissionWithModal();
+        } else {
+          context.read<HomeBloc>().add(
+            HomeEvent.getAndUpdateContacts(state.currentUser?.isoCode ?? ''),
+          );
+        }
+      }
     }
   }
 
@@ -131,11 +133,7 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (result == true) {
-      final currentUser = context.read<AppBloc>().state.currentUser;
-
-      context.read<HomeBloc>().add(
-        HomeEvent.getAndUpdateContacts(currentUser?.isoCode ?? ''),
-      );
+      context.read<AppBloc>().add(AppEvent.requestManualContactsPermissions());
     }
   }
 
@@ -143,15 +141,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<HomeBloc, HomeState>(
-          listenWhen: (previous, current) =>
-              previous.status != current.status &&
-              current.status == HomeStatus.contactsUpdateSuccess,
-          listener: (_, state) {
-            context.read<AppBloc>().add(AppEvent.loadUserData());
-          },
-        ),
-
         BlocListener<AppBloc, AppState>(
           listenWhen: (previous, current) =>
               previous.pendingNotificationPayload !=
@@ -237,7 +226,7 @@ class _HomePageState extends State<HomePage> {
               context.go(RouterPaths.phoneVerifyInt);
             }
 
-            _checkAndRequestContactPermissions(state);
+            // _checkAndRequestContactPermissions(state);
           },
         ),
       ],

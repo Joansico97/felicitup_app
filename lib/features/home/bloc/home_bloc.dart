@@ -1,14 +1,9 @@
-import 'dart:convert';
-
 import 'package:bloc/bloc.dart';
-import 'package:crypto/crypto.dart';
-import 'package:fast_contacts/fast_contacts.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';
@@ -52,30 +47,30 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   _getAndUpdateContacts(Emitter<HomeState> emit, String isoCode) async {
-    final contacts = await getHashedContacts(isoCode);
+    // final contacts = await getHashedContacts(isoCode);
 
-    List<Map<String, dynamic>> contactsMapList = contacts
-        .where((e) => e.displayName.isNotEmpty && e.hashedPhone.isNotEmpty)
-        .map((e) {
-          return {'displayName': e.displayName, 'phone': e.hashedPhone};
-        })
-        .toList();
+    // List<Map<String, dynamic>> contactsMapList = contacts
+    //     .where((e) => e.displayName.isNotEmpty && e.hashedPhone.isNotEmpty)
+    //     .map((e) {
+    //       return {'displayName': e.displayName, 'phone': e.hashedPhone};
+    //     })
+    //     .toList();
 
-    RegExp nameRegex = RegExp(r'\d{3,}');
-    contactsMapList.removeWhere(
-      (element) =>
-          element['displayName'] == null || element['displayName'].isEmpty,
-    );
-    contactsMapList.removeWhere(
-      (element) => nameRegex.hasMatch(element['displayName'] ?? ''),
-    );
+    // RegExp nameRegex = RegExp(r'\d{3,}');
+    // contactsMapList.removeWhere(
+    //   (element) =>
+    //       element['displayName'] == null || element['displayName'].isEmpty,
+    // );
+    // contactsMapList.removeWhere(
+    //   (element) => nameRegex.hasMatch(element['displayName'] ?? ''),
+    // );
 
-    List<String> friendsPhoneList = contactsMapList
-        .map((e) => e['phone'] as String)
-        .toList();
+    // List<String> friendsPhoneList = contactsMapList
+    //     .map((e) => e['phone'] as String)
+    //     .toList();
 
-    await _userRepository.updateContacts(contactsMapList, friendsPhoneList);
-    emit(state.copyWith(status: HomeStatus.contactsUpdateSuccess));
+    // await _userRepository.updateContacts(contactsMapList, friendsPhoneList);
+    // emit(state.copyWith(status: HomeStatus.contactsUpdateSuccess));
   }
 
   _setUserBirthdate(Emitter<HomeState> emit, DateTime date) async {
@@ -111,63 +106,46 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<List<HashedContact>> getHashedContacts(String isoCode) async {
-    bool isGranted = await _checkContactsPermission();
+    // bool isGranted = await _checkContactsPermission();
 
-    if (isGranted) {
-      final packageContacts = await FastContacts.getAllContacts();
+    // if (isGranted) {
+    //   final packageContacts = await FastContacts.getAllContacts();
 
-      List<HashedContact> hashedContacts = [];
+    //   List<HashedContact> hashedContacts = [];
 
-      for (final contact in packageContacts) {
-        if (contact.displayName.isEmpty || contact.phones.isEmpty) continue;
+    //   for (final contact in packageContacts) {
+    //     if (contact.displayName.isEmpty || contact.phones.isEmpty) continue;
 
-        String phoneNumber = contact.phones[0].number;
-        if (phoneNumber.length < 8) continue;
+    //     String phoneNumber = contact.phones[0].number;
+    //     if (phoneNumber.length < 8) continue;
 
-        String normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    //     String normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
 
-        if (!normalizedPhone.startsWith('+')) {
-          normalizedPhone = '$isoCode$normalizedPhone';
-        }
+    //     if (!normalizedPhone.startsWith('+')) {
+    //       normalizedPhone = '$isoCode$normalizedPhone';
+    //     }
 
-        final bytes = utf8.encode(normalizedPhone);
-        final digest = sha256.convert(bytes);
-        String hashedPhone = digest.toString();
+    //     final bytes = utf8.encode(normalizedPhone);
+    //     final digest = sha256.convert(bytes);
+    //     String hashedPhone = digest.toString();
 
-        hashedContacts.add(
-          HashedContact(
-            displayName: contact.displayName,
-            hashedPhone: hashedPhone,
-          ),
-        );
-      }
+    //     hashedContacts.add(
+    //       HashedContact(
+    //         displayName: contact.displayName,
+    //         hashedPhone: hashedPhone,
+    //       ),
+    //     );
+    //   }
 
-      hashedContacts.sort(
-        (a, b) => a.displayName.toLowerCase().trim().compareTo(
-          b.displayName.toLowerCase().trim(),
-        ),
-      );
+    //   hashedContacts.sort(
+    //     (a, b) => a.displayName.toLowerCase().trim().compareTo(
+    //       b.displayName.toLowerCase().trim(),
+    //     ),
+    //   );
 
-      return hashedContacts;
-    }
+    //   return hashedContacts;
+    // }
 
     return [];
-  }
-
-  Future<bool> _checkContactsPermission() async {
-    final contactsPermissionStatus = await Permission.contacts.status;
-
-    if (!contactsPermissionStatus.isGranted) {
-      final newPermissionStatus = await Permission.contacts.request();
-      if (newPermissionStatus.isGranted || newPermissionStatus.isLimited) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if (contactsPermissionStatus.isPermanentlyDenied) {
-      return false;
-    } else {
-      return true;
-    }
   }
 }

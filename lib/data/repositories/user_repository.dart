@@ -17,6 +17,9 @@ abstract class UserRepository {
   Future<Either<ApiException, List<UserModel>>> getListUserDataByPhone(
     List<String> phones,
   );
+  Future<Either<ApiException, List<UserModel>>> getListUserDataByPhoneIos(
+    List<String> phones,
+  );
   Future<Either<ApiException, String>> uploadFile(
     File file,
     String destination,

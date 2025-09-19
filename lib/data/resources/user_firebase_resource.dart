@@ -195,6 +195,41 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
+  Future<Either<ApiException, List<UserModel>>> getListUserDataByPhoneIos(
+    List<String> phones,
+  ) async {
+    try {
+      final List<UserModel> users = [];
+      final List<Map<String, dynamic>> firebaseUsers = [];
+
+      final response = await _client.get(AppConstants.usersCollection);
+
+      if (response == null) {
+        return Left(ApiException(404, 'Users not found'));
+      }
+
+      firebaseUsers.addAll(response);
+      final Set<Map<String, dynamic>> usersSet = firebaseUsers
+          .map((e) => e)
+          .toSet();
+      List<Map<String, dynamic>> matchingUsers = usersSet.where((user) {
+        return phones.any((phone) => user['phone'] == phone);
+      }).toList();
+
+      for (final user in matchingUsers) {
+        users.add(UserModel.fromJson(user));
+      }
+      return Right(users);
+    } on FirebaseException catch (e) {
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Future<Either<ApiException, String>> uploadFile(
     File file,
     String destination,
