@@ -12,7 +12,6 @@ import 'package:felicitup_app/features/home/bloc/home_bloc.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
@@ -48,7 +47,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         updateMatchListFromContacts: (_) => _updateMatchListFromContacts(emit),
         loadProvUserData: (event) =>
             _loadProvUserData(emit, event.federatedData),
-        updateMatchList: (event) => _updateMatchList(event.phoneList),
         initializeNotifications: (_) => _initializeNotifications(emit),
         notificationReceived: (event) =>
             _notificationReceived(emit, event.payload),
@@ -56,6 +54,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         requestManualPermissions: (_) => _requestManualPermissions(emit),
         requestManualContactsPermissions: (_) =>
             _requestManualContactsPermissions(emit),
+        reseteContactsPermissions: (_) => _resetContactsPermissions(emit),
         deleterPermissions: (_) => _deleterPermissions(emit),
         handleRemoteMessage: (event) =>
             handleRemoteMessage(event.message, emit),
@@ -90,6 +89,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       final response = Platform.isIOS
           ? await _userRepository.getListUserDataByPhoneIos(ids)
           : await _userRepository.getListUserDataByPhone(ids);
+
       response.fold(
         (l) {
           emit(state.copyWith(isLoading: false, dataList: []));
@@ -177,20 +177,21 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       final response = await _userRepository.getUserData(userId);
 
-      response.fold(
+      return response.fold(
         (error) {
           logger.error(error);
           emit(state.copyWith(isLoading: false));
           add(const AppEvent.logout());
           rootNavigatorKey.currentContext!.go(RouterPaths.init);
         },
-        (data) {
+        (data) async {
           final user = UserModel.fromJson(data);
           if ((user.firstName == null || user.firstName!.isEmpty) &&
               (user.lastName == null || user.lastName!.isEmpty)) {
             rootNavigatorKey.currentContext!.go(RouterPaths.completeUserData);
           }
           emit(state.copyWith(isLoading: false, currentUser: user));
+          await _checkContactsPermission(emit);
           add(AppEvent.syncContacts(user.isoCode ?? ''));
         },
       );
@@ -206,6 +207,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         isoCode,
         emit,
       );
+
       final List<String> phones = contacts.map((c) => c.hashedPhone).toList();
 
       final response = await _userRepository.updateContacts(
@@ -270,28 +272,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     emit(state.copyWith(pendingNotificationPayload: null));
   }
 
-  _updateMatchList(List<String> phonesList) async {
-    if (phonesList.isEmpty) return;
-
-    try {
-      final response = await _userRepository.updateMatchListFromPhones(
-        phonesList,
-      );
-
-      response.fold((error) {
-        logger.error('Error updating match list from phones: ${error.message}');
-        ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-          SnackBar(
-            content: Text('Error updating match list: ${error.message}'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }, (_) => logger.info('Match list updated successfully!'));
-    } catch (e) {
-      logger.error('An unexpected error occurred: $e');
-    }
-  }
-
   _requestManualPermissions(Emitter<AppState> emit) async {
     final settings = await _firebaseMessaging.getNotificationSettings();
 
@@ -306,12 +286,27 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   _requestManualContactsPermissions(Emitter<AppState> emit) async {
-    final status = await _checkContactsPermission(emit);
+    final status = state.contactsPermissionStatus.isGranted;
     if (status) {
       final currentUser = state.currentUser;
       if (currentUser != null) {
         add(AppEvent.syncContacts(currentUser.isoCode ?? ''));
       }
+    }
+  }
+
+  _resetContactsPermissions(Emitter<AppState> emit) async {
+    final currentStatus = await Permission.contacts.status;
+
+    if (currentStatus.isLimited) {
+      final newStatus = await Permission.contacts.request();
+
+      emit(state.copyWith(contactsPermissionStatus: newStatus));
+    } else if (currentStatus.isPermanentlyDenied) {
+      await openAppSettings();
+    } else {
+      final newStatus = await Permission.contacts.request();
+      emit(state.copyWith(contactsPermissionStatus: newStatus));
     }
   }
 
@@ -497,7 +492,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     String isoCode,
     Emitter<AppState> emit,
   ) async {
-    bool isGranted = await _checkContactsPermission(emit);
+    bool isGranted = state.contactsPermissionStatus.isGranted;
 
     if (isGranted) {
       final packageContacts = await FastContacts.getAllContacts();
@@ -540,27 +535,17 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     return [];
   }
 
-  Future<bool> _checkContactsPermission(Emitter<AppState> emit) async {
+  Future<void> _checkContactsPermission(Emitter<AppState> emit) async {
     final contactsPermissionStatus = await Permission.contacts.status;
 
-    if (!contactsPermissionStatus.isGranted) {
-      final newPermissionStatus = await Permission.contacts.request();
-      if (newPermissionStatus.isGranted || newPermissionStatus.isLimited) {
-        emit(state.copyWith(contactsPermissionStatus: newPermissionStatus));
-
-        return true;
-      } else {
-        emit(
-          state.copyWith(contactsPermissionStatus: contactsPermissionStatus),
-        );
-        return false;
-      }
+    if (contactsPermissionStatus.isGranted ||
+        contactsPermissionStatus.isLimited) {
+      emit(state.copyWith(contactsPermissionStatus: contactsPermissionStatus));
     } else if (contactsPermissionStatus.isPermanentlyDenied) {
       emit(state.copyWith(contactsPermissionStatus: contactsPermissionStatus));
-      return false;
     } else {
-      emit(state.copyWith(contactsPermissionStatus: contactsPermissionStatus));
-      return true;
+      final newPermissionStatus = await Permission.contacts.request();
+      emit(state.copyWith(contactsPermissionStatus: newPermissionStatus));
     }
   }
 }

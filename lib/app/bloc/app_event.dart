@@ -13,12 +13,12 @@ class AppEvent with _$AppEvent {
   const factory AppEvent.syncContacts(String isoCode) = _syncContacts;
   const factory AppEvent.updateMatchListFromContacts() =
       _updateMatchListFromContacts;
-  const factory AppEvent.updateMatchList(List<String> phoneList) =
-      _updateMatchList;
   const factory AppEvent.initializeNotifications() = _initializeNotifications;
   const factory AppEvent.requestManualPermissions() = _requestManualPermissions;
   const factory AppEvent.requestManualContactsPermissions() =
       _requestManualContactsPermissions;
+  const factory AppEvent.reseteContactsPermissions() =
+      _reseteContactsPermissions;
   const factory AppEvent.notificationReceived(Map<String, dynamic> payload) =
       _notificationReceived;
   const factory AppEvent.clearPendingNotification() = _clearPendingNotification;

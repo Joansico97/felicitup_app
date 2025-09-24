@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
@@ -52,6 +53,17 @@ class _ContactsPageState extends State<ContactsPage> {
                   title: 'Contactos',
                   onPressed: () async =>
                       context.go(RouterPaths.felicitupsDashboard),
+                  secondaryAction: Platform.isIOS
+                      ? IconButton(
+                          onPressed: () => context.read<AppBloc>().add(
+                            AppEvent.reseteContactsPermissions(),
+                          ),
+                          icon: Icon(
+                            Icons.replay_outlined,
+                            color: Colors.black,
+                          ),
+                        )
+                      : null,
                 ),
                 SizedBox(height: context.sp(12)),
                 Expanded(

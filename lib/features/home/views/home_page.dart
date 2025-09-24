@@ -165,11 +165,7 @@ class _HomePageState extends State<HomePage> {
               previous.currentUser?.friendsPhoneList !=
               current.currentUser?.friendsPhoneList,
           listener: (_, state) {
-            context.read<AppBloc>().add(
-              AppEvent.updateMatchList(
-                state.currentUser?.friendsPhoneList ?? [],
-              ),
-            );
+            context.read<AppBloc>().add(AppEvent.updateMatchListFromContacts());
           },
         ),
 

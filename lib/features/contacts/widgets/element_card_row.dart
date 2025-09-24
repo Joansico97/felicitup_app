@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
@@ -84,11 +87,14 @@ class ElementCardRow extends StatelessWidget {
                             mode: LaunchMode.externalApplication,
                           );
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'No se pudo abrir WhatsApp. Asegúrate de que la aplicación esté instalada.',
-                              ),
+                          const playStore =
+                              "https://play.google.com/store/apps/details?id=com.whatsapp";
+                          const appStore =
+                              "https://apps.apple.com/app/whatsapp-messenger/id310633997";
+
+                          await launchUrl(
+                            Uri.parse(
+                              Platform.isAndroid ? playStore : appStore,
                             ),
                           );
                         }
