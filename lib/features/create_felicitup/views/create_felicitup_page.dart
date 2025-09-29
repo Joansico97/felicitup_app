@@ -21,25 +21,20 @@ class CreateFelicitupPage extends StatefulWidget {
 class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   final TextEditingController messageController = TextEditingController();
 
-  List<String> steps = ['Quién', 'Evento', 'Participantes', 'Qué', 'Resumen'];
+  static const List<String> steps = [
+    'Quién',
+    'Evento',
+    'Participantes',
+    'Qué',
+    'Resumen',
+  ];
 
-  late List<Widget> pages;
+  late final List<Widget> pages;
 
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final appState = context.read<AppBloc>().state;
-      if (appState.currentUser?.matchList != null) {
-        List<String> listData = [...appState.currentUser!.matchList!];
-        listData.removeWhere((element) => element == appState.currentUser?.id);
-
-        context.read<CreateFelicitupBloc>().add(
-          CreateFelicitupEvent.loadFriendsData(listData),
-        );
-      }
-    });
+    context.read<AppBloc>().add(AppEvent.loadUserData());
 
     pages = [
       SelectContactsView(),
@@ -51,9 +46,30 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   }
 
   @override
+  void dispose() {
+    messageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
+        BlocListener<AppBloc, AppState>(
+          listenWhen: (prev, curr) =>
+              prev.currentUser?.matchList != curr.currentUser?.matchList,
+          listener: (context, state) {
+            final matchList = state.currentUser?.matchList ?? [];
+            final myId = state.currentUser?.id;
+            if (matchList.isNotEmpty && myId != null) {
+              final listData = matchList.where((e) => e != myId).toList();
+              context.read<CreateFelicitupBloc>().add(
+                CreateFelicitupEvent.loadFriendsData(listData),
+              );
+            }
+          },
+        ),
+
         BlocListener<CreateFelicitupBloc, CreateFelicitupState>(
           listenWhen: (previous, current) =>
               previous.isLoading != current.isLoading ||
@@ -225,7 +241,10 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                                       ),
                                     );
                                   },
-                                  child: pages[state.steperIndex],
+                                  child: KeyedSubtree(
+                                    key: ValueKey<int>(state.steperIndex),
+                                    child: pages[state.steperIndex],
+                                  ),
                                 );
                               },
                             ),

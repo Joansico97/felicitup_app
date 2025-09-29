@@ -11,6 +11,7 @@ import 'package:felicitup_app/features/contacts/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key});
@@ -62,106 +63,95 @@ class _ContactsPageState extends State<ContactsPage> {
                   title: 'Contactos',
                   onPressed: () async =>
                       context.go(RouterPaths.felicitupsDashboard),
-                  secondaryAction: Platform.isIOS
+                  secondaryAction:
+                      context.read<AppBloc>().state.contactsPermissionStatus ==
+                          PermissionStatus.limited
                       ? IconButton(
                           onPressed: () {
-                            showConfirDoublemModal(
-                              title: 'Qué deseas hacer?',
-                              label1: 'Autorizar más contactos',
-                              label2: 'Ingresar contacto manualmente',
-                              onAction1: () async {
-                                context.read<AppBloc>().add(
-                                  AppEvent.reseteContactsPermissions(),
-                                );
-                              },
-                              onAction2: () async {
-                                showDialog(
-                                  context: context,
-                                  builder: (_) => Material(
-                                    color: Colors.transparent,
-                                    child: AlertDialog(
-                                      backgroundColor: context.colors.white,
-                                      title: Row(
-                                        children: [
-                                          Text(
-                                            'Ingresar contacto manualmente',
-                                            style: context.styles.paragraph
-                                                .copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                          SizedBox(width: context.sp(12)),
-                                          GestureDetector(
-                                            onTap: () {
-                                              nameController.clear();
-                                              numberController.clear();
-                                              context.pop();
-                                            },
-                                            child: Container(
-                                              padding: EdgeInsets.all(
-                                                context.sp(4),
-                                              ),
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: context.colors.orange,
-                                              ),
-                                              alignment: Alignment.center,
-                                              child: Icon(
-                                                Icons.close,
-                                                color: context.colors.white,
-                                                size: context.sp(20),
-                                              ),
+                            showDialog(
+                              context: context,
+                              builder: (_) => Material(
+                                color: Colors.transparent,
+                                child: AlertDialog(
+                                  backgroundColor: context.colors.white,
+                                  title: Row(
+                                    children: [
+                                      Text(
+                                        'Ingresar contacto manualmente',
+                                        style: context.styles.paragraph
+                                            .copyWith(
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                          ),
-                                        ],
                                       ),
-                                      content: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          InputCommon(
-                                            controller: nameController,
-                                            hintText: 'Nombre del contacto',
-                                            titleText: 'Nombre',
+                                      SizedBox(width: context.sp(12)),
+                                      GestureDetector(
+                                        onTap: () {
+                                          nameController.clear();
+                                          numberController.clear();
+                                          context.pop();
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(
+                                            context.sp(4),
                                           ),
-                                          SizedBox(height: context.sp(12)),
-                                          InputCommon(
-                                            controller: numberController,
-                                            hintText: 'Número del contacto',
-                                            titleText: 'Número',
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: context.colors.orange,
                                           ),
-                                          SizedBox(height: context.sp(12)),
-                                          PrimaryButton(
-                                            label: 'Agregar contacto',
-                                            onTap: () async {
-                                              context.read<ContactsBloc>().add(
-                                                ContactsEvent.addManualContact(
-                                                  user: {
-                                                    'name': nameController.text,
-                                                    'phone':
-                                                        numberController.text,
-                                                  },
-                                                  isoCode:
-                                                      context
-                                                          .read<AppBloc>()
-                                                          .state
-                                                          .currentUser
-                                                          ?.isoCode ??
-                                                      '',
-                                                ),
-                                              );
-                                              nameController.clear();
-                                              numberController.clear();
-                                              context.pop();
-                                            },
-                                            isCollapsed: true,
-                                            isActive: true,
+                                          alignment: Alignment.center,
+                                          child: Icon(
+                                            Icons.close,
+                                            color: context.colors.white,
+                                            size: context.sp(20),
                                           ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                );
-                              },
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      InputCommon(
+                                        controller: nameController,
+                                        hintText: 'Nombre del contacto',
+                                        titleText: 'Nombre',
+                                      ),
+                                      SizedBox(height: context.sp(12)),
+                                      InputCommon(
+                                        controller: numberController,
+                                        hintText: 'Número del contacto',
+                                        titleText: 'Número',
+                                      ),
+                                      SizedBox(height: context.sp(12)),
+                                      PrimaryButton(
+                                        label: 'Agregar contacto',
+                                        onTap: () async {
+                                          context.read<ContactsBloc>().add(
+                                            ContactsEvent.addManualContact(
+                                              user: {
+                                                'name': nameController.text,
+                                                'phone': numberController.text,
+                                              },
+                                              isoCode:
+                                                  context
+                                                      .read<AppBloc>()
+                                                      .state
+                                                      .currentUser
+                                                      ?.isoCode ??
+                                                  '',
+                                            ),
+                                          );
+                                          nameController.clear();
+                                          numberController.clear();
+                                          context.pop();
+                                        },
+                                        isCollapsed: true,
+                                        isActive: true,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             );
                           },
                           icon: Icon(Icons.add, color: Colors.black),
