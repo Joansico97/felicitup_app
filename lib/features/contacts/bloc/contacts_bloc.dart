@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
@@ -24,6 +27,8 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
         changeIsFirstTime: (_) => _changeIsFirstTime(emit),
         getInfoSingleContact: (event) =>
             _getInfoSingleContact(emit, event.phone),
+        addManualContact: (event) =>
+            _addManualContact(emit, event.user, event.isoCode),
       ),
     );
   }
@@ -35,13 +40,19 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
   }
 
   _getInfoSingleContact(Emitter<ContactsState> emit, String phone) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, errorMessage: null));
     try {
       final response = await _userRepository.getUserDataByPhone(phone);
       response.fold(
         (l) {
           logger.error('Error al obtener el usuario: $l');
-          emit(state.copyWith(isLoading: false, dataSingleUsers: null));
+          emit(
+            state.copyWith(
+              isLoading: false,
+              dataSingleUsers: null,
+              errorMessage: l.message,
+            ),
+          );
         },
         (r) {
           emit(
@@ -54,6 +65,46 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false, dataSingleUsers: null));
+    }
+  }
+
+  _addManualContact(
+    Emitter<ContactsState> emit,
+    Map<String, dynamic> user,
+    String isoCode,
+  ) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+    try {
+      final phone = user['phone'] as String?;
+      if (phone != null && phone.isNotEmpty) {
+        String formattedPhone = phone;
+        if (!formattedPhone.startsWith('+')) {
+          formattedPhone = isoCode + formattedPhone;
+        }
+        final hashedPhone = sha256
+            .convert(utf8.encode(formattedPhone))
+            .toString();
+        final updatedUser = Map<String, dynamic>.from(user)
+          ..['phone'] = hashedPhone;
+        final response = await _userRepository.addManualContact(updatedUser);
+        response.fold(
+          (l) {
+            emit(state.copyWith(isLoading: false, errorMessage: l.message));
+          },
+          (r) {
+            emit(state.copyWith(isLoading: false, reloadContacts: true));
+          },
+        );
+      } else {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            errorMessage: 'El número de teléfono es requerido.',
+          ),
+        );
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
     }
   }
 }

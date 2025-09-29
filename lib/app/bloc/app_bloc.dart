@@ -84,53 +84,38 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
     try {
       final ids = state.currentUser?.friendsPhoneList ?? [];
-      final contacts = state.currentUser?.friendList ?? [];
+      final friendList = state.currentUser?.friendList ?? [];
+      final manualContacts = state.currentUser?.manualContacts ?? [];
+      final contacts = [...friendList, ...manualContacts];
+
+      if (ids.isEmpty || contacts.isEmpty) {
+        emit(
+          state.copyWith(
+            isLoadingContacts: false,
+            dataList: [],
+            reloadContacts: false,
+          ),
+        );
+        return;
+      }
 
       final response = Platform.isIOS
           ? await _userRepository.getListUserDataByPhoneIos(ids)
           : await _userRepository.getListUserDataByPhone(ids);
 
       response.fold(
-        (l) {
-          emit(state.copyWith(isLoading: false, dataList: []));
+        (error) {
+          logger.error('Failed to load contacts: $error');
+          emit(
+            state.copyWith(
+              isLoadingContacts: false,
+              dataList: [],
+              reloadContacts: false,
+            ),
+          );
         },
-        (r) {
-          final registeredPhonesSet = r.map((e) => e.phone ?? '').toSet();
-
-          final List<Map<String, dynamic>> registeredList = [];
-          final List<Map<String, dynamic>> unregisteredList = [];
-
-          for (final contact in contacts) {
-            final bool isRegistered = registeredPhonesSet.contains(
-              contact.phone,
-            );
-
-            final contactData = {
-              'contact': contact,
-              'isRegistered': isRegistered,
-            };
-
-            if (isRegistered) {
-              registeredList.add(contactData);
-            } else {
-              unregisteredList.add(contactData);
-            }
-          }
-
-          int sortByName(Map<String, dynamic> a, Map<String, dynamic> b) {
-            final aName = (a['contact'] as ContactModel).displayName ?? '';
-            final bName = (b['contact'] as ContactModel).displayName ?? '';
-            return aName.toLowerCase().compareTo(bName.toLowerCase());
-          }
-
-          registeredList.sort(sortByName);
-          unregisteredList.sort(sortByName);
-
-          // 5. Combina las listas. Los registrados aparecerán primero.
-          final List<Map<String, dynamic>> finalDataList = [
-            ...registeredList,
-            ...unregisteredList,
-          ];
+        (registeredUsers) {
+          final finalDataList = _processContactsData(contacts, registeredUsers);
 
           emit(
             state.copyWith(
@@ -142,8 +127,58 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         },
       );
     } catch (e) {
-      emit(state.copyWith(isLoadingContacts: false, dataList: []));
+      logger.error('Error loading contacts: $e');
+      emit(
+        state.copyWith(
+          isLoadingContacts: false,
+          dataList: [],
+          reloadContacts: false,
+        ),
+      );
     }
+  }
+
+  /// Processes contacts data and separates registered from unregistered contacts
+  List<Map<String, dynamic>> _processContactsData(
+    List<ContactModel> contacts,
+    List<UserModel> registeredUsers,
+  ) {
+    // Create a Set for O(1) lookup performance
+    final registeredPhonesSet = registeredUsers
+        .map((user) => user.phone ?? '')
+        .where((phone) => phone.isNotEmpty)
+        .toSet();
+
+    // Separate contacts into registered and unregistered lists
+    final registeredList = <Map<String, dynamic>>[];
+    final unregisteredList = <Map<String, dynamic>>[];
+
+    for (final contact in contacts) {
+      final isRegistered = registeredPhonesSet.contains(contact.phone);
+      final contactData = {'contact': contact, 'isRegistered': isRegistered};
+
+      if (isRegistered) {
+        registeredList.add(contactData);
+      } else {
+        unregisteredList.add(contactData);
+      }
+    }
+
+    // Sort both lists by display name
+    _sortContactsByName(registeredList);
+    _sortContactsByName(unregisteredList);
+
+    // Combine lists with registered contacts first
+    return [...registeredList, ...unregisteredList];
+  }
+
+  /// Sorts contacts by display name (case-insensitive)
+  void _sortContactsByName(List<Map<String, dynamic>> contacts) {
+    contacts.sort((a, b) {
+      final aName = (a['contact'] as ContactModel).displayName ?? '';
+      final bName = (b['contact'] as ContactModel).displayName ?? '';
+      return aName.toLowerCase().compareTo(bName.toLowerCase());
+    });
   }
 
   _checkAppStatus(Emitter<AppState> emit) async {
@@ -208,29 +243,44 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         emit,
       );
 
-      final List<String> phones = contacts.map((c) => c.hashedPhone).toList();
+      if (contacts.isEmpty) {
+        logger.info('No contacts to sync.');
+        return;
+      }
+
+      // Prepare data for API call more efficiently
+      final contactsData = contacts
+          .map((c) => {'displayName': c.displayName, 'phone': c.hashedPhone})
+          .toList();
+
+      final phones = contacts.map((c) => c.hashedPhone).toList();
 
       final response = await _userRepository.updateContacts(
-        contacts
-            .map((c) => {'displayName': c.displayName, 'phone': c.hashedPhone})
-            .toList(),
+        contactsData,
         phones,
       );
 
       response.fold(
-        (error) => logger.error('Failed to sync contacts: ${error.message}'),
+        (error) {
+          logger.error('Failed to sync contacts: ${error.message}');
+          emit(state.copyWith(isLoadingContacts: false));
+        },
         (_) {
           logger.info('Contacts synchronized successfully.');
-
-          if (state.reloadContacts) {
-            add(AppEvent.loadContacts());
-          }
-          add(AppEvent.updateMatchListFromContacts());
+          // Chain the subsequent operations
+          _onContactsSyncSuccess();
         },
       );
     } catch (e) {
       logger.error('Error syncing contacts: $e');
+      emit(state.copyWith(isLoadingContacts: false));
     }
+  }
+
+  /// Handles successful contact synchronization
+  void _onContactsSyncSuccess() {
+    add(const AppEvent.loadContacts());
+    add(const AppEvent.updateMatchListFromContacts());
   }
 
   Future<void> _updateMatchListFromContacts(Emitter<AppState> emit) async {
@@ -273,66 +323,97 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   _requestManualPermissions(Emitter<AppState> emit) async {
-    final settings = await _firebaseMessaging.getNotificationSettings();
+    try {
+      final settings = await _firebaseMessaging.getNotificationSettings();
 
-    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      await requestPermission(emit);
-    }
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      add(AppEvent.getFCMToken());
-      emit(state.copyWith(status: AuthorizationStatus.authorized));
+      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+        await requestPermission(emit);
+      } else {
+        await _onNotificationPermissionGranted(emit);
+      }
+    } catch (e) {
+      logger.error('Error requesting manual permissions: $e');
     }
   }
 
   _requestManualContactsPermissions(Emitter<AppState> emit) async {
-    final status = state.contactsPermissionStatus.isGranted;
-    if (status) {
-      final currentUser = state.currentUser;
-      if (currentUser != null) {
-        add(AppEvent.syncContacts(currentUser.isoCode ?? ''));
+    try {
+      if (state.contactsPermissionStatus.isGranted) {
+        final currentUser = state.currentUser;
+        if (currentUser != null && currentUser.isoCode != null) {
+          add(AppEvent.syncContacts(currentUser.isoCode!));
+        }
       }
+    } catch (e) {
+      logger.error('Error requesting manual contacts permissions: $e');
     }
   }
 
   _resetContactsPermissions(Emitter<AppState> emit) async {
-    final currentStatus = await Permission.contacts.status;
+    try {
+      final response = await Permission.contacts.request();
 
-    if (currentStatus.isLimited) {
-      final newStatus = await Permission.contacts.request();
+      if (response.isGranted || response.isLimited) {
+        await openAppSettings();
+        return;
+      } else if (response.isDenied) {
+        final newStatus = await Permission.contacts.request();
+        emit(state.copyWith(contactsPermissionStatus: newStatus));
 
-      emit(state.copyWith(contactsPermissionStatus: newStatus));
-    } else if (currentStatus.isPermanentlyDenied) {
-      await openAppSettings();
-    } else {
-      final newStatus = await Permission.contacts.request();
-      emit(state.copyWith(contactsPermissionStatus: newStatus));
+        if (newStatus.isGranted) {
+          _syncContactsIfUserAvailable();
+        }
+      } else {
+        await openAppSettings();
+      }
+    } catch (e) {
+      logger.error('Error resetting contacts permissions: $e');
+    }
+  }
+
+  /// Syncs contacts if current user is available
+  void _syncContactsIfUserAvailable() {
+    final currentUser = state.currentUser;
+    if (currentUser != null && currentUser.isoCode != null) {
+      add(AppEvent.syncContacts(currentUser.isoCode!));
     }
   }
 
   _deleterPermissions(Emitter<AppState> emit) async {
-    final settings = await _firebaseMessaging.getNotificationSettings();
+    try {
+      final settings = await _firebaseMessaging.getNotificationSettings();
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      await _firebaseMessaging.deleteToken();
-      await _userRepository.setFCMToken('');
-      emit(state.copyWith(status: AuthorizationStatus.denied));
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        await _firebaseMessaging.deleteToken();
+        await _userRepository.setFCMToken('');
+        emit(state.copyWith(status: AuthorizationStatus.denied));
+      }
+    } catch (e) {
+      logger.error('Error deleting permissions: $e');
     }
   }
 
   _initializeNotifications(Emitter<AppState> emit) async {
-    final settings = await _firebaseMessaging.getNotificationSettings();
+    try {
+      final settings = await _firebaseMessaging.getNotificationSettings();
 
-    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      await requestPermission(emit);
-    }
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      add(AppEvent.getFCMToken());
-      emit(state.copyWith(status: AuthorizationStatus.authorized));
-    }
-    await initializeLocalNotifications();
+      if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+        await requestPermission(emit);
+      } else {
+        await _onNotificationPermissionGranted(emit);
+      }
 
-    _onForegroundMessage(emit);
+      await initializeLocalNotifications();
+      _onForegroundMessage(emit);
+    } catch (e) {
+      logger.error('Error initializing notifications: $e');
+    }
+  }
+
+  /// Handles notification permission granted state
+  Future<void> _onNotificationPermissionGranted(Emitter<AppState> emit) async {
+    add(const AppEvent.getFCMToken());
+    emit(state.copyWith(status: AuthorizationStatus.authorized));
   }
 
   _logout(Emitter<AppState> emit) async {
@@ -349,47 +430,84 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   _getFCMToken() async {
     try {
-      String? token = await _firebaseMessaging.getToken();
+      final token = await _firebaseMessaging.getToken();
       logger.info('FCM Token: $token');
-      if (token != null) {
+
+      if (token != null && token.isNotEmpty) {
         await _userRepository.setFCMToken(token);
+      } else {
+        logger.info('FCM token is null or empty');
       }
     } catch (e) {
-      logger.error(e);
+      logger.error('Error getting FCM token: $e');
     }
   }
 
   handleRemoteMessage(RemoteMessage message, Emitter<AppState> emit) {
-    if (message.notification == null) return;
+    if (message.notification == null) {
+      logger.info('Received message without notification data');
+      return;
+    }
 
-    final notification = PushMessageModel(
-      messageId:
-          message.messageId?.replaceAll(':', '').replaceAll('%', '') ??
-          '${state.currentUser?.id}-${DateTime.now().millisecondsSinceEpoch}',
+    try {
+      final notification = _createPushMessageModel(message);
+
+      // Sync notification asynchronously
+      _syncNotificationAsync(notification);
+
+      // Show local notification based on platform
+      _showPlatformSpecificNotification(notification, message.data);
+    } catch (e) {
+      logger.error('Error handling remote message: $e');
+    }
+  }
+
+  /// Creates a PushMessageModel from RemoteMessage
+  PushMessageModel _createPushMessageModel(RemoteMessage message) {
+    final messageId =
+        message.messageId?.replaceAll(RegExp(r'[:%]'), '') ??
+        '${state.currentUser?.id}-${DateTime.now().millisecondsSinceEpoch}';
+
+    return PushMessageModel(
+      messageId: messageId,
       title: message.notification!.title ?? '',
       body: message.notification!.body ?? '',
       sentDate: message.sentTime ?? DateTime.now(),
       data: DataMessageModel.fromJson(message.data),
     );
+  }
 
+  /// Syncs notification asynchronously
+  void _syncNotificationAsync(PushMessageModel notification) {
     Future.delayed(Duration.zero, () async {
-      await _userRepository.syncNotifications(notification);
+      try {
+        await _userRepository.syncNotifications(notification);
+      } catch (e) {
+        logger.error('Error syncing notification: $e');
+      }
     });
+  }
+
+  /// Shows platform-specific notification
+  void _showPlatformSpecificNotification(
+    PushMessageModel notification,
+    Map<String, dynamic> data,
+  ) {
+    final notificationId = notification.messageId.hashCode;
 
     if (Platform.isAndroid) {
       showLocalNotification(
-        id: notification.messageId.hashCode,
+        id: notificationId,
         title: notification.title,
         body: notification.body,
-        data: message.data,
+        data: data,
       );
-    }
-    if (Platform.isIOS) {
+    } else if (Platform.isIOS) {
       darwinShowNotification(
-        notification.messageId.hashCode,
+        notificationId,
         notification.title,
         notification.body,
-        message.data,
+        data,
       );
     }
   }
@@ -401,44 +519,58 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   requestPermission(Emitter<AppState> emit) async {
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
+    try {
+      final settings = await _firebaseMessaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
 
-    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.requestNotificationsPermission();
+      // Request Android-specific permissions
+      if (Platform.isAndroid) {
+        final flutterLocalNotificationsPlugin =
+            FlutterLocalNotificationsPlugin();
+        await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
+            ?.requestNotificationsPermission();
+      }
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      emit(state.copyWith(status: AuthorizationStatus.authorized));
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        emit(state.copyWith(status: AuthorizationStatus.authorized));
+      }
+    } catch (e) {
+      logger.error('Error requesting notification permission: $e');
     }
   }
 
   initializeLocalNotifications() async {
-    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    const initializationSettingsAndroid = AndroidInitializationSettings(
-      'app_icon',
-    );
-    final initializationSettingsIos = DarwinInitializationSettings();
+    try {
+      final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+      const initializationSettingsAndroid = AndroidInitializationSettings(
+        'app_icon',
+      );
+      final initializationSettingsIos = DarwinInitializationSettings();
 
-    final initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIos,
-    );
+      final initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIos,
+      );
 
-    await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
-    );
+      await flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+      );
+
+      logger.info('Local notifications initialized successfully');
+    } catch (e) {
+      logger.error('Error initializing local notifications: $e');
+    }
   }
 
   darwinShowNotification(
@@ -492,28 +624,38 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     String isoCode,
     Emitter<AppState> emit,
   ) async {
-    bool isGranted = state.contactsPermissionStatus.isGranted;
+    if (!state.contactsPermissionStatus.isGranted) {
+      logger.info('Contacts permission not granted');
+      return [];
+    }
 
-    if (isGranted) {
+    try {
       final packageContacts = await FastContacts.getAllContacts();
 
-      List<HashedContact> hashedContacts = [];
+      if (packageContacts.isEmpty) {
+        logger.info('No contacts found on device');
+        return [];
+      }
+
+      final hashedContacts = <HashedContact>[];
+      final phoneRegex = RegExp(r'[^0-9+]');
+      final minPhoneLength = 8;
 
       for (final contact in packageContacts) {
+        // Skip contacts without name or phone
         if (contact.displayName.isEmpty || contact.phones.isEmpty) continue;
 
-        String phoneNumber = contact.phones[0].number;
-        if (phoneNumber.length < 8) continue;
+        final phoneNumber = contact.phones[0].number;
+        if (phoneNumber.length < minPhoneLength) continue;
 
-        String normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+        final normalizedPhone = _normalizePhoneNumber(
+          phoneNumber,
+          isoCode,
+          phoneRegex,
+        );
+        if (normalizedPhone == null) continue;
 
-        if (!normalizedPhone.startsWith('+')) {
-          normalizedPhone = '$isoCode$normalizedPhone';
-        }
-
-        final bytes = utf8.encode(normalizedPhone);
-        final digest = sha256.convert(bytes);
-        String hashedPhone = digest.toString();
+        final hashedPhone = _hashPhoneNumber(normalizedPhone);
 
         hashedContacts.add(
           HashedContact(
@@ -523,16 +665,44 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         );
       }
 
-      hashedContacts.sort(
-        (a, b) => a.displayName.toLowerCase().trim().compareTo(
-          b.displayName.toLowerCase().trim(),
-        ),
-      );
+      // Sort contacts by display name
+      hashedContacts.sort(_compareContactNames);
 
+      logger.info('Processed ${hashedContacts.length} contacts');
       return hashedContacts;
+    } catch (e) {
+      logger.error('Error getting hashed contacts: $e');
+      return [];
     }
+  }
 
-    return [];
+  /// Normalizes phone number by removing non-numeric characters and adding country code if needed
+  String? _normalizePhoneNumber(
+    String phoneNumber,
+    String isoCode,
+    RegExp phoneRegex,
+  ) {
+    final normalizedPhone = phoneNumber.replaceAll(phoneRegex, '');
+
+    if (normalizedPhone.isEmpty) return null;
+
+    return normalizedPhone.startsWith('+')
+        ? normalizedPhone
+        : '$isoCode$normalizedPhone';
+  }
+
+  /// Hashes phone number using SHA-256
+  String _hashPhoneNumber(String phoneNumber) {
+    final bytes = utf8.encode(phoneNumber);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  /// Compares contact names for sorting (case-insensitive)
+  int _compareContactNames(HashedContact a, HashedContact b) {
+    return a.displayName.toLowerCase().trim().compareTo(
+      b.displayName.toLowerCase().trim(),
+    );
   }
 
   Future<void> _checkContactsPermission(Emitter<AppState> emit) async {

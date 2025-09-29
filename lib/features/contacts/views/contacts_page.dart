@@ -20,6 +20,9 @@ class ContactsPage extends StatefulWidget {
 }
 
 class _ContactsPageState extends State<ContactsPage> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController numberController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -29,12 +32,18 @@ class _ContactsPageState extends State<ContactsPage> {
   Widget build(BuildContext context) {
     return BlocListener<ContactsBloc, ContactsState>(
       listenWhen: (previous, current) =>
-          previous.isLoading != current.isLoading,
+          previous.isLoading != current.isLoading ||
+          previous.reloadContacts != current.reloadContacts,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
         } else {
           await stopLoadingModal();
+        }
+        if (state.reloadContacts) {
+          context.read<AppBloc>()
+            ..add(AppEvent.loadUserData())
+            ..add(AppEvent.loadContacts());
         }
       },
       child: Scaffold(
@@ -55,13 +64,108 @@ class _ContactsPageState extends State<ContactsPage> {
                       context.go(RouterPaths.felicitupsDashboard),
                   secondaryAction: Platform.isIOS
                       ? IconButton(
-                          onPressed: () => context.read<AppBloc>().add(
-                            AppEvent.reseteContactsPermissions(),
-                          ),
-                          icon: Icon(
-                            Icons.replay_outlined,
-                            color: Colors.black,
-                          ),
+                          onPressed: () {
+                            showConfirDoublemModal(
+                              title: 'Qué deseas hacer?',
+                              label1: 'Autorizar más contactos',
+                              label2: 'Ingresar contacto manualmente',
+                              onAction1: () async {
+                                context.read<AppBloc>().add(
+                                  AppEvent.reseteContactsPermissions(),
+                                );
+                              },
+                              onAction2: () async {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => Material(
+                                    color: Colors.transparent,
+                                    child: AlertDialog(
+                                      backgroundColor: context.colors.white,
+                                      title: Row(
+                                        children: [
+                                          Text(
+                                            'Ingresar contacto manualmente',
+                                            style: context.styles.paragraph
+                                                .copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                          SizedBox(width: context.sp(12)),
+                                          GestureDetector(
+                                            onTap: () {
+                                              nameController.clear();
+                                              numberController.clear();
+                                              context.pop();
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.all(
+                                                context.sp(4),
+                                              ),
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: context.colors.orange,
+                                              ),
+                                              alignment: Alignment.center,
+                                              child: Icon(
+                                                Icons.close,
+                                                color: context.colors.white,
+                                                size: context.sp(20),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          InputCommon(
+                                            controller: nameController,
+                                            hintText: 'Nombre del contacto',
+                                            titleText: 'Nombre',
+                                          ),
+                                          SizedBox(height: context.sp(12)),
+                                          InputCommon(
+                                            controller: numberController,
+                                            hintText: 'Número del contacto',
+                                            titleText: 'Número',
+                                            isPrice: true,
+                                          ),
+                                          SizedBox(height: context.sp(12)),
+                                          PrimaryButton(
+                                            label: 'Agregar contacto',
+                                            onTap: () async {
+                                              context.read<ContactsBloc>().add(
+                                                ContactsEvent.addManualContact(
+                                                  user: {
+                                                    'name': nameController.text,
+                                                    'phone':
+                                                        numberController.text,
+                                                  },
+                                                  isoCode:
+                                                      context
+                                                          .read<AppBloc>()
+                                                          .state
+                                                          .currentUser
+                                                          ?.isoCode ??
+                                                      '',
+                                                ),
+                                              );
+                                              nameController.clear();
+                                              numberController.clear();
+                                              context.pop();
+                                            },
+                                            isCollapsed: true,
+                                            isActive: true,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          icon: Icon(Icons.add, color: Colors.black),
                         )
                       : null,
                 ),

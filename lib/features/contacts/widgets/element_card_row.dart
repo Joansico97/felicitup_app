@@ -78,7 +78,7 @@ class ElementCardRow extends StatelessWidget {
                       title:
                           'Hemos copiado a tu portapapeles la invitación para que puedas invitar a tus amigos mediante Whatsapp.',
                       onAccept: () async {
-                        final Uri url = Uri.parse("whatsapp://app");
+                        final Uri url = Uri.parse("https://wa.me/00000000000");
 
                         if (await canLaunchUrl(url)) {
                           await launchUrl(

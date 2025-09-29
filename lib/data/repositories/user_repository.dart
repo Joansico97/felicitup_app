@@ -78,7 +78,9 @@ abstract class UserRepository {
   );
   Future<Either<ApiException, void>> deleteNotification(String notificationId);
   Future<Either<ApiException, void>> setInitialUserInfo(UserModel user);
-
+  Future<Either<ApiException, void>> addManualContact(
+    Map<String, dynamic> user,
+  );
   Future<Either<ApiException, void>> setUserInfoRemaining(
     String name,
     String lastName,

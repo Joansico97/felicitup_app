@@ -1040,4 +1040,43 @@ class UserFirebaseResource implements UserRepository {
         return 500;
     }
   }
+
+  @override
+  Future<Either<ApiException, void>> addManualContact(
+    Map<String, dynamic> user,
+  ) {
+    return _executeFirebaseOperation(() async {
+      final uid = _firebaseAuth.currentUser?.uid;
+      if (uid == null) {
+        throw ApiException(401, 'User not authenticated');
+      }
+
+      final userDoc = await _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(uid)
+          .get();
+      List<dynamic> manualContacts = [];
+      if (userDoc.data() != null &&
+          userDoc.data()?.containsKey('manualContacts') == true) {
+        manualContacts = List<Map<String, dynamic>>.from(
+          userDoc.data()?['manualContacts'] ?? [],
+        );
+      }
+
+      // Remove any contact with the same phone
+      manualContacts.removeWhere(
+        (contact) =>
+            contact is Map<String, dynamic> &&
+            contact['phone'] == user['phone'],
+      );
+
+      // Add the new user
+      manualContacts.add({'displayName': user['name'], 'phone': user['phone']});
+
+      await _client.update(AppConstants.usersCollection, document: uid, {
+        'manualContacts': manualContacts,
+        'friendsPhoneList': FieldValue.arrayUnion([user['phone']]),
+      });
+    });
+  }
 }

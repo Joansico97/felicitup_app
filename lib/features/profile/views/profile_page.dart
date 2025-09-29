@@ -73,72 +73,56 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Scaffold(
         persistentFooterAlignment: AlignmentDirectional.bottomCenter,
         persistentFooterButtons: [
-          Column(
-            children: [
-              SizedBox(
-                width: context.sp(300),
-                height: context.sp(50),
-                child: PrimaryButton(
-                  onTap: () => context.go(RouterPaths.deleteAccount),
-                  label: 'Eliminar cuenta',
-                  isActive: true,
-                ),
-              ),
-              SizedBox(height: context.sp(12)),
-              SizedBox(
-                width: context.sp(300),
-                height: context.sp(50),
-                child: BlocBuilder<ProfileBloc, ProfileState>(
-                  builder: (_, state) {
-                    return PrimaryButton(
-                      onTap: () {
-                        context.read<ProfileBloc>().add(
-                          ProfileEvent.updateUserInfo(
-                            UserModel(
-                              id: currentUser?.id,
-                              firstName: nameController.text.isNotEmpty
-                                  ? nameController.text
-                                  : currentUser?.firstName,
-                              lastName: lastNameController.text.isNotEmpty
-                                  ? lastNameController.text
-                                  : currentUser?.lastName,
-                              fullName:
-                                  nameController.text.isNotEmpty &&
-                                      lastNameController.text.isNotEmpty
-                                  ? '${nameController.text} ${lastNameController.text}'
-                                  : currentUser?.fullName,
-                              email: currentUser?.email,
-                              isoCode: currentUser?.isoCode,
-                              phone: currentUser?.phone,
-                              userImg: currentUser?.userImg,
-                              fcmToken: currentUser?.fcmToken,
-                              currentChat: currentUser?.currentChat,
-                              friendList: currentUser?.friendList,
-                              birthdateAlerts: currentUser?.birthdateAlerts,
-                              matchList: currentUser?.matchList,
-                              friendsPhoneList: currentUser?.friendsPhoneList,
-                              giftcardList: currentUser?.giftcardList,
-                              notifications: currentUser?.notifications,
-                              singleChats: currentUser?.singleChats,
-                              birthDate:
-                                  editedBirthdate ?? currentUser?.birthDate,
-                              birthDay:
-                                  editedBirthdate?.day ?? currentUser?.birthDay,
-                              birthMonth:
-                                  editedBirthdate?.month ??
-                                  currentUser?.birthMonth,
-                              registerDate: currentUser?.registerDate,
-                            ),
-                          ),
-                        );
-                      },
-                      label: 'Guardar cambios',
-                      isActive: true,
+          SizedBox(
+            width: context.sp(300),
+            height: context.sp(50),
+            child: BlocBuilder<ProfileBloc, ProfileState>(
+              builder: (_, state) {
+                return PrimaryButton(
+                  onTap: () {
+                    context.read<ProfileBloc>().add(
+                      ProfileEvent.updateUserInfo(
+                        UserModel(
+                          id: currentUser?.id,
+                          firstName: nameController.text.isNotEmpty
+                              ? nameController.text
+                              : currentUser?.firstName,
+                          lastName: lastNameController.text.isNotEmpty
+                              ? lastNameController.text
+                              : currentUser?.lastName,
+                          fullName:
+                              nameController.text.isNotEmpty &&
+                                  lastNameController.text.isNotEmpty
+                              ? '${nameController.text} ${lastNameController.text}'
+                              : currentUser?.fullName,
+                          email: currentUser?.email,
+                          isoCode: currentUser?.isoCode,
+                          phone: currentUser?.phone,
+                          userImg: currentUser?.userImg,
+                          fcmToken: currentUser?.fcmToken,
+                          currentChat: currentUser?.currentChat,
+                          friendList: currentUser?.friendList,
+                          birthdateAlerts: currentUser?.birthdateAlerts,
+                          matchList: currentUser?.matchList,
+                          friendsPhoneList: currentUser?.friendsPhoneList,
+                          giftcardList: currentUser?.giftcardList,
+                          notifications: currentUser?.notifications,
+                          singleChats: currentUser?.singleChats,
+                          birthDate: editedBirthdate ?? currentUser?.birthDate,
+                          birthDay:
+                              editedBirthdate?.day ?? currentUser?.birthDay,
+                          birthMonth:
+                              editedBirthdate?.month ?? currentUser?.birthMonth,
+                          registerDate: currentUser?.registerDate,
+                        ),
+                      ),
                     );
                   },
-                ),
-              ),
-            ],
+                  label: 'Guardar cambios',
+                  isActive: true,
+                );
+              },
+            ),
           ),
         ],
         extendBody: true,
@@ -151,6 +135,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   title: 'Perfil',
                   onPressed: () async =>
                       context.go(RouterPaths.felicitupsDashboard),
+                  secondaryAction: GestureDetector(
+                    onTap: () => context.go(RouterPaths.deleteAccount),
+                    child: Container(
+                      width: context.sp(30),
+                      height: context.sp(30),
+                      margin: EdgeInsets.only(right: context.sp(8)),
+                      decoration: BoxDecoration(
+                        color: context.colors.lightGrey,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.person_off, size: context.sp(18)),
+                    ),
+                  ),
                 ),
                 Expanded(
                   child: SingleChildScrollView(
@@ -371,48 +368,47 @@ class _ProfilePageState extends State<ProfilePage> {
                         SizedBox(height: context.sp(12)),
                         InfoCard(label: currentUser?.email ?? ''),
                         SizedBox(height: context.sp(12)),
-                        Visibility(
-                          visible: currentUser?.birthDate != null,
-                          child: Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () async {
-                                  DateTime? birthDate;
-                                  await showDialog(
-                                    context: context,
-                                    builder: (_) => AlertDialog(
-                                      title: Text(
-                                        '¿Cuándo es tu cumpleaños?',
-                                        style: context.styles.header2,
-                                      ),
-                                      content: DatePickerWidget(
-                                        onSelectNewDate: (date) {
-                                          birthDate = date;
-                                        },
-                                        initialDate:
-                                            currentUser?.birthDate ??
-                                            DateTime.now(),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              editedBirthdate = birthDate;
-                                            });
-                                            context.pop();
-                                          },
-                                          child: Text(
-                                            'Aceptar',
-                                            style: context.styles.buttons,
-                                          ),
-                                        ),
-                                      ],
+                        Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                DateTime? birthDate;
+                                await showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                    title: Text(
+                                      '¿Cuándo es tu cumpleaños?',
+                                      style: context.styles.header2,
                                     ),
-                                  );
-                                },
-                                child: InfoCard(
-                                  label:
-                                      DateFormat(
+                                    content: DatePickerWidget(
+                                      onSelectNewDate: (date) {
+                                        birthDate = date;
+                                      },
+                                      initialDate:
+                                          currentUser?.birthDate ??
+                                          DateTime.now(),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            editedBirthdate = birthDate;
+                                          });
+                                          context.pop();
+                                        },
+                                        child: Text(
+                                          'Aceptar',
+                                          style: context.styles.buttons,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: InfoCard(
+                                label: currentUser?.birthDate == null
+                                    ? 'Ingresa tu fecha de nacimiento'
+                                    : DateFormat(
                                         AppConstants.birthDateFormat,
                                         'es',
                                       ).format(
@@ -420,12 +416,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                             currentUser?.birthDate ??
                                             DateTime.now(),
                                       ),
-                                  icon: Icons.edit,
-                                ),
+                                icon: Icons.edit,
                               ),
-                              SizedBox(height: context.sp(12)),
-                            ],
-                          ),
+                            ),
+                            SizedBox(height: context.sp(12)),
+                          ],
                         ),
                       ],
                     ),

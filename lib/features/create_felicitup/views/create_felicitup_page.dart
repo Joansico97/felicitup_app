@@ -54,23 +54,6 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<AppBloc, AppState>(
-          listenWhen: (previous, current) =>
-              previous.currentUser?.matchList != current.currentUser?.matchList,
-          listener: (context, state) {
-            if (state.currentUser?.matchList?.isNotEmpty ?? false) {
-              List<String> listData = [...state.currentUser!.matchList!];
-              listData.removeWhere(
-                (element) => element == state.currentUser?.id,
-              );
-
-              context.read<CreateFelicitupBloc>().add(
-                CreateFelicitupEvent.loadFriendsData(listData),
-              );
-            }
-          },
-        ),
-
         BlocListener<CreateFelicitupBloc, CreateFelicitupState>(
           listenWhen: (previous, current) =>
               previous.isLoading != current.isLoading ||

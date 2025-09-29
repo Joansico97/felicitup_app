@@ -24,6 +24,7 @@ class UserModel with _$UserModel {
     int? birthMonth,
     int? birthDay,
     List<ContactModel>? friendList,
+    List<ContactModel>? manualContacts,
     List<BirthdateAlertsModel>? birthdateAlerts,
     List<RemainderModel>? remainders,
     List<String>? matchList,

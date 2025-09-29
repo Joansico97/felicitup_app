@@ -53,7 +53,7 @@ class FelicitupApp extends StatelessWidget {
               ),
               child: MaterialApp.router(
                 title: AppConstants.appTitle,
-
+                locale: Locale('ES_es'),
                 localizationsDelegates: const [
                   IntlTrans.delegate,
                   GlobalMaterialLocalizations.delegate,

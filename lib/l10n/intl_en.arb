@@ -1,1 +1,12 @@
-{}
+{
+    "@@locale": "en",
+    "contacts_modal_title": "Access Your Contacts for a Better Experience in FELICITUP",
+    "contacts_modal_content": "To help FELICITUP remind you of your friends' and family's birthdays, and to easily create group Felicitups, we need access to your contact list.",
+    "contacts_modal_security_info": "Your contacts' phone numbers/emails will be hashed (turned into unrecognizable codes) on your device and securely uploaded to our servers. This allows us to automatically find your contacts who already use FELICITUP, making invitations and reminders easier. We never upload names or other sensitive information without encryption.",
+    "contacts_modal_process_info": "This process is essential for matchmaking functionality and to ensure you receive accurate reminders for your social circle.",
+    "contacts_modal_policy_info": "You can learn more by visiting our \"Security Policy\"",
+    "birthday_modal_title": "DON'T LET ANYONE FORGET YOUR BIRTHDAY! 🎂",
+    "birthday_modal_content": "Tell us your birthday and your contacts will never forget to congratulate you. They can also send you a FELICITUP!",
+    "birthday_modal_label": "Add my date",
+    "birthday_modal_question_title": "When is your birthday?"
+}
