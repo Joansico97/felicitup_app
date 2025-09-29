@@ -128,7 +128,6 @@ class _ContactsPageState extends State<ContactsPage> {
                                             controller: numberController,
                                             hintText: 'Número del contacto',
                                             titleText: 'Número',
-                                            isPrice: true,
                                           ),
                                           SizedBox(height: context.sp(12)),
                                           PrimaryButton(

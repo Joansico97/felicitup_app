@@ -138,7 +138,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  /// Processes contacts data and separates registered from unregistered contacts
   List<Map<String, dynamic>> _processContactsData(
     List<ContactModel> contacts,
     List<UserModel> registeredUsers,
@@ -172,7 +171,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     return [...registeredList, ...unregisteredList];
   }
 
-  /// Sorts contacts by display name (case-insensitive)
   void _sortContactsByName(List<Map<String, dynamic>> contacts) {
     contacts.sort((a, b) {
       final aName = (a['contact'] as ContactModel).displayName ?? '';
@@ -277,7 +275,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  /// Handles successful contact synchronization
   void _onContactsSyncSuccess() {
     add(const AppEvent.loadContacts());
     add(const AppEvent.updateMatchListFromContacts());
@@ -371,7 +368,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  /// Syncs contacts if current user is available
   void _syncContactsIfUserAvailable() {
     final currentUser = state.currentUser;
     if (currentUser != null && currentUser.isoCode != null) {
@@ -410,7 +406,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  /// Handles notification permission granted state
   Future<void> _onNotificationPermissionGranted(Emitter<AppState> emit) async {
     add(const AppEvent.getFCMToken());
     emit(state.copyWith(status: AuthorizationStatus.authorized));
@@ -462,7 +457,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  /// Creates a PushMessageModel from RemoteMessage
   PushMessageModel _createPushMessageModel(RemoteMessage message) {
     final messageId =
         message.messageId?.replaceAll(RegExp(r'[:%]'), '') ??
@@ -477,7 +471,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     );
   }
 
-  /// Syncs notification asynchronously
   void _syncNotificationAsync(PushMessageModel notification) {
     Future.delayed(Duration.zero, () async {
       try {
@@ -488,7 +481,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     });
   }
 
-  /// Shows platform-specific notification
   void _showPlatformSpecificNotification(
     PushMessageModel notification,
     Map<String, dynamic> data,
@@ -676,7 +668,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  /// Normalizes phone number by removing non-numeric characters and adding country code if needed
   String? _normalizePhoneNumber(
     String phoneNumber,
     String isoCode,
@@ -691,14 +682,12 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         : '$isoCode$normalizedPhone';
   }
 
-  /// Hashes phone number using SHA-256
   String _hashPhoneNumber(String phoneNumber) {
     final bytes = utf8.encode(phoneNumber);
     final digest = sha256.convert(bytes);
     return digest.toString();
   }
 
-  /// Compares contact names for sorting (case-insensitive)
   int _compareContactNames(HashedContact a, HashedContact b) {
     return a.displayName.toLowerCase().trim().compareTo(
       b.displayName.toLowerCase().trim(),
