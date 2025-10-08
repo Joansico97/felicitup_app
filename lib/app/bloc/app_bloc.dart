@@ -94,8 +94,28 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             isLoadingContacts: false,
             dataList: [],
             reloadContacts: false,
+            // Puedes agregar aquí un flag si quieres saber que fue por datos vacíos
           ),
         );
+
+        stream.listen((newState) {
+          final newIds = newState.currentUser?.friendsPhoneList ?? [];
+          final newFriendList = newState.currentUser?.friendList ?? [];
+          if (newIds.isNotEmpty && newFriendList.isNotEmpty) {
+            // Cuando ya hay datos, volvemos a cargar los contactos
+            add(const AppEvent.loadContacts());
+            // Declaramos la variable fuera para poder referenciarla dentro del callback
+            late final StreamSubscription sub;
+            sub = stream.listen((newState) {
+              final newIds = newState.currentUser?.friendsPhoneList ?? [];
+              final newFriendList = newState.currentUser?.friendList ?? [];
+              if (newIds.isNotEmpty && newFriendList.isNotEmpty) {
+                add(const AppEvent.loadContacts());
+                sub.cancel();
+              }
+            });
+          }
+        });
         return;
       }
 
@@ -142,13 +162,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     List<ContactModel> contacts,
     List<UserModel> registeredUsers,
   ) {
-    // Create a Set for O(1) lookup performance
     final registeredPhonesSet = registeredUsers
         .map((user) => user.phone ?? '')
         .where((phone) => phone.isNotEmpty)
         .toSet();
 
-    // Separate contacts into registered and unregistered lists
     final registeredList = <Map<String, dynamic>>[];
     final unregisteredList = <Map<String, dynamic>>[];
 
@@ -163,11 +181,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       }
     }
 
-    // Sort both lists by display name
     _sortContactsByName(registeredList);
     _sortContactsByName(unregisteredList);
 
-    // Combine lists with registered contacts first
     return [...registeredList, ...unregisteredList];
   }
 
@@ -246,7 +262,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         return;
       }
 
-      // Prepare data for API call more efficiently
       final contactsData = contacts
           .map((c) => {'displayName': c.displayName, 'phone': c.hashedPhone})
           .toList();
@@ -265,7 +280,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         },
         (_) {
           logger.info('Contacts synchronized successfully.');
-          // Chain the subsequent operations
+
           _onContactsSyncSuccess();
         },
       );
@@ -425,6 +440,27 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   _getFCMToken() async {
     try {
+      if (Platform.isIOS) {
+        final apnToken = await _firebaseMessaging.getAPNSToken();
+        if (apnToken == null) {
+          await Future.delayed(Duration(seconds: 3), () {
+            final apnsTokenAfterDelay = _firebaseMessaging.getAPNSToken();
+            apnsTokenAfterDelay
+                .then((token) {
+                  if (token == null) {
+                    logger.error(
+                      'No se pudo cargar el token APNS después del retraso',
+                    );
+                  }
+                })
+                .catchError((e) {
+                  logger.error(
+                    'Error obteniendo el token APNS después del retraso: $e',
+                  );
+                });
+          });
+        }
+      }
       final token = await _firebaseMessaging.getToken();
       logger.info('FCM Token: $token');
 
@@ -447,10 +483,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       final notification = _createPushMessageModel(message);
 
-      // Sync notification asynchronously
       _syncNotificationAsync(notification);
 
-      // Show local notification based on platform
       _showPlatformSpecificNotification(notification, message.data);
     } catch (e) {
       logger.error('Error handling remote message: $e');
@@ -522,7 +556,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         sound: true,
       );
 
-      // Request Android-specific permissions
       if (Platform.isAndroid) {
         final flutterLocalNotificationsPlugin =
             FlutterLocalNotificationsPlugin();
@@ -616,13 +649,24 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     String isoCode,
     Emitter<AppState> emit,
   ) async {
-    if (!state.contactsPermissionStatus.isGranted) {
+    final permissionStatus = state.contactsPermissionStatus;
+
+    if (!permissionStatus.isGranted && !permissionStatus.isLimited) {
       logger.info('Contacts permission not granted');
       return [];
     }
 
     try {
-      final packageContacts = await FastContacts.getAllContacts();
+      List<Contact> packageContacts = [];
+
+      if (permissionStatus.isLimited) {
+        packageContacts = await FastContacts.getAllContacts();
+        logger.info(
+          'iOS limited permission: only shared contacts will be processed',
+        );
+      } else {
+        packageContacts = await FastContacts.getAllContacts();
+      }
 
       if (packageContacts.isEmpty) {
         logger.info('No contacts found on device');
@@ -634,7 +678,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       final minPhoneLength = 8;
 
       for (final contact in packageContacts) {
-        // Skip contacts without name or phone
         if (contact.displayName.isEmpty || contact.phones.isEmpty) continue;
 
         final phoneNumber = contact.phones[0].number;
@@ -657,7 +700,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         );
       }
 
-      // Sort contacts by display name
       hashedContacts.sort(_compareContactNames);
 
       logger.info('Processed ${hashedContacts.length} contacts');

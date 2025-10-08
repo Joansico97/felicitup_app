@@ -656,6 +656,101 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> deleteAllPastFelicitups(
+    String felicitupId,
+    String userId,
+  ) async {
+    try {
+      final docRef = _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId);
+      final docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      final owners = (data['owner'] as List<dynamic>? ?? []);
+      final isOwner = owners.any((owner) => owner['id'] == userId);
+
+      if (isOwner) {
+        // Si hay más de un owner, elimina solo al owner que ejecuta la función
+        if (owners.length >= 2) {
+          // Eliminar al owner de la lista de owners
+          final updatedOwners = List<dynamic>.from(owners)
+            ..removeWhere((owner) => owner['id'] == userId);
+
+          // También eliminar de invitedUserDetails e invitedUsers si está presente
+          final invitedUserDetails =
+              (data['invitedUserDetails'] as List<dynamic>? ?? []);
+          final invitedUsers = (data['invitedUsers'] as List<dynamic>? ?? []);
+
+          final userIndex = invitedUserDetails.indexWhere(
+            (user) => user['id'] == userId,
+          );
+
+          final updatedInvitedUserDetails = List<dynamic>.from(
+            invitedUserDetails,
+          );
+          if (userIndex != -1) {
+            updatedInvitedUserDetails.removeAt(userIndex);
+          }
+
+          final updatedInvitedUsers = List<dynamic>.from(invitedUsers)
+            ..remove(userId);
+
+          await docRef.update({
+            'owner': updatedOwners,
+            'invitedUserDetails': updatedInvitedUserDetails,
+            'invitedUsers': updatedInvitedUsers,
+          });
+
+          return Right(null);
+        } else {
+          // Solo hay un owner, eliminar el documento y el chat
+          final chatId = data['chatId'] as String?;
+          await docRef.delete();
+          if (chatId != null && chatId.isNotEmpty) {
+            await _firestore
+                .collection(AppConstants.chatsCollection)
+                .doc(chatId)
+                .delete();
+          }
+          return Right(null);
+        }
+      } else {
+        final invitedUserDetails =
+            (data['invitedUserDetails'] as List<dynamic>? ?? []);
+        final invitedUsers = (data['invitedUsers'] as List<dynamic>? ?? []);
+        final userIndex = invitedUserDetails.indexWhere(
+          (user) => user['id'] == userId,
+        );
+
+        if (userIndex == -1) {
+          return Left(
+            ApiException(1000, 'User not found in invitedUserDetails'),
+          );
+        }
+
+        final updatedInvitedUserDetails = List<dynamic>.from(invitedUserDetails)
+          ..removeAt(userIndex);
+        final updatedInvitedUsers = List<dynamic>.from(invitedUsers)
+          ..remove(userId);
+
+        await docRef.update({
+          'invitedUserDetails': updatedInvitedUserDetails,
+          'invitedUsers': updatedInvitedUsers,
+        });
+
+        return Right(null);
+      }
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Stream<Either<ApiException, FelicitupModel>> streamSingleFelicitup(
     String userId,
   ) {
@@ -782,66 +877,6 @@ class FelicitupFirebaseResource implements FelicitupRepository {
           });
     } catch (e) {
       return Stream.value(Left(ApiException(1000, e.toString())));
-    }
-  }
-
-  @override
-  Future<Either<ApiException, void>> deleteAllPastFelicitups(
-    String felicitupId,
-    String userId,
-  ) async {
-    try {
-      final docRef = _firestore
-          .collection(AppConstants.feclitiupsCollection)
-          .doc(felicitupId);
-      final docSnapshot = await docRef.get();
-
-      if (!docSnapshot.exists) {
-        return Left(ApiException(1000, 'Felicitup not found'));
-      }
-
-      final data = docSnapshot.data() as Map<String, dynamic>;
-      final owners = (data['owner'] as List<dynamic>? ?? []);
-      final isOwner = owners.any((owner) => owner['id'] == userId);
-
-      if (isOwner) {
-        final chatId = data['chatId'] as String?;
-        await docRef.delete();
-        if (chatId != null && chatId.isNotEmpty) {
-          await _firestore
-              .collection(AppConstants.chatsCollection)
-              .doc(chatId)
-              .delete();
-        }
-        return Right(null);
-      } else {
-        final invitedUserDetails =
-            (data['invitedUserDetails'] as List<dynamic>? ?? []);
-        final invitedUsers = (data['invitedUsers'] as List<dynamic>? ?? []);
-        final userIndex = invitedUserDetails.indexWhere(
-          (user) => user['id'] == userId,
-        );
-
-        if (userIndex == -1) {
-          return Left(
-            ApiException(1000, 'User not found in invitedUserDetails'),
-          );
-        }
-
-        final updatedInvitedUserDetails = List<dynamic>.from(invitedUserDetails)
-          ..removeAt(userIndex);
-        final updatedInvitedUsers = List<dynamic>.from(invitedUsers)
-          ..remove(userId);
-
-        await docRef.update({
-          'invitedUserDetails': updatedInvitedUserDetails,
-          'invitedUsers': updatedInvitedUsers,
-        });
-
-        return Right(null);
-      }
-    } catch (e) {
-      return Left(ApiException(1000, e.toString()));
     }
   }
 }

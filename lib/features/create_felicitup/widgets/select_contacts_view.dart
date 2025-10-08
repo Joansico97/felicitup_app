@@ -1,5 +1,6 @@
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/bloc/create_felicitup_bloc.dart';
@@ -238,7 +239,7 @@ class SelectContactsView extends StatelessWidget {
                                 ? 'Felicitas a ${listOwner[0].name}'
                                 : '¿A quién felicitas?',
                             style: context.styles.subtitle,
-                            maxLines: 2,
+                            maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                           );
                         },
@@ -246,13 +247,14 @@ class SelectContactsView extends StatelessWidget {
                       SizedBox(height: context.sp(8)),
                       BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
                         buildWhen: (previous, current) =>
-                            previous.friendList != current.friendList ||
+                            previous.selectedDate != current.selectedDate ||
                             previous.felicitupOwner != current.felicitupOwner,
                         builder: (_, state) {
                           final listOwner = state.felicitupOwner;
                           final selectedDate = state.selectedDate;
 
                           return Text(
+                            // selectedDate.toString(),
                             selectedDate != null
                                 ? 'Fecha envío felicitUp:\n${DateFormat(AppConstants.birthDateFormatWithoutYear, 'es_ES').format(selectedDate).capitalize()} - ${DateFormat('HH:mm').format(selectedDate)}'
                                 : listOwner.isNotEmpty
@@ -351,6 +353,8 @@ class SelectContactsView extends StatelessWidget {
                       pickedTime.hour,
                       pickedTime.minute,
                     );
+
+                    logger.info(combinedDateTime);
 
                     felicitupBlocInstance.add(
                       CreateFelicitupEvent.changeFelicitupDate(

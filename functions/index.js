@@ -22,8 +22,7 @@ const {execFile} = require("child_process");
 const {defineSecret} = require('firebase-functions/params');
 const {getFirestore, Timestamp} = require('firebase-admin/firestore');
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
-const {onCall} = require('firebase-functions/v2/https');
-const {HttpsError} = require('firebase-functions/v2/https');
+const {onCall, HttpsError, onRequest} = require('firebase-functions/v2/https');
 const {getAuth} = require("firebase-admin/auth");
 
 const ffmpeg = require('fluent-ffmpeg');
@@ -229,6 +228,11 @@ exports.sendNotificationToMultiple = functions.https.onCall(
     },
 );
 
+/**
+ * Programa o ejecuta inmediatamente la finalización de una Felicitup.
+ * Si la fecha del evento ya pasó, la completa de inmediato.
+ * Si la fecha es futura, programa una tarea en Cloud Tasks para completarla.
+ */
 exports.sendFelicitup = onCall(
     {
       secrets: [taskQueueSecret],
@@ -244,14 +248,7 @@ exports.sendFelicitup = onCall(
         );
       }
 
-      console.log('Solicitud recibida', {
-        auth: request.auth,
-        data: request.data,
-      });
-
-
-      const felicitupId = request.data.felicitupId;
-
+      const {felicitupId} = request.data || {};
       if (!felicitupId || typeof felicitupId !== 'string') {
         throw new HttpsError(
             'invalid-argument',
@@ -261,7 +258,6 @@ exports.sendFelicitup = onCall(
 
       try {
         const db = getFirestore();
-
         const felicitupRef = db.collection('Felicitups').doc(felicitupId);
         const felicitupDoc = await felicitupRef.get();
 
@@ -273,10 +269,17 @@ exports.sendFelicitup = onCall(
         }
 
         const felicitupData = felicitupDoc.data();
+        if (!felicitupData.date || typeof felicitupData.date.toDate !== 'function') {
+          throw new HttpsError(
+              'invalid-argument',
+              'La Felicitup no tiene una fecha válida',
+          );
+        }
+
         const eventDate = felicitupData.date.toDate();
         const now = new Date();
 
-
+        // Si la fecha ya pasó, completar inmediatamente
         if (eventDate <= now) {
           await completeFelicitup(felicitupId);
           return {
@@ -286,11 +289,15 @@ exports.sendFelicitup = onCall(
           };
         }
 
-
-        const delaySeconds = Math.floor((eventDate - now) / 1000);
-
+        // Programar tarea en Cloud Tasks
+        const delaySeconds = Math.max(0, Math.floor((eventDate - now) / 1000));
         const {CloudTasksClient} = require('@google-cloud/tasks');
         const client = new CloudTasksClient();
+        const projectId = process.env.GCLOUD_PROJECT;
+        const region = 'us-central1';
+        const functionUrl = `https://${region}-${projectId}.cloudfunctions.net/executeFelicitupCompletion`;
+
+        const secret = process.env.TASK_QUEUE_SECRET;
 
         const parent = client.queuePath(
             process.env.GCLOUD_PROJECT,
@@ -301,31 +308,23 @@ exports.sendFelicitup = onCall(
         const task = {
           httpRequest: {
             httpMethod: 'POST',
-            url: `https://${request.rawRequest.headers.host}/executeFelicitupCompletion`,
+            url: functionUrl,
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${taskQueueSecret.value()}`,
+              'Authorization': `Bearer ${secret}`,
             },
-            body: Buffer.from(JSON.stringify({
-              felicitupId,
-              userId: request.auth.uid,
-            })).toString('base64'),
-            scheduleTime: {
-              seconds: delaySeconds + Math.floor(Date.now() / 1000),
-            },
+            body: Buffer.from(JSON.stringify({felicitupId, userId: request.auth.uid})).toString('base64'),
           },
+          scheduleTime: {seconds: delaySeconds + Math.floor(Date.now() / 1000)},
         };
 
-        await client.createTask({parent, task});
-
+        client.createTask({parent, task});
 
         await felicitupRef.update({
           scheduledCompletionTime: felicitupData.date,
           lastUpdated: Timestamp.now(),
           scheduledBy: request.auth.uid,
         });
-
-        console.log(`Felicitup programada para ${eventDate.toISOString()}`);
 
         return {
           success: true,
@@ -334,11 +333,7 @@ exports.sendFelicitup = onCall(
         };
       } catch (error) {
         console.error('Error en sendFelicitup:', error);
-
-        if (error instanceof HttpsError) {
-          throw error;
-        }
-
+        if (error instanceof HttpsError) throw error;
         throw new HttpsError(
             'internal',
             'Ocurrió un error al programar la Felicitup',
@@ -348,6 +343,10 @@ exports.sendFelicitup = onCall(
     },
 );
 
+/**
+ * Completa una Felicitup: agrega a los dueños como invitados si hay al menos un video,
+ * y les envía una notificación push.
+ */
 async function completeFelicitup(felicitupId) {
   const db = admin.firestore();
   const felicitupRef = db.collection('Felicitups').doc(felicitupId);
@@ -361,14 +360,45 @@ async function completeFelicitup(felicitupId) {
 
     const felicitup = felicitupDoc.data();
 
+    // Validación robusta de invitedUserDetails
+    const invitedUserDetails = Array.isArray(felicitup.invitedUserDetails) ?
+      felicitup.invitedUserDetails :
+      [];
 
-    const atLeastOneVideo = felicitup.invitedUserDetails.some((user) =>
-      user.videoData && user.videoData.videoUrl && user.videoData.videoUrl.trim(),
+    const atLeastOneVideo = invitedUserDetails.some(
+        (user) =>
+          user &&
+        user.videoData &&
+        typeof user.videoData.videoUrl === 'string' &&
+        user.videoData.videoUrl.trim() !== '',
     );
 
-    if (atLeastOneVideo) {
+    if (atLeastOneVideo && Array.isArray(felicitup.owner)) {
+      // Busca si ya existe un documento en VideoMergeJobs con el id de la felicitup
+      const videoMergeJobRef = admin.firestore().collection('VideoMergeJobs').doc(felicitupId);
+      const videoMergeJobDoc = await videoMergeJobRef.get();
+      if (videoMergeJobDoc.exists) {
+        await videoMergeJobRef.delete();
+      }
+      await admin.firestore().collection('VideoMergeJobs').add({
+        userId: felicitup.createdBy || (felicitup.owner && felicitup.owner[0] && felicitup.owner[0].id) || "",
+        status: "pending",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        videoUrls: invitedUserDetails
+            .filter(
+                (user) =>
+                  user &&
+            user.videoData &&
+            typeof user.videoData.videoUrl === 'string' &&
+            user.videoData.videoUrl.trim() !== '',
+            )
+            .map((user) => user.videoData.videoUrl),
+      });
       for (const owner of felicitup.owner) {
+        // Validación robusta de owner
+        if (!owner || !owner.id) continue;
         const ownerData = await getUserDataById(owner.id);
+        if (!ownerData) continue;
 
         const newElement = {
           assistanceStatus: "accepted",
@@ -386,38 +416,66 @@ async function completeFelicitup(felicitupId) {
           sentAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
-
-        const payload = {
-          token: ownerData.fcmToken,
-          notification: {
-            title: "Hola, " + ownerData.firstName,
-            body: "¡Tienes una nueva Felicitup lista para ver!",
-          },
-          data: {
-            type: "past",
-            felicitupId: felicitupId,
-            chatId: "",
-            name: "",
-            friendId: "",
-            userImage: "",
-          },
-        };
-        await sendPushNotification(payload);
+        // Solo enviar notificación si el usuario tiene fcmToken
+        if (ownerData.fcmToken) {
+          const payload = {
+            token: ownerData.fcmToken,
+            notification: {
+              title: `Hola, ${ownerData.firstName}`,
+              body: "¡Tienes una nueva Felicitup lista para ver!",
+            },
+            data: {
+              type: "past",
+              felicitupId: felicitupId,
+              chatId: "",
+              name: "",
+              friendId: "",
+              userImage: "",
+            },
+          };
+          try {
+            await sendPushNotification(payload);
+          } catch (pushErr) {
+            console.error(`Error enviando push a ${ownerData.id}:`, pushErr);
+          }
+        }
       }
+    } else {
+      console.log(
+          `No se completó la Felicitup ${felicitupId} porque no hay videos o no hay dueños.`,
+      );
     }
 
-
-    await felicitupRef.update({
-
-    });
+    // Se puede agregar lógica adicional aquí si se requiere actualizar otros campos
 
     console.log(`Felicitup ${felicitupId} completada exitosamente`);
   } catch (error) {
     console.error(`Error al completar la Felicitup ${felicitupId}:`, error);
-
     throw error;
   }
 }
+
+exports.executeFelicitupCompletion = onRequest({region: 'us-central1'}, async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.replace('Bearer ', '');
+    const expected = process.env.TASK_QUEUE_SECRET; // debe existir aquí también
+    if (!expected || token !== expected) {
+      console.error('Unauthorized request - secret mismatch', {token, expectedDefined: !!expected});
+      return res.status(403).send('Unauthorized');
+    }
+
+    const decodedBody = (typeof req.body === 'object') ? req.body : JSON.parse(Buffer.from(req.body, 'base64').toString());
+    const {felicitupId} = decodedBody;
+    if (!felicitupId) return res.status(400).send('Missing felicitupId');
+
+    await completeFelicitup(felicitupId);
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error('Error executeFelicitupCompletion:', err);
+    return res.status(500).send('Error');
+  }
+});
 
 exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
   try {

@@ -34,7 +34,6 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   @override
   void initState() {
     super.initState();
-    context.read<AppBloc>().add(AppEvent.loadUserData());
 
     pages = [
       SelectContactsView(),
@@ -58,7 +57,7 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
         BlocListener<AppBloc, AppState>(
           listenWhen: (prev, curr) =>
               prev.currentUser?.matchList != curr.currentUser?.matchList,
-          listener: (context, state) {
+          listener: (_, state) {
             final matchList = state.currentUser?.matchList ?? [];
             final myId = state.currentUser?.id;
             if (matchList.isNotEmpty && myId != null) {
@@ -137,7 +136,7 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                               ),
                               child: Row(
                                 children: [
-                                  Spacer(),
+                                  const Spacer(),
                                   GestureDetector(
                                     onTap: () => showConfirmModal(
                                       title:
@@ -177,18 +176,19 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                                       SizedBox(height: context.sp(10)),
                                       SizedBox(
                                         width: context.sp(200),
-                                        child: Divider(
+                                        child: const Divider(
                                           color: Color(0xFFE3E3E3),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  BlocBuilder<
+                                  BlocSelector<
                                     CreateFelicitupBloc,
-                                    CreateFelicitupState
+                                    CreateFelicitupState,
+                                    int
                                   >(
-                                    builder: (_, state) {
-                                      final currentStep = state.steperIndex;
+                                    selector: (state) => state.steperIndex,
+                                    builder: (_, currentStep) {
                                       return Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceAround,
@@ -216,11 +216,13 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                               ),
                             ),
                             SizedBox(height: context.sp(20)),
-                            BlocBuilder<
+                            BlocSelector<
                               CreateFelicitupBloc,
-                              CreateFelicitupState
+                              CreateFelicitupState,
+                              int
                             >(
-                              builder: (_, state) {
+                              selector: (state) => state.steperIndex,
+                              builder: (_, currentStep) {
                                 return AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 300),
                                   transitionBuilder: (widget, animation) {
@@ -242,19 +244,20 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
                                     );
                                   },
                                   child: KeyedSubtree(
-                                    key: ValueKey<int>(state.steperIndex),
-                                    child: pages[state.steperIndex],
+                                    key: ValueKey<int>(currentStep),
+                                    child: pages[currentStep],
                                   ),
                                 );
                               },
                             ),
                             SizedBox(height: context.sp(20)),
-                            BlocBuilder<
+                            BlocSelector<
                               CreateFelicitupBloc,
-                              CreateFelicitupState
+                              CreateFelicitupState,
+                              int
                             >(
-                              builder: (_, state) {
-                                final currentStep = state.steperIndex;
+                              selector: (state) => state.steperIndex,
+                              builder: (_, currentStep) {
                                 return BottomButtons(
                                   showBack: currentStep > 0,
                                   showNext: currentStep < steps.length - 1,

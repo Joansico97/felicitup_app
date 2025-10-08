@@ -56,17 +56,14 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  /// Checks if the user has contacts permission (granted or limited)
   bool _hasContactsPermission(PermissionStatus status) {
     return status.isGranted || status.isLimited;
   }
 
-  /// Determines if permission modal should be shown for iOS users
   bool _shouldShowPermissionModal(UserModel? user) {
     return user != null && (user.friendsPhoneList?.isEmpty ?? true);
   }
 
-  /// Requests contacts update from HomeBloc
   void _requestContactsUpdate(String isoCode) {
     context.read<HomeBloc>().add(HomeEvent.getAndUpdateContacts(isoCode));
   }
@@ -89,7 +86,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  /// Builds the contacts permission dialog
   Widget _buildContactsPermissionDialog() {
     return AlertDialog(
       title: Text(
@@ -136,7 +132,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Opens the privacy policy URL
   Future<void> _openPrivacyPolicy() async {
     try {
       final url = Uri.parse(_privacyPolicyUrl);
@@ -156,7 +151,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  /// Shows error snackbar when URL cannot be opened
   void _showUrlErrorSnackBar() {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -170,7 +164,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // BlocListener condition methods
   bool _shouldHandleNotificationPayload(AppState previous, AppState current) {
     return previous.pendingNotificationPayload !=
         current.pendingNotificationPayload;
@@ -185,10 +178,8 @@ class _HomePageState extends State<HomePage> {
     final prevUser = previous.currentUser;
     final currUser = current.currentUser;
 
-    // User just logged in
     if (prevUser == null && currUser != null) return true;
 
-    // User data changed (friends list or birth date)
     if (prevUser != null && currUser != null) {
       return prevUser.friendsPhoneList != currUser.friendsPhoneList ||
           prevUser.birthDate != currUser.birthDate;
@@ -197,7 +188,6 @@ class _HomePageState extends State<HomePage> {
     return false;
   }
 
-  // BlocListener handler methods
   void _handleNotificationPayload(BuildContext context, AppState state) {
     if (state.pendingNotificationPayload != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -226,7 +216,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  /// Shows the birthday modal to collect user's birth date
   void _showBirthdayModal() {
     showConfirmModal(
       title: context.locale.birthday_modal_title,
@@ -236,7 +225,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Shows the birthday date picker dialog
   Future<void> _showBirthdayDatePicker() async {
     try {
       DateTime? birthDate;

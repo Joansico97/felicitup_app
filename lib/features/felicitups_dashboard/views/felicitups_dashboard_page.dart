@@ -20,9 +20,14 @@ class FelicitupsDashboardPage extends StatefulWidget {
 }
 
 class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
+  late final PageController _felicitupsDashboardPageController;
+  late final List<Widget> _pages;
+
   @override
   void initState() {
     super.initState();
+    _felicitupsDashboardPageController = PageController();
+    _pages = [InProgressSection(), PastSection()];
     context.read<FelicitupsDashboardBloc>().add(
       const FelicitupsDashboardEvent.startListening(),
     );
@@ -32,10 +37,13 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final List<Widget> pages = [InProgressSection(), PastSection()];
-    final PageController felicitupsDashboardPageController = PageController();
+  void dispose() {
+    _felicitupsDashboardPageController.dispose();
+    super.dispose();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.background,
       drawer: const DrawerApp(),
@@ -46,7 +54,10 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
               previous.showButton != current.showButton ||
               previous.create != current.create,
           builder: (_, state) => GestureDetector(
-            onTap: () => context.go(RouterPaths.createFelicitup),
+            onTap: () {
+              context.read<AppBloc>().add(AppEvent.loadUserData());
+              context.go(RouterPaths.createFelicitup);
+            },
             child: Container(
               height: context.sp(48),
               width: context.sp(48),
@@ -125,7 +136,7 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                                           .add(
                                             FelicitupsDashboardEvent.changeListBoolsTap(
                                               0,
-                                              felicitupsDashboardPageController,
+                                              _felicitupsDashboardPageController,
                                             ),
                                           ),
                                     ),
@@ -140,7 +151,7 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                                           .add(
                                             FelicitupsDashboardEvent.changeListBoolsTap(
                                               1,
-                                              felicitupsDashboardPageController,
+                                              _felicitupsDashboardPageController,
                                             ),
                                           ),
                                     ),
@@ -152,16 +163,16 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                       SizedBox(height: context.sp(12)),
                       Expanded(
                         child: PageView.builder(
-                          controller: felicitupsDashboardPageController,
+                          controller: _felicitupsDashboardPageController,
                           itemCount: 2,
                           itemBuilder: (_, index) {
-                            return pages[index];
+                            return _pages[index];
                           },
                           onPageChanged: (index) async {
                             context.read<FelicitupsDashboardBloc>().add(
                               FelicitupsDashboardEvent.changeListBoolsTap(
                                 index,
-                                felicitupsDashboardPageController,
+                                _felicitupsDashboardPageController,
                               ),
                             );
                           },

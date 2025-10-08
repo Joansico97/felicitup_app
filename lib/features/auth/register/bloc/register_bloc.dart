@@ -59,6 +59,41 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   final UserRepository _userRepository;
   final FirebaseFirestore _firestore;
 
+  String _normalizePhone(String rawPhone) {
+    final trimmed = rawPhone.trim();
+    final buffer = StringBuffer();
+    for (int i = 0; i < trimmed.length; i++) {
+      final char = trimmed[i];
+      if (i == 0 && char == '+') {
+        buffer.write(char);
+        continue;
+      }
+      if (char.codeUnitAt(0) >= 48 && char.codeUnitAt(0) <= 57) {
+        buffer.write(char);
+      }
+    }
+    return buffer.toString();
+  }
+
+  String _hashString(String value) {
+    final bytes = utf8.encode(value);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  Map<String, String> _parseNames(String? fullName) {
+    final safe = (fullName ?? '').trim();
+    if (safe.isEmpty) return {'first': '', 'last': ''};
+    final parts = safe
+        .split(RegExp(r"\s+"))
+        .where((p) => p.isNotEmpty)
+        .toList();
+    if (parts.length == 1) {
+      return {'first': parts.first, 'last': ''};
+    }
+    return {'first': parts.first, 'last': parts.sublist(1).join(' ')};
+  }
+
   _changeLoading(Emitter<RegisterState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
@@ -103,10 +138,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   ) async {
     try {
       emit(state.copyWith(isLoading: true));
-
-      final bytes = utf8.encode(phone);
-      final digest = sha256.convert(bytes);
-      final hashedPhone = digest.toString();
+      final normalizedPhone = _normalizePhone(phone);
+      final hashedPhone = _hashString(normalizedPhone);
 
       final exist = await _userRepository.checkPhoneExist(phone: hashedPhone);
 
@@ -134,7 +167,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
               state.copyWith(
                 isLoading: false,
                 hashedPhone: hashedPhone,
-                phone: phone,
+                phone: normalizedPhone,
                 isoCode: isoCode,
                 currentStep: state.currentStep + 1,
               ),
@@ -246,6 +279,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
+      final DateTime? localBirthDate = state.birthDate?.toLocal();
       final response = await _userRepository.setInitialUserInfo(
         UserModel(
           id: userCredential.user!.uid,
@@ -265,10 +299,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           giftcardList: [],
           notifications: [],
           singleChats: [],
-          birthDate: state.birthDate?.toLocal(),
+          birthDate: localBirthDate,
           registerDate: DateTime.now(),
-          birthDay: state.birthDate?.toLocal().day,
-          birthMonth: state.birthDate?.toLocal().month,
+          birthDay: localBirthDate?.day,
+          birthMonth: localBirthDate?.month,
           provider: 'email',
         ),
       );
@@ -339,7 +373,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           );
         },
         (r) async {
-          bool exist = await checkUserExist(email: r.user?.email ?? '');
+          bool exist = await checkUserExist(email: (r.user?.email ?? ''));
           if (exist) {
             emit(
               state.copyWith(
@@ -349,10 +383,11 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
             );
           } else {
             final user = r.user;
+            final parsed = _parseNames(user?.displayName);
             final userModel = UserModel(
               id: user?.uid,
-              firstName: user?.displayName?.split(' ')[0],
-              lastName: user?.displayName?.split(' ')[1],
+              firstName: parsed['first'],
+              lastName: parsed['last'],
               fullName: user?.displayName,
               userImg: user?.photoURL,
               email: user?.email,
@@ -375,8 +410,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
                 isLoading: false,
                 status: RegisterStatus.federated,
                 federatedUser: {
-                  'firstName': user?.displayName?.split(' ')[0] ?? '',
-                  'lastName': user?.displayName?.split(' ')[1] ?? '',
+                  'firstName': parsed['first'] ?? '',
+                  'lastName': parsed['last'] ?? '',
                 },
               ),
             );
@@ -460,13 +495,18 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
   _finishEvent(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
-    await Future.delayed(Duration(seconds: 3), () {});
+    await Future.delayed(const Duration(seconds: 3), () {});
     emit(state.copyWith(isLoading: false, status: RegisterStatus.finished));
   }
 
   Future<bool> checkUserExist({required String email}) async {
     final docRef = _firestore.collection(AppConstants.usersCollection);
-    final response = await docRef.where('email', isEqualTo: email).get();
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) return false;
+    final response = await docRef
+        .where('email', isEqualTo: normalizedEmail)
+        .limit(1)
+        .get();
     if (response.docs.isNotEmpty) {
       return true;
     } else {
