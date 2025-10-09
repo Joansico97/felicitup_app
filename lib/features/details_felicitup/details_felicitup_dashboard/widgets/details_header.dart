@@ -119,7 +119,7 @@ class DetailsHeader extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                'Fecha: ${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(felicitup.date)}',
+                                'Fecha: ${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(felicitup.date).capitalize()}',
                                 style: context.styles.smallText.copyWith(
                                   color: context.colors.text,
                                 ),

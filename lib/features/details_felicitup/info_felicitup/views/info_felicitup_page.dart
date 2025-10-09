@@ -534,7 +534,7 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                   DateFormat(
                                     AppConstants.birthDateFormat,
                                     'es',
-                                  ).format(felicitup.date),
+                                  ).format(felicitup.date).capitalize(),
                                   style: context.styles.smallText,
                                 ),
                               ),
@@ -544,7 +544,9 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                                   style: context.styles.subtitle,
                                 ),
                                 subtitle: Text(
-                                  DateFormat('HH:mm').format(felicitup.date),
+                                  DateFormat(
+                                    'HH:mm',
+                                  ).format(felicitup.date).capitalize(),
                                   style: context.styles.smallText,
                                 ),
                               ),

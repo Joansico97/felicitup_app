@@ -18,7 +18,6 @@ class ContactCardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DateTime date = contact.birthDate ?? DateTime.now();
     final String name = contact.fullName ?? '';
     final String userImg = contact.userImg ?? '';
 
@@ -69,13 +68,20 @@ class ContactCardRow extends StatelessWidget {
                       style: context.styles.header2,
                     ),
                   ),
-                  SizedBox(height: context.sp(5)),
-                  Text(
-                    DateFormat(
-                      AppConstants.birthDateFormatWithoutYear,
-                      'es_ES',
-                    ).format(date).capitalize(),
-                    style: context.styles.smallText,
+                  Visibility(
+                    visible: contact.birthDate != null,
+                    child: Column(
+                      children: [
+                        SizedBox(height: context.sp(5)),
+                        Text(
+                          DateFormat(
+                            AppConstants.birthDateFormatWithoutYear,
+                            'es_ES',
+                          ).format(contact.birthDate!).capitalize(),
+                          style: context.styles.smallText,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

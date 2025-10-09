@@ -127,8 +127,8 @@ class FelicitupCard extends StatelessWidget {
                       Text(
                         DateFormat(
                           AppConstants.birthDateFormat,
-                          'es',
-                        ).format(felicitup.date),
+                          'ES_es',
+                        ).format(felicitup.date).capitalize(),
                         style: context.styles.smallText.copyWith(
                           color: context.colors.primary,
                         ),
