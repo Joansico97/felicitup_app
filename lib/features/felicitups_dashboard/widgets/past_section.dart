@@ -36,7 +36,6 @@ class PastSection extends StatelessWidget {
                       listFelicitupsPast.length,
                       (index) => PastFelicitupWidget(
                         felicitup: listFelicitupsPast[index],
-                        date: listFelicitupsPast[index].date,
                       ),
                     ),
                   ],

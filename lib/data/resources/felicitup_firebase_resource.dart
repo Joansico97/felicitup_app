@@ -821,7 +821,13 @@ class FelicitupFirebaseResource implements FelicitupRepository {
             return Right(
               listFelicitups
                   .where((element) => element.status == 'Finished')
-                  .toList(),
+                  .toList()
+                ..sort((a, b) {
+                  if (a.sentAt == null && b.sentAt == null) return 0;
+                  if (a.sentAt == null) return 1;
+                  if (b.sentAt == null) return -1;
+                  return b.sentAt!.compareTo(a.sentAt!);
+                }),
             );
           });
     } catch (e) {

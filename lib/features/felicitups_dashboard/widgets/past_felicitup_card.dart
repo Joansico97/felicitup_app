@@ -15,14 +15,9 @@ import 'package:url_launcher/url_launcher.dart';
 enum MenuOption { opcion1, opcion2, opcion3 }
 
 class PastFelicitupWidget extends StatelessWidget {
-  const PastFelicitupWidget({
-    super.key,
-    required this.felicitup,
-    required this.date,
-  });
+  const PastFelicitupWidget({super.key, required this.felicitup});
 
   final FelicitupModel felicitup;
-  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +62,7 @@ class PastFelicitupWidget extends StatelessWidget {
                   DateFormat(
                     AppConstants.birthDateFormat,
                     'es_ES',
-                  ).format(date),
+                  ).format(felicitup.sentAt!).capitalize(),
                   style: context.styles.smallText,
                 ),
                 SizedBox(height: context.sp(8)),

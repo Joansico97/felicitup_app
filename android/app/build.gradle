@@ -35,7 +35,7 @@ if (keyStorePropertiesFile.exists()) {
 
 android {
     namespace = "com.felicitup.felicitup_app"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

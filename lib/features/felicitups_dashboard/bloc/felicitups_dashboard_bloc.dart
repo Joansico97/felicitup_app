@@ -179,14 +179,14 @@ class FelicitupsDashboardBloc
     _felicitupSubscription = _felicitupRepository
         .streamFelicitups(userId)
         .listen((either) {
-          either.fold((error) {}, (feicitups) {
+          either.fold((_) {}, (feicitups) {
             add(FelicitupsDashboardEvent.recivedData(feicitups));
           });
         });
     _felicitupPastSubscription = _felicitupRepository
         .streamPastFelicitups(userId)
         .listen((either) {
-          either.fold((error) {}, (feicitups) {
+          either.fold((_) {}, (feicitups) {
             add(FelicitupsDashboardEvent.recivedPastData(feicitups));
           });
         });
