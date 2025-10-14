@@ -99,7 +99,7 @@ class _SelectEventViewState extends State<SelectEventView> {
                               reason.isNotEmpty
                                   ? TextSpan(
                                       text:
-                                          '\n\n${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(selectedDate)} - ${DateFormat('HH:mm').format(selectedDate)}',
+                                          '\n\n${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(selectedDate!).capitalize()} - ${DateFormat('HH:mm').format(selectedDate)}',
                                       style: context.styles.smallText,
                                     )
                                   : TextSpan(),

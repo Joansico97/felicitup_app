@@ -11,8 +11,9 @@ class OwnerModel with _$OwnerModel {
     required String id,
     required String name,
     String? userImg,
-    @TimestampConverter() required DateTime date,
+    @TimestampConverter() DateTime? date,
   }) = _OwnerModel;
 
-  factory OwnerModel.fromJson(Map<String, dynamic> json) => _$OwnerModelFromJson(json);
+  factory OwnerModel.fromJson(Map<String, dynamic> json) =>
+      _$OwnerModelFromJson(json);
 }

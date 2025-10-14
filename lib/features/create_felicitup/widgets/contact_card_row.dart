@@ -68,21 +68,20 @@ class ContactCardRow extends StatelessWidget {
                       style: context.styles.header2,
                     ),
                   ),
-                  Visibility(
-                    visible: contact.birthDate != null,
-                    child: Column(
-                      children: [
-                        SizedBox(height: context.sp(5)),
-                        Text(
-                          DateFormat(
-                            AppConstants.birthDateFormatWithoutYear,
-                            'es_ES',
-                          ).format(contact.birthDate!).capitalize(),
-                          style: context.styles.smallText,
-                        ),
-                      ],
-                    ),
-                  ),
+                  contact.birthDate != null
+                      ? Column(
+                          children: [
+                            SizedBox(height: context.sp(5)),
+                            Text(
+                              DateFormat(
+                                AppConstants.birthDateFormatWithoutYear,
+                                'es_ES',
+                              ).format(contact.birthDate!).capitalize(),
+                              style: context.styles.smallText,
+                            ),
+                          ],
+                        )
+                      : SizedBox.shrink(),
                 ],
               ),
               const Spacer(),

@@ -141,7 +141,7 @@ class _ContactSearchListState extends State<ContactSearchList> {
                       final owner = OwnerModel(
                         id: contact.id ?? '',
                         name: contact.fullName ?? 'Usuario sin nombre',
-                        date: contact.birthDate ?? DateTime.now(),
+                        date: contact.birthDate,
                         userImg: contact.userImg ?? '',
                       );
                       widget.felicitupBloc.add(
@@ -171,7 +171,7 @@ class SelectContactsView extends StatelessWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(
         minHeight: context.sp(100),
-        maxHeight: context.sp(220),
+        maxHeight: context.sp(280),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -257,8 +257,9 @@ class SelectContactsView extends StatelessWidget {
                             // selectedDate.toString(),
                             selectedDate != null
                                 ? 'Fecha envío felicitUp:\n${DateFormat(AppConstants.birthDateFormatWithoutYear, 'es_ES').format(selectedDate).capitalize()} - ${DateFormat('HH:mm').format(selectedDate)}'
-                                : listOwner.isNotEmpty
-                                ? 'Fecha envío felicitUp:\n${DateFormat(AppConstants.birthDateFormatWithoutYear, 'es_ES').format(listOwner[0].date).capitalize()} - ${DateFormat('HH:mm').format(listOwner[0].date)}'
+                                : listOwner.isNotEmpty &&
+                                      listOwner[0].date != null
+                                ? 'Fecha envío felicitUp:\n${DateFormat(AppConstants.birthDateFormatWithoutYear, 'es_ES').format(listOwner[0].date!).capitalize()} - ${DateFormat('HH:mm').format(listOwner[0].date!)}'
                                 : 'Selecciona la persona a la que irá destinada la Felicitup.',
                             style: context.styles.paragraph,
                             maxLines: 3,

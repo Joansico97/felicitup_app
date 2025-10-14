@@ -64,14 +64,20 @@ class CreateFelicitupBloc
   _nextStep(Emitter<CreateFelicitupState> emit, int lenght) {
     switch (state.steperIndex) {
       case 0:
-        if (state.felicitupOwner.length == 1 ||
+        if ((state.felicitupOwner.length == 1 &&
+                (state.felicitupOwner.first.date != null ||
+                    state.selectedDate != null)) ||
             (state.felicitupOwner.length >= 2 && state.selectedDate != null)) {
           emit(state.copyWith(steperIndex: state.steperIndex + 1));
         } else {
           ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
             SnackBar(
               content: Text(
-                state.felicitupOwner.length > 1 && state.selectedDate == null
+                state.felicitupOwner.length > 1 &&
+                        state.felicitupOwner.first.date == null
+                    ? 'Debes seleccionar una fecha'
+                    : state.felicitupOwner.length > 1 &&
+                          state.selectedDate == null
                     ? 'Debes seleccionar una fecha'
                     : 'Debes seleccionar al menos un amigo',
               ),
@@ -278,7 +284,7 @@ class CreateFelicitupBloc
     try {
       final now = DateTime.now();
       DateTime felicitupDate =
-          state.selectedDate ?? state.felicitupOwner.first.date;
+          state.selectedDate ?? state.felicitupOwner.first.date!;
       int currentMonth = now.month;
       int currentDay = now.day;
       int otherMonth = felicitupDate.month;

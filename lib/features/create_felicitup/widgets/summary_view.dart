@@ -124,7 +124,7 @@ class SummaryView extends StatelessWidget {
                       _ResumenCard(
                         label: selectedDate != null
                             ? 'Fecha: ${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(selectedDate)}'
-                            : 'Fecha: ${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(listOwner[0].date)}',
+                            : 'Fecha: ${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(listOwner[0].date!)}',
                         onTap: () => context.read<CreateFelicitupBloc>().add(
                           CreateFelicitupEvent.jumpToStep(0),
                         ),
@@ -148,7 +148,7 @@ class SummaryView extends StatelessWidget {
                         label: (() {
                           final now = DateTime.now();
                           final date = selectedDate ?? listOwner[0].date;
-                          final sendDate = date.subtract(Duration(days: 1));
+                          final sendDate = date!.subtract(Duration(days: 1));
                           final year = sendDate.isAfter(now)
                               ? sendDate.year
                               : now.year;
