@@ -261,6 +261,11 @@ exports.sendFelicitup = onCall(
         const felicitupRef = db.collection('Felicitups').doc(felicitupId);
         const felicitupDoc = await felicitupRef.get();
 
+        const taskName = felicitupDoc.data().taskName;
+        if (taskName) {
+          await deleteFelicitupTask(taskName);
+        }
+
         if (!felicitupDoc.exists) {
           throw new HttpsError(
               'not-found',
@@ -318,12 +323,13 @@ exports.sendFelicitup = onCall(
           scheduleTime: {seconds: delaySeconds + Math.floor(Date.now() / 1000)},
         };
 
-        client.createTask({parent, task});
+        const [response] = client.createTask({parent, task});
 
         await felicitupRef.update({
           scheduledCompletionTime: felicitupData.date,
           lastUpdated: Timestamp.now(),
           scheduledBy: request.auth.uid,
+          taskName: response.name,
         });
 
         return {
@@ -374,26 +380,31 @@ async function completeFelicitup(felicitupId) {
     );
 
     if (atLeastOneVideo && Array.isArray(felicitup.owner)) {
-      // Busca si ya existe un documento en VideoMergeJobs con el id de la felicitup
       const videoMergeJobRef = admin.firestore().collection('VideoMergeJobs').doc(felicitupId);
       const videoMergeJobDoc = await videoMergeJobRef.get();
       if (videoMergeJobDoc.exists) {
         await videoMergeJobRef.delete();
       }
-      await admin.firestore().collection('VideoMergeJobs').add({
-        userId: felicitup.createdBy || (felicitup.owner && felicitup.owner[0] && felicitup.owner[0].id) || "",
-        status: "pending",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        videoUrls: invitedUserDetails
-            .filter(
-                (user) =>
-                  user &&
-            user.videoData &&
-            typeof user.videoData.videoUrl === 'string' &&
-            user.videoData.videoUrl.trim() !== '',
-            )
-            .map((user) => user.videoData.videoUrl),
-      });
+      try {
+        await admin.firestore().collection('VideoMergeJobs').doc(felicitupId).set({
+          userId: felicitup.createdBy,
+          status: "pending",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          videoUrls: invitedUserDetails
+              .filter(
+                  (user) =>
+                    user &&
+                  user.videoData &&
+                  typeof user.videoData.videoUrl === 'string' &&
+                  user.videoData.videoUrl.trim() !== '',
+              )
+              .map((user) => user.videoData.videoUrl),
+        });
+        console.log(`Documento VideoMergeJob creado correctamente con ID: ${felicitupId}`);
+      } catch (videoMergeErr) {
+        console.error('Error al crear el documento VideoMergeJob:', videoMergeErr);
+        throw new Error('No se pudo crear el documento VideoMergeJob');
+      }
       for (const owner of felicitup.owner) {
         // Validación robusta de owner
         if (!owner || !owner.id) continue;
@@ -414,6 +425,7 @@ async function completeFelicitup(felicitupId) {
           invitedUserDetails: admin.firestore.FieldValue.arrayUnion(newElement),
           invitedUsers: admin.firestore.FieldValue.arrayUnion(ownerData.id),
           sentAt: admin.firestore.FieldValue.serverTimestamp(),
+          status: "Finished",
         });
 
         // Solo enviar notificación si el usuario tiene fcmToken
@@ -550,7 +562,7 @@ exports.sendManualFelicitup = functions.https.onCall(async (data, context) => {
 
 
     await docRef.update({status: "Finished"});
-    deleteFelicitupTask(felicitupId);
+    await deleteFelicitupTask(felicitup.taskName);
   } catch (error) {
     console.error("Error al ejecutar la tarea:", error);
     throw new functions.https.HttpsError("internal", "Error al programar la tarea.", error);

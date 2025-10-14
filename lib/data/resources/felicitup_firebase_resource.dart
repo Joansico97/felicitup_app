@@ -514,6 +514,9 @@ class FelicitupFirebaseResource implements FelicitupRepository {
         document: felicitupId,
         {'date': newDate},
       );
+      await Future.delayed(Duration(seconds: 1), () async {
+        await _firebaseFunctionsHelper.sendFelicitup(felicitupId: felicitupId);
+      });
       return Right(null);
     } on FirebaseException catch (e) {
       return Left(

@@ -44,14 +44,16 @@ module.exports = {
     console.log("Task created: " + response.name);
   },
   deleteFelicitupTask: async function(felicitupId) {
-    const taskName = client.taskPath(project, location, queue, felicitupId);
-
-    const request = {
-      parent: parent,
-      name: taskName,
-    };
-    const response = await client.deleteTask(request);
-
-    console.log("Task deleted: " + response.name);
+    try {
+      const taskName = client.taskPath(project, location, queue, felicitupId);
+      await client.deleteTask({name: taskName});
+      console.log(`✅ Task eliminada correctamente: ${taskName}`);
+    } catch (err) {
+      if (err.code === 5) {
+        console.log(`⚠️ Task no encontrada o ya eliminada (${felicitupId})`);
+      } else {
+        console.error("❌ Error al eliminar la task:", err);
+      }
+    }
   },
 };
