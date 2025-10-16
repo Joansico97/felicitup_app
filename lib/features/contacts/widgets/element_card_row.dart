@@ -69,8 +69,8 @@ class ElementCardRow extends StatelessWidget {
                       const ClipboardData(
                         text:
                             ''''¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.
-                          Descárgala desde app store aquí: https://play.google.com/store/apps/details?id=com.felicitup.felicitup_app
-                          Descárgala desde play store aquí: https://apps.apple.com/co/app/felicitup/id6743689559
+                          Descárgala desde play store aquí: https://play.google.com/store/apps/details?id=com.felicitup.felicitup_app
+                          Descárgala desde app store aquí: https://apps.apple.com/co/app/felicitup/id6743689559
                           ''',
                       ),
                     );
