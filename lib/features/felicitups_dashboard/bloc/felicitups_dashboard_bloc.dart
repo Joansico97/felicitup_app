@@ -12,7 +12,6 @@ import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
 
@@ -36,11 +35,11 @@ class FelicitupsDashboardBloc
        super(FelicitupsDashboardState.initial()) {
     on<FelicitupsDashboardEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
+        changeIndex: (event) => _changeIndex(emit, event.index),
+        sortPastFelicitups: (event) =>
+            _sortPastFelicitups(emit, event.index, event.userId),
         deleteFelicitup: (event) =>
             _deleteFelicitup(emit, event.felicitupId, event.chatId),
-        changeListBoolsTap: (event) =>
-            _changeListBoolTap(emit, event.index, event.controller),
         setLike: (event) => _setLike(emit, event.felicitupId, event.userId),
         createSingleChat: (event) =>
             _createSingleChat(emit, event.singleChatData),
@@ -67,21 +66,40 @@ class FelicitupsDashboardBloc
   final FirebaseAuth _firebaseAuth;
   final LocalStorageHelper _localStorageHelper;
 
-  _changeLoading(Emitter<FelicitupsDashboardState> emit) {}
+  _changeIndex(Emitter<FelicitupsDashboardState> emit, int index) {
+    emit(state.copyWith(currentIndex: index));
+  }
 
-  _changeListBoolTap(
+  _sortPastFelicitups(
     Emitter<FelicitupsDashboardState> emit,
     int index,
-    PageController controller,
+    String userId,
   ) {
-    final listBoolsTap = state.listBoolsTap.map((e) => false).toList();
-    listBoolsTap[index] = true;
-    emit(state.copyWith(listBoolsTap: listBoolsTap));
-    controller.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    switch (index) {
+      case 0:
+        emit(
+          state.copyWith(listFelicitupsPast: state.backUpListFelicitupsPast),
+        );
+        break;
+      case 1:
+        final filteredList = state.backUpListFelicitupsPast
+            .where(
+              (felicitup) => felicitup.owner.any((data) => data.id == userId),
+            )
+            .toList();
+        emit(state.copyWith(listFelicitupsPast: filteredList));
+        break;
+      case 2:
+        final filteredList = state.backUpListFelicitupsPast
+            .where(
+              (felicitup) =>
+                  felicitup.invitedUsers.any((data) => data == userId),
+            )
+            .toList();
+        emit(state.copyWith(listFelicitupsPast: filteredList));
+        break;
+      default:
+    }
   }
 
   _deleteFelicitup(
@@ -227,7 +245,12 @@ class FelicitupsDashboardBloc
     Emitter<FelicitupsDashboardState> emit,
     List<FelicitupModel> listFelicitups,
   ) async {
-    emit(state.copyWith(listFelicitupsPast: listFelicitups));
+    emit(
+      state.copyWith(
+        listFelicitupsPast: listFelicitups,
+        backUpListFelicitupsPast: listFelicitups,
+      ),
+    );
   }
 
   @override

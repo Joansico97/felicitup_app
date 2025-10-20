@@ -122,38 +122,58 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                               FelicitupsDashboardBloc,
                               FelicitupsDashboardState
                             >(
+                              buildWhen: (previous, current) =>
+                                  previous.currentIndex != current.currentIndex,
                               builder: (_, state) {
                                 return Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     _FelicitupsDashboardHeaderOption(
                                       label: 'EN CURSO',
-                                      isActive: state.listBoolsTap[0],
+                                      isActive: state.currentIndex == 0,
                                       textColor: context.colors.orange,
                                       activeColor: context.colors.orange,
-                                      onActive: () => context
-                                          .read<FelicitupsDashboardBloc>()
-                                          .add(
-                                            FelicitupsDashboardEvent.changeListBoolsTap(
+                                      onActive: () {
+                                        _felicitupsDashboardPageController
+                                            .animateToPage(
                                               0,
-                                              _felicitupsDashboardPageController,
-                                            ),
-                                          ),
+                                              duration: const Duration(
+                                                milliseconds: 300,
+                                              ),
+                                              curve: Curves.easeInOut,
+                                            );
+                                        context
+                                            .read<FelicitupsDashboardBloc>()
+                                            .add(
+                                              FelicitupsDashboardEvent.changeIndex(
+                                                0,
+                                              ),
+                                            );
+                                      },
                                     ),
                                     SizedBox(width: context.sp(14)),
                                     _FelicitupsDashboardHeaderOption(
                                       label: 'PASADOS',
-                                      isActive: state.listBoolsTap[1],
+                                      isActive: state.currentIndex == 1,
                                       textColor: context.colors.orange,
                                       activeColor: context.colors.orange,
-                                      onActive: () => context
-                                          .read<FelicitupsDashboardBloc>()
-                                          .add(
-                                            FelicitupsDashboardEvent.changeListBoolsTap(
+                                      onActive: () {
+                                        _felicitupsDashboardPageController
+                                            .animateToPage(
                                               1,
-                                              _felicitupsDashboardPageController,
-                                            ),
-                                          ),
+                                              duration: const Duration(
+                                                milliseconds: 300,
+                                              ),
+                                              curve: Curves.easeInOut,
+                                            );
+                                        context
+                                            .read<FelicitupsDashboardBloc>()
+                                            .add(
+                                              FelicitupsDashboardEvent.changeIndex(
+                                                1,
+                                              ),
+                                            );
+                                      },
                                     ),
                                   ],
                                 );
@@ -169,11 +189,13 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
                             return _pages[index];
                           },
                           onPageChanged: (index) async {
+                            _felicitupsDashboardPageController.animateToPage(
+                              index,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
                             context.read<FelicitupsDashboardBloc>().add(
-                              FelicitupsDashboardEvent.changeListBoolsTap(
-                                index,
-                                _felicitupsDashboardPageController,
-                              ),
+                              FelicitupsDashboardEvent.changeIndex(index),
                             );
                           },
                         ),
