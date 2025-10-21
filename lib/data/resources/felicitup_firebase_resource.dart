@@ -147,34 +147,42 @@ class FelicitupFirebaseResource implements FelicitupRepository {
     String userId,
   ) async {
     try {
-      final response = await _databaseHelper.get(
-        AppConstants.feclitiupsCollection,
-        document: felicitupId,
-      );
+      // Usamos _firestore para asegurar la compatibilidad y evitar inconsistencias con _databaseHelper
+      final docRef = _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId);
 
-      return response.fold(
-        (l) {
-          return Future.value(Left(ApiException(1000, 'Error setting like')));
-        },
-        (r) async {
-          final felicitup = FelicitupModel.fromJson(r);
-          final List<String> likes = List.from(felicitup.likes ?? []);
-          if (likes.contains(userId)) {
-            likes.remove(userId);
-          } else {
-            likes.add(userId);
-          }
-          await _databaseHelper.set(
-            AppConstants.feclitiupsCollection,
-            document: felicitupId,
-            {'likes': likes},
-          );
-          return Right(null);
-        },
-      );
+      final docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      // Verificamos si existe la lista de "likes", si no existe, inicializamos
+      List<dynamic> currentLikesDynamic = [];
+      if (data.containsKey('likes') && data['likes'] != null) {
+        currentLikesDynamic = List.from(data['likes'] as List<dynamic>);
+      }
+      // Transformamos a List<String> asegurando su tipado
+      final List<String> likes = currentLikesDynamic
+          .map((e) => e.toString())
+          .toList();
+
+      if (likes.contains(userId)) {
+        likes.remove(userId);
+      } else {
+        likes.add(userId);
+      }
+
+      await docRef.update({'likes': likes});
+      return Right(null);
     } on FirebaseException catch (e) {
       return Left(
-        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+        ApiException(
+          int.tryParse(e.code) ?? 1000,
+          e.message ?? "Error de Firebase",
+        ),
       );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
