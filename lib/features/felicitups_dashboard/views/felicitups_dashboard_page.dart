@@ -12,7 +12,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class FelicitupsDashboardPage extends StatefulWidget {
-  const FelicitupsDashboardPage({super.key});
+  const FelicitupsDashboardPage({super.key, this.isFromPast});
+
+  final bool? isFromPast;
 
   @override
   State<FelicitupsDashboardPage> createState() =>
@@ -34,6 +36,19 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
     context.read<FelicitupsDashboardBloc>().add(
       const FelicitupsDashboardEvent.getRememberStatus(),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if ((widget.isFromPast ?? false) &&
+          _felicitupsDashboardPageController.hasClients) {
+        _felicitupsDashboardPageController.animateToPage(
+          1,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        context.read<FelicitupsDashboardBloc>().add(
+          FelicitupsDashboardEvent.changeIndex(1),
+        );
+      }
+    });
   }
 
   @override

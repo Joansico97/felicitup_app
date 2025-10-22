@@ -61,7 +61,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   bool _shouldShowPermissionModal(UserModel? user) {
-    return user != null && (user.friendsPhoneList?.isEmpty ?? true);
+    final permissionStatus = context
+        .read<AppBloc>()
+        .state
+        .contactsPermissionStatus;
+
+    return user != null &&
+        (user.friendsPhoneList?.isEmpty ?? true) &&
+        permissionStatus != PermissionStatus.denied;
   }
 
   void _requestContactsUpdate(String isoCode) {

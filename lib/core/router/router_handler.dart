@@ -145,7 +145,9 @@ Widget _createFelicitupHandler(BuildContext context, GoRouterState state) {
 }
 
 Widget _felicitupsDashboardHandler(BuildContext context, GoRouterState state) {
-  return FelicitupsDashboardPage();
+  final data = state.extra as Map<String, dynamic>?;
+  final isFromPast = data?['isFromPast'] as bool?;
+  return FelicitupsDashboardPage(isFromPast: isFromPast);
 }
 
 Page<Widget> _felicitupNotificationHandler(

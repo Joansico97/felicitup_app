@@ -35,7 +35,10 @@ class PastHeader extends StatelessWidget {
                   context.read<DetailsPastFelicitupDashboardBloc>().add(
                     DetailsPastFelicitupDashboardEvent.asignCurrentChat(''),
                   );
-                  context.go(RouterPaths.felicitupsDashboard);
+                  context.go(
+                    RouterPaths.felicitupsDashboard,
+                    extra: {'isFromPast': true},
+                  );
                 }
               },
             ),
