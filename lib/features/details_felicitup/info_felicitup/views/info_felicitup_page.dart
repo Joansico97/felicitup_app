@@ -86,7 +86,7 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
     return BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
       bloc: widget.infoFelicitupBloc,
 
-      builder: (context, infoState) {
+      builder: (_, infoState) {
         final currentSelectedOwnersFromBloc = infoState.ownersList;
 
         return Column(
@@ -155,13 +155,14 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
                   final bool isSelected = currentSelectedOwnersFromBloc.any(
                     (owner) => owner.id == contact.id,
                   );
+
                   return GestureDetector(
                     onTap: () {
                       final owner = OwnerModel(
                         id: contact.id ?? '',
                         name: contact.fullName ?? 'Usuario sin nombre',
-                        date: contact.birthDate ?? DateTime.now(),
-                        userImg: contact.userImg ?? '',
+                        date: contact.birthDate,
+                        userImg: contact.userImg,
                       );
 
                       widget.infoFelicitupBloc.add(
@@ -211,210 +212,203 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
         padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
-        child:
-            BlocBuilder<
-              DetailsFelicitupDashboardBloc,
-              DetailsFelicitupDashboardState
-            >(
-              builder: (dashboardContext, dashboardState) {
-                final felicitup = dashboardState.felicitup;
-                if (felicitup == null) {
-                  return const SizedBox.shrink();
-                }
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    if (felicitup.createdBy == currentUser?.id)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
-                            builder: (infoBlocContext, infoState) {
-                              return FloatingActionButton.extended(
-                                heroTag: 'fab_add_owner_info',
-                                onPressed: () {
-                                  final bloc = infoBlocContext
-                                      .read<InfoFelicitupBloc>();
-                                  List<UserModel> friendListForModal = [
-                                    ...infoState.friendList,
-                                  ];
+        child: BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
+          builder: (dashboardContext, dashboardState) {
+            final felicitup = dashboardState.felicitup;
+            if (felicitup == null) {
+              return const SizedBox.shrink();
+            }
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // if (felicitup.createdBy == currentUser?.id)
+                //   Column(
+                //     mainAxisAlignment: MainAxisAlignment.end,
+                //     children: [
+                //       BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
+                //         builder: (_, infoState) {
+                //           return FloatingActionButton.extended(
+                //             heroTag: 'fab_add_owner_info',
+                //             onPressed: () {
+                //               final bloc = context
+                //                   .read<InfoFelicitupBloc>();
+                //               List<UserModel> friendListForModal = [
+                //                 ...infoState.friendList,
+                //               ];
 
-                                  friendListForModal.removeWhere(
-                                    (friend) => felicitup.owner.any(
-                                      (owner) => owner.id == friend.id,
-                                    ),
-                                  );
-                                  friendListForModal.removeWhere(
-                                    (friend) => felicitup.invitedUsers.any(
-                                      (invitedUserId) =>
-                                          invitedUserId == friend.id,
-                                    ),
-                                  );
+                //               friendListForModal.removeWhere(
+                //                 (friend) => felicitup.owner.any(
+                //                   (owner) => owner.id == friend.id,
+                //                 ),
+                //               );
+                //               friendListForModal.removeWhere(
+                //                 (friend) => felicitup.invitedUsers.any(
+                //                   (invitedUserId) =>
+                //                       invitedUserId == friend.id,
+                //                 ),
+                //               );
 
-                                  friendListForModal.removeWhere(
-                                    (friend) => infoState.ownersList.any(
-                                      (tempOwner) => tempOwner.id == friend.id,
-                                    ),
-                                  );
+                //               friendListForModal.removeWhere(
+                //                 (friend) => infoState.ownersList.any(
+                //                   (tempOwner) => tempOwner.id == friend.id,
+                //                 ),
+                //               );
 
-                                  commoBottomModal(
-                                    context: rootNavigatorKey.currentContext!,
-                                    hasBottomButton: true,
-                                    moreSpace: true,
-                                    onTap: () async {
-                                      bloc.add(
-                                        InfoFelicitupEvent.updateFelicitupOwners(
-                                          felicitup.id,
-                                        ),
-                                      );
-                                      if (rootNavigatorKey.currentContext !=
-                                              null &&
-                                          Navigator.canPop(
-                                            rootNavigatorKey.currentContext!,
-                                          )) {
-                                        GoRouter.of(
-                                          rootNavigatorKey.currentContext!,
-                                        ).pop();
-                                      }
-                                    },
-                                    body: BlocProvider.value(
-                                      value: bloc,
-                                      child: OwnerSearchListInInfo(
-                                        initialFriendList: friendListForModal,
+                //               commoBottomModal(
+                //                 context: rootNavigatorKey.currentContext!,
+                //                 hasBottomButton: true,
+                //                 moreSpace: true,
+                //                 onTap: () async {
+                //                   bloc.add(
+                //                     InfoFelicitupEvent.updateFelicitupOwners(
+                //                       felicitup.id,
+                //                     ),
+                //                   );
+                //                   if (rootNavigatorKey.currentContext !=
+                //                           null &&
+                //                       Navigator.canPop(
+                //                         rootNavigatorKey.currentContext!,
+                //                       )) {
+                //                     GoRouter.of(
+                //                       rootNavigatorKey.currentContext!,
+                //                     ).pop();
+                //                   }
+                //                 },
+                //                 body: BlocProvider.value(
+                //                   value: bloc,
+                //                   child: OwnerSearchListInInfo(
+                //                     initialFriendList: friendListForModal,
 
-                                        infoFelicitupBloc: bloc,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                backgroundColor: context.colors.orange,
-                                label: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.person_add,
-                                      color: context.colors.white,
-                                    ),
-                                    SizedBox(width: context.sp(5)),
-                                    Text(
-                                      'Añadir',
-                                      style: context.styles.smallText.copyWith(
-                                        color: context.colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                //                     infoFelicitupBloc: bloc,
+                //                   ),
+                //                 ),
+                //               );
+                //             },
+                //             backgroundColor: context.colors.orange,
+                //             label: Row(
+                //               children: [
+                //                 Icon(
+                //                   Icons.person_add,
+                //                   color: context.colors.white,
+                //                 ),
+                //                 SizedBox(width: context.sp(5)),
+                //                 Text(
+                //                   'Añadir',
+                //                   style: context.styles.smallText.copyWith(
+                //                     color: context.colors.white,
+                //                   ),
+                //                 ),
+                //               ],
+                //             ),
+                //           );
+                //         },
+                //       ),
+                //     ],
+                //   ),
+                if (felicitup.createdBy == currentUser?.id)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      FloatingActionButton.extended(
+                        heroTag: 'fab_edit_date_info',
+                        onPressed: () async {
+                          final DateTime? pickedDate =
+                              await showGenericDatePicker(
+                                context: context,
+                                initialDate: felicitup.date,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2101),
+                                helpText: 'Selecciona una fecha',
+                                cancelText: 'Cancelar',
+                                confirmText: 'OK',
+                                locale: const Locale('es', 'ES'),
                               );
-                            },
-                          ),
-                        ],
-                      ),
-                    if (felicitup.createdBy == currentUser?.id)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          FloatingActionButton.extended(
-                            heroTag: 'fab_edit_date_info',
-                            onPressed: () async {
-                              final DateTime? pickedDate =
-                                  await showGenericDatePicker(
-                                    context: context,
-                                    initialDate: felicitup.date,
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime(2101),
-                                    helpText: 'Selecciona una fecha',
-                                    cancelText: 'Cancelar',
-                                    confirmText: 'OK',
-                                    locale: const Locale('es', 'ES'),
-                                  );
 
-                              if (pickedDate == null) return;
+                          if (pickedDate == null) return;
 
-                              final TimeOfDay? pickedTime =
-                                  await showGenericTimePicker(
-                                    context: context,
-                                    initialTime: TimeOfDay.fromDateTime(
-                                      felicitup.date,
-                                    ),
-                                    helpText: 'Selecciona una hora',
-                                    cancelText: 'Cancelar',
-                                    confirmText: 'OK',
-                                  );
-
-                              if (pickedTime == null) return;
-
-                              final DateTime combinedDateTime = DateTime(
-                                pickedDate.year,
-                                pickedDate.month,
-                                pickedDate.day,
-                                pickedTime.hour,
-                                pickedTime.minute,
+                          final TimeOfDay? pickedTime =
+                              await showGenericTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.fromDateTime(
+                                  felicitup.date,
+                                ),
+                                helpText: 'Selecciona una hora',
+                                cancelText: 'Cancelar',
+                                confirmText: 'OK',
                               );
-                              context.read<InfoFelicitupBloc>().add(
-                                InfoFelicitupEvent.updateDateFelicitup(
-                                  felicitup.id,
-                                  combinedDateTime,
-                                ),
-                              );
-                            },
-                            backgroundColor: context.colors.orange,
-                            label: Row(
-                              children: [
-                                Icon(Icons.edit, color: context.colors.white),
-                                SizedBox(width: context.sp(5)),
-                                Text(
-                                  'Editar',
-                                  style: context.styles.smallText.copyWith(
-                                    color: context.colors.white,
-                                  ),
-                                ),
-                              ],
+
+                          if (pickedTime == null) return;
+
+                          final DateTime combinedDateTime = DateTime(
+                            pickedDate.year,
+                            pickedDate.month,
+                            pickedDate.day,
+                            pickedTime.hour,
+                            pickedTime.minute,
+                          );
+                          context.read<InfoFelicitupBloc>().add(
+                            InfoFelicitupEvent.updateDateFelicitup(
+                              felicitup.id,
+                              combinedDateTime,
                             ),
-                          ),
-                        ],
+                          );
+                        },
+                        backgroundColor: context.colors.orange,
+                        label: Row(
+                          children: [
+                            Icon(Icons.edit, color: context.colors.white),
+                            SizedBox(width: context.sp(5)),
+                            Text(
+                              'Editar',
+                              style: context.styles.smallText.copyWith(
+                                color: context.colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    if (felicitup.createdBy == currentUser?.id)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          FloatingActionButton.extended(
-                            heroTag: 'fab_send_felicitup_info',
-                            onPressed: () => showConfirmModal(
-                              title:
-                                  '¿Estás seguro de querer enviar la felicitup?',
-                              onAccept: () async {
-                                context.read<InfoFelicitupBloc>().add(
-                                  InfoFelicitupEvent.sendFelicitup(
-                                    felicitup.id,
-                                  ),
-                                );
-                                if (context.mounted &&
-                                    rootNavigatorKey.currentContext != null) {
-                                  GoRouter.of(
-                                    rootNavigatorKey.currentContext!,
-                                  ).go(RouterPaths.felicitupsDashboard);
-                                }
-                              },
+                    ],
+                  ),
+                if (felicitup.createdBy == currentUser?.id)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      FloatingActionButton.extended(
+                        heroTag: 'fab_send_felicitup_info',
+                        onPressed: () => showConfirmModal(
+                          title: '¿Estás seguro de querer enviar la felicitup?',
+                          onAccept: () async {
+                            context.read<InfoFelicitupBloc>().add(
+                              InfoFelicitupEvent.sendFelicitup(felicitup.id),
+                            );
+                            if (context.mounted &&
+                                rootNavigatorKey.currentContext != null) {
+                              GoRouter.of(
+                                rootNavigatorKey.currentContext!,
+                              ).go(RouterPaths.felicitupsDashboard);
+                            }
+                          },
+                        ),
+                        backgroundColor: context.colors.orange,
+                        label: Row(
+                          children: [
+                            Icon(Icons.send, color: context.colors.white),
+                            SizedBox(width: context.sp(5)),
+                            Text(
+                              'Enviar',
+                              style: context.styles.smallText.copyWith(
+                                color: context.colors.white,
+                              ),
                             ),
-                            backgroundColor: context.colors.orange,
-                            label: Row(
-                              children: [
-                                Icon(Icons.send, color: context.colors.white),
-                                SizedBox(width: context.sp(5)),
-                                Text(
-                                  'Enviar',
-                                  style: context.styles.smallText.copyWith(
-                                    color: context.colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                  ],
-                );
-              },
-            ),
+                    ],
+                  ),
+              ],
+            );
+          },
+        ),
       ),
       body:
           BlocBuilder<
@@ -453,55 +447,84 @@ class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
                       ),
                     ),
                     SizedBox(height: context.sp(22)),
-                    DetailsRow(
-                      onTap: () {
-                        customModal(
-                          title: 'Felicitados',
-                          child: SizedBox(
-                            height: context.sp(150),
-                            child: ListView.builder(
-                              itemCount: felicitup.owner.length,
-                              itemBuilder: (ctx, index) => ListTile(
-                                title: Text(
-                                  felicitup.owner[index].name,
-                                  style: context.styles.subtitle,
+                    BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
+                      builder: (_, state) {
+                        return DetailsRow(
+                          onTap: () {
+                            final bloc = context.read<InfoFelicitupBloc>();
+                            List<UserModel> friendListForModal = [
+                              ...state.friendList,
+                            ];
+
+                            friendListForModal.removeWhere(
+                              (friend) => felicitup.owner.any(
+                                (owner) => owner.id == friend.id,
+                              ),
+                            );
+                            friendListForModal.removeWhere(
+                              (friend) => felicitup.invitedUsers.any(
+                                (invitedUserId) => invitedUserId == friend.id,
+                              ),
+                            );
+
+                            friendListForModal.removeWhere(
+                              (friend) => state.ownersList.any(
+                                (tempOwner) => tempOwner.id == friend.id,
+                              ),
+                            );
+
+                            commoBottomModal(
+                              context: rootNavigatorKey.currentContext!,
+                              hasBottomButton: true,
+                              moreSpace: true,
+                              onTap: () async {
+                                bloc.add(
+                                  InfoFelicitupEvent.updateFelicitupOwners(
+                                    felicitup.id,
+                                  ),
+                                );
+                                if (rootNavigatorKey.currentContext != null &&
+                                    Navigator.canPop(
+                                      rootNavigatorKey.currentContext!,
+                                    )) {
+                                  GoRouter.of(
+                                    rootNavigatorKey.currentContext!,
+                                  ).pop();
+                                }
+                              },
+                              body: BlocProvider.value(
+                                value: bloc,
+                                child: OwnerSearchListInInfo(
+                                  initialFriendList: friendListForModal,
+
+                                  infoFelicitupBloc: bloc,
                                 ),
                               ),
+                            );
+                          },
+                          prefixChild: Text(
+                            'Felicitados',
+                            style: context.styles.smallText.copyWith(
+                              color: context.colors.text,
+                            ),
+                          ),
+                          sufixChild: Text(
+                            felicitup.owner.length.toString(),
+                            style: context.styles.smallText.copyWith(
+                              color: context.colors.text,
                             ),
                           ),
                         );
                       },
-                      prefixChild: Text(
-                        'Felicitados',
-                        style: context.styles.smallText.copyWith(
-                          color: context.colors.text,
-                        ),
-                      ),
-                      sufixChild: Text(
-                        felicitup.owner.length.toString(),
-                        style: context.styles.smallText.copyWith(
-                          color: context.colors.text,
-                        ),
-                      ),
                     ),
                     SizedBox(height: context.sp(15)),
                     DetailsRow(
                       onTap: () {
-                        customModal(
-                          title: 'Participantes',
-                          child: SizedBox(
-                            height: context.sp(150),
-                            child: ListView.builder(
-                              itemCount: felicitup.invitedUserDetails.length,
-                              itemBuilder: (ctx, index) => ListTile(
-                                title: Text(
-                                  felicitup.invitedUserDetails[index].name ??
-                                      '',
-                                  style: context.styles.subtitle,
-                                ),
-                              ),
-                            ),
-                          ),
+                        detailsFelicitupNavigatorKey.currentContext!.go(
+                          RouterPaths.peopleFelicitup,
+                        );
+                        context.read<DetailsFelicitupDashboardBloc>().add(
+                          DetailsFelicitupDashboardEvent.asignCurrentChat(''),
                         );
                       },
                       prefixChild: Text(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
@@ -7,6 +9,7 @@ import 'package:felicitup_app/features/felicitups_dashboard/bloc/felicitups_dash
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 enum MenuOption { opcion1, opcion2, opcion3 }
 
@@ -214,6 +217,39 @@ class PastFelicitupWidget extends StatelessWidget {
                         ),
                         icon: Icon(
                           Icons.message_outlined,
+                          color: Colors.black.withAlpha((.5 * 255).toInt()),
+                          size: context.sp(20),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          final encoded =
+                              'http://play.felicitup.hq/index.html?id=${felicitup.id}}';
+
+                          final Uri url = Uri.parse(
+                            "whatsapp://send?text=$encoded",
+                          );
+
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(
+                              url,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          } else {
+                            const playStore =
+                                "https://play.google.com/store/apps/details?id=com.whatsapp";
+                            const appStore =
+                                "https://apps.apple.com/app/whatsapp-messenger/id310633997";
+
+                            await launchUrl(
+                              Uri.parse(
+                                Platform.isAndroid ? playStore : appStore,
+                              ),
+                            );
+                          }
+                        },
+                        icon: Icon(
+                          Icons.share,
                           color: Colors.black.withAlpha((.5 * 255).toInt()),
                           size: context.sp(20),
                         ),

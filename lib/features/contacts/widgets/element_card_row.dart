@@ -1,12 +1,10 @@
 import 'dart:io';
 
 import 'package:felicitup_app/core/extensions/extensions.dart';
-import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/contacts/contacts.dart';
 import 'package:felicitup_app/features/contacts/widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -65,42 +63,29 @@ class ElementCardRow extends StatelessWidget {
               ? const Icon(Icons.check, color: Colors.green)
               : TextButton(
                   onPressed: () async {
-                    await Clipboard.setData(
-                      const ClipboardData(
-                        text:
-                            ''''¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.
-                          Descárgala desde play store aquí: https://play.google.com/store/apps/details?id=com.felicitup.felicitup_app
-                          Descárgala desde app store aquí: https://apps.apple.com/co/app/felicitup/id6743689559
-                          ''',
-                      ),
-                    );
-                    showConfirmModal(
-                      title:
-                          'Hemos copiado a tu portapapeles la invitación para que puedas invitar a tus amigos mediante Whatsapp.',
-                      onAccept: () async {
-                        final Uri url = Platform.isAndroid
-                            ? Uri.parse("https://wa.me/00000000000")
-                            : Uri.parse("whatsapp://app");
+                    final encoded =
+                        ''''¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.
+Descárgala desde play store aquí: https://play.google.com/store/apps/details?id=com.felicitup.felicitup_app
+Descárgala desde app store aquí: https://apps.apple.com/co/app/felicitup/id6743689559
+                          ''';
 
-                        if (await canLaunchUrl(url)) {
-                          await launchUrl(
-                            url,
-                            mode: LaunchMode.externalApplication,
-                          );
-                        } else {
-                          const playStore =
-                              "https://play.google.com/store/apps/details?id=com.whatsapp";
-                          const appStore =
-                              "https://apps.apple.com/app/whatsapp-messenger/id310633997";
+                    final Uri url = Uri.parse("whatsapp://send?text=$encoded");
 
-                          await launchUrl(
-                            Uri.parse(
-                              Platform.isAndroid ? playStore : appStore,
-                            ),
-                          );
-                        }
-                      },
-                    );
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    } else {
+                      const playStore =
+                          "https://play.google.com/store/apps/details?id=com.whatsapp";
+                      const appStore =
+                          "https://apps.apple.com/app/whatsapp-messenger/id310633997";
+
+                      await launchUrl(
+                        Uri.parse(Platform.isAndroid ? playStore : appStore),
+                      );
+                    }
                   },
                   child: Text(
                     'Invitar',
