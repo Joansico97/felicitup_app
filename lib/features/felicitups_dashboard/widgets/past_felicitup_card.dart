@@ -9,6 +9,7 @@ import 'package:felicitup_app/features/felicitups_dashboard/bloc/felicitups_dash
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 enum MenuOption { opcion1, opcion2, opcion3 }
@@ -221,38 +222,91 @@ class PastFelicitupWidget extends StatelessWidget {
                           size: context.sp(20),
                         ),
                       ),
-                      IconButton(
-                        onPressed: () async {
-                          final encoded =
-                              'http://play.felicitup.hq/index.html?id=${felicitup.id}}';
 
-                          final Uri url = Uri.parse(
-                            "whatsapp://send?text=$encoded",
+                      BlocBuilder<AppBloc, AppState>(
+                        builder: (_, state) {
+                          final currentUser = state.currentUser;
+                          if (currentUser == null) {
+                            return const SizedBox.shrink();
+                          }
+
+                          final isOwner = felicitup.owner.any(
+                            (owner) => owner.id == currentUser.id,
                           );
 
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(
-                              url,
-                              mode: LaunchMode.externalApplication,
-                            );
-                          } else {
-                            const playStore =
-                                "https://play.google.com/store/apps/details?id=com.whatsapp";
-                            const appStore =
-                                "https://apps.apple.com/app/whatsapp-messenger/id310633997";
-
-                            await launchUrl(
-                              Uri.parse(
-                                Platform.isAndroid ? playStore : appStore,
-                              ),
-                            );
+                          if (!isOwner) {
+                            return const SizedBox.shrink();
                           }
+
+                          return IconButton(
+                            onPressed: () async {
+                              commoBottomModal(
+                                context: context,
+                                body: Column(
+                                  children: [
+                                    Text(
+                                      'Comparte tu felicitup',
+                                      style: context.styles.header2,
+                                    ),
+                                    SizedBox(height: context.sp(12)),
+                                    Row(
+                                      children: [
+                                        SocialMediaBubble(
+                                          onTap: () async {
+                                            final encoded =
+                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}}';
+
+                                            final Uri url = Uri.parse(
+                                              "whatsapp://send?text=$encoded",
+                                            );
+
+                                            if (await canLaunchUrl(url)) {
+                                              await launchUrl(
+                                                url,
+                                                mode: LaunchMode
+                                                    .externalApplication,
+                                              );
+                                            } else {
+                                              const playStore =
+                                                  "https://play.google.com/store/apps/details?id=com.whatsapp";
+                                              const appStore =
+                                                  "https://apps.apple.com/app/whatsapp-messenger/id310633997";
+
+                                              await launchUrl(
+                                                Uri.parse(
+                                                  Platform.isAndroid
+                                                      ? playStore
+                                                      : appStore,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          icon: PhosphorIcons.whatsappLogo(),
+                                          label: 'WhatsApp',
+                                        ),
+                                        SocialMediaBubble(
+                                          onTap: () {},
+                                          icon: PhosphorIcons.facebookLogo(),
+                                          label: 'Facebook',
+                                        ),
+                                        SocialMediaBubble(
+                                          onTap: () {},
+                                          icon: PhosphorIcons.xLogo(),
+                                          label: 'X',
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            icon: Icon(
+                              Icons.share,
+                              color: Colors.black.withAlpha((.5 * 255).toInt()),
+                              size: context.sp(20),
+                            ),
+                          );
                         },
-                        icon: Icon(
-                          Icons.share,
-                          color: Colors.black.withAlpha((.5 * 255).toInt()),
-                          size: context.sp(20),
-                        ),
                       ),
                     ],
                   ),
@@ -338,6 +392,45 @@ class PastFelicitupWidget extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class SocialMediaBubble extends StatelessWidget {
+  const SocialMediaBubble({
+    super.key,
+    required this.onTap,
+    required this.icon,
+    required this.label,
+  });
+
+  final Function() onTap;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            height: context.sp(50),
+            width: context.sp(50),
+            margin: EdgeInsets.only(right: context.sp(12)),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: context.colors.white,
+            ),
+            child: PhosphorIcon(icon),
+          ),
+          SizedBox(height: context.sp(8)),
+          Text(label, style: context.styles.smallText),
+        ],
       ),
     );
   }
