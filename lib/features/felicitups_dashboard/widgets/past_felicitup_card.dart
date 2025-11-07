@@ -60,7 +60,7 @@ class PastFelicitupWidget extends StatelessWidget {
                     width: context.sp(45),
                     decoration: BoxDecoration(shape: BoxShape.circle),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(context.sp(10)),
+                      borderRadius: BorderRadius.circular(context.sp(45)),
                       child: CommonNetworkImage(
                         imageUrl: felicitup.owner.first.userImg ?? '',
                       ),
@@ -199,10 +199,12 @@ class PastFelicitupWidget extends StatelessWidget {
                                     user?.id ?? '',
                                   ),
                                 ),
-                            icon: Icon(
-                              felicitup.likes!.contains(user?.id ?? '')
-                                  ? Icons.favorite
-                                  : Icons.favorite_outline,
+                            icon: PhosphorIcon(
+                              PhosphorIcons.heart(
+                                felicitup.likes!.contains(user?.id ?? '')
+                                    ? PhosphorIconsStyle.fill
+                                    : PhosphorIconsStyle.regular,
+                              ),
                               color: felicitup.likes!.contains(user?.id ?? '')
                                   ? context.colors.error
                                   : context.colors.black.valueOpacity(.5),
@@ -210,6 +212,23 @@ class PastFelicitupWidget extends StatelessWidget {
                             ),
                           );
                         },
+                      ),
+                      Visibility(
+                        visible: felicitup.likes?.isNotEmpty ?? false,
+                        child: Row(
+                          children: [
+                            Column(
+                              children: [
+                                SizedBox(height: context.sp(3)),
+                                Text(
+                                  '${felicitup.likes?.length ?? 0}',
+                                  style: context.styles.smallText,
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: context.sp(12)),
+                          ],
+                        ),
                       ),
                       IconButton(
                         onPressed: () => context.go(
@@ -242,6 +261,7 @@ class PastFelicitupWidget extends StatelessWidget {
                             onPressed: () async {
                               commoBottomModal(
                                 context: context,
+                                noSpace: true,
                                 body: Column(
                                   children: [
                                     Text(
@@ -285,9 +305,46 @@ class PastFelicitupWidget extends StatelessWidget {
                                           label: 'WhatsApp',
                                         ),
                                         SocialMediaBubble(
-                                          onTap: () {},
+                                          onTap: () async {
+                                            final encoded =
+                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}}';
+
+                                            final fbUrl = Uri.parse(
+                                              "https://www.facebook.com/sharer/sharer.php?u=$encoded",
+                                            );
+                                            await launchUrl(
+                                              fbUrl,
+                                              mode: LaunchMode
+                                                  .externalApplication,
+                                            );
+                                          },
                                           icon: PhosphorIcons.facebookLogo(),
                                           label: 'Facebook',
+                                        ),
+                                        SocialMediaBubble(
+                                          onTap: () async {
+                                            // final uri = Uri.file(filePath);
+
+                                            // if (Platform.isAndroid) {
+                                            //   await launchUrl(
+                                            //     Uri.parse(
+                                            //       "instagram://story-camera",
+                                            //     ),
+                                            //     mode: LaunchMode
+                                            //         .externalApplication,
+                                            //   );
+                                            // } else if (Platform.isIOS) {
+                                            //   await launchUrl(
+                                            //     Uri.parse(
+                                            //       "instagram-stories://share?source_application=com.your.app",
+                                            //     ),
+                                            //     mode: LaunchMode
+                                            //         .externalApplication,
+                                            //   );
+                                            // }
+                                          },
+                                          icon: PhosphorIcons.instagramLogo(),
+                                          label: 'Instagram',
                                         ),
                                         SocialMediaBubble(
                                           onTap: () {},
@@ -413,24 +470,26 @@ class SocialMediaBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            height: context.sp(50),
-            width: context.sp(50),
-            margin: EdgeInsets.only(right: context.sp(12)),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: context.colors.white,
+      child: Container(
+        margin: EdgeInsets.only(right: context.sp(12)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              height: context.sp(50),
+              width: context.sp(50),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: context.colors.white,
+              ),
+              child: PhosphorIcon(icon),
             ),
-            child: PhosphorIcon(icon),
-          ),
-          SizedBox(height: context.sp(8)),
-          Text(label, style: context.styles.smallText),
-        ],
+            SizedBox(height: context.sp(8)),
+            Text(label, style: context.styles.smallText),
+          ],
+        ),
       ),
     );
   }

@@ -10,13 +10,18 @@ void commoBottomModal({
   bool hasBottomButton = false,
   bool changeClose = false,
   bool moreSpace = false,
+  bool noSpace = false,
   void Function()? onTap,
 }) {
   showModalBottomSheet(
     context: context,
     barrierColor: context.colors.black.valueOpacity(.2),
     constraints: BoxConstraints(
-      maxHeight: moreSpace ? context.sp(750) : context.sp(500),
+      maxHeight: noSpace
+          ? context.sp(200)
+          : moreSpace
+          ? context.sp(750)
+          : context.sp(500),
       minHeight: context.sp(10),
     ),
     enableDrag: false,

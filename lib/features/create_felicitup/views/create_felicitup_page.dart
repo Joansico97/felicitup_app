@@ -34,6 +34,16 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   @override
   void initState() {
     super.initState();
+    final state = context.read<AppBloc>().state;
+
+    final matchList = state.currentUser?.matchList ?? [];
+    final myId = state.currentUser?.id;
+    if (matchList.isNotEmpty && myId != null) {
+      final listData = matchList.where((e) => e != myId).toList();
+      context.read<CreateFelicitupBloc>().add(
+        CreateFelicitupEvent.loadFriendsData(listData),
+      );
+    }
 
     pages = [
       SelectContactsView(),
@@ -54,21 +64,6 @@ class _CreateFelicitupPageState extends State<CreateFelicitupPage> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<AppBloc, AppState>(
-          listenWhen: (prev, curr) =>
-              prev.currentUser?.matchList != curr.currentUser?.matchList,
-          listener: (_, state) {
-            final matchList = state.currentUser?.matchList ?? [];
-            final myId = state.currentUser?.id;
-            if (matchList.isNotEmpty && myId != null) {
-              final listData = matchList.where((e) => e != myId).toList();
-              context.read<CreateFelicitupBloc>().add(
-                CreateFelicitupEvent.loadFriendsData(listData),
-              );
-            }
-          },
-        ),
-
         BlocListener<CreateFelicitupBloc, CreateFelicitupState>(
           listenWhen: (previous, current) =>
               previous.isLoading != current.isLoading ||

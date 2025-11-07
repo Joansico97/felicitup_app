@@ -262,6 +262,7 @@ exports.sendFelicitup = onCall(
         const felicitupDoc = await felicitupRef.get();
 
         const taskName = felicitupDoc.data().taskName;
+
         if (taskName) {
           await deleteFelicitupTask(taskName);
         }
@@ -323,14 +324,28 @@ exports.sendFelicitup = onCall(
           scheduleTime: {seconds: delaySeconds + Math.floor(Date.now() / 1000)},
         };
 
-        const [response] = client.createTask({parent, task});
+        // El await aquí sí tiene sentido, dado que createTask es una función asíncrona que retorna una promesa.
+        // Si ves un warning o mensaje como "await has no effect", asegúrate de que no estés dentro de un .then() o función no asíncrona.
+        // Ejemplo correcto:
+        const response = await client.createTask({parent, task});
+        // Si no necesitas la respuesta, podrías quitar el await y la asignación:
+        // await client.createTask({parent, task});
+        console.log('Task response:', response);
+
+        let newTaskName = response && response.name;
+
+        if (!newTaskName && response && response.task && response.task.name) {
+          newTaskName = response.task.name;
+        }
 
         await felicitupRef.update({
           scheduledCompletionTime: felicitupData.date,
           lastUpdated: Timestamp.now(),
           scheduledBy: request.auth.uid,
-          taskName: response.name,
+          taskName: newTaskName,
         });
+
+        console.log("Task name: " + newTaskName);
 
         return {
           success: true,
