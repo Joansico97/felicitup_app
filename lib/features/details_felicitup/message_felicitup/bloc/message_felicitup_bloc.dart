@@ -25,7 +25,7 @@ class MessageFelicitupBloc
        super(MessageFelicitupState.initial()) {
     on<MessageFelicitupEvent>(
       (events, emit) => events.map(
-        loadMessages: (_) => _loadMessages(emit),
+        loadMessages: (_) => () {},
         asignCurrentChat: (event) => _asignCurrentChat(emit, event.chatId),
         sendMessage: (event) => _sendMessage(
           emit,
@@ -47,9 +47,10 @@ class MessageFelicitupBloc
   final UserRepository _userRepository;
   final ChatRepository _chatRepository;
 
-  _loadMessages(Emitter<MessageFelicitupState> emit) {}
-
-  _asignCurrentChat(Emitter<MessageFelicitupState> emit, String chatId) async {
+  Future<void> _asignCurrentChat(
+    Emitter<MessageFelicitupState> emit,
+    String chatId,
+  ) async {
     try {
       await _userRepository.asignCurrentChatId(chatId);
     } catch (e) {
@@ -57,11 +58,14 @@ class MessageFelicitupBloc
     }
   }
 
-  _setCurrentChatId(Emitter<MessageFelicitupState> emit, String chatId) async {
+  Future<void> _setCurrentChatId(
+    Emitter<MessageFelicitupState> emit,
+    String chatId,
+  ) async {
     emit(state.copyWith(currentChatId: chatId));
   }
 
-  _sendMessage(
+  Future<void> _sendMessage(
     Emitter<MessageFelicitupState> emit,
     ChatMessageModel chatMessage,
     FelicitupModel felicitup,
@@ -108,7 +112,7 @@ class MessageFelicitupBloc
     }
   }
 
-  _startListening(Emitter<MessageFelicitupState> emit, String chatId) {
+  void _startListening(Emitter<MessageFelicitupState> emit, String chatId) {
     _chatMessagesSubscription = _felicitupRepository
         .getChatMessages(chatId)
         .listen((either) {

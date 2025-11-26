@@ -94,21 +94,21 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     return {'first': parts.first, 'last': parts.sublist(1).join(' ')};
   }
 
-  _changeLoading(Emitter<RegisterState> emit) {
+  void _changeLoading(Emitter<RegisterState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
 
-  _changeStatus(Emitter<RegisterState> emit, RegisterStatus status) {
+  void _changeStatus(Emitter<RegisterState> emit, RegisterStatus status) {
     emit(state.copyWith(status: status));
   }
 
-  _previousStep(Emitter<RegisterState> emit) {
+  void _previousStep(Emitter<RegisterState> emit) {
     if (state.currentStep > 0) {
       emit(state.copyWith(currentStep: state.currentStep - 1));
     }
   }
 
-  _initRegister(
+  void _initRegister(
     Emitter<RegisterState> emit,
     String name,
     String lastName,
@@ -131,7 +131,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     );
   }
 
-  _savePhoneInfo(
+  Future<void> _savePhoneInfo(
     Emitter<RegisterState> emit,
     String phone,
     String isoCode,
@@ -187,7 +187,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  _initValidation(Emitter<RegisterState> emit) async {
+  Future<void> _initValidation(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true, status: RegisterStatus.initial));
 
     try {
@@ -213,7 +213,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  _verificationCompleted(Emitter<RegisterState> emit, String verificationId) {
+  void _verificationCompleted(
+    Emitter<RegisterState> emit,
+    String verificationId,
+  ) {
     emit(
       state.copyWith(
         verificationId: verificationId,
@@ -223,7 +226,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     );
   }
 
-  _verificationFailed(Emitter<RegisterState> emit, String error) {
+  void _verificationFailed(Emitter<RegisterState> emit, String error) {
     emit(
       state.copyWith(
         isLoading: false,
@@ -234,7 +237,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     );
   }
 
-  _validateCode(Emitter<RegisterState> emit, String code) async {
+  Future<Null> _validateCode(Emitter<RegisterState> emit, String code) async {
     emit(state.copyWith(isLoading: true, status: RegisterStatus.initial));
     try {
       final response = await _authRepository.confirmVerification(
@@ -273,7 +276,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  _setUserInfo(
+  Future<void> _setUserInfo(
     Emitter<RegisterState> emit,
     UserCredential userCredential,
   ) async {
@@ -320,7 +323,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  _registerEvent(Emitter<RegisterState> emit) async {
+  void _registerEvent(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -357,7 +360,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  _googleLoginEvent(Emitter<RegisterState> emit) async {
+  void _googleLoginEvent(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.signInWithGoogle();
@@ -423,7 +426,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  _appleLoginEvent(Emitter<RegisterState> emit) async {
+  void _appleLoginEvent(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.signInWithApple();
@@ -493,7 +496,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  _finishEvent(Emitter<RegisterState> emit) async {
+  Future<void> _finishEvent(Emitter<RegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
     await Future.delayed(const Duration(seconds: 3), () {});
     emit(state.copyWith(isLoading: false, status: RegisterStatus.finished));
@@ -514,7 +517,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  _setUserInfoRegister(UserModel user) async {
+  Future<void> _setUserInfoRegister(UserModel user) async {
     await _firestore.collection(AppConstants.usersCollection).doc(user.id).set({
       'id': user.id,
       'firstName': user.firstName,

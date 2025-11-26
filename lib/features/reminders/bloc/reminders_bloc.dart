@@ -19,9 +19,9 @@ class RemindersBloc extends Bloc<RemindersEvent, RemindersState> {
        super(RemindersState.initial()) {
     on<RemindersEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
-        createSingleChat:
-            (event) => _createSingleChat(emit, event.singleChatData),
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
+        createSingleChat: (event) =>
+            _createSingleChat(emit, event.singleChatData),
         deleteBirthdateAlert: (event) => _deleteBirthdateAlert(emit, event.id),
       ),
     );
@@ -30,11 +30,7 @@ class RemindersBloc extends Bloc<RemindersEvent, RemindersState> {
   final UserRepository _userRepository;
   final ChatRepository _chatRepository;
 
-  _changeLoading(Emitter<RemindersState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _createSingleChat(
+  Future<Null> _createSingleChat(
     Emitter<RemindersState> emit,
     SingleChatModel singleChatData,
   ) async {
@@ -66,7 +62,10 @@ class RemindersBloc extends Bloc<RemindersEvent, RemindersState> {
     }
   }
 
-  _deleteBirthdateAlert(Emitter<RemindersState> emit, String id) async {
+  Future<Null> _deleteBirthdateAlert(
+    Emitter<RemindersState> emit,
+    String id,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final reponse = await _userRepository.deleteReminder(id);

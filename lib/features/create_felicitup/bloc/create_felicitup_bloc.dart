@@ -29,17 +29,18 @@ class CreateFelicitupBloc
        super(CreateFelicitupState.initial()) {
     on<CreateFelicitupEvent>(
       (events, emit) => events.map(
-        deleteCurrentFelicitup: (_) => _deleteCurrentFelicitup(emit),
+        deleteCurrentFelicitup: (_) => emit(CreateFelicitupState.initial()),
         previousStep: (_) => _previousStep(emit),
         nextStep: (event) => _nextStep(emit, event.lenght),
         jumpToStep: (event) => _jumpToStep(emit, event.index),
-        toggleHasVideo: (_) => _toggleHasVideo(emit),
-        toggleHasBote: (_) => _toggleHasBote(emit),
+        toggleHasVideo: (_) => emit(state.copyWith(hasVideo: !state.hasVideo)),
+        toggleHasBote: (_) => emit(state.copyWith(hasBote: !state.hasBote)),
         changeBoteQuantity: (event) =>
-            _changeBoteQuantity(emit, event.quantity),
-        changeEventReason: (event) => _changeEventReason(emit, event.reason),
+            emit(state.copyWith(boteQuantity: event.quantity)),
+        changeEventReason: (event) =>
+            emit(state.copyWith(eventReason: event.reason)),
         changeFelicitupDate: (event) =>
-            _changeFelicitupDate(emit, event.felicitupDate),
+            emit(state.copyWith(selectedDate: event.felicitupDate)),
         changeFelicitupOwner: (event) =>
             _changeFelicitupOwner(emit, event.felicitupOwner),
         addParticipant: (event) => _addParticipant(emit, event.participant),
@@ -57,11 +58,11 @@ class CreateFelicitupBloc
   final UserRepository _userRepository;
   final FelicitupRepository _felicitupRepository;
 
-  _previousStep(Emitter<CreateFelicitupState> emit) {
+  void _previousStep(Emitter<CreateFelicitupState> emit) {
     emit(state.copyWith(steperIndex: state.steperIndex - 1));
   }
 
-  _nextStep(Emitter<CreateFelicitupState> emit, int lenght) {
+  void _nextStep(Emitter<CreateFelicitupState> emit, int lenght) {
     switch (state.steperIndex) {
       case 0:
         if ((state.felicitupOwner.length == 1 &&
@@ -127,7 +128,7 @@ class CreateFelicitupBloc
     }
   }
 
-  _jumpToStep(Emitter<CreateFelicitupState> emit, int index) {
+  void _jumpToStep(Emitter<CreateFelicitupState> emit, int index) {
     switch (index) {
       case 0:
         emit(state.copyWith(steperIndex: index));
@@ -189,31 +190,10 @@ class CreateFelicitupBloc
     }
   }
 
-  _deleteCurrentFelicitup(Emitter<CreateFelicitupState> emit) {
-    emit(CreateFelicitupState.initial());
-  }
-
-  _changeEventReason(Emitter<CreateFelicitupState> emit, String reason) {
-    emit(state.copyWith(eventReason: reason));
-  }
-
-  _changeFelicitupDate(Emitter<CreateFelicitupState> emit, DateTime date) {
-    emit(state.copyWith(selectedDate: date));
-  }
-
-  _toggleHasVideo(Emitter<CreateFelicitupState> emit) {
-    emit(state.copyWith(hasVideo: !state.hasVideo));
-  }
-
-  _toggleHasBote(Emitter<CreateFelicitupState> emit) {
-    emit(state.copyWith(hasBote: !state.hasBote));
-  }
-
-  _changeBoteQuantity(Emitter<CreateFelicitupState> emit, int quantity) {
-    emit(state.copyWith(boteQuantity: quantity));
-  }
-
-  _changeFelicitupOwner(Emitter<CreateFelicitupState> emit, OwnerModel owner) {
+  void _changeFelicitupOwner(
+    Emitter<CreateFelicitupState> emit,
+    OwnerModel owner,
+  ) {
     final List<OwnerModel> owners = [...state.felicitupOwner];
     bool exist = owners.any((element) => element == owner);
     if (!exist) {
@@ -224,7 +204,7 @@ class CreateFelicitupBloc
     emit(state.copyWith(felicitupOwner: owners));
   }
 
-  _addParticipant(
+  void _addParticipant(
     Emitter<CreateFelicitupState> emit,
     InvitedModel participant,
   ) {
@@ -245,7 +225,7 @@ class CreateFelicitupBloc
     }
   }
 
-  _loadFriendsData(
+  Future<void> _loadFriendsData(
     Emitter<CreateFelicitupState> emit,
     List<String> usersIds,
   ) async {
@@ -276,7 +256,7 @@ class CreateFelicitupBloc
     }
   }
 
-  _createFelicitup(
+  void _createFelicitup(
     Emitter<CreateFelicitupState> emit,
     String felicitupMessage,
   ) async {
@@ -333,6 +313,7 @@ class CreateFelicitupBloc
         (l) {
           emit(state.copyWith(isLoading: false));
           unawaited(showErrorModal(l.message));
+          return null;
         },
         (r) async {
           add(CreateFelicitupEvent.sendNotification(felicitupId));
@@ -340,15 +321,17 @@ class CreateFelicitupBloc
           await _firebaseFunctionsHelper.sendFelicitup(
             felicitupId: felicitupId,
           );
+          return;
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
       showErrorModal('Ocurrió un error al crear la felicitup');
     }
+    return null;
   }
 
-  _sendNotification(String felicitupId) async {
+  Future<void> _sendNotification(String felicitupId) async {
     try {
       List<InvitedModel> participants = [...state.invitedContacts];
       List<String> ids = participants.map((e) => e.id as String).toList();
@@ -373,7 +356,7 @@ class CreateFelicitupBloc
     }
   }
 
-  _searchEvent(Emitter<CreateFelicitupState> emit, String value) {
+  void _searchEvent(Emitter<CreateFelicitupState> emit, String value) {
     final listProv = state.friendList.where((element) {
       return element.fullName != null &&
           value

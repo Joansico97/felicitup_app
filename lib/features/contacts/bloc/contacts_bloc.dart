@@ -35,11 +35,14 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
 
   final UserRepository _userRepository;
 
-  _changeIsFirstTime(Emitter<ContactsState> emit) {
+  void _changeIsFirstTime(Emitter<ContactsState> emit) {
     emit(state.copyWith(isFirstTime: false));
   }
 
-  _getInfoSingleContact(Emitter<ContactsState> emit, String phone) async {
+  Future<void> _getInfoSingleContact(
+    Emitter<ContactsState> emit,
+    String phone,
+  ) async {
     emit(state.copyWith(isLoading: true, errorMessage: null));
     try {
       final response = await _userRepository.getUserDataByPhone(phone);
@@ -68,7 +71,7 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
     }
   }
 
-  _addManualContact(
+  Future<void> _addManualContact(
     Emitter<ContactsState> emit,
     Map<String, dynamic> user,
     String isoCode,

@@ -35,7 +35,7 @@ class FelicitupsDashboardBloc
        super(FelicitupsDashboardState.initial()) {
     on<FelicitupsDashboardEvent>(
       (events, emit) => events.map(
-        changeIndex: (event) => _changeIndex(emit, event.index),
+        changeIndex: (event) => emit(state.copyWith(currentIndex: event.index)),
         sortPastFelicitups: (event) =>
             _sortPastFelicitups(emit, event.index, event.userId),
         deleteFelicitup: (event) =>
@@ -66,11 +66,7 @@ class FelicitupsDashboardBloc
   final FirebaseAuth _firebaseAuth;
   final LocalStorageHelper _localStorageHelper;
 
-  _changeIndex(Emitter<FelicitupsDashboardState> emit, int index) {
-    emit(state.copyWith(currentIndex: index));
-  }
-
-  _sortPastFelicitups(
+  void _sortPastFelicitups(
     Emitter<FelicitupsDashboardState> emit,
     int index,
     String userId,
@@ -102,7 +98,7 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _deleteFelicitup(
+  Future<void> _deleteFelicitup(
     Emitter<FelicitupsDashboardState> emit,
     String felicitupId,
     String chatId,
@@ -118,7 +114,7 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _setLike(
+  Future<void> _setLike(
     Emitter<FelicitupsDashboardState> emit,
     String felicitupId,
     String userId,
@@ -133,7 +129,7 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _createSingleChat(
+  Future<Null> _createSingleChat(
     Emitter<FelicitupsDashboardState> emit,
     SingleChatModel singleChatData,
   ) async {
@@ -165,7 +161,7 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _deleteBirthdateAlert(
+  Future<void> _deleteBirthdateAlert(
     Emitter<FelicitupsDashboardState> emit,
     String id,
   ) async {
@@ -178,7 +174,7 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _deletePastFelicitup(
+  Future<void> _deletePastFelicitup(
     Emitter<FelicitupsDashboardState> emit,
     String felicitupId,
   ) async {
@@ -192,7 +188,7 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _startListening(Emitter<FelicitupsDashboardState> emit) {
+  void _startListening(Emitter<FelicitupsDashboardState> emit) {
     final userId = _firebaseAuth.currentUser!.uid;
     _felicitupSubscription = _felicitupRepository
         .streamFelicitups(userId)
@@ -210,7 +206,9 @@ class FelicitupsDashboardBloc
         });
   }
 
-  _getRememberStatus(Emitter<FelicitupsDashboardState> emit) async {
+  Future<void> _getRememberStatus(
+    Emitter<FelicitupsDashboardState> emit,
+  ) async {
     final data = await _localStorageHelper.read(
       key: LocalStorageConstants.userKey,
     );
@@ -226,7 +224,9 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _closeRememberSection(Emitter<FelicitupsDashboardState> emit) async {
+  Future<void> _closeRememberSection(
+    Emitter<FelicitupsDashboardState> emit,
+  ) async {
     await _localStorageHelper.update(
       key: LocalStorageConstants.userKey,
       value: jsonEncode('false'),

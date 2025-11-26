@@ -13,19 +13,21 @@ part 'wish_list_state.dart';
 part 'wish_list_bloc.freezed.dart';
 
 class WishListBloc extends Bloc<WishListEvent, WishListState> {
-  WishListBloc({
-    required UserRepository userRepository,
-  })  : _userRepository = userRepository,
-        super(WishListState.initial()) {
+  WishListBloc({required UserRepository userRepository})
+    : _userRepository = userRepository,
+      super(WishListState.initial()) {
     on<WishListEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
-        editGiftItem: (_) => _editGiftItem(emit),
-        createGiftItem: (_) => _createGiftItem(emit),
-        setProductName: (event) => _setProductName(emit, event.productName),
-        setProductDescription: (event) => _setProductDescription(emit, event.productDescription),
-        setProductPrice: (event) => _setProductPrice(emit, event.productPrice),
-        setLinks: (event) => _setLinks(emit, event.links),
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
+        editGiftItem: (_) => emit(state.copyWith(isEdit: !state.isEdit)),
+        createGiftItem: (_) => emit(state.copyWith(isCreate: !state.isCreate)),
+        setProductName: (event) =>
+            emit(state.copyWith(productName: event.productName)),
+        setProductDescription: (event) =>
+            emit(state.copyWith(productDescription: event.productDescription)),
+        setProductPrice: (event) =>
+            emit(state.copyWith(productPrice: event.productPrice)),
+        setLinks: (event) => emit(state.copyWith(links: event.links)),
         createGiftItemInfo: (event) => _createGiftItemInfo(emit),
         editGiftItemInfo: (event) => _editGiftItemInfo(event.item),
         deleteGiftItemInfo: (event) => _deleteGiftItemInfo(emit, event.id),
@@ -37,37 +39,10 @@ class WishListBloc extends Bloc<WishListEvent, WishListState> {
 
   final UserRepository _userRepository;
 
-  StreamSubscription<Either<ApiException, List<GiftcarModel>>>? _giftcardListSubscription;
+  StreamSubscription<Either<ApiException, List<GiftcarModel>>>?
+  _giftcardListSubscription;
 
-  _changeLoading(Emitter<WishListState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _editGiftItem(Emitter<WishListState> emit) {
-    emit(state.copyWith(isEdit: !state.isEdit));
-  }
-
-  _createGiftItem(Emitter<WishListState> emit) {
-    emit(state.copyWith(isCreate: !state.isCreate));
-  }
-
-  _setProductName(Emitter<WishListState> emit, String productName) {
-    emit(state.copyWith(productName: productName));
-  }
-
-  _setProductDescription(Emitter<WishListState> emit, String productDescription) {
-    emit(state.copyWith(productDescription: productDescription));
-  }
-
-  _setProductPrice(Emitter<WishListState> emit, String productPrice) {
-    emit(state.copyWith(productPrice: productPrice));
-  }
-
-  _setLinks(Emitter<WishListState> emit, List<String> links) {
-    emit(state.copyWith(links: links));
-  }
-
-  _createGiftItemInfo(Emitter<WishListState> emit) async {
+  Future<void> _createGiftItemInfo(Emitter<WishListState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final item = GiftcarModel(
@@ -85,12 +60,13 @@ class WishListBloc extends Bloc<WishListEvent, WishListState> {
     }
   }
 
-  _editGiftItemInfo(GiftcarModel itmeOriginal) async {
+  Future<void> _editGiftItemInfo(GiftcarModel itmeOriginal) async {
     try {
       final item = GiftcarModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         productName: state.productName ?? itmeOriginal.productName,
-        productDescription: state.productDescription ?? itmeOriginal.productDescription,
+        productDescription:
+            state.productDescription ?? itmeOriginal.productDescription,
         productValue: state.productPrice ?? itmeOriginal.productValue,
         links: state.links ?? itmeOriginal.links,
       );
@@ -106,7 +82,10 @@ class WishListBloc extends Bloc<WishListEvent, WishListState> {
     }
   }
 
-  _deleteGiftItemInfo(Emitter<WishListState> emit, String id) async {
+  Future<void> _deleteGiftItemInfo(
+    Emitter<WishListState> emit,
+    String id,
+  ) async {
     try {
       await _userRepository.deleteGiftItem(id);
     } catch (e) {
@@ -114,18 +93,20 @@ class WishListBloc extends Bloc<WishListEvent, WishListState> {
     }
   }
 
-  _startListening(Emitter<WishListState> emit) {
-    _giftcardListSubscription = _userRepository.getGiftcardListStream().listen((either) {
-      either.fold(
-        (error) {},
-        (listGiftcard) {
-          add(WishListEvent.recivedData(listGiftcard));
-        },
-      );
+  void _startListening(Emitter<WishListState> emit) {
+    _giftcardListSubscription = _userRepository.getGiftcardListStream().listen((
+      either,
+    ) {
+      either.fold((error) {}, (listGiftcard) {
+        add(WishListEvent.recivedData(listGiftcard));
+      });
     });
   }
 
-  Future<void> _recivedData(Emitter<WishListState> emit, List<GiftcarModel> listGiftcard) async {
+  Future<void> _recivedData(
+    Emitter<WishListState> emit,
+    List<GiftcarModel> listGiftcard,
+  ) async {
     emit(state.copyWith(listGiftcard: listGiftcard));
   }
 

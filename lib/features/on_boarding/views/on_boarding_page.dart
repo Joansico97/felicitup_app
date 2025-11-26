@@ -11,7 +11,7 @@ import 'package:go_router/go_router.dart';
 class OnBoardingPage extends StatelessWidget {
   const OnBoardingPage({super.key});
 
-  _getBackgroundImage(int index) {
+  String _getBackgroundImage(int index) {
     switch (index) {
       case 0:
         return Assets.images.onBoarding.onBoardingFelicitup01.path;
@@ -33,14 +33,16 @@ class OnBoardingPage extends StatelessWidget {
         return Assets.images.onBoarding.onBoardingFelicitup09.path;
       case 9:
         return Assets.images.onBoarding.onBoardingFelicitup10.path;
+      default:
+        return '';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<OnBoardingBloc, OnBoardingState>(
-      listenWhen:
-          (previous, current) => previous.finishEnum != current.finishEnum,
+      listenWhen: (previous, current) =>
+          previous.finishEnum != current.finishEnum,
       listener: (_, state) {
         if (state.finishEnum == OnBoardingFinishEnum.finish) {
           context.go(RouterPaths.felicitupsDashboard);
@@ -57,9 +59,8 @@ class OnBoardingPage extends StatelessWidget {
                 builder: (_, state) {
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
-                    transitionBuilder:
-                        (widget, animation) =>
-                            FadeTransition(opacity: animation, child: widget),
+                    transitionBuilder: (widget, animation) =>
+                        FadeTransition(opacity: animation, child: widget),
                     child: Image.asset(
                       key: ValueKey(state.currentPage),
                       _getBackgroundImage(state.currentPage),
@@ -82,10 +83,9 @@ class OnBoardingPage extends StatelessWidget {
                           height: context.sp(50),
                           width: context.sp(150),
                           child: PrimaryButton(
-                            label:
-                                state.currentPage != 9
-                                    ? 'Continuar'
-                                    : 'Empezar',
+                            label: state.currentPage != 9
+                                ? 'Continuar'
+                                : 'Empezar',
                             onTap: () {
                               context.read<OnBoardingBloc>().add(
                                 const OnBoardingEvent.changeIndex(),

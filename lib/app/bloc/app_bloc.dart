@@ -70,16 +70,16 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   final FirebaseMessaging _firebaseMessaging;
   final UpdateServiceHelper _updateService;
 
-  _onAppStarted(Emitter<AppState> emit) {
+  void _onAppStarted(Emitter<AppState> emit) {
     add(const AppEvent.initializeNotifications());
     add(const AppEvent.loadUserData());
   }
 
-  _changeLoadContacts(Emitter<AppState> emit) {
+  void _changeLoadContacts(Emitter<AppState> emit) {
     emit(state.copyWith(reloadContacts: true));
   }
 
-  _loadContacts(Emitter<AppState> emit) async {
+  Future<void> _loadContacts(Emitter<AppState> emit) async {
     emit(state.copyWith(isLoadingContacts: true));
 
     try {
@@ -195,7 +195,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     });
   }
 
-  _checkAppStatus(Emitter<AppState> emit) async {
+  Future<void> _checkAppStatus(Emitter<AppState> emit) async {
     try {
       final response = await _updateService.checkVersion(
         rootNavigatorKey.currentContext!,
@@ -210,11 +210,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  _closeRememberSection(Emitter<AppState> emit) {
+  void _closeRememberSection(Emitter<AppState> emit) {
     emit(state.copyWith(showRememberSection: false));
   }
 
-  _loadUserData(Emitter<AppState> emit) async {
+  void _loadUserData(Emitter<AppState> emit) async {
     emit(state.copyWith(isLoading: true));
 
     final userId = _firebaseAuth.currentUser?.uid;
@@ -316,7 +316,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  _loadProvUserData(
+  void _loadProvUserData(
     Emitter<AppState> emit,
     Map<String, dynamic> federatedData,
   ) {
@@ -334,7 +334,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     emit(state.copyWith(pendingNotificationPayload: null));
   }
 
-  _requestManualPermissions(Emitter<AppState> emit) async {
+  Future<void> _requestManualPermissions(Emitter<AppState> emit) async {
     try {
       final settings = await _firebaseMessaging.getNotificationSettings();
 
@@ -348,7 +348,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  _requestManualContactsPermissions(Emitter<AppState> emit) async {
+  void _requestManualContactsPermissions(Emitter<AppState> emit) async {
     try {
       if (state.contactsPermissionStatus.isGranted) {
         final currentUser = state.currentUser;
@@ -361,7 +361,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  _resetContactsPermissions(Emitter<AppState> emit) async {
+  void _resetContactsPermissions(Emitter<AppState> emit) async {
     try {
       final response = await Permission.contacts.request();
 
@@ -390,7 +390,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  _deleterPermissions(Emitter<AppState> emit) async {
+  void _deleterPermissions(Emitter<AppState> emit) async {
     try {
       final settings = await _firebaseMessaging.getNotificationSettings();
 
@@ -404,7 +404,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  _initializeNotifications(Emitter<AppState> emit) async {
+  void _initializeNotifications(Emitter<AppState> emit) async {
     try {
       final settings = await _firebaseMessaging.getNotificationSettings();
 
@@ -426,7 +426,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     emit(state.copyWith(status: AuthorizationStatus.authorized));
   }
 
-  _logout(Emitter<AppState> emit) async {
+  void _logout(Emitter<AppState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       await _userRepository.asignCurrentChatId('');
@@ -438,7 +438,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  _getFCMToken() async {
+  void _getFCMToken() async {
     try {
       if (Platform.isIOS) {
         final apnToken = await _firebaseMessaging.getAPNSToken();
@@ -474,7 +474,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  handleRemoteMessage(RemoteMessage message, Emitter<AppState> emit) {
+  void handleRemoteMessage(RemoteMessage message, Emitter<AppState> emit) {
     if (message.notification == null) {
       logger.info('Received message without notification data');
       return;
@@ -544,7 +544,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     });
   }
 
-  requestPermission(Emitter<AppState> emit) async {
+  Future<void> requestPermission(Emitter<AppState> emit) async {
     try {
       final settings = await _firebaseMessaging.requestPermission(
         alert: true,
@@ -574,7 +574,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  initializeLocalNotifications() async {
+  Future<void> initializeLocalNotifications() async {
     try {
       final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
       const initializationSettingsAndroid = AndroidInitializationSettings(
@@ -598,7 +598,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  darwinShowNotification(
+  void darwinShowNotification(
     int id,
     String? title,
     String? body,
@@ -607,7 +607,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     showLocalNotification(id: id, title: title, body: body, data: data);
   }
 
-  showLocalNotification({
+  void showLocalNotification({
     required int id,
     String? title,
     String? body,

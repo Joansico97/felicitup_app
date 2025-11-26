@@ -9,11 +9,9 @@ class FrequentQuestionsBloc
     extends Bloc<FrequentQuestionsEvent, FrequentQuestionsState> {
   FrequentQuestionsBloc() : super(FrequentQuestionsState.initial()) {
     on<FrequentQuestionsEvent>(
-      (events, emit) => events.map(changeLoading: (_) => changeLoading(emit)),
+      (events, emit) => events.map(
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
+      ),
     );
-  }
-
-  changeLoading(Emitter<FrequentQuestionsState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
   }
 }

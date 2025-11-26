@@ -13,5 +13,5 @@ class InitBloc extends Bloc<InitEvent, InitState> {
     );
   }
 
-  _checkAppStatus(Emitter<InitState> emit) async {}
+  Future<void> _checkAppStatus(Emitter<InitState> emit) async {}
 }

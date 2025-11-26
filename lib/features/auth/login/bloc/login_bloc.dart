@@ -36,15 +36,19 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
   final AuthRepository _authRepository;
   final FirebaseFirestore _firestore;
 
-  _changeLoading(Emitter<LoginState> emit) {
+  void _changeLoading(Emitter<LoginState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
 
-  _changeFirstTimeRedirect(Emitter<LoginState> emit) {
+  void _changeFirstTimeRedirect(Emitter<LoginState> emit) {
     emit(state.copyWith(isFirstTime: false));
   }
 
-  _loginEvent(Emitter<LoginState> emit, String email, String password) async {
+  Future<Null> _loginEvent(
+    Emitter<LoginState> emit,
+    String email,
+    String password,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.login(
@@ -71,7 +75,7 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
     }
   }
 
-  _googleLoginEvent(Emitter<LoginState> emit) async {
+  Future<Future<Null>?>? _googleLoginEvent(Emitter<LoginState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.signInWithGoogle();
@@ -85,6 +89,7 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
               errorMessage: l.message,
             ),
           );
+          return null;
         },
         (r) async {
           bool exist = await checkUserExist(email: r.user?.email ?? '');
@@ -115,14 +120,16 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
               state.copyWith(isLoading: false, status: LoginStatus.federated),
             );
           }
+          return null;
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+    return null;
   }
 
-  _setUserInfo(Emitter<LoginState> emit, UserModel user) async {
+  Future<void> _setUserInfo(Emitter<LoginState> emit, UserModel user) async {
     await _firestore.collection(AppConstants.usersCollection).doc(user.id).set({
       'id': user.id,
       'firstName': user.firstName,
@@ -142,7 +149,7 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
     });
   }
 
-  _appleLoginEvent(Emitter<LoginState> emit) async {
+  Future<Future<Null>?>? _appleLoginEvent(Emitter<LoginState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.signInWithApple();
@@ -156,6 +163,7 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
               errorMessage: l.message,
             ),
           );
+          return null;
         },
         (r) async {
           final data = r['credential'] as UserCredential?;
@@ -169,14 +177,16 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
               state.copyWith(isLoading: false, status: LoginStatus.federated),
             );
           }
+          return null;
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+    return null;
   }
 
-  _changeEvent(Emitter<LoginState> emit) async {
+  Future<void> _changeEvent(Emitter<LoginState> emit) async {
     emit(state.copyWith(status: LoginStatus.inProgress));
   }
 

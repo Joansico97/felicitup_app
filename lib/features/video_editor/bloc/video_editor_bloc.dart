@@ -27,7 +27,8 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
        super(VideoEditorState.initial()) {
     on<VideoEditorEvent>(
       (events, emit) => events.map(
-        changeLoading: (event) => _changeLoading(emit),
+        changeLoading: (event) =>
+            emit(state.copyWith(isLoading: !state.isLoading)),
         setUrlVideo: (event) => _setUrlVideo(emit, event.url),
         getFelicitupInfo: (event) => _getFelicitupInfo(emit, event.felicitupId),
         uploadUserVideo: (event) => _uploadUserVideo(
@@ -74,16 +75,15 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
   final FirebaseAuth _firebaseAuth;
   final FirebaseFunctionsHelper _firebaseFunctionsHelper;
 
-  _changeLoading(Emitter<VideoEditorState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _setUrlVideo(Emitter<VideoEditorState> emit, String url) {
+  void _setUrlVideo(Emitter<VideoEditorState> emit, String url) {
     add(VideoEditorEvent.initializeVideoController(url));
     emit(state.copyWith(currentSelectedVideo: url));
   }
 
-  _getFelicitupInfo(Emitter<VideoEditorState> emit, String felicitupId) async {
+  Future<void> _getFelicitupInfo(
+    Emitter<VideoEditorState> emit,
+    String felicitupId,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final result = await _felicitupRepository.getFelicitupById(felicitupId);
@@ -98,7 +98,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _normalizeVideo(
+  Future<void> _normalizeVideo(
     Emitter<VideoEditorState> emit, {
     required String url,
     required String userId,
@@ -115,7 +115,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _uploadUserVideo(
+  Future<void> _uploadUserVideo(
     Emitter<VideoEditorState> emit,
     String felicitupId,
     File file,
@@ -160,7 +160,10 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _initializeVideoController(Emitter<VideoEditorState> emit, String url) async {
+  Future<void> _initializeVideoController(
+    Emitter<VideoEditorState> emit,
+    String url,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final videoPlayerController = VideoPlayerController.networkUrl(
@@ -194,7 +197,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _disposeVideoController(Emitter<VideoEditorState> emit) {
+  void _disposeVideoController(Emitter<VideoEditorState> emit) {
     emit(state.copyWith(isLoading: true));
     try {
       state.videoPlayerController?.dispose();
@@ -204,7 +207,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _generateThumbnail(String filePath) async {
+  Future<void> _generateThumbnail(String filePath) async {
     try {
       await _firebaseFunctionsHelper.generateThumbnail(
         filePath: filePath,
@@ -215,7 +218,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _updateParticipantInfo(String felicitupId, String url) async {
+  Future<void> _updateParticipantInfo(String felicitupId, String url) async {
     try {
       await _felicitupRepository.updateVideoData(felicitupId, url);
     } catch (e) {
@@ -223,19 +226,19 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _setDuraton(Emitter<VideoEditorState> emit, Duration duration) {
+  void _setDuraton(Emitter<VideoEditorState> emit, Duration duration) {
     emit(state.copyWith(duration: duration));
   }
 
-  _setPosition(Emitter<VideoEditorState> emit, Duration position) {
+  void _setPosition(Emitter<VideoEditorState> emit, Duration position) {
     emit(state.copyWith(position: position));
   }
 
-  _changeFullScreen(Emitter<VideoEditorState> emit) {
+  void _changeFullScreen(Emitter<VideoEditorState> emit) {
     emit(state.copyWith(isFullScreen: !state.isFullScreen));
   }
 
-  _reportUserVideo(
+  Future<void> _reportUserVideo(
     Emitter<VideoEditorState> emit,
     String felicitupId,
     String userId,
@@ -266,7 +269,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     return super.close();
   }
 
-  _sendNotification(
+  Future<void> _sendNotification(
     Emitter<VideoEditorState> emit,
     String userId,
     String userName,

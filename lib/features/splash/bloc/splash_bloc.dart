@@ -8,11 +8,9 @@ part 'splash_bloc.freezed.dart';
 class SplashBloc extends Bloc<SplashEvent, SplashState> {
   SplashBloc() : super(SplashState.initial()) {
     on<SplashEvent>(
-      (events, emit) => events.map(changeLoading: (_) => _changeLoading(emit)),
+      (events, emit) => events.map(
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
+      ),
     );
-  }
-
-  _changeLoading(Emitter<SplashState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
   }
 }

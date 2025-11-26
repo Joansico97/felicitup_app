@@ -18,8 +18,6 @@ Future<void> initConfig() async {
 }
 
 Future<void> initObservers() async {
-  /// Initialize the [BlocObserver]. This will allow us to observe all Blocs and their changes.
-  /// This is useful for debugging and logging purposes.
   Bloc.observer = AppObserver();
 }
 

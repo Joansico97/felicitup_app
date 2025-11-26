@@ -10,18 +10,22 @@ part 'details_past_felicitup_dashboard_state.dart';
 part 'details_past_felicitup_dashboard_bloc.freezed.dart';
 
 class DetailsPastFelicitupDashboardBloc
-    extends Bloc<DetailsPastFelicitupDashboardEvent, DetailsPastFelicitupDashboardState> {
+    extends
+        Bloc<
+          DetailsPastFelicitupDashboardEvent,
+          DetailsPastFelicitupDashboardState
+        > {
   DetailsPastFelicitupDashboardBloc({
     required FelicitupRepository felicitupRepository,
     required UserRepository userRepository,
-  })  : _felicitupRepository = felicitupRepository,
-        _userRepository = userRepository,
-        super(DetailsPastFelicitupDashboardState.initial()) {
+  }) : _felicitupRepository = felicitupRepository,
+       _userRepository = userRepository,
+       super(DetailsPastFelicitupDashboardState.initial()) {
     on<DetailsPastFelicitupDashboardEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
         changeCurrentIndex: (event) => _changeCurrentIndex(emit, event.index),
-        noEvent: (_) => _noEvent(),
+        noEvent: (_) => () {},
         getFelicitupInfo: (event) => _getFelicitupInfo(emit, event.felicitupId),
         asignCurrentChat: (event) => _asignCurrentChat(emit, event.chatId),
       ),
@@ -31,17 +35,21 @@ class DetailsPastFelicitupDashboardBloc
   final FelicitupRepository _felicitupRepository;
   final UserRepository _userRepository;
 
-  _noEvent() {}
-
-  _changeLoading(Emitter<DetailsPastFelicitupDashboardState> emit) {
+  void _changeLoading(Emitter<DetailsPastFelicitupDashboardState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
 
-  _changeCurrentIndex(Emitter<DetailsPastFelicitupDashboardState> emit, int index) {
+  void _changeCurrentIndex(
+    Emitter<DetailsPastFelicitupDashboardState> emit,
+    int index,
+  ) {
     emit(state.copyWith(currentIndex: index));
   }
 
-  _getFelicitupInfo(Emitter<DetailsPastFelicitupDashboardState> emit, String felicitupId) async {
+  Future<void> _getFelicitupInfo(
+    Emitter<DetailsPastFelicitupDashboardState> emit,
+    String felicitupId,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -52,10 +60,7 @@ class DetailsPastFelicitupDashboardBloc
           await showErrorModal(l.message);
         },
         (r) {
-          emit(state.copyWith(
-            isLoading: false,
-            felicitup: r,
-          ));
+          emit(state.copyWith(isLoading: false, felicitup: r));
         },
       );
     } catch (e) {
@@ -64,7 +69,10 @@ class DetailsPastFelicitupDashboardBloc
     }
   }
 
-  _asignCurrentChat(Emitter<DetailsPastFelicitupDashboardState> emit, String chatId) async {
+  Future<void> _asignCurrentChat(
+    Emitter<DetailsPastFelicitupDashboardState> emit,
+    String chatId,
+  ) async {
     try {
       await _userRepository.asignCurrentChatId(chatId);
     } catch (e) {

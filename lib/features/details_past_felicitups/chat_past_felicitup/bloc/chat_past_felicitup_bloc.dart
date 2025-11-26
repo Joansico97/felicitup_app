@@ -44,7 +44,10 @@ class ChatPastFelicitupBloc
   final UserRepository _userRepository;
   final ChatRepository _chatRepository;
 
-  _asignCurrentChat(Emitter<ChatPastFelicitupState> emit, String chatId) async {
+  Future<void> _asignCurrentChat(
+    Emitter<ChatPastFelicitupState> emit,
+    String chatId,
+  ) async {
     try {
       await _userRepository.asignCurrentChatId(chatId);
     } catch (e) {
@@ -52,7 +55,7 @@ class ChatPastFelicitupBloc
     }
   }
 
-  _sendMessage(
+  Future<void> _sendMessage(
     Emitter<ChatPastFelicitupState> emit,
     ChatMessageModel chatMessage,
     FelicitupModel felicitup,
@@ -99,7 +102,7 @@ class ChatPastFelicitupBloc
     }
   }
 
-  _startListening(Emitter<ChatPastFelicitupState> emit, String chatId) {
+  void _startListening(Emitter<ChatPastFelicitupState> emit, String chatId) {
     _chatMessagesSubscription = _felicitupRepository
         .getChatMessages(chatId)
         .listen((either) {

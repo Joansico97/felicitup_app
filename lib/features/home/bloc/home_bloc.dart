@@ -22,10 +22,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       super(HomeState.initial()) {
     on<HomeEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
-        changeCreate: (_) => _changeCreate(emit),
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
+        changeCreate: (_) => emit(state.copyWith(create: !state.create)),
         setUserBirthdate: (event) => _setUserBirthdate(emit, event.date),
-        changeShowButton: (_) => _changeShowButton(emit),
+        changeShowButton: (_) =>
+            emit(state.copyWith(showButton: !state.showButton)),
         getAndUpdateContacts: (event) =>
             _getAndUpdateContacts(emit, event.isoCode),
       ),
@@ -34,46 +35,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   final UserRepository _userRepository;
 
-  _changeLoading(Emitter<HomeState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
+  Future<void> _getAndUpdateContacts(
+    Emitter<HomeState> emit,
+    String isoCode,
+  ) async {}
 
-  _changeCreate(Emitter<HomeState> emit) {
-    emit(state.copyWith(create: !state.create));
-  }
-
-  _changeShowButton(Emitter<HomeState> emit) {
-    emit(state.copyWith(showButton: !state.showButton));
-  }
-
-  _getAndUpdateContacts(Emitter<HomeState> emit, String isoCode) async {
-    // final contacts = await getHashedContacts(isoCode);
-
-    // List<Map<String, dynamic>> contactsMapList = contacts
-    //     .where((e) => e.displayName.isNotEmpty && e.hashedPhone.isNotEmpty)
-    //     .map((e) {
-    //       return {'displayName': e.displayName, 'phone': e.hashedPhone};
-    //     })
-    //     .toList();
-
-    // RegExp nameRegex = RegExp(r'\d{3,}');
-    // contactsMapList.removeWhere(
-    //   (element) =>
-    //       element['displayName'] == null || element['displayName'].isEmpty,
-    // );
-    // contactsMapList.removeWhere(
-    //   (element) => nameRegex.hasMatch(element['displayName'] ?? ''),
-    // );
-
-    // List<String> friendsPhoneList = contactsMapList
-    //     .map((e) => e['phone'] as String)
-    //     .toList();
-
-    // await _userRepository.updateContacts(contactsMapList, friendsPhoneList);
-    // emit(state.copyWith(status: HomeStatus.contactsUpdateSuccess));
-  }
-
-  _setUserBirthdate(Emitter<HomeState> emit, DateTime date) async {
+  Future<void> _setUserBirthdate(Emitter<HomeState> emit, DateTime date) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -103,49 +70,5 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
-  }
-
-  Future<List<HashedContact>> getHashedContacts(String isoCode) async {
-    // bool isGranted = await _checkContactsPermission();
-
-    // if (isGranted) {
-    //   final packageContacts = await FastContacts.getAllContacts();
-
-    //   List<HashedContact> hashedContacts = [];
-
-    //   for (final contact in packageContacts) {
-    //     if (contact.displayName.isEmpty || contact.phones.isEmpty) continue;
-
-    //     String phoneNumber = contact.phones[0].number;
-    //     if (phoneNumber.length < 8) continue;
-
-    //     String normalizedPhone = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
-
-    //     if (!normalizedPhone.startsWith('+')) {
-    //       normalizedPhone = '$isoCode$normalizedPhone';
-    //     }
-
-    //     final bytes = utf8.encode(normalizedPhone);
-    //     final digest = sha256.convert(bytes);
-    //     String hashedPhone = digest.toString();
-
-    //     hashedContacts.add(
-    //       HashedContact(
-    //         displayName: contact.displayName,
-    //         hashedPhone: hashedPhone,
-    //       ),
-    //     );
-    //   }
-
-    //   hashedContacts.sort(
-    //     (a, b) => a.displayName.toLowerCase().trim().compareTo(
-    //       b.displayName.toLowerCase().trim(),
-    //     ),
-    //   );
-
-    //   return hashedContacts;
-    // }
-
-    return [];
   }
 }

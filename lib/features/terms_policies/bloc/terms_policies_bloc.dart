@@ -14,7 +14,7 @@ class TermsPoliciesBloc extends Bloc<TermsPoliciesEvent, TermsPoliciesState> {
       super(TermsPoliciesState.initial()) {
     on<TermsPoliciesEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
         getGeneralData: (_) => _getGeneralData(emit),
       ),
     );
@@ -22,11 +22,7 @@ class TermsPoliciesBloc extends Bloc<TermsPoliciesEvent, TermsPoliciesState> {
 
   final GeneralDataRepository _generalDataRepository;
 
-  _changeLoading(Emitter<TermsPoliciesState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _getGeneralData(Emitter<TermsPoliciesState> emit) async {
+  Future<void> _getGeneralData(Emitter<TermsPoliciesState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _generalDataRepository.getTermsPoliciesTexts();

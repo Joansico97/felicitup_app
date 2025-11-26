@@ -1,7 +1,7 @@
 name: felicitup_app
 description: 'A new Flutter project.'
 
-version: 1.0.13+65
+version: 1.0.15+68
 environment:
   sdk: ^3.10.0
 
@@ -77,7 +77,7 @@ dev_dependencies:
   envied_generator: ^1.0.0
   flutter_gen_runner: ^5.8.0
   flutter_launcher_icons: ^0.14.1
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
   freezed: ^2.5.7

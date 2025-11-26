@@ -26,7 +26,7 @@ class DeleteAccountBloc extends Bloc<DeleteAccountEvent, DeleteAccountState> {
   final UserRepository _userRepository;
   final FirebaseFunctionsHelper _firebaseFunctionsHelper;
 
-  _deleteAccountEvent(
+  Future<void> _deleteAccountEvent(
     Emitter<DeleteAccountState> emit,
     String userId,
     List<String> answers,

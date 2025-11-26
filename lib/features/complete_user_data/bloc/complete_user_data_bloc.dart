@@ -19,8 +19,8 @@ class CompleteUserDataBloc
        super(CompleteUserDataState.initial()) {
     on<CompleteUserDataEvent>(
       (events, emit) => events.map(
-        completeUserData:
-            (event) => _completeUserData(emit, event.firstName, event.lastName),
+        completeUserData: (event) =>
+            _completeUserData(emit, event.firstName, event.lastName),
         logout: (_) => _logout(emit),
       ),
     );
@@ -29,7 +29,7 @@ class CompleteUserDataBloc
   final UserRepository _userRepository;
   final FirebaseAuth _firebaseAuth;
 
-  _completeUserData(
+  Future<void> _completeUserData(
     Emitter<CompleteUserDataState> emit,
     String firstName,
     String lastName,
@@ -71,7 +71,7 @@ class CompleteUserDataBloc
     }
   }
 
-  _logout(Emitter<CompleteUserDataState> emit) async {
+  Future<void> _logout(Emitter<CompleteUserDataState> emit) async {
     await _firebaseAuth.signOut();
     rootNavigatorKey.currentContext!.go(RouterPaths.login);
   }

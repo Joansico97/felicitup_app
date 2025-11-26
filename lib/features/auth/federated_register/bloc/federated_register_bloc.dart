@@ -31,15 +31,10 @@ class FederatedRegisterBloc
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
         backStep: (_) => _backStep(emit),
-        initRegister:
-            (event) => _initRegister(
-              emit,
-              event.name,
-              event.lastName,
-              event.birthDate,
-            ),
-        savePhoneInfo:
-            (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
+        initRegister: (event) =>
+            _initRegister(emit, event.name, event.lastName, event.birthDate),
+        savePhoneInfo: (event) =>
+            _savePhoneInfo(emit, event.phone, event.isoCode),
         initValidation: (_) => _initValidation(emit),
         validateCode: (event) => _validateCode(emit, event.code),
         setUserInfoRemaning: (_) => _setUserInfoRemaining(emit),
@@ -53,11 +48,11 @@ class FederatedRegisterBloc
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
 
-  _changeLoading(Emitter<FederatedRegisterState> emit) {
+  void _changeLoading(Emitter<FederatedRegisterState> emit) {
     emit(state.copyWith(isLoading: false));
   }
 
-  _initRegister(
+  Future<void> _initRegister(
     Emitter<FederatedRegisterState> emit,
     String name,
     String lastName,
@@ -70,7 +65,7 @@ class FederatedRegisterBloc
     );
   }
 
-  _savePhoneInfo(
+  Future<Null> _savePhoneInfo(
     Emitter<FederatedRegisterState> emit,
     String phone,
     String isoCode,
@@ -105,7 +100,7 @@ class FederatedRegisterBloc
     );
   }
 
-  _initValidation(Emitter<FederatedRegisterState> emit) async {
+  Future<void> _initValidation(Emitter<FederatedRegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -141,11 +136,14 @@ class FederatedRegisterBloc
     }
   }
 
-  _backStep(Emitter<FederatedRegisterState> emit) async {
+  Future<void> _backStep(Emitter<FederatedRegisterState> emit) async {
     emit(state.copyWith(currentIndex: state.currentIndex - 1));
   }
 
-  _validateCode(Emitter<FederatedRegisterState> emit, String code) async {
+  Future<Null> _validateCode(
+    Emitter<FederatedRegisterState> emit,
+    String code,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -207,7 +205,9 @@ class FederatedRegisterBloc
     }
   }
 
-  _setUserInfoRemaining(Emitter<FederatedRegisterState> emit) async {
+  Future<void> _setUserInfoRemaining(
+    Emitter<FederatedRegisterState> emit,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final userId = _firebaseAuth.currentUser?.uid;
@@ -228,7 +228,7 @@ class FederatedRegisterBloc
     }
   }
 
-  _finishEvent(Emitter<FederatedRegisterState> emit) async {
+  Future<void> _finishEvent(Emitter<FederatedRegisterState> emit) async {
     emit(
       state.copyWith(isLoading: false, status: FederatedRegisterStatus.success),
     );
@@ -244,7 +244,11 @@ class FederatedRegisterBloc
     }
   }
 
-  _setFormData(String name, String lastName, DateTime? birthDate) async {
+  Future<void> _setFormData(
+    String name,
+    String lastName,
+    DateTime? birthDate,
+  ) async {
     await _userRepository.setFederatedData(
       firstName: name,
       lastName: lastName,

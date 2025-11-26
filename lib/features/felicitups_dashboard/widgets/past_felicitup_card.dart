@@ -268,13 +268,13 @@ class PastFelicitupWidget extends StatelessWidget {
                                       'Comparte tu felicitup',
                                       style: context.styles.header2,
                                     ),
-                                    SizedBox(height: context.sp(12)),
+                                    SizedBox(height: context.sp(24)),
                                     Row(
                                       children: [
                                         SocialMediaBubble(
                                           onTap: () async {
                                             final encoded =
-                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}}';
+                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}';
 
                                             final Uri url = Uri.parse(
                                               "whatsapp://send?text=$encoded",
@@ -307,11 +307,12 @@ class PastFelicitupWidget extends StatelessWidget {
                                         SocialMediaBubble(
                                           onTap: () async {
                                             final encoded =
-                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}}';
+                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}';
 
                                             final fbUrl = Uri.parse(
                                               "https://www.facebook.com/sharer/sharer.php?u=$encoded",
                                             );
+
                                             await launchUrl(
                                               fbUrl,
                                               mode: LaunchMode
@@ -321,33 +322,46 @@ class PastFelicitupWidget extends StatelessWidget {
                                           icon: PhosphorIcons.facebookLogo(),
                                           label: 'Facebook',
                                         ),
+                                        // SocialMediaBubble(
+                                        //   onTap: () async {
+                                        //     // final uri = Uri.file(filePath);
+
+                                        //     // if (Platform.isAndroid) {
+                                        //     //   await launchUrl(
+                                        //     //     Uri.parse(
+                                        //     //       "instagram://story-camera",
+                                        //     //     ),
+                                        //     //     mode: LaunchMode
+                                        //     //         .externalApplication,
+                                        //     //   );
+                                        //     // } else if (Platform.isIOS) {
+                                        //     //   await launchUrl(
+                                        //     //     Uri.parse(
+                                        //     //       "instagram-stories://share?source_application=com.your.app",
+                                        //     //     ),
+                                        //     //     mode: LaunchMode
+                                        //     //         .externalApplication,
+                                        //     //   );
+                                        //     // }
+                                        //   },
+                                        //   icon: PhosphorIcons.instagramLogo(),
+                                        //   label: 'Instagram',
+                                        // ),
                                         SocialMediaBubble(
                                           onTap: () async {
-                                            // final uri = Uri.file(filePath);
+                                            final encoded =
+                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}';
 
-                                            // if (Platform.isAndroid) {
-                                            //   await launchUrl(
-                                            //     Uri.parse(
-                                            //       "instagram://story-camera",
-                                            //     ),
-                                            //     mode: LaunchMode
-                                            //         .externalApplication,
-                                            //   );
-                                            // } else if (Platform.isIOS) {
-                                            //   await launchUrl(
-                                            //     Uri.parse(
-                                            //       "instagram-stories://share?source_application=com.your.app",
-                                            //     ),
-                                            //     mode: LaunchMode
-                                            //         .externalApplication,
-                                            //   );
-                                            // }
+                                            final twitterUrl = Uri.parse(
+                                              "https://twitter.com/intent/tweet?url=$encoded",
+                                            );
+
+                                            await launchUrl(
+                                              twitterUrl,
+                                              mode: LaunchMode
+                                                  .externalApplication,
+                                            );
                                           },
-                                          icon: PhosphorIcons.instagramLogo(),
-                                          label: 'Instagram',
-                                        ),
-                                        SocialMediaBubble(
-                                          onTap: () {},
                                           icon: PhosphorIcons.xLogo(),
                                           label: 'X',
                                         ),

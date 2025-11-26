@@ -22,13 +22,12 @@ class PhoneVerifyIntBloc
        super(PhoneVerifyIntState.initial()) {
     on<PhoneVerifyIntEvent>(
       (events, emit) => events.map(
-        savePhoneInfo:
-            (event) => _savePhoneInfo(
-              emit,
-              event.phoneNumber,
-              event.isoCode,
-              event.userId,
-            ),
+        savePhoneInfo: (event) => _savePhoneInfo(
+          emit,
+          event.phoneNumber,
+          event.isoCode,
+          event.userId,
+        ),
         initValidation: (_) => _initValidation(emit),
         validateCode: (event) => _validateCode(emit, event.code),
       ),
@@ -38,7 +37,7 @@ class PhoneVerifyIntBloc
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
 
-  _savePhoneInfo(
+  Future<Null> _savePhoneInfo(
     Emitter<PhoneVerifyIntState> emit,
     String phone,
     String isoCode,
@@ -75,7 +74,7 @@ class PhoneVerifyIntBloc
     );
   }
 
-  _initValidation(Emitter<PhoneVerifyIntState> emit) async {
+  Future<void> _initValidation(Emitter<PhoneVerifyIntState> emit) async {
     emit(state.copyWith(isLoading: true, status: PhoneVerifyStatus.none));
 
     try {
@@ -111,7 +110,10 @@ class PhoneVerifyIntBloc
     }
   }
 
-  _validateCode(Emitter<PhoneVerifyIntState> emit, String code) async {
+  Future<Future<Null>?>? _validateCode(
+    Emitter<PhoneVerifyIntState> emit,
+    String code,
+  ) async {
     emit(state.copyWith(isLoading: true, status: PhoneVerifyStatus.none));
 
     try {
@@ -129,12 +131,14 @@ class PhoneVerifyIntBloc
               errorMessage: l.message,
             ),
           );
+          return null;
         },
         (r) async {
           await _setUserInfo();
           emit(
             state.copyWith(isLoading: false, status: PhoneVerifyStatus.success),
           );
+          return null;
         },
       );
     } catch (e) {
@@ -146,9 +150,10 @@ class PhoneVerifyIntBloc
         ),
       );
     }
+    return null;
   }
 
-  _setUserInfo() async {
+  Future<void> _setUserInfo() async {
     await _userRepository.setUserPhone(
       state.hashedPhoneNumber!,
       state.isoCode!,

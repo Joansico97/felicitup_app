@@ -23,9 +23,8 @@ class DetailsFelicitupDashboardBloc
        super(DetailsFelicitupDashboardState.initial()) {
     on<DetailsFelicitupDashboardEvent>(
       (events, emit) => events.map(
-        noEvent: (_) => _noEvent(),
+        noEvent: (_) => () {},
         changeCurrentIndex: (event) => _changeCurrentIndex(emit, event.index),
-        // getFelicitupInfo: (event) => _getFelicitupInfo(emit, event.felicitupId),
         asignCurrentChat: (event) => _asignCurrentChat(emit, event.chatId),
         startListening: (event) => _startListening(
           emit,
@@ -44,13 +43,14 @@ class DetailsFelicitupDashboardBloc
   final FelicitupRepository _felicitupRepository;
   final UserRepository _userRepository;
 
-  _noEvent() {}
-
-  _changeCurrentIndex(Emitter<DetailsFelicitupDashboardState> emit, int index) {
+  void _changeCurrentIndex(
+    Emitter<DetailsFelicitupDashboardState> emit,
+    int index,
+  ) {
     emit(state.copyWith(currentIndex: index));
   }
 
-  _asignCurrentChat(
+  Future<void> _asignCurrentChat(
     Emitter<DetailsFelicitupDashboardState> emit,
     String chatId,
   ) async {
@@ -61,7 +61,7 @@ class DetailsFelicitupDashboardBloc
     }
   }
 
-  _startListening(
+  void _startListening(
     Emitter<DetailsFelicitupDashboardState> emit,
     String felicitupId,
     String? initialSubRoute,

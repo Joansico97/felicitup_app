@@ -33,7 +33,7 @@ class VideoFelicitupBloc
   _invitedUsersSubscription;
   final FelicitupRepository _felicitupRepository;
 
-  _deleteMergedVideo(
+  Future<void> _deleteMergedVideo(
     Emitter<VideoFelicitupState> emit,
     String felicitupId,
   ) async {
@@ -46,7 +46,7 @@ class VideoFelicitupBloc
     }
   }
 
-  _mergeVideos(
+  Future<void> _mergeVideos(
     Emitter<VideoFelicitupState> emit,
     String felicitupId,
     List<String> listVideos,
@@ -67,7 +67,7 @@ class VideoFelicitupBloc
     }
   }
 
-  _startListening(Emitter<VideoFelicitupState> emit, String felicitupId) {
+  void _startListening(Emitter<VideoFelicitupState> emit, String felicitupId) {
     _invitedUsersSubscription = _felicitupRepository
         .getInvitedStream(felicitupId)
         .listen((either) {

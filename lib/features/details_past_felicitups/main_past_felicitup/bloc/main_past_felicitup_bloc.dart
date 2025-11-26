@@ -5,16 +5,13 @@ part 'main_past_felicitup_event.dart';
 part 'main_past_felicitup_state.dart';
 part 'main_past_felicitup_bloc.freezed.dart';
 
-class MainPastFelicitupBloc extends Bloc<MainPastFelicitupEvent, MainPastFelicitupState> {
+class MainPastFelicitupBloc
+    extends Bloc<MainPastFelicitupEvent, MainPastFelicitupState> {
   MainPastFelicitupBloc() : super(MainPastFelicitupState.initial()) {
     on<MainPastFelicitupEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
       ),
     );
-  }
-
-  _changeLoading(Emitter<MainPastFelicitupState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
   }
 }

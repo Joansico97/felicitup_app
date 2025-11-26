@@ -21,8 +21,10 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
        super(SingleChatState.initial()) {
     on<SingleChatEvent>(
       (events, emit) => events.map(
-        changeIsLoading: (_) => _changeIsLoading(emit),
-        setCurrentChatId: (event) => _setCurrentChatId(emit, event.chatId),
+        changeIsLoading: (_) =>
+            emit(state.copyWith(isLoading: !state.isLoading)),
+        setCurrentChatId: (event) =>
+            emit(state.copyWith(currentChatId: event.chatId)),
         sendMessage: (event) => _sendMessage(
           emit,
           event.chatMessage,
@@ -42,15 +44,7 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
   final ChatRepository _chatRepository;
   final UserRepository _userRepository;
 
-  _changeIsLoading(Emitter<SingleChatState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _setCurrentChatId(Emitter<SingleChatState> emit, String chatId) async {
-    emit(state.copyWith(currentChatId: chatId));
-  }
-
-  _sendMessage(
+  Future<void> _sendMessage(
     Emitter<SingleChatState> emit,
     ChatMessageModel chatMessage,
     String chatId,
@@ -89,7 +83,7 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
     });
   }
 
-  _startListening(Emitter<SingleChatState> emit, String chatId) {
+  void _startListening(Emitter<SingleChatState> emit, String chatId) {
     _chatMessagesSubscription = _chatRepository.getChatMessages(chatId).listen((
       either,
     ) {
