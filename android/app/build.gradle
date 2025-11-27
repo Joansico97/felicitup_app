@@ -93,4 +93,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics' // Sin versión, usa el BOM
     implementation 'com.google.firebase:firebase-analytics' 
     
+    // Facebook SDK
+    implementation 'com.facebook.android:facebook-android-sdk:17.0.0'
+    // Play Install Referrer
+    implementation 'com.android.installreferrer:installreferrer:2.2'
 }

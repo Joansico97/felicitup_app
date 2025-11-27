@@ -68,3 +68,5 @@ Makefile
 .env
 
 serviceAccountMergeKey.json
+CONFIGURACION_PENDIENTE.md
+FACEBOOK_SDK_SETUP.md

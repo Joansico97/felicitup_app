@@ -62,6 +62,12 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>FacebookAppID</key>
+	<string>871743075419914</string>
+	<key>FacebookClientToken</key>
+	<string>YOUR_CLIENT_TOKEN</string>
+	<key>FacebookDisplayName</key>
+	<string>Felicitup</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 	<dict>
@@ -70,6 +76,7 @@
 		<key>CFBundleURLSchemes</key>
 		<array>
 		<string>com.googleusercontent.apps.846523746579-5uln1n8dn639dbt6h9hs6uide5mmrogr</string>
+		<string>fb871743075419914</string>
 		</array>
 	</dict>
 	</array>
@@ -79,9 +86,6 @@
 	<string>comgooglemaps</string>
 	<string>comgooglemaps-x-callback</string>
 	<string>firebase</string>
-	</array>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
 	<string>https</string>
 	<string>whatsapp</string>
 	</array>

@@ -15,6 +15,16 @@ Future<void> initConfig() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Inicializar Facebook SDK
+  final facebookAnalytics = FacebookAnalyticsHelper();
+  await facebookAnalytics.initialize();
+
+  // Rastrear instalación si es la primera vez que se abre la app
+  await facebookAnalytics.trackInstall();
+
+  // Logear activación de la app
+  await facebookAnalytics.logActivateApp();
 }
 
 Future<void> initObservers() async {
