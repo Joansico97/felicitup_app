@@ -30,9 +30,6 @@ class AppTheme {
           backgroundColor: AppColors().white,
           hourMinuteColor: AppColors().white,
           hourMinuteTextColor: AppColors().primary,
-        ),
-        cardTheme: CardTheme(
-          color: AppColors().white,
-        ),
+        ),        
       );
 }
