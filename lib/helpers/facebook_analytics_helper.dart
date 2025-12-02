@@ -121,4 +121,24 @@ class FacebookAnalyticsHelper {
       logger.error('Error clearing Facebook user ID: $e');
     }
   }
+
+  /// Rastrea el evento de instalación de la app
+  Future<void> trackMobileInstall() async {
+    await logEvent(eventName: 'fb_mobile_install');
+  }
+
+  /// Rastrea el evento de registro completo
+  Future<void> trackCompleteRegistration() async {
+    await logEvent(eventName: 'fb_mobile_complete_registration');
+  }
+
+  /// Rastrea el evento de visualización de contenido
+  Future<void> trackViewContent() async {
+    await logEvent(eventName: 'fb_mobile_view_content');
+  }
+
+  /// Rastrea el evento de inicio de sesión
+  Future<void> trackLogin() async {
+    await logEvent(eventName: 'fb_mobile_login');
+  }
 }

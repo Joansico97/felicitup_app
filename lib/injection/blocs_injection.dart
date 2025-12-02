@@ -2,6 +2,7 @@ part of './injection_container.dart';
 
 void _initBlocsInjection() {
   di
+    ..registerLazySingleton(() => FacebookAnalyticsHelper())
     ..registerLazySingleton(
       () => AppBloc(
         userRepository: di(),
@@ -9,16 +10,24 @@ void _initBlocsInjection() {
         firebaseAuth: di(),
         firebaseMessaging: di(),
         updateService: di(),
+        facebookAnalyticsHelper: di(),
       ),
     )
     ..registerFactory(() => SplashBloc())
     ..registerFactory(() => InitBloc())
-    ..registerFactory(() => LoginBloc(authRepository: di(), firestore: di()))
+    ..registerFactory(
+      () => LoginBloc(
+        authRepository: di(),
+        firestore: di(),
+        facebookAnalyticsHelper: di(),
+      ),
+    )
     ..registerFactory(
       () => RegisterBloc(
         authRepository: di(),
         userRepository: di(),
         firestore: di(),
+        facebookAnalyticsHelper: di(),
       ),
     )
     ..registerFactory(() => HomeBloc(userRepository: di()))

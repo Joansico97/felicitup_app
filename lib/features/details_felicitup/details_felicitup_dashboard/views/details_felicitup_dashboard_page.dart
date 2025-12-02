@@ -6,6 +6,7 @@ import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/widgets/widgets.dart';
+import 'package:felicitup_app/helpers/facebook_analytics_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -32,6 +33,7 @@ class _DetailsFelicitupDashboardPageState
   @override
   void initState() {
     super.initState();
+    context.read<FacebookAnalyticsHelper>().trackViewContent();
 
     if (widget.fromNotification) {
       final felicitup = context

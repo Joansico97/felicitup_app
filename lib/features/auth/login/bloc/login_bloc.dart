@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:felicitup_app/helpers/facebook_analytics_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -17,9 +18,11 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
   LoginBloc({
     required AuthRepository authRepository,
     required FirebaseFirestore firestore,
-  }) : _authRepository = authRepository,
-       _firestore = firestore,
-       super(LoginState.initial()) {
+    required FacebookAnalyticsHelper facebookAnalyticsHelper,
+  })  : _authRepository = authRepository,
+        _firestore = firestore,
+        _facebookAnalyticsHelper = facebookAnalyticsHelper,
+        super(LoginState.initial()) {
     on<LoginEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
@@ -35,6 +38,7 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
 
   final AuthRepository _authRepository;
   final FirebaseFirestore _firestore;
+  final FacebookAnalyticsHelper _facebookAnalyticsHelper;
 
   void _changeLoading(Emitter<LoginState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
@@ -67,6 +71,11 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
           );
         },
         (r) {
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            _facebookAnalyticsHelper.setUserId(user.uid);
+          }
+          _facebookAnalyticsHelper.trackLogin();
           emit(state.copyWith(isLoading: false, status: LoginStatus.success));
         },
       );
@@ -94,6 +103,10 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
         (r) async {
           bool exist = await checkUserExist(email: r.user?.email ?? '');
           if (exist) {
+            if (r.user?.uid != null) {
+              _facebookAnalyticsHelper.setUserId(r.user!.uid);
+            }
+            _facebookAnalyticsHelper.trackLogin();
             emit(state.copyWith(isLoading: false, status: LoginStatus.success));
           } else {
             final user = r.user;
@@ -171,6 +184,10 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
 
           bool exist = await checkUserExist(email: user?.email ?? '');
           if (exist) {
+            if (user?.uid != null) {
+              _facebookAnalyticsHelper.setUserId(user!.uid);
+            }
+            _facebookAnalyticsHelper.trackLogin();
             emit(state.copyWith(isLoading: false, status: LoginStatus.success));
           } else {
             emit(

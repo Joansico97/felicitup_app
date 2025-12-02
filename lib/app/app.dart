@@ -85,15 +85,17 @@ class HandleNotificationsInteractions extends StatefulWidget {
 }
 
 class _HandleNotificationsInteractionsState
-    extends State<HandleNotificationsInteractions> {
+    extends State<HandleNotificationsInteractions> with WidgetsBindingObserver {
+  final _facebookAnalyticsHelper = injection.di<FacebookAnalyticsHelper>();
+
   Future<void> _setupInteractedMessage() async {
-    RemoteMessage? initialMessage = await FirebaseMessaging.instance
-        .getInitialMessage();
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
       context.read<AppBloc>().add(
-        AppEvent.notificationReceived(initialMessage.data),
-      );
+            AppEvent.notificationReceived(initialMessage.data),
+          );
     }
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -104,7 +106,21 @@ class _HandleNotificationsInteractionsState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _setupInteractedMessage();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _facebookAnalyticsHelper.logActivateApp();
+    }
   }
 
   @override

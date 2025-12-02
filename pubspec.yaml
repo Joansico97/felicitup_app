@@ -1,7 +1,7 @@
 name: felicitup_app
 description: 'A new Flutter project.'
 
-version: 1.0.15+68
+version: 1.0.15+70
 environment:
   sdk: ^3.10.0
 
@@ -42,7 +42,6 @@ dependencies:
 
   # Facebook / Meta SDK
   facebook_app_events: ^0.19.2
-  install_referrer: ^1.2.1
 
   # Packages
   android_intent_plus: ^6.0.0

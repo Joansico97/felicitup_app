@@ -29,12 +29,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     required FirebaseAuth firebaseAuth,
     required FirebaseMessaging firebaseMessaging,
     required UpdateServiceHelper updateService,
-  }) : _userRepository = userRepository,
-       _authRepository = authRepository,
-       _firebaseAuth = firebaseAuth,
-       _firebaseMessaging = firebaseMessaging,
-       _updateService = updateService,
-       super(AppState.initial()) {
+    required FacebookAnalyticsHelper facebookAnalyticsHelper,
+  })  : _userRepository = userRepository,
+        _authRepository = authRepository,
+        _firebaseAuth = firebaseAuth,
+        _firebaseMessaging = firebaseMessaging,
+        _updateService = updateService,
+        _facebookAnalyticsHelper = facebookAnalyticsHelper,
+        super(AppState.initial()) {
     on<AppEvent>(
       (events, emit) => events.map(
         onAppStarted: (_) => _onAppStarted(emit),
@@ -69,6 +71,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   final FirebaseAuth _firebaseAuth;
   final FirebaseMessaging _firebaseMessaging;
   final UpdateServiceHelper _updateService;
+  final FacebookAnalyticsHelper _facebookAnalyticsHelper;
 
   void _onAppStarted(Emitter<AppState> emit) {
     add(const AppEvent.initializeNotifications());
@@ -431,6 +434,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       await _userRepository.asignCurrentChatId('');
       await _userRepository.setFCMToken('');
+      await _facebookAnalyticsHelper.clearUserId();
       await _authRepository.logout();
       emit(state.copyWith(isLoading: false, currentUser: null));
     } catch (e) {
