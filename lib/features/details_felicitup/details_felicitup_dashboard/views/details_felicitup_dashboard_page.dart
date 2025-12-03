@@ -33,7 +33,7 @@ class _DetailsFelicitupDashboardPageState
   @override
   void initState() {
     super.initState();
-    context.read<FacebookAnalyticsHelper>().trackViewContent();
+    FacebookAnalyticsHelper().trackViewContent();
 
     if (widget.fromNotification) {
       final felicitup = context

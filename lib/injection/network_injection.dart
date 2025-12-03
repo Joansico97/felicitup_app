@@ -20,5 +20,7 @@ void _initNetworkInjection() {
     ..registerLazySingleton<FirebaseRemoteConfig>(
       () => FirebaseRemoteConfig.instance,
     )
-    ..registerLazySingleton<LocalStorageHelper>(() => LocalStorageHelper());
+    ..registerLazySingleton<LocalStorageHelper>(() => LocalStorageHelper())
+    ..registerLazySingleton<FacebookAnalyticsHelper>(() => FacebookAnalyticsHelper())
+    ;
 }
