@@ -17,7 +17,7 @@ class RegisterPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<RegisterBloc, RegisterState>(
       listenWhen:
-          (previous, current) => previous.isLoading != current.isLoading,
+          (previous, current) => previous.isLoading != current.isLoading || previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());

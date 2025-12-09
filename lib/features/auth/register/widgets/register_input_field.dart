@@ -1,3 +1,4 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 
@@ -124,11 +125,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   }
 
   bool _isValidEmail(String email) {
-    // Expresión regular para validar correos
-    final emailRegex = RegExp(
-      r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$',
-    );
-    return emailRegex.hasMatch(email);
+    return EmailValidator.validate(email);
   }
 
   bool _isValidPassword(String password) {

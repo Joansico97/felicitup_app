@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/utils/logger.dart';
@@ -8,6 +10,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:http/http.dart' as http;
+import 'package:string_similarity/string_similarity.dart';
 
 class AuthFirebaseResource implements AuthRepository {
   AuthFirebaseResource({
@@ -209,11 +213,49 @@ class AuthFirebaseResource implements AuthRepository {
       return Left(ApiException(400, e.toString()));
     }
   }
+
+  @override
+  Future<Either<ApiException, bool>> validateEmailDomain({
+    required String email,
+  }) async {
+    try {
+      final domain = email.split('@').last;
+
+      final response = await http.get(
+        Uri.parse('https://isitarealemail.com/api/email/validate?email=$email'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'valid') {
+          return const Right(true);
+        }
+      }
+
+      final commonDomains = [
+        'gmail.com',
+        'hotmail.com',
+        'yahoo.com',
+        'outlook.com',
+      ];
+      final bestMatch = StringSimilarity.findBestMatch(domain, commonDomains);
+
+      if (bestMatch.bestMatch.rating! > 0.8) {
+        if (bestMatch.bestMatch.target == domain) {
+          return const Right(true);
+        } else {
+          return const Right(false);
+        }
+      }
+      return const Right(false);
+    } catch (e) {
+      return Left(ApiException(400, e.toString()));
+    }
+  }
 }
 
 String _mapFirebaseAuthErrors(FirebaseAuthException e) {
   switch (e.code) {
-    // Errores generales
     case 'invalid-email':
       return 'El formato del correo electrónico no es válido';
     case 'user-disabled':

@@ -3,6 +3,7 @@ import 'package:felicitup_app/data/exceptions/exceptions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class AuthRepository {
+
   Future<Either<ApiException, String>> login({
     required String email,
     required String password,
@@ -27,4 +28,5 @@ abstract class AuthRepository {
     required String smsCode,
   });
   Future<Either<ApiException, String>> forgotPassword({required String email});
+  Future<Either<ApiException, bool>> validateEmailDomain({required String email});
 }

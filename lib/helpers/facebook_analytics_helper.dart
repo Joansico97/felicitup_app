@@ -7,7 +7,6 @@ class FacebookAnalyticsHelper {
 
   final FacebookAppEvents _facebookAppEvents;
 
-  /// Inicializa el SDK de Facebook
   Future<void> initialize() async {
     try {
       await _facebookAppEvents.setAdvertiserTracking(enabled: true);
@@ -17,7 +16,6 @@ class FacebookAnalyticsHelper {
     }
   }
 
-  /// Rastrea la instalación de la app desde una campaña de Meta Ads
   Future<void> trackInstall() async {
     try {
       if (Platform.isAndroid) {
@@ -30,21 +28,13 @@ class FacebookAnalyticsHelper {
     }
   }
 
-  /// Rastrea instalación en Android
-  /// Nota: El SDK de Facebook rastrea automáticamente las instalaciones desde Meta Ads
-  /// cuando está correctamente configurado con el App ID y Client Token.
-  /// Play Install Referrer está configurado en build.gradle para soporte nativo.
   Future<void> _trackAndroidInstall() async {
     try {
-      // El SDK de Facebook rastrea automáticamente las instalaciones desde Meta Ads
-      // cuando la app se activa. Solo necesitamos logear el evento de activación.
-      // El SDK internamente usa Play Install Referrer para detectar instalaciones.
       await _facebookAppEvents.logEvent(
         name: 'fb_mobile_activate_app',
         parameters: {'platform': 'android'},
       );
 
-      // También logear como evento personalizado para tracking adicional
       await _facebookAppEvents.logEvent(
         name: 'app_install',
         parameters: {'platform': 'android'},
@@ -53,7 +43,7 @@ class FacebookAnalyticsHelper {
       logger.info('Android install tracking initialized');
     } catch (e) {
       logger.error('Error tracking Android install: $e');
-      // Aún así, intentar logear la activación de la app
+
       try {
         await _facebookAppEvents.logEvent(name: 'fb_mobile_activate_app');
       } catch (e2) {
@@ -62,11 +52,8 @@ class FacebookAnalyticsHelper {
     }
   }
 
-  /// Rastrea instalación en iOS
   Future<void> _trackIOSInstall() async {
     try {
-      // En iOS, el rastreo de instalación se maneja automáticamente
-      // por el SDK de Facebook cuando se activa la app
       await _facebookAppEvents.logEvent(
         name: 'fb_mobile_activate_app',
         parameters: {'platform': 'ios'},
@@ -78,7 +65,6 @@ class FacebookAnalyticsHelper {
     }
   }
 
-  /// Logea un evento personalizado en Facebook Analytics
   Future<void> logEvent({
     required String eventName,
     Map<String, dynamic>? parameters,
@@ -94,7 +80,6 @@ class FacebookAnalyticsHelper {
     }
   }
 
-  /// Logea la activación de la app (debe llamarse cada vez que la app se abre)
   Future<void> logActivateApp() async {
     try {
       await _facebookAppEvents.logEvent(name: 'fb_mobile_activate_app');
@@ -103,7 +88,6 @@ class FacebookAnalyticsHelper {
     }
   }
 
-  /// Establece el ID de usuario para rastreo
   Future<void> setUserId(String userId) async {
     try {
       await _facebookAppEvents.setUserID(userId);
@@ -113,7 +97,6 @@ class FacebookAnalyticsHelper {
     }
   }
 
-  /// Limpia el ID de usuario
   Future<void> clearUserId() async {
     try {
       await _facebookAppEvents.clearUserID();
@@ -122,22 +105,18 @@ class FacebookAnalyticsHelper {
     }
   }
 
-  /// Rastrea el evento de instalación de la app
   Future<void> trackMobileInstall() async {
     await logEvent(eventName: 'fb_mobile_install');
   }
 
-  /// Rastrea el evento de registro completo
   Future<void> trackCompleteRegistration() async {
     await logEvent(eventName: 'fb_mobile_complete_registration');
   }
 
-  /// Rastrea el evento de visualización de contenido
   Future<void> trackViewContent() async {
     await logEvent(eventName: 'fb_mobile_view_content');
   }
 
-  /// Rastrea el evento de inicio de sesión
   Future<void> trackLogin() async {
     await logEvent(eventName: 'fb_mobile_login');
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -112,7 +113,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     }
   }
 
-  void _initRegister(
+  Future<void> _initRegister(
     Emitter<RegisterState> emit,
     String name,
     String lastName,
@@ -120,9 +121,44 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     String password,
     String confirmPassword,
     DateTime? birthDate,
-  ) {
+  ) async {
+    emit(state.copyWith(isLoading: true, status: RegisterStatus.initial));
+    bool isError = false;
+    final isDomainValid = await _authRepository.validateEmailDomain(
+      email: email,
+    );
+    isDomainValid.fold(
+      (l) {
+        isError = true;
+        emit(
+          state.copyWith(
+            isLoading: false,
+            status: RegisterStatus.error,
+            errorMessage: 'Error al validar el dominio del correo.',
+          ),
+        );
+      },
+      (r) {
+        if (!r) {
+          isError = true;
+          emit(
+            state.copyWith(
+              isLoading: false,
+              status: RegisterStatus.error,
+              errorMessage: 'El dominio del correo electrónico no es válido.',
+            ),
+          );
+        }
+      },
+    );
+
+    if (isError) {
+      return;
+    }
+
     emit(
       state.copyWith(
+        isLoading: false,
         status: RegisterStatus.formFinished,
         currentStep: state.currentStep + 1,
         name: name,
