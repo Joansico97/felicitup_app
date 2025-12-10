@@ -1,8 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
 import 'package:felicitup_app/features/details_felicitup/message_felicitup/widgets/widgets.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -119,6 +121,8 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
 
   @override
   Widget build(BuildContext context) {
+    final infoFelicitupBloc = context.read<InfoFelicitupBloc>();
+    final friendList = infoFelicitupBloc.state.friendList;
     return BlocBuilder<
       DetailsFelicitupDashboardBloc,
       DetailsFelicitupDashboardState
@@ -159,6 +163,14 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
 
                             return SliverList(
                               delegate: SliverChildBuilderDelegate((_, index) {
+                                final chatMessage = chatMessages[index];
+                                final senderId = chatMessage.sendedBy;
+                                final sender = friendList.firstWhereOrNull(
+                                  (user) => user.id == senderId,
+                                );
+                                final displayName =
+                                    sender?.getDisplayName(currentUser) ??
+                                    chatMessage.userName;
                                 return ChatSpace(
                                   key: ValueKey(chatMessages[index].id),
                                   isMine:
@@ -168,7 +180,7 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
                                   textContent:
                                       chatMessages[index].message ?? '',
                                   id: chatMessages[index].sendedBy ?? '',
-                                  name: chatMessages[index].userName ?? '',
+                                  name: displayName ?? '',
                                   userImg: chatMessages[index].userImg,
                                 );
                               }, childCount: chatMessages.length),

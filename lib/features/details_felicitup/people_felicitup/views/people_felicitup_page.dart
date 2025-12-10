@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
@@ -5,7 +6,7 @@ import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/contact_card_row.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
-
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -24,7 +25,8 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
   List<UserModel> _filteredFriendList = [];
   List<UserModel> _originalFriendList = [];
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode(); // ← Agrega FocusNode
+  final FocusNode _searchFocusNode = FocusNode();
+  late UserModel? currentUser;
 
   @override
   void initState() {
@@ -33,16 +35,21 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
       _filterContacts(_searchController.text);
     });
 
-    // Enfocar automáticamente el campo de búsqueda
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_searchFocusNode);
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    currentUser = context.read<AppBloc>().state.currentUser;
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
-    _searchFocusNode.dispose(); // ← No olvides dispose
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -56,9 +63,9 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
       } else {
         _filteredFriendList = _originalFriendList
             .where(
-              (contact) => (contact.fullName ?? '').toLowerCase().contains(
-                lowerCaseQuery,
-              ),
+              (contact) => (contact.getDisplayName(
+                currentUser,
+              )).toLowerCase().contains(lowerCaseQuery),
             )
             .toList();
       }
@@ -76,8 +83,8 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
         newFriendList.removeWhere((friend) => widget.ids.contains(friend.id));
 
         newFriendList.sort(
-          (a, b) => (a.fullName ?? '').toLowerCase().compareTo(
-            (b.fullName ?? '').toLowerCase(),
+          (a, b) => (a.getDisplayName(currentUser)).toLowerCase().compareTo(
+            (b.getDisplayName(currentUser)).toLowerCase(),
           ),
         );
 
@@ -165,7 +172,7 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
                         onTap: () {
                           final participant = InvitedModel(
                             id: contact.id ?? '',
-                            name: contact.fullName ?? 'Usuario sin nombre',
+                            name: contact.getDisplayName(currentUser),
                             userImage: contact.userImg ?? '',
                             assistanceStatus: enumToStringAssistance(
                               AssistanceStatus.pending,
@@ -218,9 +225,14 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
         .state
         .felicitup;
 
-    context.read<PeopleFelicitupBloc>().add(
-      PeopleFelicitupEvent.startListening(felicitup?.id ?? ''),
-    );
+    if (felicitup != null) {
+      context.read<PeopleFelicitupBloc>().add(
+        PeopleFelicitupEvent.loadFriendsData(felicitup.invitedUsers),
+      );
+      context.read<PeopleFelicitupBloc>().add(
+        PeopleFelicitupEvent.startListening(felicitup.id),
+      );
+    }
   }
 
   @override
@@ -456,8 +468,12 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
             },
           ),
       body: BlocBuilder<PeopleFelicitupBloc, PeopleFelicitupState>(
+        buildWhen: (previous, current) =>
+            previous.invitedUsers != current.invitedUsers ||
+            previous.friendList != current.friendList,
         builder: (_, state) {
           final invitedUsers = state.invitedUsers;
+          final friendList = state.friendList;
 
           return Column(
             children: [
@@ -512,12 +528,22 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                               if (currentUser == null) {
                                 return SizedBox.shrink();
                               }
+                              final invitedUser = invitedUsers![index];
+                              final user = friendList.firstWhereOrNull(
+                                (user) => user.id == invitedUser.id,
+                              );
+
+                              final displayName =
+                                  user?.getDisplayName(currentUser) ??
+                                  invitedUser.name;
+                              final userImage =
+                                  user?.userImg ?? invitedUser.userImage ?? '';
 
                               return Column(
                                 children: [
                                   GestureDetector(
                                     onTap: () {
-                                      if (invitedUsers?[index].id ==
+                                      if (invitedUsers[index].id ==
                                               currentUser.id &&
                                           felicitup.createdBy !=
                                               currentUser.id) {
@@ -527,7 +553,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                           label1: 'Confirmar',
                                           isDestructive: true,
                                           onAction1:
-                                              invitedUsers?[index]
+                                              invitedUsers[index]
                                                       .assistanceStatus ==
                                                   enumToStringAssistance(
                                                     AssistanceStatus.accepted,
@@ -548,10 +574,10 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                                               AssistanceStatus
                                                                   .accepted,
                                                             ),
-                                                        name:
-                                                            currentUser
-                                                                .firstName ??
-                                                            '',
+                                                        name: user!
+                                                            .getDisplayName(
+                                                              currentUser,
+                                                            ),
                                                       ),
                                                     ),
                                           label2: 'Denegar',
@@ -565,8 +591,9 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                                     enumToStringAssistance(
                                                       AssistanceStatus.rejected,
                                                     ),
-                                                name:
-                                                    currentUser.firstName ?? '',
+                                                name: user!.getDisplayName(
+                                                  currentUser,
+                                                ),
                                               ),
                                             );
                                             context.go(
@@ -579,7 +606,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                     onLongPress: () {
                                       if (felicitup.createdBy ==
                                               currentUser.id &&
-                                          invitedUsers?[index].id !=
+                                          invitedUsers[index].id !=
                                               currentUser.id) {
                                         showConfirDoublemModal(
                                           title: 'Eliminar participante?',
@@ -589,7 +616,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                             context.read<PeopleFelicitupBloc>().add(
                                               PeopleFelicitupEvent.deleteParticipant(
                                                 felicitup.id,
-                                                invitedUsers?[index].id ?? '',
+                                                invitedUsers[index].id ?? '',
                                               ),
                                             );
                                           },
@@ -617,16 +644,14 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                                     context.sp(100),
                                                   ),
                                               child: CommonNetworkImage(
-                                                imageUrl:
-                                                    invitedUsers?[index]
-                                                        .userImage ??
-                                                    '',
+                                                imageUrl: userImage,
                                                 errorWidget: Center(
                                                   child: Text(
-                                                    invitedUsers?[index]
-                                                            .name![0]
-                                                            .toUpperCase() ??
-                                                        '',
+                                                    (displayName?.isNotEmpty ??
+                                                            false)
+                                                        ? (displayName ?? '')[0]
+                                                              .toUpperCase()
+                                                        : '',
                                                     style:
                                                         context.styles.subtitle,
                                                   ),
@@ -636,11 +661,11 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                           ),
                                           SizedBox(width: context.sp(14)),
                                           Text(
-                                            invitedUsers?[index].name ?? '',
+                                            displayName ?? '',
                                             style: context.styles.smallText
                                                 .copyWith(
                                                   color:
-                                                      invitedUsers?[index]
+                                                      invitedUsers[index]
                                                               .assistanceStatus ==
                                                           enumToStringAssistance(
                                                             AssistanceStatus
@@ -657,7 +682,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           color:
-                                              invitedUsers?[index]
+                                              invitedUsers[index]
                                                       .assistanceStatus ==
                                                   enumToStringAssistance(
                                                     AssistanceStatus.accepted,
@@ -668,7 +693,7 @@ class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
                                         child: Icon(
                                           Icons.check,
                                           color:
-                                              invitedUsers?[index]
+                                              invitedUsers[index]
                                                       .assistanceStatus ==
                                                   enumToStringAssistance(
                                                     AssistanceStatus.accepted,

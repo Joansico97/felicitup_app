@@ -1,9 +1,11 @@
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/bloc/create_felicitup_bloc.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -28,20 +30,27 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
   String _searchQuery = '';
   List<UserModel> _filteredFriendList = [];
   final TextEditingController _searchController = TextEditingController();
+  late UserModel? currentUser;
 
   @override
   void initState() {
     super.initState();
-    widget.initialFriendList.sort(
-      (a, b) => (a.fullName ?? '').toLowerCase().compareTo(
-        (b.fullName ?? '').toLowerCase(),
-      ),
-    );
     _filteredFriendList = List.from(widget.initialFriendList);
 
     _searchController.addListener(() {
       _filterContacts(_searchController.text);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    currentUser = context.read<AppBloc>().state.currentUser;
+    widget.initialFriendList.sort(
+      (a, b) => (a.getDisplayName(currentUser)).toLowerCase().compareTo(
+            (b.getDisplayName(currentUser)).toLowerCase(),
+          ),
+    );
   }
 
   @override
@@ -59,9 +68,10 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
       } else {
         _filteredFriendList = widget.initialFriendList
             .where(
-              (contact) => (contact.fullName ?? '').toLowerCase().contains(
-                lowerCaseQuery,
-              ),
+              (contact) =>
+                  (contact.getDisplayName(currentUser)).toLowerCase().contains(
+                        lowerCaseQuery,
+                      ),
             )
             .toList();
       }
@@ -119,7 +129,6 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
         else
           BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
             bloc: widget.felicitupBloc,
-
             builder: (context, state) {
               final currentSelectedParticipantsFromBloc = state.invitedContacts;
 
@@ -136,7 +145,7 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
                     onTap: () {
                       final participant = InvitedModel(
                         id: contact.id,
-                        name: contact.fullName,
+                        name: contact.getDisplayName(currentUser),
                         userImage: contact.userImg,
                         assistanceStatus: enumToStringAssistance(
                           AssistanceStatus.pending,

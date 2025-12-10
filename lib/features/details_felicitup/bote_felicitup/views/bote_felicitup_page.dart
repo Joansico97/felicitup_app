@@ -1,9 +1,11 @@
+import 'package:collection/collection.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -325,6 +327,10 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
           BlocBuilder<BoteFelicitupBloc, BoteFelicitupState>(
             builder: (_, state) {
               final invitedUsers = state.invitedUsers;
+              final friendList = context
+                  .watch<InfoFelicitupBloc>()
+                  .state
+                  .friendList;
 
               return Expanded(
                 child: ListView.builder(
@@ -353,14 +359,23 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                 return SizedBox.shrink();
                               }
 
+                              final invitedUser = invitedUsers![index];
+                              final user = friendList.firstWhereOrNull(
+                                (user) => user.id == invitedUser.id,
+                              );
+                              final displayName =
+                                  user?.getDisplayName(currentUser) ??
+                                  invitedUser.name;
+                              final userImage =
+                                  user?.userImg ?? invitedUser.userImage ?? '';
+
                               return GestureDetector(
                                 onTap: () {
-                                  if (invitedUsers?[index].paid ==
+                                  if (invitedUser.paid ==
                                           enumToStringPayment(
                                             PaymentStatus.pending,
                                           ) &&
-                                      invitedUsers?[index].id ==
-                                          currentUser.id) {
+                                      invitedUser.id == currentUser.id) {
                                     context.go(
                                       RouterPaths.payment,
                                       extra: {
@@ -369,7 +384,7 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                       },
                                     );
                                   }
-                                  if (invitedUsers?[index].paid ==
+                                  if (invitedUser.paid ==
                                           enumToStringPayment(
                                             PaymentStatus.waiting,
                                           ) &&
@@ -379,8 +394,7 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                       extra: {
                                         'isVerify': true,
                                         'felicitup': felicitup,
-                                        'userId':
-                                            invitedUsers?[index].idInformation,
+                                        'userId': invitedUser.idInformation,
                                       },
                                     );
                                   }
@@ -397,20 +411,18 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                           color: context.colors.lightGrey,
                                         ),
                                         child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadiusGeometry.circular(
-                                                context.sp(100),
-                                              ),
+                                          borderRadius: BorderRadius.circular(
+                                            context.sp(100),
+                                          ),
                                           child: CommonNetworkImage(
-                                            imageUrl:
-                                                invitedUsers?[index]
-                                                    .userImage ??
-                                                '',
+                                            imageUrl: userImage,
                                             errorWidget: Center(
                                               child: Text(
-                                                invitedUsers?[index].name![0]
-                                                        .toUpperCase() ??
-                                                    '',
+                                                (displayName?.isNotEmpty ??
+                                                        false)
+                                                    ? (displayName ?? '')[0]
+                                                          .toUpperCase()
+                                                    : '',
                                                 style: context.styles.subtitle,
                                               ),
                                             ),
@@ -419,11 +431,11 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                       ),
                                       SizedBox(width: context.sp(14)),
                                       Text(
-                                        invitedUsers?[index].name ?? '',
+                                        displayName ?? '',
                                         style: context.styles.smallText
                                             .copyWith(
                                               color:
-                                                  invitedUsers?[index].paid ==
+                                                  invitedUser.paid ==
                                                       enumToStringPayment(
                                                         PaymentStatus.pending,
                                                       )
@@ -438,12 +450,12 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color:
-                                          invitedUsers?[index].paid ==
+                                          invitedUser.paid ==
                                               enumToStringPayment(
                                                 PaymentStatus.paid,
                                               )
                                           ? Colors.lightGreen
-                                          : invitedUsers?[index].paid ==
+                                          : invitedUser.paid ==
                                                 enumToStringPayment(
                                                   PaymentStatus.waiting,
                                                 )
@@ -453,11 +465,11 @@ class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
                                     child: Icon(
                                       Icons.euro,
                                       color:
-                                          invitedUsers?[index].paid ==
+                                          invitedUser.paid ==
                                                   enumToStringPayment(
                                                     PaymentStatus.paid,
                                                   ) ||
-                                              invitedUsers?[index].paid ==
+                                              invitedUser.paid ==
                                                   enumToStringPayment(
                                                     PaymentStatus.waiting,
                                                   )

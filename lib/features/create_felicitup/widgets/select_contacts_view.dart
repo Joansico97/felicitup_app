@@ -1,3 +1,4 @@
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
@@ -6,6 +7,7 @@ import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/bloc/create_felicitup_bloc.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -20,7 +22,6 @@ class ContactSearchList extends StatefulWidget {
   const ContactSearchList({
     super.key,
     required this.initialFriendList,
-
     required this.onContactSelected,
     required this.felicitupBloc,
   });
@@ -33,20 +34,27 @@ class _ContactSearchListState extends State<ContactSearchList> {
   String _searchQuery = '';
   List<UserModel> _filteredFriendList = [];
   final TextEditingController _searchController = TextEditingController();
+  late UserModel? currentUser;
 
   @override
   void initState() {
     super.initState();
-    widget.initialFriendList.sort(
-      (a, b) => (a.fullName ?? '').toLowerCase().compareTo(
-        (b.fullName ?? '').toLowerCase(),
-      ),
-    );
     _filteredFriendList = List.from(widget.initialFriendList);
 
     _searchController.addListener(() {
       _filterContacts(_searchController.text);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    currentUser = context.read<AppBloc>().state.currentUser;
+    widget.initialFriendList.sort(
+      (a, b) => (a.getDisplayName(currentUser)).toLowerCase().compareTo(
+            (b.getDisplayName(currentUser)).toLowerCase(),
+          ),
+    );
   }
 
   @override
@@ -64,9 +72,10 @@ class _ContactSearchListState extends State<ContactSearchList> {
       } else {
         _filteredFriendList = widget.initialFriendList
             .where(
-              (contact) => (contact.fullName ?? '').toLowerCase().contains(
-                lowerCaseQuery,
-              ),
+              (contact) =>
+                  (contact.getDisplayName(currentUser)).toLowerCase().contains(
+                        lowerCaseQuery,
+                      ),
             )
             .toList();
       }
@@ -96,7 +105,7 @@ class _ContactSearchListState extends State<ContactSearchList> {
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Buscar contacto...',
+              hintText: 'Buscar contacto...', 
               prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(context.sp(5)),
@@ -140,7 +149,7 @@ class _ContactSearchListState extends State<ContactSearchList> {
                     onTap: () {
                       final owner = OwnerModel(
                         id: contact.id ?? '',
-                        name: contact.fullName ?? 'Usuario sin nombre',
+                        name: contact.getDisplayName(currentUser),
                         date: contact.birthDate,
                         userImg: contact.userImg ?? '',
                       );
@@ -162,7 +171,6 @@ class _ContactSearchListState extends State<ContactSearchList> {
     );
   }
 }
-
 class SelectContactsView extends StatelessWidget {
   const SelectContactsView({super.key});
 
@@ -230,14 +238,16 @@ class SelectContactsView extends StatelessWidget {
                             previous.felicitupOwner != current.felicitupOwner,
                         builder: (_, state) {
                           final listOwner = state.felicitupOwner;
+                          final currentUser =
+                              context.read<AppBloc>().state.currentUser;
                           return Text(
                             listOwner.length > 2
-                                ? 'Felicitas a ${listOwner[0].name}, a ${listOwner[1].name} y a ${listOwner.length - 2} más'
+                                ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)}, a ${state.friendList.firstWhere((element) => element.id == listOwner[1].id).getDisplayName(currentUser)} y a ${listOwner.length - 2} más'
                                 : listOwner.length == 2
-                                ? 'Felicitas a ${listOwner[0].name} y a ${listOwner[1].name}'
-                                : listOwner.length == 1
-                                ? 'Felicitas a ${listOwner[0].name}'
-                                : '¿A quién felicitas?',
+                                    ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)} y a ${state.friendList.firstWhere((element) => element.id == listOwner[1].id).getDisplayName(currentUser)}'
+                                    : listOwner.length == 1
+                                        ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)}'
+                                        : '¿A quién felicitas?',
                             style: context.styles.subtitle,
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,

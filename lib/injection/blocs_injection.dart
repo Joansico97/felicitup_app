@@ -124,7 +124,12 @@ void _initBlocsInjection() {
         chatRepository: di(),
       ),
     )
-    ..registerFactory(() => PeoplePastFelicitupBloc(felicitupRepository: di()))
+    ..registerFactory(
+      () => PeoplePastFelicitupBloc(
+        felicitupRepository: di(),
+        userRepository: di(),
+      ),
+    )
     ..registerFactory(() => VideoPastFelicitupBloc())
     ..registerFactory(
       () => RemindersBloc(userRepository: di(), chatRepository: di()),

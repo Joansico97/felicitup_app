@@ -1,9 +1,12 @@
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/common/common.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
+import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class ContactCardRow extends StatelessWidget {
@@ -18,7 +21,8 @@ class ContactCardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String name = contact.fullName ?? '';
+    final currentUser = context.read<AppBloc>().state.currentUser;
+    final String name = contact.getDisplayName(currentUser);
     final String userImg = contact.userImg ?? '';
 
     return StatefulBuilder(

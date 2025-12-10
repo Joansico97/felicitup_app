@@ -6,6 +6,7 @@ import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/contact_card_row.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
+import 'package:felicitup_app/helpers/user_model_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -29,19 +30,26 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
   String _searchQuery = '';
   List<UserModel> _filteredFriendList = [];
   final TextEditingController _searchController = TextEditingController();
+  late UserModel? currentUser;
 
   @override
   void initState() {
     super.initState();
-    widget.initialFriendList.sort(
-      (a, b) => (a.fullName ?? '').toLowerCase().compareTo(
-        (b.fullName ?? '').toLowerCase(),
-      ),
-    );
     _filteredFriendList = List.from(widget.initialFriendList);
     _searchController.addListener(() {
       _filterContacts(_searchController.text);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    currentUser = context.read<AppBloc>().state.currentUser;
+    widget.initialFriendList.sort(
+      (a, b) => (a.getDisplayName(
+        currentUser,
+      )).toLowerCase().compareTo((b.getDisplayName(currentUser)).toLowerCase()),
+    );
   }
 
   @override
@@ -59,9 +67,9 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
       } else {
         _filteredFriendList = widget.initialFriendList
             .where(
-              (contact) => (contact.fullName ?? '').toLowerCase().contains(
-                lowerCaseQuery,
-              ),
+              (contact) => (contact.getDisplayName(
+                currentUser,
+              )).toLowerCase().contains(lowerCaseQuery),
             )
             .toList();
       }
@@ -85,10 +93,8 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
 
     return BlocBuilder<InfoFelicitupBloc, InfoFelicitupState>(
       bloc: widget.infoFelicitupBloc,
-
       builder: (_, infoState) {
         final currentSelectedOwnersFromBloc = infoState.ownersList;
-
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -160,7 +166,7 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
                     onTap: () {
                       final owner = OwnerModel(
                         id: contact.id ?? '',
-                        name: contact.fullName ?? 'Usuario sin nombre',
+                        name: contact.getDisplayName(currentUser),
                         date: contact.birthDate,
                         userImg: contact.userImg,
                       );
