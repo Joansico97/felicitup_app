@@ -7,7 +7,6 @@ import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/bloc/create_felicitup_bloc.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
-import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -51,9 +50,9 @@ class _ContactSearchListState extends State<ContactSearchList> {
     super.didChangeDependencies();
     currentUser = context.read<AppBloc>().state.currentUser;
     widget.initialFriendList.sort(
-      (a, b) => (a.getDisplayName(currentUser)).toLowerCase().compareTo(
-            (b.getDisplayName(currentUser)).toLowerCase(),
-          ),
+      (a, b) => (a.getDisplayName(
+        currentUser,
+      )).toLowerCase().compareTo((b.getDisplayName(currentUser)).toLowerCase()),
     );
   }
 
@@ -72,10 +71,9 @@ class _ContactSearchListState extends State<ContactSearchList> {
       } else {
         _filteredFriendList = widget.initialFriendList
             .where(
-              (contact) =>
-                  (contact.getDisplayName(currentUser)).toLowerCase().contains(
-                        lowerCaseQuery,
-                      ),
+              (contact) => (contact.getDisplayName(
+                currentUser,
+              )).toLowerCase().contains(lowerCaseQuery),
             )
             .toList();
       }
@@ -105,7 +103,7 @@ class _ContactSearchListState extends State<ContactSearchList> {
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Buscar contacto...', 
+              hintText: 'Buscar contacto...',
               prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(context.sp(5)),
@@ -171,6 +169,7 @@ class _ContactSearchListState extends State<ContactSearchList> {
     );
   }
 }
+
 class SelectContactsView extends StatelessWidget {
   const SelectContactsView({super.key});
 
@@ -238,16 +237,18 @@ class SelectContactsView extends StatelessWidget {
                             previous.felicitupOwner != current.felicitupOwner,
                         builder: (_, state) {
                           final listOwner = state.felicitupOwner;
-                          final currentUser =
-                              context.read<AppBloc>().state.currentUser;
+                          final currentUser = context
+                              .read<AppBloc>()
+                              .state
+                              .currentUser;
                           return Text(
                             listOwner.length > 2
                                 ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)}, a ${state.friendList.firstWhere((element) => element.id == listOwner[1].id).getDisplayName(currentUser)} y a ${listOwner.length - 2} más'
                                 : listOwner.length == 2
-                                    ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)} y a ${state.friendList.firstWhere((element) => element.id == listOwner[1].id).getDisplayName(currentUser)}'
-                                    : listOwner.length == 1
-                                        ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)}'
-                                        : '¿A quién felicitas?',
+                                ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)} y a ${state.friendList.firstWhere((element) => element.id == listOwner[1].id).getDisplayName(currentUser)}'
+                                : listOwner.length == 1
+                                ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)}'
+                                : '¿A quién felicitas?',
                             style: context.styles.subtitle,
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,

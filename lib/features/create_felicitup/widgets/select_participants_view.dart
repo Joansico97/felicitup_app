@@ -5,7 +5,6 @@ import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/bloc/create_felicitup_bloc.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
-import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -47,9 +46,9 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
     super.didChangeDependencies();
     currentUser = context.read<AppBloc>().state.currentUser;
     widget.initialFriendList.sort(
-      (a, b) => (a.getDisplayName(currentUser)).toLowerCase().compareTo(
-            (b.getDisplayName(currentUser)).toLowerCase(),
-          ),
+      (a, b) => (a.getDisplayName(
+        currentUser,
+      )).toLowerCase().compareTo((b.getDisplayName(currentUser)).toLowerCase()),
     );
   }
 
@@ -68,10 +67,9 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
       } else {
         _filteredFriendList = widget.initialFriendList
             .where(
-              (contact) =>
-                  (contact.getDisplayName(currentUser)).toLowerCase().contains(
-                        lowerCaseQuery,
-                      ),
+              (contact) => (contact.getDisplayName(
+                currentUser,
+              )).toLowerCase().contains(lowerCaseQuery),
             )
             .toList();
       }

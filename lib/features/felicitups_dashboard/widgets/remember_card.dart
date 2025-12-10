@@ -6,12 +6,14 @@ import 'package:intl/intl.dart';
 class RememberCard extends StatelessWidget {
   const RememberCard({
     super.key,
+    required this.userId,
     required this.name,
     required this.date,
     required this.onTap,
     this.image,
   });
 
+  final String userId;
   final String name;
   final String? image;
   final DateTime date;

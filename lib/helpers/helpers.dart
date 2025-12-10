@@ -10,5 +10,4 @@ export './map_firebase_errors.dart';
 export './redirect_helper.dart';
 export './update_service_helper.dart';
 export './url_path_helper.dart';
-export './user_model_extension.dart';
 export './validates.dart';

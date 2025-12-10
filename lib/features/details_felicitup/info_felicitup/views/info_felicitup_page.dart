@@ -6,7 +6,6 @@ import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/contact_card_row.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
-import 'package:felicitup_app/helpers/user_model_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';

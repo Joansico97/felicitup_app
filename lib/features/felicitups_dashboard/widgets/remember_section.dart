@@ -85,10 +85,9 @@ class _RememberSectionState extends State<RememberSection> {
                   ),
                   SizedBox(width: context.sp(12)),
                   GestureDetector(
-                    onTap:
-                        () => context.read<AppBloc>().add(
-                          AppEvent.closeRememberSection(),
-                        ),
+                    onTap: () => context.read<AppBloc>().add(
+                      AppEvent.closeRememberSection(),
+                    ),
                     child: Container(
                       padding: EdgeInsets.all(context.sp(4)),
                       alignment: Alignment.center,
@@ -114,16 +113,13 @@ class _RememberSectionState extends State<RememberSection> {
                 child: BlocBuilder<AppBloc, AppState>(
                   builder: (_, state) {
                     final currentUser = state.currentUser;
-                    final birthdateAlerts =
-                        currentUser?.birthdateAlerts
-                            ?.where(
-                              (alert) => alert.targetDate!.isAfter(
-                                DateTime.now().subtract(
-                                  const Duration(days: 1),
-                                ),
-                              ),
-                            )
-                            .toList();
+                    final birthdateAlerts = currentUser?.birthdateAlerts
+                        ?.where(
+                          (alert) => alert.targetDate!.isAfter(
+                            DateTime.now().subtract(const Duration(days: 1)),
+                          ),
+                        )
+                        .toList();
 
                     return Expanded(
                       child: ListView.builder(
@@ -132,7 +128,8 @@ class _RememberSectionState extends State<RememberSection> {
                           final data = birthdateAlerts?[index];
 
                           return RememberCard(
-                            name: data?.friendName ?? '',
+                            userId: data?.friendId ?? '',
+                            name: data?.getDisplayName(currentUser) ?? '',
                             date: data?.targetDate ?? DateTime.now(),
                             image: data?.friendProfilePic,
                             onTap: () {
@@ -145,7 +142,8 @@ class _RememberSectionState extends State<RememberSection> {
                                 onAction1: () async {
                                   final OwnerModel owner = OwnerModel(
                                     id: data?.friendId ?? '',
-                                    name: data?.friendName ?? '',
+                                    name:
+                                        data?.getDisplayName(currentUser) ?? '',
                                     userImg: data?.friendProfilePic,
                                     date: data?.targetDate ?? DateTime.now(),
                                   );
@@ -175,7 +173,9 @@ class _RememberSectionState extends State<RememberSection> {
                                       SingleChatModel(
                                         chatId: data?.friendId ?? '',
                                         friendId: data?.friendId ?? '',
-                                        userName: data?.friendName ?? '',
+                                        userName:
+                                            data?.getDisplayName(currentUser) ??
+                                            '',
                                         userImage: data?.friendProfilePic,
                                       );
                                   if (currentUser?.singleChats?.any(
