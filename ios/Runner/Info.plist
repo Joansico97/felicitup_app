@@ -36,6 +36,8 @@
 	<string>$(PRODUCT_NAME) would like to have access to the microphone so that your greeting videos include sound, so your friends can hear your voice and your good wishes!</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>$(PRODUCT_NAME) would like to have access to your gallery so that you can choose your best profile picture and share proof when notifying the jackpot payment in the felicitups management.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This identifier will be used to deliver personalized ads to you.</string>
 	<key>FirebasePhoneAuthMultiFactorEnabled</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

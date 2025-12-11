@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 
@@ -9,7 +10,12 @@ class FacebookAnalyticsHelper {
 
   Future<void> initialize() async {
     try {
-      await _facebookAppEvents.setAdvertiserTracking(enabled: true);
+      if (Platform.isIOS) {
+        final status = await AppTrackingTransparency.requestTrackingAuthorization();
+        await _facebookAppEvents.setAdvertiserTracking(enabled: status == TrackingStatus.authorized);
+      } else {
+        await _facebookAppEvents.setAdvertiserTracking(enabled: true);
+      }
       logger.info('Facebook SDK initialized successfully');
     } catch (e) {
       logger.error('Error initializing Facebook SDK: $e');
