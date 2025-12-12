@@ -1,3 +1,4 @@
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
@@ -30,6 +31,7 @@ class SummaryView extends StatelessWidget {
                 builder: (_, state) {
                   final listOwner = state.felicitupOwner;
                   final reason = state.eventReason;
+                  final currentUser = context.read<AppBloc>().state.currentUser;
 
                   return listOwner.length > 2
                       ? Column(
@@ -41,11 +43,11 @@ class SummaryView extends StatelessWidget {
                                   listOwner.length,
                                   (index) => index != listOwner.length - 1
                                       ? Text(
-                                          '${listOwner[index].name} ',
+                                          '${state.friendList.firstWhere((element) => element.id == listOwner[index].id).getDisplayName(currentUser)} ',
                                           style: context.styles.subtitle,
                                         )
                                       : Text(
-                                          'y ${listOwner[index].name} ',
+                                          'y ${state.friendList.firstWhere((element) => element.id == listOwner[index].id).getDisplayName(currentUser)} ',
                                           style: context.styles.subtitle,
                                         ),
                                 ),
@@ -54,7 +56,7 @@ class SummaryView extends StatelessWidget {
                           ],
                         )
                       : Text(
-                          '$reason de ${listOwner[0].name}',
+                          '$reason de ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)}',
                           style: context.styles.subtitle,
                         );
                 },

@@ -143,7 +143,7 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
                     onTap: () {
                       final participant = InvitedModel(
                         id: contact.id,
-                        name: contact.getDisplayName(currentUser),
+                        name: contact.fullName,
                         userImage: contact.userImg,
                         assistanceStatus: enumToStringAssistance(
                           AssistanceStatus.pending,
@@ -299,7 +299,14 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                         ...List.generate(
                           listParticipants.length,
                           (index) => OnlyViewCardRow(
-                            contactName: listParticipants[index].name ?? '',
+                            contactName: state.friendList
+                                .firstWhere(
+                                  (element) =>
+                                      element.id == listParticipants[index].id,
+                                )
+                                .getDisplayName(
+                                  context.read<AppBloc>().state.currentUser,
+                                ),
                             userImg: listParticipants[index].userImage ?? '',
                             stepOne: false,
                             stepTwo: false,

@@ -147,7 +147,7 @@ class _ContactSearchListState extends State<ContactSearchList> {
                     onTap: () {
                       final owner = OwnerModel(
                         id: contact.id ?? '',
-                        name: contact.getDisplayName(currentUser),
+                        name: contact.fullName ?? '',
                         date: contact.birthDate,
                         userImg: contact.userImg ?? '',
                       );
