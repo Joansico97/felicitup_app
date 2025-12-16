@@ -28,5 +28,6 @@ abstract class AuthRepository {
     required String smsCode,
   });
   Future<Either<ApiException, String>> forgotPassword({required String email});
-  Future<Either<ApiException, bool>> validateEmailDomain({required String email});
+  Future<Either<ApiException, (bool, String?)>> validateEmailDomain(
+      {required String email});
 }

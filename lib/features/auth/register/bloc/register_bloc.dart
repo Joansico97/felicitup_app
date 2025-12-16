@@ -139,13 +139,20 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         );
       },
       (r) {
-        if (!r) {
+        final (isValid, suggestion) = r;
+        if (!isValid) {
           isError = true;
+          String errorMessage =
+              'El dominio del correo electrónico no es válido.';
+          if (suggestion != null) {
+            errorMessage =
+                'El dominio no es válido. ¿Quisiste decir $suggestion?';
+          }
           emit(
             state.copyWith(
               isLoading: false,
               status: RegisterStatus.error,
-              errorMessage: 'El dominio del correo electrónico no es válido.',
+              errorMessage: errorMessage,
             ),
           );
         }

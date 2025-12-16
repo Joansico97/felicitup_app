@@ -215,42 +215,89 @@ class AuthFirebaseResource implements AuthRepository {
   }
 
   @override
-  Future<Either<ApiException, bool>> validateEmailDomain({
+  Future<Either<ApiException, (bool, String?)>> validateEmailDomain({
     required String email,
   }) async {
-    try {
-      final domain = email.split('@').last;
+    final cleanEmail = email.trim();
 
-      final response = await http.get(
-        Uri.parse('https://isitarealemail.com/api/email/validate?email=$email'),
-      );
+    if (!cleanEmail.contains('@')) {
+      return const Right((false, null));
+    }
+    final domain = cleanEmail.split('@').last.toLowerCase();
+
+    final commonDomains = [
+      'gmail.com',
+      'googlemail.com',
+
+      'hotmail.com',
+      'outlook.com',
+      'live.com',
+      'msn.com',
+      'windowslive.com',
+
+      'hotmail.es',
+      'outlook.es',
+      'live.com.mx',
+      'hotmail.com.mx',
+      'hotmail.com.ar',
+      'outlook.com.ar',
+      'hotmail.cl',
+      'outlook.cl',
+
+      'yahoo.com',
+      'ymail.com',
+      'yahoo.es',
+      'yahoo.com.mx',
+      'yahoo.com.ar',
+      'yahoo.com.co',
+      'rocketmail.com',
+
+      'icloud.com',
+      'me.com',
+      'mac.com',
+
+      'aol.com',
+      'gmx.com',
+      'gmx.es',
+      'mail.com',
+      'protonmail.com',
+      'proton.me',
+      'zoho.com',
+      'yandex.com',
+      'uol.com.br',
+      'bol.com.br',
+    ];
+
+    if (commonDomains.contains(domain)) {
+      return const Right((true, null));
+    }
+
+    try {
+      final response = await http
+          .get(
+            Uri.parse(
+              'https://isitarealemail.com/api/email/validate?email=$cleanEmail',
+            ),
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'valid') {
-          return const Right(true);
+          return const Right((true, null));
         }
       }
-
-      final commonDomains = [
-        'gmail.com',
-        'hotmail.com',
-        'yahoo.com',
-        'outlook.com',
-      ];
-      final bestMatch = StringSimilarity.findBestMatch(domain, commonDomains);
-
-      if (bestMatch.bestMatch.rating! > 0.8) {
-        if (bestMatch.bestMatch.target == domain) {
-          return const Right(true);
-        } else {
-          return const Right(false);
-        }
-      }
-      return const Right(false);
     } catch (e) {
-      return Left(ApiException(400, e.toString()));
+      logger.error('Error en API de validación: $e');
     }
+
+    final bestMatch = StringSimilarity.findBestMatch(domain, commonDomains);
+
+    if (bestMatch.bestMatch.rating! > 0.8) {
+      return Right((false, bestMatch.bestMatch.target));
+    }
+
+    return const Right((false, null));
   }
 }
 
@@ -273,7 +320,6 @@ String _mapFirebaseAuthErrors(FirebaseAuthException e) {
     case 'requires-recent-login':
       return 'Debes iniciar sesión nuevamente para realizar esta acción';
 
-    // Errores de proveedores federados
     case 'account-exists-with-different-credential':
       return 'Esta cuenta ya existe con un método de autenticación diferente';
     case 'invalid-credential':
@@ -281,7 +327,6 @@ String _mapFirebaseAuthErrors(FirebaseAuthException e) {
     case 'credential-already-in-use':
       return 'Estas credenciales ya están asociadas a otra cuenta';
 
-    // Errores de verificación por teléfono
     case 'invalid-verification-code':
       return 'El código de verificación es inválido o ha expirado';
     case 'invalid-verification-id':
@@ -299,19 +344,16 @@ String _mapFirebaseAuthErrors(FirebaseAuthException e) {
     case 'too-many-requests':
       return 'Demasiados intentos. Por favor, espera antes de intentar nuevamente';
 
-    // Errores de autenticación con Google
     case 'popup-closed-by-user':
       return 'Cerraste la ventana de autenticación antes de completar el proceso';
     case 'network-request-failed':
       return 'Error de conexión a internet. Verifica tu red';
 
-    // Errores de autenticación con Apple
     case 'apple-auth-invalid-nonce':
       return 'Error en la autenticación con Apple (nonce inválido)';
     case 'apple-auth-invalid-id-token':
       return 'Error en la autenticación con Apple (token inválido)';
 
-    // Errores varios
     case 'app-not-authorized':
       return 'La aplicación no está autorizada para usar Firebase Authentication';
     case 'expired-action-code':
@@ -323,7 +365,6 @@ String _mapFirebaseAuthErrors(FirebaseAuthException e) {
     case 'missing-iframe-start':
       return 'Error interno de autenticación (iframe)';
 
-    // Errores de configuración
     case 'auth-domain-config-required':
       return 'Configuración de dominio de autenticación requerida';
     case 'missing-client-type':
