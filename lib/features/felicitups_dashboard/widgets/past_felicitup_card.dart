@@ -274,7 +274,7 @@ class PastFelicitupWidget extends StatelessWidget {
                                         SocialMediaBubble(
                                           onTap: () async {
                                             final encoded =
-                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}';
+                                                'https://play.felicitup.com/init?id=${felicitup.id}';
 
                                             final Uri url = Uri.parse(
                                               "whatsapp://send?text=$encoded",
@@ -307,7 +307,7 @@ class PastFelicitupWidget extends StatelessWidget {
                                         SocialMediaBubble(
                                           onTap: () async {
                                             final encoded =
-                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}';
+                                                'https://play.felicitup.com/init?id=${felicitup.id}';
 
                                             final fbUrl = Uri.parse(
                                               "https://www.facebook.com/sharer/sharer.php?u=$encoded",
@@ -350,7 +350,7 @@ class PastFelicitupWidget extends StatelessWidget {
                                         SocialMediaBubble(
                                           onTap: () async {
                                             final encoded =
-                                                'http://play.felicitup.hq/index.html?id=${felicitup.id}';
+                                                'https://play.felicitup.com/init?id=${felicitup.id}';
 
                                             final twitterUrl = Uri.parse(
                                               "https://twitter.com/intent/tweet?url=$encoded",
