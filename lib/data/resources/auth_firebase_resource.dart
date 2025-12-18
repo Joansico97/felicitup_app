@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/utils/logger.dart';
@@ -10,7 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:http/http.dart' as http;
 import 'package:string_similarity/string_similarity.dart';
 
 class AuthFirebaseResource implements AuthRepository {
@@ -223,18 +220,16 @@ class AuthFirebaseResource implements AuthRepository {
     if (!cleanEmail.contains('@')) {
       return const Right((false, null));
     }
-    final domain = cleanEmail.split('@').last.toLowerCase();
 
-    final commonDomains = [
+    final domain = cleanEmail.split('@').last.toLowerCase();
+    const commonDomains = [
       'gmail.com',
       'googlemail.com',
-
       'hotmail.com',
       'outlook.com',
       'live.com',
       'msn.com',
       'windowslive.com',
-
       'hotmail.es',
       'outlook.es',
       'live.com.mx',
@@ -243,7 +238,6 @@ class AuthFirebaseResource implements AuthRepository {
       'outlook.com.ar',
       'hotmail.cl',
       'outlook.cl',
-
       'yahoo.com',
       'ymail.com',
       'yahoo.es',
@@ -251,11 +245,9 @@ class AuthFirebaseResource implements AuthRepository {
       'yahoo.com.ar',
       'yahoo.com.co',
       'rocketmail.com',
-
       'icloud.com',
       'me.com',
       'mac.com',
-
       'aol.com',
       'gmx.com',
       'gmx.es',
@@ -268,36 +260,37 @@ class AuthFirebaseResource implements AuthRepository {
       'bol.com.br',
     ];
 
-    if (commonDomains.contains(domain)) {
-      return const Right((true, null));
-    }
-
     try {
-      final response = await http
-          .get(
-            Uri.parse(
-              'https://isitarealemail.com/api/email/validate?email=$cleanEmail',
-            ),
-          )
-          .timeout(const Duration(seconds: 5));
+      final result = await _firebaseFunctionsHelper.validateEmailDomain(
+        email: cleanEmail,
+      );
+      final bool isValid = result['valid'] as bool? ?? false;
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'valid') {
-          return const Right((true, null));
+      if (isValid) {
+        return const Right((true, null));
+      } else {
+        final bestMatch = StringSimilarity.findBestMatch(domain, commonDomains);
+        if ((bestMatch.bestMatch.rating ?? 0) > 0.8) {
+          return Right((false, bestMatch.bestMatch.target));
         }
+        return const Right((false, null));
       }
-    } catch (e) {
-      logger.error('Error en API de validación: $e');
+    } catch (e, s) {
+      logger.error(
+        'Error validating email domain via function $e, stack trace: $s',
+      );
+
+      if (commonDomains.contains(domain)) {
+        return const Right((true, null));
+      }
+
+      final bestMatch = StringSimilarity.findBestMatch(domain, commonDomains);
+
+      if ((bestMatch.bestMatch.rating ?? 0) > 0.8) {
+        return Right((false, bestMatch.bestMatch.target));
+      }
+      return const Right((false, null));
     }
-
-    final bestMatch = StringSimilarity.findBestMatch(domain, commonDomains);
-
-    if (bestMatch.bestMatch.rating! > 0.8) {
-      return Right((false, bestMatch.bestMatch.target));
-    }
-
-    return const Right((false, null));
   }
 }
 

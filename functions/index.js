@@ -1,7 +1,3 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable quotes */
-/* eslint-disable require-jsdoc */
-/* eslint-disable max-len */
 const admin = require("firebase-admin");
 const serviceAccount = require("./serviceAccountMergeKey.json");
 
@@ -24,6 +20,7 @@ const {getFirestore, Timestamp} = require('firebase-admin/firestore');
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 const {onCall, HttpsError, onRequest} = require('firebase-functions/v2/https');
 const {getAuth} = require("firebase-admin/auth");
+const dns = require("dns/promises");
 
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
@@ -1750,4 +1747,49 @@ exports.disableCurrentUser = onCall(
             "Ocurrió un error al intentar bloquear tu cuenta.",
         );
       }
-    });
+  });
+
+  exports.validateEmailDomain = onCall(
+    {
+      region: "us-central1",
+    },
+    async (request) => {
+        const email = request.data.email;
+        if (!email || typeof email !== 'string' || !email.includes('@')) {
+            throw new HttpsError(
+                'invalid-argument',
+                'El email proporcionado es inválido o no es un string.'
+            );
+        }
+        const domain = email.split('@')[1].toLowerCase();
+        try {
+            const mxRecords = await dns.resolveMx(domain);
+            if (!mxRecords || mxRecords.length === 0) {
+                return {
+                    valid: false,
+                    reason: 'NO_MX_RECORDS'
+                };
+            }
+            return {
+                valid: true,
+                mx: mxRecords
+                    .sort((a, b) => a.priority - b.priority)
+                    .map(r => r.exchange),
+            };
+        } catch (error) {
+            console.error(`Error resolviendo MX para ${domain}:`, error);
+            if (error.code === 'ENODATA' || error.code === 'ENOTFOUND') {
+                return {
+                    valid: false,
+                    reason: 'DOMAIN_NOT_FOUND'
+                };
+            }
+            return {
+                valid: false,
+                reason: 'DNS_QUERY_FAILED'
+            };
+        }
+    }
+);
+    
+
