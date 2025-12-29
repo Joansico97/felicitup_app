@@ -12,7 +12,9 @@ class FacebookAnalyticsHelper {
     try {
       if (Platform.isIOS) {
         final status = await AppTrackingTransparency.requestTrackingAuthorization();
-        await _facebookAppEvents.setAdvertiserTracking(enabled: status == TrackingStatus.authorized);
+        if (status == TrackingStatus.authorized) {
+          await _facebookAppEvents.setAdvertiserTracking(enabled: true);
+        }
       } else {
         await _facebookAppEvents.setAdvertiserTracking(enabled: true);
       }

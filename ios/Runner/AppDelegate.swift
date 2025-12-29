@@ -1,6 +1,7 @@
 import UIKit
 import Flutter
 import Firebase
+import FBSDKCoreKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -9,6 +10,10 @@ import Firebase
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     FirebaseApp.configure()
+    ApplicationDelegate.shared.application(
+        application,
+        didFinishLaunchingWithOptions: launchOptions
+    )
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -21,6 +26,12 @@ import Firebase
     if Auth.auth().canHandle(url) {
       return true
     }
-    return super.application(app, open: url, options: options)
+
+    let handled = ApplicationDelegate.shared.application(
+        app,
+        open: url,
+        options: options
+    )
+    return handled
   }
 }

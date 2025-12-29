@@ -67,7 +67,7 @@
 	<key>FacebookAppID</key>
 	<string>871743075419914</string>
 	<key>FacebookClientToken</key>
-	<string>YOUR_CLIENT_TOKEN</string>
+	<string>43e6229b123be286922cf0cff92ce70f</string>
 	<key>FacebookDisplayName</key>
 	<string>Felicitup</string>
 	<key>CFBundleURLTypes</key>
@@ -90,6 +90,10 @@
 	<string>firebase</string>
 	<string>https</string>
 	<string>whatsapp</string>
+	<string>fbapi</string>
+	<string>fb-messenger-api</string>
+	<string>fbauth2</string>
+	<string>fbshareextension</string>
 	</array>
 </dict>
 
