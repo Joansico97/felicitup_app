@@ -111,6 +111,8 @@ class _RememberSectionState extends State<RememberSection> {
               Visibility(
                 visible: !isCollapsed,
                 child: BlocBuilder<AppBloc, AppState>(
+                  buildWhen: (previous, current) =>
+                      previous.currentUser != current.currentUser,
                   builder: (_, state) {
                     final currentUser = state.currentUser;
                     final birthdateAlerts = currentUser?.birthdateAlerts

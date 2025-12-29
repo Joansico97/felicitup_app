@@ -27,6 +27,8 @@ class RemindersPage extends StatelessWidget {
             SizedBox(height: context.sp(12)),
             Expanded(
               child: BlocBuilder<AppBloc, AppState>(
+                buildWhen: (previous, current) =>
+                    previous.currentUser != current.currentUser,
                 builder: (_, state) {
                   final currentUser = state.currentUser;
                   final birthdateAlerts = state.currentUser?.birthdateAlerts
@@ -58,7 +60,7 @@ class RemindersPage extends StatelessWidget {
                           onAction1: () async {
                             final OwnerModel owner = OwnerModel(
                               id: data.friendId ?? '',
-                              name: data.friendName ?? '',
+                              name: data.getDisplayName(currentUser),
                               userImg: data.friendProfilePic,
                               date: data.targetDate!,
                             );
