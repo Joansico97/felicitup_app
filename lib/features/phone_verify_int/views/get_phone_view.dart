@@ -7,7 +7,7 @@ import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_mobile_field/intl_mobile_field.dart';
 
 class GetPhoneView extends StatefulWidget {
   const GetPhoneView({super.key});
@@ -88,7 +88,7 @@ class _GetPhoneViewState extends State<GetPhoneView> {
               SizedBox(height: context.sp(36)),
               SizedBox(
                 width: context.sp(250),
-                child: IntlPhoneField(
+                child: IntlMobileField(
                   languageCode: 'es',
                   decoration: InputDecoration(
                     labelText: '000 00 00 00',

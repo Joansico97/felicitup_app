@@ -4,7 +4,7 @@ import 'package:felicitup_app/features/features.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_mobile_field/intl_mobile_field.dart';
 
 class PhoneFederatedView extends StatefulWidget {
   const PhoneFederatedView({super.key});
@@ -40,12 +40,11 @@ class _PhoneFederatedViewState extends State<PhoneFederatedView> {
         children: [
           CollapsedHeader(
             title: '',
-            onPressed:
-                () => {
-                  context.read<FederatedRegisterBloc>().add(
-                    const FederatedRegisterEvent.backStep(),
-                  ),
-                },
+            onPressed: () => {
+              context.read<FederatedRegisterBloc>().add(
+                const FederatedRegisterEvent.backStep(),
+              ),
+            },
           ),
           Image.asset(Assets.images.logo.path, height: context.sp(60)),
           SizedBox(height: context.sp(12)),
@@ -72,7 +71,7 @@ class _PhoneFederatedViewState extends State<PhoneFederatedView> {
             padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
             child: SizedBox(
               width: context.sp(250),
-              child: IntlPhoneField(
+              child: IntlMobileField(
                 languageCode: 'es',
                 decoration: InputDecoration(
                   labelText: '000 00 00 00',

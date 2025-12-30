@@ -4,7 +4,7 @@ import 'package:felicitup_app/features/auth/register/bloc/register_bloc.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_mobile_field/intl_mobile_field.dart';
 
 class GetUserPhoneView extends StatefulWidget {
   const GetUserPhoneView({super.key});
@@ -52,10 +52,9 @@ class _GetUserPhoneViewState extends State<GetUserPhoneView> {
             children: [
               CollapsedHeader(
                 title: '',
-                onPressed:
-                    () => context.read<RegisterBloc>().add(
-                      RegisterEvent.previousStep(),
-                    ),
+                onPressed: () => context.read<RegisterBloc>().add(
+                  RegisterEvent.previousStep(),
+                ),
               ),
               // SizedBox(height: context.sp(24)),
               Image.asset(Assets.images.logo.path, height: context.sp(60)),
@@ -84,11 +83,11 @@ class _GetUserPhoneViewState extends State<GetUserPhoneView> {
               SizedBox(height: context.sp(36)),
               SizedBox(
                 width: context.sp(250),
-                child: IntlPhoneField(
+                child: IntlMobileField(
                   languageCode: 'es',
                   controller: _phoneController,
                   decoration: InputDecoration(
-                    labelText: '000 00 00 00',
+                    labelText: 'Número de teléfono',
                     labelStyle: context.styles.smallText,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
