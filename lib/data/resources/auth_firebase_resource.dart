@@ -74,13 +74,19 @@ class AuthFirebaseResource implements AuthRepository {
   @override
   Future<Either<ApiException, UserCredential>> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
+      final googleInstance = GoogleSignIn.instance;
+      await googleInstance.initialize();
+
+      final googleUser =
+          await googleInstance.attemptLightweightAuthentication() ??
+          await googleInstance.authenticate();
+
+      final googleAuth = googleUser.authentication;
+
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+        idToken: googleAuth.idToken,
       );
+
       final response = await _firebaseAuth.signInWithCredential(credential);
 
       return Right(response);
