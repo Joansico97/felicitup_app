@@ -88,7 +88,6 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
           ),
         ),
       ],
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       extendBody: true,
       body: SafeArea(
         bottom: false,

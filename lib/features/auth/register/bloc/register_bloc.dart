@@ -3,11 +3,11 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
+import 'package:felicitup_app/core/analytics/analytics_handler.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
-import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -22,11 +22,11 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     required AuthRepository authRepository,
     required UserRepository userRepository,
     required FirebaseFirestore firestore,
-    required FacebookAnalyticsHelper facebookAnalyticsHelper,
+    required AnalyticsHandler analyticsHandler,
   }) : _authRepository = authRepository,
        _userRepository = userRepository,
        _firestore = firestore,
-       _facebookAnalyticsHelper = facebookAnalyticsHelper,
+       _analyticsHandler = analyticsHandler,
        super(RegisterState.initial()) {
     on<RegisterEvent>(
       (events, emit) => events.map(
@@ -62,7 +62,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
   final FirebaseFirestore _firestore;
-  final FacebookAnalyticsHelper _facebookAnalyticsHelper;
+  final AnalyticsHandler _analyticsHandler;
 
   String _normalizePhone(String rawPhone) {
     final trimmed = rawPhone.trim();
@@ -392,9 +392,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         (r) async {
           add(RegisterEvent.setUserInfo(r));
           if (r.user != null) {
-            _facebookAnalyticsHelper.setUserId(r.user!.uid);
+            // The user id will be automatically set by the firebase analytics sdk
           }
-          _facebookAnalyticsHelper.trackCompleteRegistration();
+          _analyticsHandler.logSignUp(signUpMethod: 'email');
           emit(
             state.copyWith(isLoading: false, status: RegisterStatus.success),
           );
@@ -460,9 +460,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
             _setUserInfoRegister(userModel);
 
             if (userModel.id != null) {
-              _facebookAnalyticsHelper.setUserId(userModel.id!);
+              // The user id will be automatically set by the firebase analytics sdk
             }
-            _facebookAnalyticsHelper.trackCompleteRegistration();
+            _analyticsHandler.logSignUp(signUpMethod: 'google');
 
             emit(
               state.copyWith(
@@ -534,9 +534,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
             _setUserInfoRegister(userModel);
             if (userModel.id != null) {
-              _facebookAnalyticsHelper.setUserId(userModel.id!);
+              // The user id will be automatically set by the firebase analytics sdk
             }
-            _facebookAnalyticsHelper.trackCompleteRegistration();
+            _analyticsHandler.logSignUp(signUpMethod: 'apple');
 
             emit(
               state.copyWith(

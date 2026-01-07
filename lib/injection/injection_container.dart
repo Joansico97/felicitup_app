@@ -10,6 +10,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:felicitup_app/core/analytics/analytics_handler.dart';
 import 'package:get_it/get_it.dart';
 
 part 'blocs_injection.dart';

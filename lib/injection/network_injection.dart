@@ -22,5 +22,8 @@ void _initNetworkInjection() {
     )
     ..registerLazySingleton<LocalStorageHelper>(() => LocalStorageHelper())
     ..registerLazySingleton<FacebookAnalyticsHelper>(() => FacebookAnalyticsHelper())
-    ;
+    ..registerLazySingleton<AnalyticsHandler>(() => AnalyticsHandler(di(), di()))
+    ..registerLazySingleton<AnalyticsNavigatorObserver>(
+      () => AnalyticsNavigatorObserver(di()),
+    );
 }

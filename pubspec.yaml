@@ -1,7 +1,7 @@
 name: felicitup_app
 description: 'A new Flutter project.'
 
-version: 1.0.20+79
+version: 1.0.21+80
 environment:
   sdk: ^3.10.4
 

@@ -1,5 +1,6 @@
+import 'package:felicitup_app/core/analytics/analytics_handler.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:felicitup_app/injection/injection_container.dart';
 import 'package:flutter/material.dart';
 
 class PrimaryButton extends StatelessWidget {
@@ -30,8 +31,8 @@ class PrimaryButton extends StatelessWidget {
         onPressed:
             isActive
                 ? () {
-                  FirebaseAnalytics.instance.logEvent(
-                    name: 'button_tapped',
+                  di<AnalyticsHandler>().logEvent(
+                    'button_tapped',
                     parameters: {'button_label': label},
                   );
                   onTap();

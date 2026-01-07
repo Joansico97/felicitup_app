@@ -1,4 +1,5 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
+import 'package:felicitup_app/core/analytics/analytics_handler.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/data/resources/resources.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
@@ -85,17 +86,18 @@ class HandleNotificationsInteractions extends StatefulWidget {
 }
 
 class _HandleNotificationsInteractionsState
-    extends State<HandleNotificationsInteractions> with WidgetsBindingObserver {
-  final _facebookAnalyticsHelper = injection.di<FacebookAnalyticsHelper>();
+    extends State<HandleNotificationsInteractions>
+    with WidgetsBindingObserver {
+  final _analyticsHandler = injection.di<AnalyticsHandler>();
 
   Future<void> _setupInteractedMessage() async {
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance
+        .getInitialMessage();
 
     if (initialMessage != null) {
       context.read<AppBloc>().add(
-            AppEvent.notificationReceived(initialMessage.data),
-          );
+        AppEvent.notificationReceived(initialMessage.data),
+      );
     }
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -119,7 +121,7 @@ class _HandleNotificationsInteractionsState
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _facebookAnalyticsHelper.logActivateApp();
+      _analyticsHandler.logActivateApp();
     }
   }
 

@@ -18,7 +18,7 @@ void _initBlocsInjection() {
       () => LoginBloc(
         authRepository: di(),
         firestore: di(),
-        facebookAnalyticsHelper: di(),
+        analyticsHandler: di(),
       ),
     )
     ..registerFactory(
@@ -26,7 +26,7 @@ void _initBlocsInjection() {
         authRepository: di(),
         userRepository: di(),
         firestore: di(),
-        facebookAnalyticsHelper: di(),
+        analyticsHandler: di(),
       ),
     )
     ..registerFactory(() => HomeBloc(userRepository: di()))

@@ -1,8 +1,9 @@
 import 'package:felicitup_app/helpers/facebook_analytics_helper.dart';
+import 'package:felicitup_app/injection/injection_container.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 Future<void> initFacebookSdk() async {
-  final facebookAnalyticsHelper = FacebookAnalyticsHelper();
+  final facebookAnalyticsHelper = di<FacebookAnalyticsHelper>();
   await facebookAnalyticsHelper.initialize();
   
   final box = await Hive.openBox('app_settings');
