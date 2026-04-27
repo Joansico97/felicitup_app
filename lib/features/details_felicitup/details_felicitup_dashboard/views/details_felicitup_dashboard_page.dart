@@ -7,6 +7,7 @@ import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/widgets/widgets.dart';
 import 'package:felicitup_app/helpers/facebook_analytics_helper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -160,27 +161,27 @@ class _DetailsFelicitupDashboardPageState
                           Expanded(
                             child: Padding(
                               padding: EdgeInsets.symmetric(
-                                horizontal: context.sp(24),
+                                horizontal: kIsWeb ? 24 : context.sp(24),
                               ),
                               child: widget.childView,
                             ),
                           ),
                           Container(
-                            height: context.sp(60),
-                            width: context.sp(335),
+                            height: kIsWeb ? 60 : context.sp(60),
+                            width: kIsWeb ? 335 : context.sp(335),
                             margin: EdgeInsets.symmetric(
-                              vertical: context.sp(20),
+                              vertical: kIsWeb ? 24 : context.sp(20),
                             ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(
-                                context.sp(40),
+                                kIsWeb ? 40 : context.sp(40),
                               ),
                               color: context.colors.white,
                               boxShadow: [
                                 BoxShadow(
                                   color: context.colors.black.valueOpacity(.5),
-                                  blurRadius: context.sp(10),
-                                  spreadRadius: context.sp(1),
+                                  blurRadius: kIsWeb ? 10 : context.sp(10),
+                                  spreadRadius: kIsWeb ? 1 : context.sp(1),
                                 ),
                               ],
                             ),
@@ -297,7 +298,7 @@ class _DetailsFelicitupDashboardPageState
 
                                             return Container(
                                               padding: EdgeInsets.all(
-                                                context.sp(10),
+                                                kIsWeb ? 10 : context.sp(10),
                                               ),
                                               alignment: Alignment.center,
                                               child: Icon(
@@ -314,7 +315,11 @@ class _DetailsFelicitupDashboardPageState
                                                     : icons[index],
                                                 color: context.colors.orange,
                                                 size: currentIndex == index
-                                                    ? context.sp(30)
+                                                    ? kIsWeb
+                                                          ? 30
+                                                          : context.sp(30)
+                                                    : kIsWeb
+                                                    ? 20
                                                     : context.sp(20),
                                               ),
                                             );

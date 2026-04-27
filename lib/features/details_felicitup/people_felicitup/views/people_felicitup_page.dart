@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:collection/collection.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
@@ -204,14 +205,38 @@ class _PeoplePageModalSearchListState extends State<PeoplePageModalSearchList> {
   }
 }
 
-class PeopleFelicitupPage extends StatefulWidget {
+
+
+class PeopleFelicitupPage extends StatelessWidget {
   const PeopleFelicitupPage({super.key});
 
   @override
-  State<PeopleFelicitupPage> createState() => _PeopleFelicitupPageState();
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Center(
+        child: SizedBox(
+          width: 400,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              size: const Size(393, 852),
+            ),
+            child: const PeopleFelicitupView(),
+          ),
+        ),
+      );
+    }
+    return const PeopleFelicitupView();
+  }
 }
 
-class _PeopleFelicitupPageState extends State<PeopleFelicitupPage> {
+class PeopleFelicitupView extends StatefulWidget {
+  const PeopleFelicitupView({super.key});
+
+  @override
+  State<PeopleFelicitupView> createState() => _PeopleFelicitupViewState();
+}
+
+class _PeopleFelicitupViewState extends State<PeopleFelicitupView> {
   List<bool> isSelected = [];
   @override
   void initState() {

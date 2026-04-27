@@ -1,4 +1,5 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class InputCommon extends StatefulWidget {
@@ -41,10 +42,16 @@ class _InputCommonState extends State<InputCommon> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(widget.titleText, style: context.styles.menu),
-            SizedBox(height: context.sp(8)),
+            SizedBox(
+              height: kIsWeb
+                  ? 8
+                  : kIsWeb
+                  ? 8
+                  : context.sp(8),
+            ),
             ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: context.sp(56),
+                minHeight: kIsWeb ? 56 : context.sp(56),
                 maxWidth: context.fullWidth,
               ),
               child: TextFormField(
@@ -56,8 +63,8 @@ class _InputCommonState extends State<InputCommon> {
                 style: context.styles.smallText.copyWith(letterSpacing: 0.5),
                 decoration: InputDecoration(
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: context.sp(16),
-                    vertical: context.sp(15),
+                    horizontal: kIsWeb ? 16 : context.sp(16),
+                    vertical: kIsWeb ? 15 : context.sp(15),
                   ),
                   fillColor: Colors.white,
                   filled: true,
@@ -67,35 +74,45 @@ class _InputCommonState extends State<InputCommon> {
                       width: 1,
                       color: context.colors.grey,
                     ),
-                    borderRadius: BorderRadius.circular(context.sp(8)),
+                    borderRadius: BorderRadius.circular(
+                      kIsWeb ? 8 : context.sp(8),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(
                       width: 1,
                       color: context.colors.grey,
                     ),
-                    borderRadius: BorderRadius.circular(context.sp(8)),
+                    borderRadius: BorderRadius.circular(
+                      kIsWeb ? 8 : context.sp(8),
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
                       width: 1,
                       color: context.colors.grey,
                     ),
-                    borderRadius: BorderRadius.circular(context.sp(8)),
+                    borderRadius: BorderRadius.circular(
+                      kIsWeb ? 8 : context.sp(8),
+                    ),
                   ),
                   errorBorder: OutlineInputBorder(
                     borderSide: BorderSide(
                       width: 1,
                       color: context.colors.error,
                     ),
-                    borderRadius: BorderRadius.circular(context.sp(8)),
+                    borderRadius: BorderRadius.circular(
+                      kIsWeb ? 8 : context.sp(8),
+                    ),
                   ),
                   focusedErrorBorder: OutlineInputBorder(
                     borderSide: BorderSide(
                       width: 1,
                       color: context.colors.error,
                     ),
-                    borderRadius: BorderRadius.circular(context.sp(8)),
+                    borderRadius: BorderRadius.circular(
+                      kIsWeb ? 8 : context.sp(8),
+                    ),
                   ),
                   errorStyle: context.styles.paragraph.copyWith(
                     color: context.colors.error,
@@ -130,7 +147,7 @@ class _InputCommonState extends State<InputCommon> {
                 errorText,
                 style: context.styles.smallText.copyWith(
                   color: context.colors.error,
-                  fontSize: context.sp(10),
+                  fontSize: kIsWeb ? 10 : context.sp(10),
                 ),
               ),
             ),

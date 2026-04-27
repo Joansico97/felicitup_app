@@ -1,4 +1,5 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/router/router.dart';
@@ -14,16 +15,24 @@ Future<void> customModal({
     builder: (context) {
       return Center(
         child: Container(
-          margin: EdgeInsets.symmetric(horizontal: context.sp(24)),
+          margin: EdgeInsets.symmetric(
+            horizontal: kIsWeb ? 24 : context.sp(24),
+          ),
           constraints: BoxConstraints(
-            maxHeight: isColapsed ? context.sp(200) : context.sp(300),
-            minHeight: context.sp(50),
+            maxHeight: isColapsed
+                ? kIsWeb
+                      ? 200
+                      : context.sp(200)
+                : kIsWeb
+                ? 300
+                : context.sp(300),
+            minHeight: kIsWeb ? 50 : context.sp(50),
           ),
           padding: EdgeInsets.only(
-            top: context.sp(24),
-            left: context.sp(24),
-            right: context.sp(24),
-            bottom: context.sp(12),
+            top: kIsWeb ? 24 : context.sp(24),
+            left: kIsWeb ? 24 : context.sp(24),
+            right: kIsWeb ? 24 : context.sp(24),
+            bottom: kIsWeb ? 12 : context.sp(12),
           ),
           decoration: BoxDecoration(
             color: context.colors.lightGrey,
@@ -38,7 +47,7 @@ Future<void> customModal({
                   child: GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Container(
-                      padding: EdgeInsets.all(context.sp(2)),
+                      padding: EdgeInsets.all(kIsWeb ? 2 : context.sp(2)),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: context.colors.orange,
@@ -47,13 +56,13 @@ Future<void> customModal({
                     ),
                   ),
                 ),
-                SizedBox(height: context.sp(10)),
+                SizedBox(height: kIsWeb ? 10 : context.sp(10)),
                 Text(
                   title,
                   textAlign: TextAlign.center,
                   style: context.styles.header2,
                 ),
-                SizedBox(height: context.sp(24)),
+                SizedBox(height: kIsWeb ? 24 : context.sp(24)),
                 child,
               ],
             ),

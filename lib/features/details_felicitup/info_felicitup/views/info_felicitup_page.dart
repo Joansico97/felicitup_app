@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
@@ -188,14 +189,38 @@ class _OwnerSearchListInInfoState extends State<OwnerSearchListInInfo> {
   }
 }
 
-class InfoFelicitupPage extends StatefulWidget {
+
+
+class InfoFelicitupPage extends StatelessWidget {
   const InfoFelicitupPage({super.key});
 
   @override
-  State<InfoFelicitupPage> createState() => _InfoFelicitupPageState();
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Center(
+        child: SizedBox(
+          width: 400,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              size: const Size(393, 852),
+            ),
+            child: const InfoFelicitupView(),
+          ),
+        ),
+      );
+    }
+    return const InfoFelicitupView();
+  }
 }
 
-class _InfoFelicitupPageState extends State<InfoFelicitupPage> {
+class InfoFelicitupView extends StatefulWidget {
+  const InfoFelicitupView({super.key});
+
+  @override
+  State<InfoFelicitupView> createState() => _InfoFelicitupViewState();
+}
+
+class _InfoFelicitupViewState extends State<InfoFelicitupView> {
   @override
   void initState() {
     super.initState();

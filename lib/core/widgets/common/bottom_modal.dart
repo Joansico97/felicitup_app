@@ -1,5 +1,6 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,11 +19,17 @@ void commoBottomModal({
     barrierColor: context.colors.black.valueOpacity(.2),
     constraints: BoxConstraints(
       maxHeight: noSpace
-          ? context.sp(200)
+          ? kIsWeb
+                ? 200
+                : context.sp(200)
           : moreSpace
-          ? context.sp(750)
+          ? kIsWeb
+                ? 750
+                : context.sp(750)
+          : kIsWeb
+          ? 500
           : context.sp(500),
-      minHeight: context.sp(10),
+      minHeight: kIsWeb ? 10 : context.sp(10),
     ),
     enableDrag: false,
     isScrollControlled: true,
@@ -30,8 +37,8 @@ void commoBottomModal({
     backgroundColor: context.colors.backgroundModal,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(context.sp(25)),
-        topRight: Radius.circular(context.sp(25)),
+        topLeft: Radius.circular(kIsWeb ? 25 : context.sp(25)),
+        topRight: Radius.circular(kIsWeb ? 25 : context.sp(25)),
       ),
     ),
     builder: (_) {
@@ -42,12 +49,12 @@ void commoBottomModal({
           padding: EdgeInsets.only(
             top: MediaQuery.of(context).viewInsets.top,
             bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: context.sp(20),
-            right: context.sp(20),
+            left: kIsWeb ? 20 : context.sp(20),
+            right: kIsWeb ? 20 : context.sp(20),
           ),
           child: Column(
             children: [
-              SizedBox(height: context.sp(10)),
+              SizedBox(height: kIsWeb ? 10 : context.sp(10)),
               Align(
                 alignment: Alignment.centerRight,
                 child: IconButton(
@@ -55,7 +62,7 @@ void commoBottomModal({
                     context.pop();
                   },
                   icon: Container(
-                    padding: EdgeInsets.all(context.sp(1)),
+                    padding: EdgeInsets.all(kIsWeb ? 1 : context.sp(1)),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: context.colors.orange,
@@ -72,17 +79,17 @@ void commoBottomModal({
                 visible: hasBottomButton,
                 child: Column(
                   children: [
-                    SizedBox(height: context.sp(12)),
+                    SizedBox(height: kIsWeb ? 12 : context.sp(12)),
                     SizedBox(
-                      height: context.sp(50),
-                      width: context.sp(350),
+                      height: kIsWeb ? 50 : context.sp(50),
+                      width: kIsWeb ? 350 : context.sp(350),
                       child: PrimaryButton(
                         onTap: onTap ?? () {},
                         label: 'Aceptar',
                         isActive: true,
                       ),
                     ),
-                    SizedBox(height: context.sp(24)),
+                    SizedBox(height: kIsWeb ? 24 : context.sp(24)),
                   ],
                 ),
               ),

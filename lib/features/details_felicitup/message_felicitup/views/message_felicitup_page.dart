@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:collection/collection.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
@@ -10,16 +11,42 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../data/models/models.dart';
 
-class MessageFelicitupPage extends StatefulWidget {
+
+
+class MessageFelicitupPage extends StatelessWidget {
   const MessageFelicitupPage({super.key, this.chatId});
 
   final String? chatId;
 
   @override
-  State<MessageFelicitupPage> createState() => _MessageFelicitupPageState();
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Center(
+        child: SizedBox(
+          width: 400,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              size: const Size(393, 852),
+            ),
+            child: MessageFelicitupView(chatId: chatId),
+          ),
+        ),
+      );
+    }
+    return MessageFelicitupView(chatId: chatId);
+  }
 }
 
-class _MessageFelicitupPageState extends State<MessageFelicitupPage>
+class MessageFelicitupView extends StatefulWidget {
+  const MessageFelicitupView({super.key, this.chatId});
+
+  final String? chatId;
+
+  @override
+  State<MessageFelicitupView> createState() => _MessageFelicitupViewState();
+}
+
+class _MessageFelicitupViewState extends State<MessageFelicitupView>
     with WidgetsBindingObserver {
   final TextEditingController textController = TextEditingController();
   final scrollController = ScrollController();

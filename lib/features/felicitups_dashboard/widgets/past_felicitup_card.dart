@@ -6,6 +6,7 @@ import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/bloc/felicitups_dashboard_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -30,7 +31,7 @@ class PastFelicitupWidget extends StatelessWidget {
         width: context.fullWidth,
         decoration: BoxDecoration(
           color: context.colors.white.valueOpacity(.5),
-          borderRadius: BorderRadius.circular(context.sp(10)),
+          borderRadius: BorderRadius.circular(kIsWeb ? 10 : context.sp(10)),
           boxShadow: [
             BoxShadow(
               color: context.colors.black.valueOpacity(.1),
@@ -44,11 +45,11 @@ class PastFelicitupWidget extends StatelessWidget {
           children: [
             Container(
               width: context.fullWidth,
-              padding: EdgeInsets.all(context.sp(5)),
+              padding: EdgeInsets.all(kIsWeb ? 5 : context.sp(5)),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(context.sp(10)),
-                  topRight: Radius.circular(context.sp(10)),
+                  topLeft: Radius.circular(kIsWeb ? 10 : context.sp(10)),
+                  topRight: Radius.circular(kIsWeb ? 10 : context.sp(10)),
                 ),
                 color: context.colors.orange,
               ),
@@ -56,18 +57,20 @@ class PastFelicitupWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    height: context.sp(45),
-                    width: context.sp(45),
+                    height: kIsWeb ? 45 : context.sp(45),
+                    width: kIsWeb ? 45 : context.sp(45),
                     decoration: BoxDecoration(shape: BoxShape.circle),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(context.sp(45)),
+                      borderRadius: BorderRadius.circular(
+                        kIsWeb ? 45 : context.sp(45),
+                      ),
                       child: CommonNetworkImage(
                         imageUrl: felicitup.owner.first.userImg ?? '',
                       ),
                     ),
                   ),
                   SizedBox(
-                    width: context.sp(250),
+                    width: kIsWeb ? 250 : context.sp(250),
                     child: felicitup.owner.length > 2
                         ? Column(
                             children: [
@@ -116,13 +119,13 @@ class PastFelicitupWidget extends StatelessWidget {
             Container(
               width: context.fullWidth,
               padding: EdgeInsets.symmetric(
-                horizontal: context.sp(24),
-                vertical: context.sp(20),
+                horizontal: kIsWeb ? 24 : context.sp(24),
+                vertical: kIsWeb ? 20 : context.sp(20),
               ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(context.sp(10)),
-                  bottomRight: Radius.circular(context.sp(10)),
+                  bottomLeft: Radius.circular(kIsWeb ? 10 : context.sp(10)),
+                  bottomRight: Radius.circular(kIsWeb ? 10 : context.sp(10)),
                 ),
               ),
               child: Column(
@@ -135,10 +138,12 @@ class PastFelicitupWidget extends StatelessWidget {
                       extra: {'felicitupId': felicitup.id},
                     ),
                     child: Container(
-                      height: context.sp(260),
-                      width: context.sp(200),
+                      height: kIsWeb ? 260 : context.sp(260),
+                      width: kIsWeb ? 200 : context.sp(200),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(context.sp(10)),
+                        borderRadius: BorderRadius.circular(
+                          kIsWeb ? 10 : context.sp(10),
+                        ),
                         border: Border.all(
                           color: Colors.black.withAlpha((.18 * 255).toInt()),
                         ),
@@ -146,11 +151,11 @@ class PastFelicitupWidget extends StatelessWidget {
                       child: Stack(
                         children: [
                           SizedBox(
-                            height: context.sp(260),
-                            width: context.sp(200),
+                            height: kIsWeb ? 260 : context.sp(260),
+                            width: kIsWeb ? 200 : context.sp(200),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(
-                                context.sp(10),
+                                kIsWeb ? 10 : context.sp(10),
                               ),
                               child: CommonNetworkImage(
                                 imageUrl: felicitup.thumbnailUrl ?? '',
@@ -159,20 +164,20 @@ class PastFelicitupWidget extends StatelessWidget {
                           ),
                           Align(
                             child: Container(
-                              height: context.sp(50),
-                              width: context.sp(50),
+                              height: kIsWeb ? 50 : context.sp(50),
+                              width: kIsWeb ? 50 : context.sp(50),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: context.colors.white.valueOpacity(.6),
-                                  width: context.sp(5),
+                                  width: kIsWeb ? 5 : context.sp(5),
                                 ),
                               ),
                               child: Icon(
                                 Icons.play_arrow,
                                 color: context.colors.white.valueOpacity(.6),
-                                size: context.sp(25),
+                                size: kIsWeb ? 25 : context.sp(25),
                               ),
                             ),
                           ),
@@ -208,7 +213,7 @@ class PastFelicitupWidget extends StatelessWidget {
                               color: felicitup.likes!.contains(user?.id ?? '')
                                   ? context.colors.error
                                   : context.colors.black.valueOpacity(.5),
-                              size: context.sp(20),
+                              size: kIsWeb ? 20 : context.sp(20),
                             ),
                           );
                         },
@@ -219,14 +224,14 @@ class PastFelicitupWidget extends StatelessWidget {
                           children: [
                             Column(
                               children: [
-                                SizedBox(height: context.sp(3)),
+                                SizedBox(height: kIsWeb ? 3 : context.sp(3)),
                                 Text(
                                   '${felicitup.likes?.length ?? 0}',
                                   style: context.styles.smallText,
                                 ),
                               ],
                             ),
-                            SizedBox(width: context.sp(12)),
+                            SizedBox(width: kIsWeb ? 12 : context.sp(12)),
                           ],
                         ),
                       ),
@@ -238,7 +243,7 @@ class PastFelicitupWidget extends StatelessWidget {
                         icon: Icon(
                           Icons.message_outlined,
                           color: Colors.black.withAlpha((.5 * 255).toInt()),
-                          size: context.sp(20),
+                          size: kIsWeb ? 20 : context.sp(20),
                         ),
                       ),
 
@@ -268,7 +273,9 @@ class PastFelicitupWidget extends StatelessWidget {
                                       'Comparte tu felicitup',
                                       style: context.styles.header2,
                                     ),
-                                    SizedBox(height: context.sp(24)),
+                                    SizedBox(
+                                      height: kIsWeb ? 24 : context.sp(24),
+                                    ),
                                     Row(
                                       children: [
                                         SocialMediaBubble(
@@ -374,7 +381,7 @@ class PastFelicitupWidget extends StatelessWidget {
                             icon: Icon(
                               Icons.share,
                               color: Colors.black.withAlpha((.5 * 255).toInt()),
-                              size: context.sp(20),
+                              size: kIsWeb ? 20 : context.sp(20),
                             ),
                           );
                         },
@@ -402,7 +409,7 @@ class PastFelicitupWidget extends StatelessWidget {
                             Icon(
                               Icons.arrow_forward_ios_rounded,
                               color: Colors.black,
-                              size: context.sp(12),
+                              size: kIsWeb ? 12 : context.sp(12),
                             ),
                           ],
                         ),
@@ -411,10 +418,10 @@ class PastFelicitupWidget extends StatelessWidget {
                         data: ThemeData(
                           popupMenuTheme: PopupMenuThemeData(
                             color: context.colors.grey,
-                            elevation: context.sp(8),
+                            elevation: kIsWeb ? 8 : context.sp(8),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
-                                context.sp(8),
+                                kIsWeb ? 8 : context.sp(8),
                               ),
                             ),
                           ),
@@ -485,22 +492,22 @@ class SocialMediaBubble extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: EdgeInsets.only(right: context.sp(12)),
+        margin: EdgeInsets.only(right: kIsWeb ? 12 : context.sp(12)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              height: context.sp(50),
-              width: context.sp(50),
+              height: kIsWeb ? 50 : context.sp(50),
+              width: kIsWeb ? 50 : context.sp(50),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: context.colors.white,
               ),
               child: PhosphorIcon(icon),
             ),
-            SizedBox(height: context.sp(8)),
+            SizedBox(height: kIsWeb ? 8 : context.sp(8)),
             Text(label, style: context.styles.smallText),
           ],
         ),

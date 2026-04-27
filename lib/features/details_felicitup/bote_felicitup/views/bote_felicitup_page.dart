@@ -9,14 +9,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class BoteFelicitupPage extends StatefulWidget {
+import 'package:flutter/foundation.dart';
+
+class BoteFelicitupPage extends StatelessWidget {
   const BoteFelicitupPage({super.key});
 
   @override
-  State<BoteFelicitupPage> createState() => _BoteFelicitupPageState();
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Center(
+        child: SizedBox(
+          width: 400,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              size: const Size(393, 852),
+            ),
+            child: const BoteFelicitupView(),
+          ),
+        ),
+      );
+    }
+    return const BoteFelicitupView();
+  }
 }
 
-class _BoteFelicitupPageState extends State<BoteFelicitupPage> {
+class BoteFelicitupView extends StatefulWidget {
+  const BoteFelicitupView({super.key});
+
+  @override
+  State<BoteFelicitupView> createState() => _BoteFelicitupViewState();
+}
+
+class _BoteFelicitupViewState extends State<BoteFelicitupView> {
   void showBoteQuantity() {
     showDialog(
       context: context,

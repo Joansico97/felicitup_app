@@ -6,6 +6,7 @@ import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -50,8 +51,8 @@ class DetailsHeader extends StatelessWidget {
     return Container(
       width: context.fullWidth,
       padding: EdgeInsets.symmetric(
-        horizontal: context.sp(12),
-        vertical: context.sp(32),
+        horizontal: kIsWeb ? 12 : context.sp(12),
+        vertical: kIsWeb ? 32 : context.sp(32),
       ),
       child: Stack(
         alignment: Alignment.center,
@@ -88,13 +89,15 @@ class DetailsHeader extends StatelessWidget {
               );
 
               return Container(
-                width: context.sp(300),
-                padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
+                width: kIsWeb ? 300 : context.sp(300),
+                padding: EdgeInsets.symmetric(
+                  horizontal: kIsWeb ? 12 : context.sp(12),
+                ),
                 child: Row(
                   children: [
                     Container(
-                      height: context.sp(60),
-                      width: context.sp(60),
+                      height: kIsWeb ? 60 : context.sp(60),
+                      width: kIsWeb ? 60 : context.sp(60),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: context.colors.lightGrey,
@@ -106,7 +109,7 @@ class DetailsHeader extends StatelessWidget {
                       child: (owner.userImg?.isNotEmpty ?? false)
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(
-                                context.sp(50),
+                                kIsWeb ? 50 : context.sp(50),
                               ),
                               child: CommonNetworkImage(
                                 imageUrl: owner.userImg!,
@@ -121,7 +124,7 @@ class DetailsHeader extends StatelessWidget {
                               ),
                             ),
                     ),
-                    SizedBox(width: context.sp(12)),
+                    SizedBox(width: kIsWeb ? 12 : context.sp(12)),
                     Flexible(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
