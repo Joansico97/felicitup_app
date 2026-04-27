@@ -8,6 +8,7 @@ import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/home/bloc/home_bloc.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -49,7 +50,9 @@ class _HomePageState extends State<HomePage> {
 
     if (_hasContactsPermission(permissionStatus)) {
       _requestContactsUpdate(isoCode);
-    } else if (Platform.isIOS && _shouldShowPermissionModal(currentUser)) {
+    } else if (!kIsWeb &&
+        Platform.isIOS &&
+        _shouldShowPermissionModal(currentUser)) {
       requestContactsPermissionWithModal();
     } else {
       _requestContactsUpdate(isoCode);

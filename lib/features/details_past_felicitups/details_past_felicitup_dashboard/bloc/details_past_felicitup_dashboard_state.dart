@@ -1,7 +1,8 @@
 part of 'details_past_felicitup_dashboard_bloc.dart';
 
 @freezed
-class DetailsPastFelicitupDashboardState with _$DetailsPastFelicitupDashboardState {
+abstract class DetailsPastFelicitupDashboardState
+    with _$DetailsPastFelicitupDashboardState {
   const factory DetailsPastFelicitupDashboardState({
     required bool isLoading,
     required int currentIndex,
@@ -9,7 +10,8 @@ class DetailsPastFelicitupDashboardState with _$DetailsPastFelicitupDashboardSta
     FelicitupModel? felicitup,
   }) = _DetailsPastFelicitupDashboardState;
 
-  factory DetailsPastFelicitupDashboardState.initial() => DetailsPastFelicitupDashboardState(
+  factory DetailsPastFelicitupDashboardState.initial() =>
+      DetailsPastFelicitupDashboardState(
         isLoading: false,
         currentIndex: 1,
         errorMessage: '',

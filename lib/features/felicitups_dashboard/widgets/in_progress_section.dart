@@ -24,9 +24,7 @@ class InProgressSection extends StatelessWidget {
             ? Center(
                 child: Container(
                   padding: EdgeInsets.all(context.sp(20)),
-                  margin: EdgeInsets.symmetric(
-                    horizontal: context.sp(20),
-                  ),
+                  margin: EdgeInsets.symmetric(horizontal: context.sp(20)),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(context.sp(30)),
@@ -38,41 +36,35 @@ class InProgressSection extends StatelessWidget {
                   ),
                 ),
               )
-            : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    ...List.generate(
-                      listFelicitups.length,
-                      (index) => GestureDetector(
-                        onTap: () => context.go(
-                          RouterPaths.messageFelicitup,
-                          extra: {
-                            'felicitupId': listFelicitups[index].id,
-                          },
-                        ),
-                        onLongPress: () {
-                          if (listFelicitups[index].createdBy == currentUser?.id) {
-                            showConfirmModal(
-                              title: '¿Estás seguro de que quieres eliminar esta felicitup?',
-                              content: 'Una vez eliminada no podrás recuperarla',
-                              onAccept: () async {
-                                context.read<FelicitupsDashboardBloc>().add(
-                                      FelicitupsDashboardEvent.deleteFelicitup(
-                                        listFelicitups[index].id,
-                                        listFelicitups[index].chatId,
-                                      ),
-                                    );
-                              },
-                            );
-                          }
-                        },
-                        child: FelicitupCard(
-                          felicitup: listFelicitups[index],
-                        ),
-                      ),
+            : ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: listFelicitups.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () => context.go(
+                      RouterPaths.messageFelicitup,
+                      extra: {'felicitupId': listFelicitups[index].id},
                     ),
-                  ],
-                ),
+                    onLongPress: () {
+                      if (listFelicitups[index].createdBy == currentUser?.id) {
+                        showConfirmModal(
+                          title:
+                              '¿Estás seguro de que quieres eliminar esta felicitup?',
+                          content: 'Una vez eliminada no podrás recuperarla',
+                          onAccept: () async {
+                            context.read<FelicitupsDashboardBloc>().add(
+                              FelicitupsDashboardEvent.deleteFelicitup(
+                                listFelicitups[index].id,
+                                listFelicitups[index].chatId,
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    },
+                    child: FelicitupCard(felicitup: listFelicitups[index]),
+                  );
+                },
               );
       },
     );

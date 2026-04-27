@@ -25,18 +25,9 @@ class DetailsRow extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(context.sp(20)),
           color: Colors.white.withValues(alpha: .6),
-          border: Border.all(
-            color: Colors.white,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white, width: 1),
         ),
-        child: Row(
-          children: [
-            prefixChild,
-            Spacer(),
-            sufixChild,
-          ],
-        ),
+        child: Row(children: [prefixChild, Spacer(), sufixChild]),
       ),
     );
   }

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
@@ -7,6 +5,7 @@ import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/auth/register/widgets/register_input_field.dart';
 import 'package:felicitup_app/features/features.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -84,7 +83,7 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                       hintText: 'Apellidos',
                     ),
                     Visibility(
-                      visible: Platform.isAndroid,
+                      visible: kIsWeb || defaultTargetPlatform == TargetPlatform.android,
                       child: Column(
                         children: [
                           SizedBox(height: context.sp(6)),
@@ -137,16 +136,13 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                                           birthDate == null
                                               ? 'Fecha Nacimiento'
                                               : DateFormat(
-                                                'dd/MM/yyyy',
-                                              ).format(birthDate!),
+                                                  'dd/MM/yyyy',
+                                                ).format(birthDate!),
                                           style: context.styles.paragraph
                                               .copyWith(
-                                                color:
-                                                    birthDate == null
-                                                        ? context
-                                                            .colors
-                                                            .darkGrey
-                                                        : context.colors.black,
+                                                color: birthDate == null
+                                                    ? context.colors.darkGrey
+                                                    : context.colors.black,
                                               ),
                                         ),
                                         Icon(
@@ -179,17 +175,16 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                             style: context.styles.smallText.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
-                            recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () {
-                                    context.push(
-                                      RouterPaths.termsPolicies,
-                                      extra: {
-                                        'isTerms': true,
-                                        'isFromFederated': true,
-                                      },
-                                    );
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                context.push(
+                                  RouterPaths.termsPolicies,
+                                  extra: {
+                                    'isTerms': true,
+                                    'isFromFederated': true,
                                   },
+                                );
+                              },
                           ),
                           TextSpan(
                             text: 'y la ',
@@ -200,17 +195,16 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                             style: context.styles.smallText.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
-                            recognizer:
-                                TapGestureRecognizer()
-                                  ..onTap = () {
-                                    context.push(
-                                      RouterPaths.termsPolicies,
-                                      extra: {
-                                        'isTerms': false,
-                                        'isFromFederated': true,
-                                      },
-                                    );
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                context.push(
+                                  RouterPaths.termsPolicies,
+                                  extra: {
+                                    'isTerms': false,
+                                    'isFromFederated': true,
                                   },
+                                );
+                              },
                           ),
                         ],
                       ),

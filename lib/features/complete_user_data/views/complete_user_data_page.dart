@@ -22,7 +22,7 @@ class _CompleteUserDataPageState extends State<CompleteUserDataPage> {
   final lastNameController = TextEditingController();
   bool get isComplete =>
       (firstNameController.text.isNotEmpty &&
-          lastNameController.text.isNotEmpty);
+      lastNameController.text.isNotEmpty);
 
   @override
   void initState() {
@@ -35,10 +35,9 @@ class _CompleteUserDataPageState extends State<CompleteUserDataPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<CompleteUserDataBloc, CompleteUserDataState>(
-      listenWhen:
-          (previous, current) =>
-              previous.isLoading != current.isLoading ||
-              previous.status != current.status,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading ||
+          previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -71,13 +70,12 @@ class _CompleteUserDataPageState extends State<CompleteUserDataPage> {
           SizedBox(
             width: context.sp(400),
             child: PrimaryButton(
-              onTap:
-                  () => context.read<CompleteUserDataBloc>().add(
-                    CompleteUserDataEvent.completeUserData(
-                      firstName: firstNameController.text,
-                      lastName: lastNameController.text,
-                    ),
-                  ),
+              onTap: () => context.read<CompleteUserDataBloc>().add(
+                CompleteUserDataEvent.completeUserData(
+                  firstName: firstNameController.text,
+                  lastName: lastNameController.text,
+                ),
+              ),
               label: 'Guardar',
               isActive: isComplete,
             ),
@@ -86,10 +84,9 @@ class _CompleteUserDataPageState extends State<CompleteUserDataPage> {
           SizedBox(
             width: context.sp(400),
             child: PrimaryButton(
-              onTap:
-                  () => context.read<CompleteUserDataBloc>().add(
-                    CompleteUserDataEvent.logout(),
-                  ),
+              onTap: () => context.read<CompleteUserDataBloc>().add(
+                CompleteUserDataEvent.logout(),
+              ),
               label: 'Cerrar sesión',
               isActive: true,
             ),

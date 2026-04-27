@@ -29,18 +29,23 @@ class _VideoPastFelicitupPageState extends State<VideoPastFelicitupPage>
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
-    final felicitup = context.read<DetailsPastFelicitupDashboardBloc>().state.felicitup;
+    final felicitup = context
+        .read<DetailsPastFelicitupDashboardBloc>()
+        .state
+        .felicitup;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.mounted) {
-        context.read<DetailsPastFelicitupDashboardBloc>().add(DetailsPastFelicitupDashboardEvent.changeCurrentIndex(3));
+        context.read<DetailsPastFelicitupDashboardBloc>().add(
+          DetailsPastFelicitupDashboardEvent.changeCurrentIndex(3),
+        );
         initializeController(felicitup!.finalVideoUrl!);
         _initializeVideoPlayerFromUrl(felicitup.finalVideoUrl!);
-        context.read<VideoPastFelicitupBloc>().add(VideoPastFelicitupEvent.setUrlVideo(felicitup.finalVideoUrl!));
+        context.read<VideoPastFelicitupBloc>().add(
+          VideoPastFelicitupEvent.setUrlVideo(felicitup.finalVideoUrl!),
+        );
       }
     });
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _startHideControlsTimer();
     super.initState();
   }
@@ -138,9 +143,7 @@ class _VideoPastFelicitupPageState extends State<VideoPastFelicitupPage>
           Expanded(
             child: _isInitialized
                 ? _buildVideoPlayer()
-                : Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                : Center(child: CircularProgressIndicator()),
           ),
           SizedBox(height: context.sp(12)),
           SizedBox(
@@ -153,10 +156,7 @@ class _VideoPastFelicitupPageState extends State<VideoPastFelicitupPage>
                       _formatDuration(_position),
                       style: context.styles.smallText,
                     ),
-                    Text(
-                      " / ",
-                      style: context.styles.header2,
-                    ),
+                    Text(" / ", style: context.styles.header2),
                     Text(
                       _formatDuration(_duration),
                       style: context.styles.smallText,
@@ -166,9 +166,7 @@ class _VideoPastFelicitupPageState extends State<VideoPastFelicitupPage>
                 SizedBox(height: context.sp(8)),
                 GestureDetector(
                   onTap: _togglePlay,
-                  child: Icon(
-                    _isPlaying ? Icons.pause : Icons.play_arrow,
-                  ),
+                  child: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
                 ),
               ],
             ),
@@ -195,10 +193,7 @@ class _VideoPastFelicitupPageState extends State<VideoPastFelicitupPage>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          AspectRatio(
-            aspectRatio: 9 / 16,
-            child: VideoPlayer(_controller!),
-          ),
+          AspectRatio(aspectRatio: 9 / 16, child: VideoPlayer(_controller!)),
           Positioned(
             top: context.sp(10),
             left: 0,
@@ -228,7 +223,9 @@ class _VideoPastFelicitupPageState extends State<VideoPastFelicitupPage>
                 padding: EdgeInsets.zero,
                 iconSize: context.sp(50),
                 icon: Icon(
-                  _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                  _isPlaying
+                      ? Icons.pause_circle_filled
+                      : Icons.play_circle_fill,
                   color: context.colors.white.valueOpacity(.8),
                 ),
                 onPressed: _togglePlay,

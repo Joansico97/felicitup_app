@@ -6,7 +6,7 @@ part 'owner_model.freezed.dart';
 part 'owner_model.g.dart';
 
 @freezed
-class OwnerModel with _$OwnerModel {
+abstract class OwnerModel with _$OwnerModel {
   const factory OwnerModel({
     required String id,
     required String name,

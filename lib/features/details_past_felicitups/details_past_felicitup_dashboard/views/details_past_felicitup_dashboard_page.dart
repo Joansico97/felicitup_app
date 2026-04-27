@@ -10,18 +10,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class DetailsPastFelicitupDashboardPage extends StatefulWidget {
-  const DetailsPastFelicitupDashboardPage({
-    super.key,
-    required this.childView,
-  });
+  const DetailsPastFelicitupDashboardPage({super.key, required this.childView});
 
   final Widget childView;
 
   @override
-  State<DetailsPastFelicitupDashboardPage> createState() => _DetailsPastFelicitupDashboardPageState();
+  State<DetailsPastFelicitupDashboardPage> createState() =>
+      _DetailsPastFelicitupDashboardPageState();
 }
 
-class _DetailsPastFelicitupDashboardPageState extends State<DetailsPastFelicitupDashboardPage> {
+class _DetailsPastFelicitupDashboardPageState
+    extends State<DetailsPastFelicitupDashboardPage> {
   @override
   void initState() {
     super.initState();
@@ -68,8 +67,12 @@ class _DetailsPastFelicitupDashboardPageState extends State<DetailsPastFelicitup
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<DetailsPastFelicitupDashboardBloc, DetailsPastFelicitupDashboardState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+    return BlocListener<
+      DetailsPastFelicitupDashboardBloc,
+      DetailsPastFelicitupDashboardState
+    >(
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -80,14 +83,15 @@ class _DetailsPastFelicitupDashboardPageState extends State<DetailsPastFelicitup
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) {
-            context
-                .read<DetailsPastFelicitupDashboardBloc>()
-                .add(DetailsPastFelicitupDashboardEvent.asignCurrentChat(''));
+            context.read<DetailsPastFelicitupDashboardBloc>().add(
+              DetailsPastFelicitupDashboardEvent.asignCurrentChat(''),
+            );
             context.go(RouterPaths.felicitupsDashboard);
           }
         },
         child: BlocBuilder<DetailsPastFelicitupDashboardBloc, DetailsPastFelicitupDashboardState>(
-          buildWhen: (previous, current) => previous.felicitup != current.felicitup,
+          buildWhen: (previous, current) =>
+              previous.felicitup != current.felicitup,
           builder: (_, state) {
             final felicitup = state.felicitup;
 
@@ -100,16 +104,22 @@ class _DetailsPastFelicitupDashboardPageState extends State<DetailsPastFelicitup
                           PastHeader(felicitup: felicitup),
                           Expanded(
                             child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: context.sp(24)),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: context.sp(24),
+                              ),
                               child: widget.childView,
                             ),
                           ),
                           Container(
                             height: context.sp(60),
                             width: context.sp(335),
-                            margin: EdgeInsets.symmetric(vertical: context.sp(20)),
+                            margin: EdgeInsets.symmetric(
+                              vertical: context.sp(20),
+                            ),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(context.sp(40)),
+                              borderRadius: BorderRadius.circular(
+                                context.sp(40),
+                              ),
                               color: context.colors.white,
                               boxShadow: [
                                 BoxShadow(
@@ -128,65 +138,117 @@ class _DetailsPastFelicitupDashboardPageState extends State<DetailsPastFelicitup
                                       : pagesComplete.length,
                                   (index) => IconButton(
                                     onPressed: () {
-                                      detailsPastFelicitupNavigatorKey.currentContext!
-                                          .read<DetailsPastFelicitupDashboardBloc>()
-                                          .add(DetailsPastFelicitupDashboardEvent.changeCurrentIndex(index));
+                                      detailsPastFelicitupNavigatorKey
+                                          .currentContext!
+                                          .read<
+                                            DetailsPastFelicitupDashboardBloc
+                                          >()
+                                          .add(
+                                            DetailsPastFelicitupDashboardEvent.changeCurrentIndex(
+                                              index,
+                                            ),
+                                          );
 
                                       switch (index) {
                                         case 0:
-                                          context.go(RouterPaths.mainPastFelicitup);
-                                          detailsPastFelicitupNavigatorKey.currentContext!
-                                              .read<DetailsPastFelicitupDashboardBloc>()
-                                              .add(DetailsPastFelicitupDashboardEvent.asignCurrentChat(''));
+                                          context.go(
+                                            RouterPaths.mainPastFelicitup,
+                                          );
+                                          detailsPastFelicitupNavigatorKey
+                                              .currentContext!
+                                              .read<
+                                                DetailsPastFelicitupDashboardBloc
+                                              >()
+                                              .add(
+                                                DetailsPastFelicitupDashboardEvent.asignCurrentChat(
+                                                  '',
+                                                ),
+                                              );
                                           break;
                                         case 1:
-                                          context.go(RouterPaths.chatPastFelicitup);
-                                          detailsPastFelicitupNavigatorKey.currentContext!
-                                              .read<DetailsPastFelicitupDashboardBloc>()
+                                          context.go(
+                                            RouterPaths.chatPastFelicitup,
+                                          );
+                                          detailsPastFelicitupNavigatorKey
+                                              .currentContext!
+                                              .read<
+                                                DetailsPastFelicitupDashboardBloc
+                                              >()
                                               .add(
-                                                DetailsPastFelicitupDashboardEvent.asignCurrentChat(felicitup.chatId),
+                                                DetailsPastFelicitupDashboardEvent.asignCurrentChat(
+                                                  felicitup.chatId,
+                                                ),
                                               );
                                           break;
                                         case 2:
-                                          context.go(RouterPaths.peoplePastFelicitup);
-                                          detailsPastFelicitupNavigatorKey.currentContext!
-                                              .read<DetailsPastFelicitupDashboardBloc>()
-                                              .add(DetailsPastFelicitupDashboardEvent.asignCurrentChat(''));
+                                          context.go(
+                                            RouterPaths.peoplePastFelicitup,
+                                          );
+                                          detailsPastFelicitupNavigatorKey
+                                              .currentContext!
+                                              .read<
+                                                DetailsPastFelicitupDashboardBloc
+                                              >()
+                                              .add(
+                                                DetailsPastFelicitupDashboardEvent.asignCurrentChat(
+                                                  '',
+                                                ),
+                                              );
                                           break;
                                         case 3:
-                                          context.go(RouterPaths.videoPastFelicitup);
-                                          detailsPastFelicitupNavigatorKey.currentContext!
-                                              .read<DetailsPastFelicitupDashboardBloc>()
-                                              .add(DetailsPastFelicitupDashboardEvent.asignCurrentChat(''));
+                                          context.go(
+                                            RouterPaths.videoPastFelicitup,
+                                          );
+                                          detailsPastFelicitupNavigatorKey
+                                              .currentContext!
+                                              .read<
+                                                DetailsPastFelicitupDashboardBloc
+                                              >()
+                                              .add(
+                                                DetailsPastFelicitupDashboardEvent.asignCurrentChat(
+                                                  '',
+                                                ),
+                                              );
                                           break;
 
                                         default:
                                       }
                                     },
-                                    icon: BlocBuilder<DetailsPastFelicitupDashboardBloc,
-                                        DetailsPastFelicitupDashboardState>(
-                                      builder: (_, state) {
-                                        final currentIndex = state.currentIndex;
+                                    icon:
+                                        BlocBuilder<
+                                          DetailsPastFelicitupDashboardBloc,
+                                          DetailsPastFelicitupDashboardState
+                                        >(
+                                          builder: (_, state) {
+                                            final currentIndex =
+                                                state.currentIndex;
 
-                                        return Container(
-                                          padding: EdgeInsets.all(context.sp(10)),
-                                          alignment: Alignment.center,
-                                          child: Icon(
-                                            (felicitup.finalVideoUrl?.isEmpty ?? false)
-                                                ? (currentIndex == index)
-                                                    ? selectedIconsWithoutVideo[index]
-                                                    : iconsWithoutVideo[index]
-                                                : (currentIndex == index)
+                                            return Container(
+                                              padding: EdgeInsets.all(
+                                                context.sp(10),
+                                              ),
+                                              alignment: Alignment.center,
+                                              child: Icon(
+                                                (felicitup
+                                                            .finalVideoUrl
+                                                            ?.isEmpty ??
+                                                        false)
+                                                    ? (currentIndex == index)
+                                                          ? selectedIconsWithoutVideo[index]
+                                                          : iconsWithoutVideo[index]
+                                                    : (currentIndex == index)
                                                     ? selectedIcons[index]
                                                     : icons[index],
-                                            color: context.colors.orange,
-                                            size: currentIndex == index ? context.sp(30) : context.sp(20),
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                                color: context.colors.orange,
+                                                size: currentIndex == index
+                                                    ? context.sp(30)
+                                                    : context.sp(20),
+                                              ),
+                                            );
+                                          },
+                                        ),
                                   ),
-                                )
+                                ),
                               ],
                             ),
                           ),

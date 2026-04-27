@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -13,5 +14,7 @@ class InitBloc extends Bloc<InitEvent, InitState> {
     );
   }
 
-  Future<void> _checkAppStatus(Emitter<InitState> emit) async {}
+  Future<void> _checkAppStatus(Emitter<InitState> emit) async {
+    if (kIsWeb) return;
+  }
 }

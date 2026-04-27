@@ -17,15 +17,9 @@ void showFinishModal(void Function()? onPressed) {
         contentTextStyle: context.styles.smallText,
         icon: Column(
           children: [
-            Image.asset(
-              Assets.images.logo.path,
-              height: context.sp(30),
-            ),
+            Image.asset(Assets.images.logo.path, height: context.sp(30)),
             SizedBox(height: context.sp(12)),
-            Image.asset(
-              Assets.images.logoLetter.path,
-              height: context.sp(32),
-            ),
+            Image.asset(Assets.images.logoLetter.path, height: context.sp(32)),
           ],
         ),
         actions: <Widget>[

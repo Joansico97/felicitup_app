@@ -4,7 +4,7 @@ part 'terms_policies_model.freezed.dart';
 part 'terms_policies_model.g.dart';
 
 @freezed
-class TermsPoliciesModel with _$TermsPoliciesModel {
+abstract class TermsPoliciesModel with _$TermsPoliciesModel {
   const factory TermsPoliciesModel({
     required String title,
     required String body,

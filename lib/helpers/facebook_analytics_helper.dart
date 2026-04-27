@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
+import 'package:flutter/foundation.dart';
 
 class FacebookAnalyticsHelper {
   FacebookAnalyticsHelper() : _facebookAppEvents = FacebookAppEvents();
@@ -9,9 +10,12 @@ class FacebookAnalyticsHelper {
   final FacebookAppEvents _facebookAppEvents;
 
   Future<void> initialize() async {
+    if (kIsWeb) return;
+
     try {
       if (Platform.isIOS) {
-        final status = await AppTrackingTransparency.requestTrackingAuthorization();
+        final status =
+            await AppTrackingTransparency.requestTrackingAuthorization();
         if (status == TrackingStatus.authorized) {
           await _facebookAppEvents.setAdvertiserTracking(enabled: true);
         }
@@ -25,6 +29,8 @@ class FacebookAnalyticsHelper {
   }
 
   Future<void> trackInstall() async {
+    if (kIsWeb) return;
+
     try {
       if (Platform.isAndroid) {
         await _trackAndroidInstall();
@@ -37,6 +43,8 @@ class FacebookAnalyticsHelper {
   }
 
   Future<void> _trackAndroidInstall() async {
+    if (kIsWeb) return;
+
     try {
       await _facebookAppEvents.logEvent(
         name: 'fb_mobile_activate_app',
@@ -61,6 +69,8 @@ class FacebookAnalyticsHelper {
   }
 
   Future<void> _trackIOSInstall() async {
+    if (kIsWeb) return;
+
     try {
       await _facebookAppEvents.logEvent(
         name: 'fb_mobile_activate_app',
@@ -77,6 +87,8 @@ class FacebookAnalyticsHelper {
     required String eventName,
     Map<String, dynamic>? parameters,
   }) async {
+    if (kIsWeb) return;
+
     try {
       await _facebookAppEvents.logEvent(
         name: eventName,
@@ -89,6 +101,8 @@ class FacebookAnalyticsHelper {
   }
 
   Future<void> logActivateApp() async {
+    if (kIsWeb) return;
+
     try {
       await _facebookAppEvents.logEvent(name: 'fb_mobile_activate_app');
     } catch (e) {
@@ -97,6 +111,8 @@ class FacebookAnalyticsHelper {
   }
 
   Future<void> setUserId(String userId) async {
+    if (kIsWeb) return;
+
     try {
       await _facebookAppEvents.setUserID(userId);
       logger.info('Facebook user ID set: $userId');
@@ -106,6 +122,8 @@ class FacebookAnalyticsHelper {
   }
 
   Future<void> clearUserId() async {
+    if (kIsWeb) return;
+
     try {
       await _facebookAppEvents.clearUserID();
     } catch (e) {
@@ -114,18 +132,26 @@ class FacebookAnalyticsHelper {
   }
 
   Future<void> trackMobileInstall() async {
+    if (kIsWeb) return;
+
     await logEvent(eventName: 'fb_mobile_install');
   }
 
   Future<void> trackCompleteRegistration() async {
+    if (kIsWeb) return;
+
     await logEvent(eventName: 'fb_mobile_complete_registration');
   }
 
   Future<void> trackViewContent() async {
+    if (kIsWeb) return;
+
     await logEvent(eventName: 'fb_mobile_view_content');
   }
 
   Future<void> trackLogin() async {
+    if (kIsWeb) return;
+
     await logEvent(eventName: 'fb_mobile_login');
   }
 }

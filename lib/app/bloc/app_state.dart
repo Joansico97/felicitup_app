@@ -1,7 +1,7 @@
 part of 'app_bloc.dart';
 
 @freezed
-class AppState with _$AppState {
+abstract class AppState with _$AppState {
   const factory AppState({
     required bool isLoading,
     required bool isLoadingContacts,

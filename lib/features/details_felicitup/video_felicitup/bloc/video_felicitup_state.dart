@@ -1,7 +1,7 @@
 part of 'video_felicitup_bloc.dart';
 
 @freezed
-class VideoFelicitupState with _$VideoFelicitupState {
+abstract class VideoFelicitupState with _$VideoFelicitupState {
   const factory VideoFelicitupState({
     required bool isLoading,
     required bool showModal,

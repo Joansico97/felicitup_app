@@ -23,9 +23,7 @@ class ActivityCard extends StatelessWidget {
           horizontal: context.sp(35),
           vertical: context.sp(18),
         ),
-        margin: EdgeInsets.only(
-          bottom: context.sp(10),
-        ),
+        margin: EdgeInsets.only(bottom: context.sp(10)),
         width: context.fullWidth,
         decoration: BoxDecoration(
           color: const Color(0xFFF6F6F6),
@@ -36,17 +34,10 @@ class ActivityCard extends StatelessWidget {
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  activity,
-                  style: context.styles.header2,
-                ),
-              ],
+              children: [Text(activity, style: context.styles.header2)],
             ),
             Spacer(),
-            CirclePicker(
-              isActive: isActive,
-            ),
+            CirclePicker(isActive: isActive),
           ],
         ),
       ),

@@ -1,9 +1,9 @@
 part of 'app_bloc.dart';
 
 @freezed
-class AppEvent with _$AppEvent {
+abstract class AppEvent with _$AppEvent {
   const factory AppEvent.onAppStarted() = _onAppStarted;
-  const factory AppEvent.changeLoadContacts() = changeLoadContacts;
+  const factory AppEvent.changeLoadContacts() = _changeLoadContacts;
   const factory AppEvent.loadContacts() = _loadContacts;
   const factory AppEvent.closeRememberSection() = _closeRememberSection;
   const factory AppEvent.checkAppStatus() = _checkAppStatus;
@@ -17,8 +17,7 @@ class AppEvent with _$AppEvent {
   const factory AppEvent.requestManualPermissions() = _requestManualPermissions;
   const factory AppEvent.requestManualContactsPermissions() =
       _requestManualContactsPermissions;
-  const factory AppEvent.reseteContactsPermissions() =
-      _reseteContactsPermissions;
+  const factory AppEvent.resetContactsPermissions() = _resetContactsPermissions;
   const factory AppEvent.notificationReceived(Map<String, dynamic> payload) =
       _notificationReceived;
   const factory AppEvent.clearPendingNotification() = _clearPendingNotification;

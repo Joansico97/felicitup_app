@@ -3,7 +3,7 @@ part of 'federated_register_bloc.dart';
 enum FederatedRegisterStatus { none, error, success }
 
 @freezed
-class FederatedRegisterState with _$FederatedRegisterState {
+abstract class FederatedRegisterState with _$FederatedRegisterState {
   const factory FederatedRegisterState({
     required bool isLoading,
     required int currentIndex,

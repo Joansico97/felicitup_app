@@ -21,9 +21,7 @@ class SwitchButton extends StatelessWidget {
         horizontal: context.sp(16),
         vertical: context.sp(12),
       ),
-      margin: EdgeInsets.only(
-        bottom: context.sp(12),
-      ),
+      margin: EdgeInsets.only(bottom: context.sp(12)),
       decoration: BoxDecoration(
         color: const Color(0xFFFAFAFA),
         borderRadius: BorderRadius.circular(context.sp(10)),
@@ -31,16 +29,8 @@ class SwitchButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: context.styles.paragraph.copyWith(
-              fontSize: 14,
-            ),
-          ),
-          CupertinoSwitch(
-            value: stateValue,
-            onChanged: onChanged,
-          )
+          Text(label, style: context.styles.paragraph.copyWith(fontSize: 14)),
+          CupertinoSwitch(value: stateValue, onChanged: onChanged),
         ],
       ),
     );

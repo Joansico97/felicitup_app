@@ -1,4 +1,5 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class LoginInput extends StatefulWidget {
@@ -35,66 +36,80 @@ class _LoginInputState extends State<LoginInput> {
       children: [
         ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: context.sp(50),
-            minHeight: context.sp(50),
-            maxWidth: context.sp(240),
-            minWidth: context.sp(240),
+            maxHeight: kIsWeb ? 50 : context.sp(50),
+            minHeight: kIsWeb ? 50 : context.sp(50),
+            // maxWidth: kIsWeb ? 240 : context.sp(240),
+            // minWidth: kIsWeb ? 240 : context.sp(240),
           ),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(context.sp(100)),
+              borderRadius: BorderRadius.circular(
+                kIsWeb ? 200 : context.sp(100),
+              ),
             ),
             child: TextFormField(
               controller: widget.controller,
-              keyboardType: widget.isPassword ? TextInputType.visiblePassword : TextInputType.emailAddress,
+              keyboardType: widget.isPassword
+                  ? TextInputType.visiblePassword
+                  : TextInputType.emailAddress,
               obscuringCharacter: '•',
               obscureText: widget.isPassword ? widget.isObscure! : false,
+              textAlignVertical: TextAlignVertical.center,
               style: context.styles.menu.copyWith(
                 letterSpacing: widget.isPassword ? 1.5 : 1,
                 height: 1,
               ),
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: context.sp(16),
-                  vertical: context.sp(15),
+                  horizontal: kIsWeb ? 16 : context.sp(16),
+                  vertical: kIsWeb ? 14 : context.sp(14),
                 ),
                 fillColor: Colors.white,
                 filled: true,
-                isCollapsed: true,
                 border: OutlineInputBorder(
                   borderSide: BorderSide(
-                    width: context.sp(1),
+                    width: kIsWeb ? 1 : context.sp(1),
                     color: context.colors.darkGrey,
                   ),
-                  borderRadius: BorderRadius.circular(context.sp(200)),
+                  borderRadius: BorderRadius.circular(
+                    kIsWeb ? 200 : context.sp(200),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    width: context.sp(1),
+                    width: kIsWeb ? 1 : context.sp(1),
                     color: context.colors.darkGrey,
                   ),
-                  borderRadius: BorderRadius.circular(context.sp(200)),
+                  borderRadius: BorderRadius.circular(
+                    kIsWeb ? 200 : context.sp(200),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    width: context.sp(1),
+                    width: kIsWeb ? 1 : context.sp(1),
                     color: context.colors.darkGrey,
                   ),
-                  borderRadius: BorderRadius.circular(context.sp(200)),
+                  borderRadius: BorderRadius.circular(
+                    kIsWeb ? 200 : context.sp(200),
+                  ),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    width: context.sp(1),
+                    width: kIsWeb ? 1 : context.sp(1),
                     color: context.colors.error,
                   ),
-                  borderRadius: BorderRadius.circular(context.sp(200)),
+                  borderRadius: BorderRadius.circular(
+                    kIsWeb ? 200 : context.sp(200),
+                  ),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    width: context.sp(1),
+                    width: kIsWeb ? 1 : context.sp(1),
                     color: context.colors.error,
                   ),
-                  borderRadius: BorderRadius.circular(context.sp(200)),
+                  borderRadius: BorderRadius.circular(
+                    kIsWeb ? 200 : context.sp(200),
+                  ),
                 ),
                 errorStyle: context.styles.paragraph.copyWith(
                   color: context.colors.error,
@@ -107,26 +122,32 @@ class _LoginInputState extends State<LoginInput> {
                   color: context.colors.darkGrey,
                   height: 1,
                 ),
-                suffixIcon: IconButton(
-                  onPressed: widget.changeObscure,
-                  icon: Icon(
-                    widget.isPassword
-                        ? widget.isObscure!
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined
-                        : null,
-                    color: context.colors.black,
-                    size: 20,
-                  ),
-                ),
+                suffixIcon: widget.isPassword
+                    ? IconButton(
+                        padding: EdgeInsets.only(
+                          right: kIsWeb ? 12 : context.sp(12),
+                        ),
+                        constraints: const BoxConstraints(),
+                        onPressed: widget.changeObscure,
+                        icon: Icon(
+                          widget.isObscure!
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: context.colors.black,
+                          size: 20,
+                        ),
+                      )
+                    : null,
               ),
               validator: widget.validate != null
                   ? (e) {
                       final error = widget.validate!(e);
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        setState(() {
-                          errorText = error ?? '';
-                        });
+                        if (mounted) {
+                          setState(() {
+                            errorText = error ?? '';
+                          });
+                        }
                       });
                       return error;
                     }

@@ -3,7 +3,7 @@ part of 'phone_verify_int_bloc.dart';
 enum PhoneVerifyStatus { none, error, success }
 
 @freezed
-class PhoneVerifyIntState with _$PhoneVerifyIntState {
+abstract class PhoneVerifyIntState with _$PhoneVerifyIntState {
   const factory PhoneVerifyIntState({
     required bool isLoading,
     required bool finished,

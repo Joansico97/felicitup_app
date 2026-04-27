@@ -3,7 +3,8 @@ part of 'details_felicitup_dashboard_bloc.dart';
 enum DetailsStatus { initial, failure, success }
 
 @freezed
-class DetailsFelicitupDashboardState with _$DetailsFelicitupDashboardState {
+abstract class DetailsFelicitupDashboardState
+    with _$DetailsFelicitupDashboardState {
   const factory DetailsFelicitupDashboardState({
     required bool isLoading,
     required int currentIndex,

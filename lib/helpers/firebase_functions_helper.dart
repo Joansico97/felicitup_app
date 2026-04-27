@@ -68,12 +68,10 @@ class FirebaseFunctionsHelper {
     await _call('disableCurrentUser');
   }
 
-  Future<Map<String, dynamic>> validateEmailDomain(
-      {required String email}) async {
-    return await _call(
-      'validateEmailDomain',
-      parameters: {'email': email},
-    );
+  Future<Map<String, dynamic>> validateEmailDomain({
+    required String email,
+  }) async {
+    return await _call('validateEmailDomain', parameters: {'email': email});
   }
 
   Future<void> sendFelicitup({required String felicitupId}) async {

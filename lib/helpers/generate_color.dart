@@ -12,5 +12,10 @@ Color generateColorForUser(String userId) {
 
   // 3. Crear el color HSL.
   //    Mantenemos la saturación y la luminosidad constantes.
-  return HSLColor.fromAHSL(1.0, hue, 0.7, 0.6).toColor(); // Ajusta S y L a tu gusto
+  return HSLColor.fromAHSL(
+    1.0,
+    hue,
+    0.7,
+    0.6,
+  ).toColor(); // Ajusta S y L a tu gusto
 }

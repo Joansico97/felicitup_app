@@ -3,6 +3,7 @@ import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/auth/login/bloc/login_bloc.dart';
 import 'package:felicitup_app/features/auth/login/widgets/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,11 +27,8 @@ class _LoginFormState extends State<LoginForm> {
       child: Form(
         child: Column(
           children: [
-            LoginInput(
-              controller: emailController,
-              hintText: 'Email',
-            ),
-            SizedBox(height: context.sp(12)),
+            LoginInput(controller: emailController, hintText: 'Email'),
+            SizedBox(height: kIsWeb ? 12 : context.sp(12)),
             LoginInput(
               controller: passwordController,
               hintText: 'Contraseña',
@@ -40,7 +38,7 @@ class _LoginFormState extends State<LoginForm> {
                 isObscure = !isObscure;
               }),
             ),
-            SizedBox(height: context.sp(12)),
+            SizedBox(height: kIsWeb ? 12 : context.sp(12)),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -53,20 +51,20 @@ class _LoginFormState extends State<LoginForm> {
                 ),
               ],
             ),
-            SizedBox(height: context.sp(24)),
+            SizedBox(height: kIsWeb ? 24 : context.sp(24)),
             SizedBox(
-              height: context.sp(45),
-              width: context.sp(172),
+              height: kIsWeb ? 45 : context.sp(45),
+              width: kIsWeb ? 172 : context.sp(172),
               child: BlocBuilder<LoginBloc, LoginState>(
                 builder: (_, state) {
                   return PrimaryButton(
                     onTap: () {
                       context.read<LoginBloc>().add(
-                            LoginEvent.loginEvent(
-                              emailController.text,
-                              passwordController.text,
-                            ),
-                          );
+                        LoginEvent.loginEvent(
+                          emailController.text,
+                          passwordController.text,
+                        ),
+                      );
                     },
                     isBig: false,
                     label: 'Acceder',
@@ -75,7 +73,7 @@ class _LoginFormState extends State<LoginForm> {
                 },
               ),
             ),
-            SizedBox(height: context.sp(24)),
+            SizedBox(height: kIsWeb ? 24 : context.sp(24)),
             RichText(
               text: TextSpan(
                 text: 'Aún no tienes cuenta? ',
@@ -86,7 +84,8 @@ class _LoginFormState extends State<LoginForm> {
                     style: context.styles.paragraph.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
-                    recognizer: TapGestureRecognizer()..onTap = () => context.push(RouterPaths.register),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () => context.push(RouterPaths.register),
                   ),
                 ],
               ),

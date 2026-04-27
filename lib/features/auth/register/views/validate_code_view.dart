@@ -41,10 +41,9 @@ class _ValidateCodeViewState extends State<ValidateCodeView> {
           children: [
             CollapsedHeader(
               title: '',
-              onPressed:
-                  () => context.read<RegisterBloc>().add(
-                    RegisterEvent.previousStep(),
-                  ),
+              onPressed: () => context.read<RegisterBloc>().add(
+                RegisterEvent.previousStep(),
+              ),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: context.sp(24)),

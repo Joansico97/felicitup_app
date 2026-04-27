@@ -42,10 +42,9 @@ class _ValidateCodeFederatedViewState extends State<ValidateCodeFederatedView> {
           children: [
             CollapsedHeader(
               title: '',
-              onPressed:
-                  () => context.read<FederatedRegisterBloc>().add(
-                    const FederatedRegisterEvent.backStep(),
-                  ),
+              onPressed: () => context.read<FederatedRegisterBloc>().add(
+                const FederatedRegisterEvent.backStep(),
+              ),
             ),
             SizedBox(height: context.sp(24)),
             Image.asset(Assets.images.logo.path, height: context.sp(60)),

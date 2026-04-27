@@ -25,19 +25,14 @@ class GiftcardDetails extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         centerTitle: true,
-        title: Text(
-          'Tu deseo',
-          style: context.styles.header2,
-        ),
+        title: Text('Tu deseo', style: context.styles.header2),
         leading: IconButton(
           onPressed: callbackFuncion,
           icon: const Icon(Icons.arrow_back_ios_new_sharp),
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          horizontal: context.sp(48),
-        ),
+        padding: EdgeInsets.symmetric(horizontal: context.sp(48)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -89,18 +84,12 @@ class GiftcardDetails extends StatelessWidget {
               for (final link in links!)
                 Row(
                   children: [
-                    Icon(
-                      Icons.link,
-                      color: context.colors.primary,
-                    ),
+                    Icon(Icons.link, color: context.colors.primary),
                     SizedBox(width: context.sp(8)),
                     GestureDetector(
                       onTap: () async {
                         final Uri url = Uri.parse(link);
-                        await launchUrl(
-                          url,
-                          mode: LaunchMode.inAppBrowserView,
-                        );
+                        await launchUrl(url, mode: LaunchMode.inAppBrowserView);
                       },
                       child: SizedBox(
                         width: context.sp(250),

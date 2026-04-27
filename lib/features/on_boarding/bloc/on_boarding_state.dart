@@ -3,7 +3,7 @@ part of 'on_boarding_bloc.dart';
 enum OnBoardingFinishEnum { none, finish }
 
 @freezed
-class OnBoardingState with _$OnBoardingState {
+abstract class OnBoardingState with _$OnBoardingState {
   const factory OnBoardingState({
     required int currentPage,
     required OnBoardingFinishEnum finishEnum,

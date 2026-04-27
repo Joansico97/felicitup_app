@@ -37,8 +37,8 @@ class _TermsPoliciesPageState extends State<TermsPoliciesPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<TermsPoliciesBloc, TermsPoliciesState>(
-      listenWhen:
-          (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -51,28 +51,20 @@ class _TermsPoliciesPageState extends State<TermsPoliciesPage> {
           child: Column(
             children: [
               CollapsedHeader(
-                title:
-                    widget.isTerms
-                        ? 'Términos y condiciones de uso'
-                        : 'Política de privacidad',
-                onPressed:
-                    () =>
-                        widget.isFromFederated
-                            ? context.go(RouterPaths.federatedRegister)
-                            : context.go(RouterPaths.register),
+                title: widget.isTerms
+                    ? 'Términos y condiciones de uso'
+                    : 'Política de privacidad',
+                onPressed: () => widget.isFromFederated
+                    ? context.go(RouterPaths.federatedRegister)
+                    : context.go(RouterPaths.register),
               ),
               SizedBox(height: context.sp(12)),
               BlocBuilder<TermsPoliciesBloc, TermsPoliciesState>(
                 builder: (_, state) {
                   return Expanded(
-                    child:
-                        widget.isTerms
-                            ? TermsWidget(
-                              listData: state.termsAndConditions ?? [],
-                            )
-                            : PoliciesWidget(
-                              listData: state.privacyPolicy ?? [],
-                            ),
+                    child: widget.isTerms
+                        ? TermsWidget(listData: state.termsAndConditions ?? [])
+                        : PoliciesWidget(listData: state.privacyPolicy ?? []),
                   );
                 },
               ),
@@ -94,11 +86,10 @@ class PoliciesWidget extends StatelessWidget {
     return FadeInRight(
       child: ListView.builder(
         itemCount: listData.length,
-        itemBuilder:
-            (_, index) => ScrollButton(
-              title: listData[index].title,
-              content: listData[index].body,
-            ),
+        itemBuilder: (_, index) => ScrollButton(
+          title: listData[index].title,
+          content: listData[index].body,
+        ),
       ),
     );
   }
@@ -113,11 +104,10 @@ class TermsWidget extends StatelessWidget {
     return FadeInRight(
       child: ListView.builder(
         itemCount: listData.length,
-        itemBuilder:
-            (_, index) => ScrollButton(
-              title: listData[index].title,
-              content: listData[index].body,
-            ),
+        itemBuilder: (_, index) => ScrollButton(
+          title: listData[index].title,
+          content: listData[index].body,
+        ),
       ),
     );
   }

@@ -7,7 +7,7 @@ part 'felicitup_model.freezed.dart';
 part 'felicitup_model.g.dart';
 
 @freezed
-class FelicitupModel with _$FelicitupModel {
+abstract class FelicitupModel with _$FelicitupModel {
   const factory FelicitupModel({
     required String id,
     required String createdBy,

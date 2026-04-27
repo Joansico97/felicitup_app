@@ -30,7 +30,7 @@ String enumToStringPayment(PaymentStatus enumValue) {
 }
 
 @Freezed(makeCollectionsUnmodifiable: false)
-class InvitedModel with _$InvitedModel {
+abstract class InvitedModel with _$InvitedModel {
   const factory InvitedModel({
     String? id,
     String? name,
@@ -46,7 +46,7 @@ class InvitedModel with _$InvitedModel {
 }
 
 @freezed
-class VideoDataModel with _$VideoDataModel {
+abstract class VideoDataModel with _$VideoDataModel {
   const factory VideoDataModel({
     String? videoUrl,
     String? videoThumbnail,

@@ -6,7 +6,7 @@ part 'remainder_model.freezed.dart';
 part 'remainder_model.g.dart';
 
 @freezed
-class RemainderModel with _$RemainderModel {
+abstract class RemainderModel with _$RemainderModel {
   const factory RemainderModel({
     String? birthdayUserId,
     String? birthdayUserName,
@@ -18,5 +18,6 @@ class RemainderModel with _$RemainderModel {
     @TimestampConverter() DateTime? createdAt,
   }) = _RemainderModel;
 
-  factory RemainderModel.fromJson(Map<String, dynamic> json) => _$RemainderModelFromJson(json);
+  factory RemainderModel.fromJson(Map<String, dynamic> json) =>
+      _$RemainderModelFromJson(json);
 }

@@ -2,6 +2,7 @@ import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -19,32 +20,32 @@ class FelicitupCard extends StatelessWidget {
         children: [
           Container(
             alignment: Alignment.center,
-            height: context.sp(120),
+            height: kIsWeb ? 120 : context.sp(120),
             width: context.fullWidth,
             // width: context.sp(310),
             padding: EdgeInsets.only(
-              top: context.sp(15),
-              bottom: context.sp(15),
-              left: context.sp(19),
+              top: kIsWeb ? 15 : context.sp(15),
+              bottom: kIsWeb ? 15 : context.sp(15),
+              left: kIsWeb ? 20 : context.sp(20),
             ),
             margin: EdgeInsets.only(
-              bottom: context.sp(12),
-              left: context.sp(40),
-              right: context.sp(40),
+              bottom: kIsWeb ? 12 : context.sp(12),
+              left: kIsWeb ? 40 : context.sp(40),
+              right: kIsWeb ? 40 : context.sp(40),
             ),
             decoration: BoxDecoration(
               color: context.colors.ligthOrange.valueOpacity(.6),
-              borderRadius: BorderRadius.circular(context.sp(10)),
+              borderRadius: BorderRadius.circular(kIsWeb ? 10 : context.sp(10)),
               border: Border.all(
                 color: context.colors.ligthOrange,
-                width: context.sp(2),
+                width: kIsWeb ? 2 : context.sp(2),
               ),
             ),
             child: Row(
               children: [
                 Container(
-                  height: context.sp(60),
-                  width: context.sp(60),
+                  height: kIsWeb ? 60 : context.sp(60),
+                  width: kIsWeb ? 60 : context.sp(60),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -58,8 +59,8 @@ class FelicitupCard extends StatelessWidget {
                       felicitup.owner.length == 1 &&
                           (felicitup.owner[0].userImg?.isNotEmpty ?? false)
                       ? SizedBox(
-                          height: context.sp(65),
-                          width: context.sp(65),
+                          height: kIsWeb ? 65 : context.sp(65),
+                          width: kIsWeb ? 65 : context.sp(65),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(100),
                             child: CommonNetworkImage(
@@ -76,16 +77,16 @@ class FelicitupCard extends StatelessWidget {
                           ),
                         ),
                 ),
-                SizedBox(width: context.sp(10)),
+                SizedBox(width: kIsWeb ? 10 : context.sp(10)),
                 Container(
-                  width: context.sp(140),
-                  padding: EdgeInsets.all(context.sp(5)),
+                  width: kIsWeb ? 140 : context.sp(140),
+                  padding: EdgeInsets.all(kIsWeb ? 5 : context.sp(5)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SizedBox(
-                        width: context.sp(300),
+                        width: kIsWeb ? 140 : context.sp(140),
                         child: Text(
                           nameOwner.length > 1
                               ? '${felicitup.reason} de ${nameOwner.length} usuarios'
@@ -105,19 +106,19 @@ class FelicitupCard extends StatelessWidget {
                             CircleIcon(color: context.colors.ligthOrange),
                             Row(
                               children: [
-                                SizedBox(width: context.sp(10)),
+                                SizedBox(width: kIsWeb ? 10 : context.sp(10)),
                                 CircleIcon(color: context.colors.ligthOrange),
                               ],
                             ),
                             Row(
                               children: [
-                                SizedBox(width: context.sp(20)),
+                                SizedBox(width: kIsWeb ? 20 : context.sp(20)),
                                 CircleIcon(color: context.colors.ligthOrange),
                               ],
                             ),
                             Row(
                               children: [
-                                SizedBox(width: context.sp(30)),
+                                SizedBox(width: kIsWeb ? 30 : context.sp(30)),
                                 CircleIcon(color: context.colors.ligthOrange),
                               ],
                             ),
@@ -143,18 +144,22 @@ class FelicitupCard extends StatelessWidget {
             width: context.fullWidth,
             child: Column(
               children: [
-                SizedBox(height: context.sp(15)),
+                SizedBox(height: kIsWeb ? 15 : context.sp(15)),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Spacer(),
                     Container(
                       // height: context.sp(70),
-                      width: context.sp(60),
-                      padding: EdgeInsets.symmetric(vertical: context.sp(15)),
+                      width: kIsWeb ? 60 : context.sp(60),
+                      padding: EdgeInsets.symmetric(
+                        vertical: kIsWeb ? 15 : context.sp(15),
+                      ),
                       // height: size.width(.2),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(context.sp(10)),
+                        borderRadius: BorderRadius.circular(
+                          kIsWeb ? 10 : context.sp(10),
+                        ),
                         color: context.colors.white,
                       ),
                       child: Column(
@@ -164,7 +169,9 @@ class FelicitupCard extends StatelessWidget {
                               ? Column(
                                   children: [
                                     IconInfo(icon: Icons.play_arrow),
-                                    SizedBox(height: context.sp(5)),
+                                    SizedBox(
+                                      height: kIsWeb ? 5 : context.sp(5),
+                                    ),
                                   ],
                                 )
                               : const SizedBox(),
@@ -172,7 +179,9 @@ class FelicitupCard extends StatelessWidget {
                               ? Column(
                                   children: [
                                     IconInfo(icon: Icons.euro),
-                                    SizedBox(height: context.sp(5)),
+                                    SizedBox(
+                                      height: kIsWeb ? 5 : context.sp(5),
+                                    ),
                                   ],
                                 )
                               : const SizedBox(),
@@ -180,7 +189,7 @@ class FelicitupCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    SizedBox(width: context.sp(15)),
+                    SizedBox(width: kIsWeb ? 15 : context.sp(15)),
                   ],
                 ),
               ],
@@ -200,8 +209,8 @@ class CircleIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: context.sp(25),
-      width: context.sp(25),
+      height: kIsWeb ? 25 : context.sp(25),
+      width: kIsWeb ? 25 : context.sp(25),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -211,7 +220,7 @@ class CircleIcon extends StatelessWidget {
       child: Icon(
         Icons.people_outline,
         color: context.colors.primary,
-        size: context.sp(15),
+        size: kIsWeb ? 15 : context.sp(15),
       ),
     );
   }
@@ -225,14 +234,18 @@ class IconInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: context.sp(17),
-      width: context.sp(17),
+      height: kIsWeb ? 17 : context.sp(17),
+      width: kIsWeb ? 17 : context.sp(17),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: context.colors.primary, width: 1),
       ),
-      child: Icon(icon, color: context.colors.primary, size: context.sp(10)),
+      child: Icon(
+        icon,
+        color: context.colors.primary,
+        size: kIsWeb ? 10 : context.sp(10),
+      ),
     );
   }
 }

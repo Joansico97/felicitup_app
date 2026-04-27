@@ -3,7 +3,7 @@ part of 'create_felicitup_bloc.dart';
 enum CreateStatus { initial, success, error }
 
 @freezed
-class CreateFelicitupState with _$CreateFelicitupState {
+abstract class CreateFelicitupState with _$CreateFelicitupState {
   const factory CreateFelicitupState({
     required int steperIndex,
     required bool isLoading,

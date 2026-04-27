@@ -13,7 +13,7 @@ enum RegisterStatus {
 }
 
 @freezed
-class RegisterState with _$RegisterState {
+abstract class RegisterState with _$RegisterState {
   const factory RegisterState({
     required bool isLoading,
     required int currentStep,

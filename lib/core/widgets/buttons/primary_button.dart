@@ -1,6 +1,7 @@
 import 'package:felicitup_app/core/analytics/analytics_handler.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/injection/injection_container.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class PrimaryButton extends StatelessWidget {
@@ -28,41 +29,36 @@ class PrimaryButton extends StatelessWidget {
         maxWidth: context.fullWidth,
       ),
       child: ElevatedButton(
-        onPressed:
-            isActive
-                ? () {
-                  di<AnalyticsHandler>().logEvent(
-                    'button_tapped',
-                    parameters: {'button_label': label},
-                  );
-                  onTap();
-                }
-                : null,
+        onPressed: isActive
+            ? () {
+                di<AnalyticsHandler>().logEvent(
+                  'button_tapped',
+                  parameters: {'button_label': label},
+                );
+                onTap();
+              }
+            : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              isActive
-                  ? context.colors.orange
-                  : context.colors.lightBlue.valueOpacity(.6),
+          backgroundColor: isActive
+              ? context.colors.orange
+              : context.colors.lightBlue.valueOpacity(.6),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(context.sp(28)),
+            borderRadius: BorderRadius.circular(kIsWeb ? 28 : context.sp(28)),
           ),
         ),
         child: Text(
           label,
-          style:
-              isBig
-                  ? context.styles.paragraph.copyWith(
-                    color:
-                        isActive
-                            ? context.colors.white
-                            : context.colors.white.valueOpacity(.3),
-                  )
-                  : context.styles.buttons.copyWith(
-                    color:
-                        isActive
-                            ? context.colors.white
-                            : context.colors.white.valueOpacity(.3),
-                  ),
+          style: isBig
+              ? context.styles.paragraph.copyWith(
+                  color: isActive
+                      ? context.colors.white
+                      : context.colors.white.valueOpacity(.3),
+                )
+              : context.styles.buttons.copyWith(
+                  color: isActive
+                      ? context.colors.white
+                      : context.colors.white.valueOpacity(.3),
+                ),
         ),
       ),
     );

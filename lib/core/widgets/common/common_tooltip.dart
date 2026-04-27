@@ -19,9 +19,6 @@ class _CommonTooltipState extends State<CommonTooltip> {
   Widget build(BuildContext context) {
     return SuperTooltip(
       controller: _controller,
-      popupDirection: widget.direction ?? TooltipDirection.left,
-      arrowTipDistance: context.sp(15),
-      backgroundColor: context.colors.orange,
       content: Padding(
         padding: EdgeInsets.all(context.sp(12)),
         child: Text(

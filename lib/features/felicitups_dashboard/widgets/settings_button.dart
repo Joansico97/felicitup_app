@@ -24,11 +24,7 @@ class SettingsButton extends StatelessWidget {
           vertical: context.sp(15),
         ),
         decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Color(0xFFD7DEEA),
-            ),
-          ),
+          border: Border(bottom: BorderSide(color: Color(0xFFD7DEEA))),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -39,9 +35,7 @@ class SettingsButton extends StatelessWidget {
                   padding: EdgeInsets.all(context.sp(5)),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: context.colors.orange,
-                    ),
+                    border: Border.all(color: context.colors.orange),
                   ),
                   child: Icon(
                     icon,
@@ -49,15 +43,10 @@ class SettingsButton extends StatelessWidget {
                     color: context.colors.orange,
                   ),
                 ),
-                SizedBox(
-                  width: context.sp(16),
-                ),
+                SizedBox(width: context.sp(16)),
                 SizedBox(
                   width: context.sp(120),
-                  child: Text(
-                    label,
-                    style: context.styles.paragraph,
-                  ),
+                  child: Text(label, style: context.styles.paragraph),
                 ),
               ],
             ),
@@ -65,7 +54,60 @@ class SettingsButton extends StatelessWidget {
               Icons.arrow_forward_ios,
               color: context.colors.orange,
               size: 20,
-            )
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsButtonWeb extends StatelessWidget {
+  const SettingsButtonWeb({
+    super.key,
+    required this.onTap,
+    required this.label,
+    required this.icon,
+  });
+
+  final VoidCallback onTap;
+  final String label;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0xFFD7DEEA))),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: context.colors.orange),
+                  ),
+                  child: Icon(icon, size: 18, color: context.colors.orange),
+                ),
+                SizedBox(width: 16),
+                SizedBox(
+                  width: 120,
+                  child: Text(label, style: context.styles.paragraph),
+                ),
+              ],
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: context.colors.orange,
+              size: 20,
+            ),
           ],
         ),
       ),

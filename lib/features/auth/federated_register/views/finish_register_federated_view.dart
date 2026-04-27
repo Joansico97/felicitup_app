@@ -34,10 +34,9 @@ class _FinishRegisterFederatedViewState
           height: context.sp(50),
           width: context.sp(250),
           child: PrimaryButton(
-            onTap:
-                () => context.read<FederatedRegisterBloc>().add(
-                  FederatedRegisterEvent.finishEvent(),
-                ),
+            onTap: () => context.read<FederatedRegisterBloc>().add(
+              FederatedRegisterEvent.finishEvent(),
+            ),
             isBig: false,
             label: 'Acceder',
             isActive: true,

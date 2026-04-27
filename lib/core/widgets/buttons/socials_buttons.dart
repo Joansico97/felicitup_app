@@ -1,4 +1,5 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -23,41 +24,41 @@ class AppSocialRegularButton extends StatelessWidget {
     return GestureDetector(
       onTap: isActive ? onTap : null,
       child: Container(
-        height: context.sp(33),
+        height: kIsWeb ? 33 : context.sp(33),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isActive ? context.colors.white : context.colors.error.valueOpacity(.6),
-          border: Border.all(
-            color: context.colors.black,
-          ),
-          borderRadius: BorderRadius.circular(context.sp(60)),
+          color: isActive
+              ? context.colors.white
+              : context.colors.error.valueOpacity(.6),
+          border: Border.all(color: context.colors.black),
+          borderRadius: BorderRadius.circular(kIsWeb ? 60 : context.sp(60)),
         ),
         child: isLoading
-            ? CircularProgressIndicator(
-                color: context.colors.white,
-              )
+            ? CircularProgressIndicator(color: context.colors.white)
             : icon == null
-                ? Text(
+            ? Text(
+                label,
+                style: context.styles.paragraph.copyWith(
+                  color: isActive
+                      ? context.colors.black
+                      : context.colors.white.valueOpacity(.3),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(icon!),
+                  SizedBox(width: kIsWeb ? 24 : context.sp(24)),
+                  Text(
                     label,
                     style: context.styles.paragraph.copyWith(
-                      color: isActive ? context.colors.black : context.colors.white.valueOpacity(.3),
+                      color: isActive
+                          ? context.colors.black
+                          : context.colors.white.valueOpacity(.3),
                     ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        icon!,
-                      ),
-                      SizedBox(width: context.sp(24)),
-                      Text(
-                        label,
-                        style: context.styles.paragraph.copyWith(
-                          color: isActive ? context.colors.black : context.colors.white.valueOpacity(.3),
-                        ),
-                      ),
-                    ],
                   ),
+                ],
+              ),
       ),
     );
   }

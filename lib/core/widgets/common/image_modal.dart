@@ -2,10 +2,7 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-void showImageModal(
-  BuildContext context,
-  String imageUrl,
-) {
+void showImageModal(BuildContext context, String imageUrl) {
   showDialog(
     context: context,
     barrierColor: context.colors.black.valueOpacity(.5),

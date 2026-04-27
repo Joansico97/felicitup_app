@@ -1,7 +1,7 @@
 part of 'people_felicitup_bloc.dart';
 
 @freezed
-class PeopleFelicitupState with _$PeopleFelicitupState {
+abstract class PeopleFelicitupState with _$PeopleFelicitupState {
   const factory PeopleFelicitupState({
     required bool isLoading,
     List<InvitedModel>? invitedUsers,
@@ -10,8 +10,8 @@ class PeopleFelicitupState with _$PeopleFelicitupState {
   }) = _PeopleFelicitupState;
 
   factory PeopleFelicitupState.initial() => PeopleFelicitupState(
-        isLoading: false,
-        invitedContacts: [],
-        friendList: [],
-      );
+    isLoading: false,
+    invitedContacts: [],
+    friendList: [],
+  );
 }

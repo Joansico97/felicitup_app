@@ -1,7 +1,7 @@
 part of 'terms_policies_bloc.dart';
 
 @freezed
-class TermsPoliciesState with _$TermsPoliciesState {
+abstract class TermsPoliciesState with _$TermsPoliciesState {
   const factory TermsPoliciesState({
     required bool isLoading,
     List<TermsPoliciesModel>? termsAndConditions,

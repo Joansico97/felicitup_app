@@ -57,10 +57,9 @@ class _EditWishListItemViewState extends State<EditWishListItemView> {
                 controller: nameController,
                 hintText: 'Ingresa el nombre del producto',
                 titleText: 'Nombre del producto',
-                onchangeEditing:
-                    (value) => context.read<WishListBloc>().add(
-                      WishListEvent.setProductName(value),
-                    ),
+                onchangeEditing: (value) => context.read<WishListBloc>().add(
+                  WishListEvent.setProductName(value),
+                ),
               ),
               SizedBox(height: context.sp(16)),
               InputCommon(
@@ -69,10 +68,9 @@ class _EditWishListItemViewState extends State<EditWishListItemView> {
                 hintText: 'Ingresa el precio del producto',
                 titleText: 'Precio del producto',
                 isPrice: true,
-                onchangeEditing:
-                    (value) => context.read<WishListBloc>().add(
-                      WishListEvent.setProductPrice(value),
-                    ),
+                onchangeEditing: (value) => context.read<WishListBloc>().add(
+                  WishListEvent.setProductPrice(value),
+                ),
               ),
               SizedBox(height: context.sp(16)),
               InputCommon(
@@ -80,10 +78,9 @@ class _EditWishListItemViewState extends State<EditWishListItemView> {
                 controller: descriptionController,
                 hintText: 'Ingresa la descripción del producto',
                 titleText: 'Descripción del producto',
-                onchangeEditing:
-                    (value) => context.read<WishListBloc>().add(
-                      WishListEvent.setProductDescription(value),
-                    ),
+                onchangeEditing: (value) => context.read<WishListBloc>().add(
+                  WishListEvent.setProductDescription(value),
+                ),
               ),
               SizedBox(height: context.sp(16)),
               Text(

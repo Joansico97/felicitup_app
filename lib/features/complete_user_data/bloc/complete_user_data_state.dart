@@ -3,7 +3,7 @@ part of 'complete_user_data_bloc.dart';
 enum CompleteUserDataStatus { none, success, error }
 
 @freezed
-class CompleteUserDataState with _$CompleteUserDataState {
+abstract class CompleteUserDataState with _$CompleteUserDataState {
   const factory CompleteUserDataState({
     required bool isLoading,
     required CompleteUserDataStatus status,

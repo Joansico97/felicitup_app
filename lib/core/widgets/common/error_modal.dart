@@ -10,9 +10,7 @@ Future<void> showErrorModal(String error) async {
     builder: (context) {
       return Center(
         child: Container(
-          margin: EdgeInsets.symmetric(
-            horizontal: context.sp(12),
-          ),
+          margin: EdgeInsets.symmetric(horizontal: context.sp(12)),
           child: Material(
             color: Colors.white,
             borderRadius: const BorderRadius.all(Radius.circular(20)),
@@ -36,17 +34,11 @@ Future<void> showErrorModal(String error) async {
                         size: context.sp(12),
                       ),
                       SizedBox(width: context.sp(4)),
-                      Text(
-                        'Error',
-                        style: context.styles.header2,
-                      ),
+                      Text('Error', style: context.styles.header2),
                     ],
                   ),
                   SizedBox(height: context.sp(8)),
-                  Text(
-                    error,
-                    style: context.styles.paragraph,
-                  ),
+                  Text(error, style: context.styles.paragraph),
                   SizedBox(height: context.sp(8)),
                   Align(
                     alignment: Alignment.center,
@@ -57,7 +49,8 @@ Future<void> showErrorModal(String error) async {
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: context.colors.primary,
-                        disabledBackgroundColor: context.colors.primary.valueOpacity(.2),
+                        disabledBackgroundColor: context.colors.primary
+                            .valueOpacity(.2),
                         overlayColor: context.colors.lightGrey,
                       ),
                       child: Text(

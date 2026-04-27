@@ -3,6 +3,7 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/widgets/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +26,12 @@ class _DrawerAppState extends State<DrawerApp> {
   }
 
   Future<void> _loadVersionInfo() async {
+    if (kIsWeb) {
+      setState(() {
+        _appVersion = 'v1.0.0+1';
+      });
+      return;
+    }
     try {
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
       setState(() {

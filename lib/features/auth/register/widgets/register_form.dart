@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/auth/register/bloc/register_bloc.dart';
 import 'package:felicitup_app/features/auth/register/widgets/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -102,7 +101,7 @@ class _RegisterFormState extends State<RegisterForm> {
               hintText: 'Repetir contraseña',
             ),
             Visibility(
-              visible: Platform.isAndroid,
+              visible: kIsWeb || defaultTargetPlatform == TargetPlatform.android,
               child: Column(
                 children: [
                   SizedBox(height: context.sp(6)),
@@ -154,13 +153,12 @@ class _RegisterFormState extends State<RegisterForm> {
                                   birthDate == null
                                       ? 'Fecha Nacimiento'
                                       : DateFormat(
-                                        'dd/MM/yyyy',
-                                      ).format(birthDate!),
+                                          'dd/MM/yyyy',
+                                        ).format(birthDate!),
                                   style: context.styles.paragraph.copyWith(
-                                    color:
-                                        birthDate == null
-                                            ? context.colors.darkGrey
-                                            : context.colors.black,
+                                    color: birthDate == null
+                                        ? context.colors.darkGrey
+                                        : context.colors.black,
                                   ),
                                 ),
                                 Icon(
@@ -193,17 +191,13 @@ class _RegisterFormState extends State<RegisterForm> {
                     style: context.styles.smallText.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
-                    recognizer:
-                        TapGestureRecognizer()
-                          ..onTap = () {
-                            context.push(
-                              RouterPaths.termsPolicies,
-                              extra: {
-                                'isTerms': true,
-                                'isFromFederated': false,
-                              },
-                            );
-                          },
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        context.push(
+                          RouterPaths.termsPolicies,
+                          extra: {'isTerms': true, 'isFromFederated': false},
+                        );
+                      },
                   ),
                   TextSpan(text: 'y la ', style: context.styles.smallText),
                   TextSpan(
@@ -211,17 +205,13 @@ class _RegisterFormState extends State<RegisterForm> {
                     style: context.styles.smallText.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
-                    recognizer:
-                        TapGestureRecognizer()
-                          ..onTap = () {
-                            context.push(
-                              RouterPaths.termsPolicies,
-                              extra: {
-                                'isTerms': false,
-                                'isFromFederated': false,
-                              },
-                            );
-                          },
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        context.push(
+                          RouterPaths.termsPolicies,
+                          extra: {'isTerms': false, 'isFromFederated': false},
+                        );
+                      },
                   ),
                 ],
               ),

@@ -1,7 +1,7 @@
 part of 'felicitups_dashboard_bloc.dart';
 
 @freezed
-class FelicitupsDashboardState with _$FelicitupsDashboardState {
+abstract class FelicitupsDashboardState with _$FelicitupsDashboardState {
   const factory FelicitupsDashboardState({
     required bool isLoading,
     required bool showSection,

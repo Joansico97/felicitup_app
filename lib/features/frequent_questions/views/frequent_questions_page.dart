@@ -61,11 +61,10 @@ class FrequentQuestionsPage extends StatelessWidget {
                 child: ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
                   itemCount: listContent.length,
-                  itemBuilder:
-                      (_, index) => ScrollButton(
-                        title: listContent[index]['title'] ?? '',
-                        content: listContent[index]['content'] ?? '',
-                      ),
+                  itemBuilder: (_, index) => ScrollButton(
+                    title: listContent[index]['title'] ?? '',
+                    content: listContent[index]['content'] ?? '',
+                  ),
                 ),
               ),
             ],

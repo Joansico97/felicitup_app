@@ -1,4 +1,5 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class SecondaryButton extends StatelessWidget {
@@ -28,30 +29,26 @@ class SecondaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isActive ? onTap : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              isActive
-                  ? Colors.transparent
-                  : context.colors.lightBlue.valueOpacity(.6),
+          backgroundColor: isActive
+              ? Colors.transparent
+              : context.colors.lightBlue.valueOpacity(.6),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(context.sp(28)),
+            borderRadius: BorderRadius.circular(kIsWeb ? 28 : context.sp(28)),
           ),
         ),
         child: Text(
           label,
-          style:
-              isBig
-                  ? context.styles.paragraph.copyWith(
-                    color:
-                        isActive
-                            ? context.colors.black
-                            : context.colors.black.valueOpacity(.3),
-                  )
-                  : context.styles.buttons.copyWith(
-                    color:
-                        isActive
-                            ? context.colors.black
-                            : context.colors.black.valueOpacity(.3),
-                  ),
+          style: isBig
+              ? context.styles.paragraph.copyWith(
+                  color: isActive
+                      ? context.colors.black
+                      : context.colors.black.valueOpacity(.3),
+                )
+              : context.styles.buttons.copyWith(
+                  color: isActive
+                      ? context.colors.black
+                      : context.colors.black.valueOpacity(.3),
+                ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class CustomTextFormField extends StatefulWidget {
@@ -40,12 +41,11 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     // Define el keyboardType según el tipo de campo
-    final keyboardType =
-        widget.isEmail
-            ? TextInputType.emailAddress
-            : widget.isPassword
-            ? TextInputType.visiblePassword
-            : TextInputType.text;
+    final keyboardType = widget.isEmail
+        ? TextInputType.emailAddress
+        : widget.isPassword
+        ? TextInputType.visiblePassword
+        : TextInputType.text;
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -65,37 +65,69 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           hintStyle: context.styles.paragraph.copyWith(
             color: context.colors.darkGrey,
           ),
-          border: UnderlineInputBorder(
-            borderSide: BorderSide(color: context.colors.darkGrey),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: context.colors.orange),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: context.colors.darkGrey),
-          ),
-          errorBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: context.colors.error),
-          ),
+          fillColor: Colors.white,
+          filled: true,
+          border: kIsWeb
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: context.colors.darkGrey,
+                  ),
+                  borderRadius: BorderRadius.circular(200),
+                )
+              : UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colors.darkGrey),
+                ),
+          focusedBorder: kIsWeb
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: context.colors.orange,
+                  ),
+                  borderRadius: BorderRadius.circular(200),
+                )
+              : UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colors.orange),
+                ),
+          enabledBorder: kIsWeb
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: context.colors.darkGrey,
+                  ),
+                  borderRadius: BorderRadius.circular(200),
+                )
+              : UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colors.darkGrey),
+                ),
+          errorBorder: kIsWeb
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: context.colors.error,
+                  ),
+                  borderRadius: BorderRadius.circular(200),
+                )
+              : UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colors.error),
+                ),
           contentPadding: EdgeInsets.symmetric(
-            horizontal: context.sp(16),
-            vertical: context.sp(12),
+            horizontal: kIsWeb ? 16 : context.sp(16),
+            vertical: kIsWeb ? 14 : context.sp(12),
           ),
-          suffixIcon:
-              widget.isPassword
-                  ? IconButton(
-                    icon: Icon(
-                      _obscureText ? Icons.visibility : Icons.visibility_off,
-                      color: context.colors.orange,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureText = !_obscureText;
-                      });
-                    },
-                  )
-                  : null,
-          // ...?widget.decoration?.toMap(), // Combina con la decoración personalizada si se proporciona
+          suffixIcon: widget.isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility : Icons.visibility_off,
+                    color: context.colors.orange,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                )
+              : null,
         ),
         style: context.styles.paragraph.copyWith(
           height: 1,

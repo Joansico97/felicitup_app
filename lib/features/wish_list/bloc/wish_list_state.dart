@@ -1,7 +1,7 @@
 part of 'wish_list_bloc.dart';
 
 @freezed
-class WishListState with _$WishListState {
+abstract class WishListState with _$WishListState {
   const factory WishListState({
     required bool isLoading,
     required bool isCreate,
@@ -13,9 +13,6 @@ class WishListState with _$WishListState {
     List<GiftcarModel>? listGiftcard,
   }) = _WishListState;
 
-  factory WishListState.initial() => const WishListState(
-        isLoading: false,
-        isCreate: false,
-        isEdit: false,
-      );
+  factory WishListState.initial() =>
+      const WishListState(isLoading: false, isCreate: false, isEdit: false);
 }
