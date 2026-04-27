@@ -1,5 +1,7 @@
+import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/details_past_felicitups/details_past_felicitup_dashboard/bloc/details_past_felicitup_dashboard_bloc.dart';
 import 'package:flutter/material.dart';
@@ -8,10 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class PastHeader extends StatelessWidget {
-  const PastHeader({
-    super.key,
-    required this.felicitup,
-  });
+  const PastHeader({super.key, required this.felicitup});
 
   final FelicitupModel? felicitup;
 
@@ -30,25 +29,23 @@ class PastHeader extends StatelessWidget {
             width: context.fullWidth,
             alignment: Alignment.centerLeft,
             child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.black,
-              ),
+              icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
               onPressed: () async {
                 if (context.mounted) {
-                  context
-                      .read<DetailsPastFelicitupDashboardBloc>()
-                      .add(DetailsPastFelicitupDashboardEvent.asignCurrentChat(''));
-                  context.go(RouterPaths.felicitupsDashboard);
+                  context.read<DetailsPastFelicitupDashboardBloc>().add(
+                    DetailsPastFelicitupDashboardEvent.asignCurrentChat(''),
+                  );
+                  context.go(
+                    RouterPaths.felicitupsDashboard,
+                    extra: {'isFromPast': true},
+                  );
                 }
               },
             ),
           ),
           Container(
             width: context.sp(300),
-            padding: EdgeInsets.symmetric(
-              horizontal: context.sp(12),
-            ),
+            padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
             child: Row(
               children: [
                 Container(
@@ -57,28 +54,23 @@ class PastHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: context.colors.lightGrey,
-                    border: Border.all(
-                      color: context.colors.white,
-                      width: 2,
-                    ),
+                    border: Border.all(color: context.colors.white, width: 2),
                   ),
-                  child: felicitup!.owner[0].userImg != null && (felicitup!.owner[0].userImg?.isNotEmpty ?? false)
+                  child:
+                      felicitup!.owner[0].userImg != null &&
+                          (felicitup!.owner[0].userImg?.isNotEmpty ?? false)
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(context.sp(50)),
-                          child: Image.network(
-                            felicitup!.owner[0].userImg ?? '',
-                            fit: BoxFit.cover,
-                            loadingBuilder: (_, child, loadingProgress) {
-                              if (loadingProgress == null) {
-                                return child;
-                              }
-                              return CircularProgressIndicator();
-                            },
+                          child: CommonNetworkImage(
+                            imageUrl: felicitup!.owner[0].userImg!,
                           ),
                         )
                       : Center(
                           child: Text(
-                            felicitup!.owner[0].name.split(' ')[0].substring(0, 1).toUpperCase(),
+                            felicitup!.owner[0].name
+                                .split(' ')[0]
+                                .substring(0, 1)
+                                .toUpperCase(),
                             style: context.styles.header2.copyWith(
                               color: context.colors.orange,
                             ),
@@ -95,8 +87,8 @@ class PastHeader extends StatelessWidget {
                         felicitup!.owner.length > 2
                             ? '${felicitup!.reason} de ${felicitup!.owner.first.name.split(' ')[0]} y ${felicitup!.owner.length - 1} más'
                             : felicitup!.owner.length == 2
-                                ? '${felicitup!.reason} de ${felicitup!.owner.first.name.split(' ')[0]} y ${felicitup!.owner.last.name.split(' ')[0]}'
-                                : '${felicitup!.reason} de ${felicitup!.owner.first.name.split(' ')[0]}',
+                            ? '${felicitup!.reason} de ${felicitup!.owner.first.name.split(' ')[0]} y ${felicitup!.owner.last.name.split(' ')[0]}'
+                            : '${felicitup!.reason} de ${felicitup!.owner.first.name.split(' ')[0]}',
                         textAlign: TextAlign.left,
                         maxLines: 2,
                         style: context.styles.subtitle.copyWith(
@@ -106,7 +98,7 @@ class PastHeader extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Fecha: ${DateFormat('dd·MM·yyyy').format(felicitup!.date)}',
+                      'Fecha: ${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(felicitup!.date)}',
                       style: context.styles.smallText.copyWith(
                         color: context.colors.text,
                       ),

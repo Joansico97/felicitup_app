@@ -13,15 +13,16 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   PaymentBloc({
     required FelicitupRepository felicitupRepository,
     required UserRepository userRepository,
-  })  : _felicitupRepository = felicitupRepository,
-        _userRepository = userRepository,
-        super(PaymentState.initial()) {
+  }) : _felicitupRepository = felicitupRepository,
+       _userRepository = userRepository,
+       super(PaymentState.initial()) {
     on<PaymentEvent>(
       (events, emit) => events.map(
-        changeLoadign: (_) => _changeLoading(emit),
+        changeLoadign: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
         getUserInformation: (event) => _getUserInformation(emit, event.id),
         uploadPaymenFile: (event) => _uploadPaymenFile(emit, event.file),
-        confirmPaymentInfo: (event) => _confirmPaymentInfo(emit, event.felicitupId, event.userId),
+        confirmPaymentInfo: (event) =>
+            _confirmPaymentInfo(emit, event.felicitupId, event.userId),
         updatePaymentInfo: (event) => _updatePaymentInfo(
           emit,
           event.felicitupId,
@@ -45,11 +46,10 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   final FelicitupRepository _felicitupRepository;
   final UserRepository _userRepository;
 
-  _changeLoading(Emitter<PaymentState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _getUserInformation(Emitter<PaymentState> emit, String id) async {
+  Future<void> _getUserInformation(
+    Emitter<PaymentState> emit,
+    String id,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -66,23 +66,22 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         },
         (data) {
           emit(
-            state.copyWith(
-              isLoading: false,
-              userInvitedInformationModel: data,
-            ),
+            state.copyWith(isLoading: false, userInvitedInformationModel: data),
           );
         },
       );
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        updateStatus: UpdateStatus.error,
-        errorMessage: 'Error obteniendo información',
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          updateStatus: UpdateStatus.error,
+          errorMessage: 'Error obteniendo información',
+        ),
+      );
     }
   }
 
-  _uploadPaymenFile(Emitter<PaymentState> emit, File file) async {
+  Future<void> _uploadPaymenFile(Emitter<PaymentState> emit, File file) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -98,24 +97,21 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           );
         },
         (data) {
-          emit(
-            state.copyWith(
-              isLoading: false,
-              fileUrl: data,
-            ),
-          );
+          emit(state.copyWith(isLoading: false, fileUrl: data));
         },
       );
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        updateStatus: UpdateStatus.error,
-        errorMessage: 'Error subiendo archivo',
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          updateStatus: UpdateStatus.error,
+          errorMessage: 'Error subiendo archivo',
+        ),
+      );
     }
   }
 
-  _updatePaymentInfo(
+  Future<void> _updatePaymentInfo(
     Emitter<PaymentState> emit,
     String felicitupId,
     String paymentMethod,
@@ -163,11 +159,18 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     }
   }
 
-  _confirmPaymentInfo(Emitter<PaymentState> emit, String felicitupId, String userId) async {
+  Future<Null> _confirmPaymentInfo(
+    Emitter<PaymentState> emit,
+    String felicitupId,
+    String userId,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {
-      final response = await _felicitupRepository.confirmPaymentData(felicitupId, userId);
+      final response = await _felicitupRepository.confirmPaymentData(
+        felicitupId,
+        userId,
+      );
       return response.fold(
         (error) {
           emit(
@@ -198,7 +201,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
     }
   }
 
-  _sendNotification(
+  Future<void> _sendNotification(
     Emitter<PaymentState> emit,
     String userId,
     String title,
@@ -215,11 +218,13 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         data: data,
       );
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        updateStatus: UpdateStatus.error,
-        errorMessage: 'Error enviando notificación',
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          updateStatus: UpdateStatus.error,
+          errorMessage: 'Error enviando notificación',
+        ),
+      );
     }
   }
 }

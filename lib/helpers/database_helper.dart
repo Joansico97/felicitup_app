@@ -1,27 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseHelper {
-  DatabaseHelper({
-    required FirebaseFirestore firestore,
-  }) : _firestore = firestore;
+  DatabaseHelper({required FirebaseFirestore firestore})
+    : _firestore = firestore;
 
   final FirebaseFirestore _firestore;
 
-  String createId(
-    String collection,
-  ) {
+  String createId(String collection) {
     final collRef = _firestore.collection(collection);
     final docId = collRef.doc();
     return docId.id;
   }
 
-  Future<dynamic> get(
-    String collection, {
-    String? document,
-  }) async {
+  Future<dynamic> get(String collection, {String? document}) async {
     try {
       if (document != null) {
-        final response = await _firestore.collection(collection).doc(document).get();
+        final response = await _firestore
+            .collection(collection)
+            .doc(document)
+            .get();
         return response.data() ?? {};
       } else {
         final response = await _firestore.collection(collection).get();
@@ -60,10 +57,7 @@ class DatabaseHelper {
     }
   }
 
-  Future<void> delete(
-    String collection, {
-    required String document,
-  }) async {
+  Future<void> delete(String collection, {required String document}) async {
     try {
       await _firestore.collection(collection).doc(document).delete();
     } catch (e) {

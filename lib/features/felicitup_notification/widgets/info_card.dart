@@ -2,11 +2,7 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 
 class InfoCard extends StatelessWidget {
-  const InfoCard({
-    super.key,
-    required this.icon,
-    required this.label,
-  });
+  const InfoCard({super.key, required this.icon, required this.label});
 
   final IconData icon;
   final String label;
@@ -19,10 +15,7 @@ class InfoCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Transform.scale(
-            scale: 1.5,
-            child: Icon(icon),
-          ),
+          Transform.scale(scale: 1.5, child: Icon(icon)),
           SizedBox(
             width: context.sp(70),
             child: Text(

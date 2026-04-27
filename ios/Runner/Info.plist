@@ -29,13 +29,15 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires camera access to function properly.</string>
+	<string>$(PRODUCT_NAME) would like to have access to the camera to record your congratulatory video messages and create celebratory mixes for your friends.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>This app requires contacts access to function properly.</string>
+	<string>$(PRODUCT_NAME) needs access to your contacts to find friends, connect with them within the app and help you remember and organize group greetings. Your contacts will be hashed (transformed into unrecognizable codes) and securely uploaded to our servers to facilitate these functions.Password update flow completed.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone access to function properly.</string>
+	<string>$(PRODUCT_NAME) would like to have access to the microphone so that your greeting videos include sound, so your friends can hear your voice and your good wishes!</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app requires files access to function properly.</string>
+	<string>$(PRODUCT_NAME) would like to have access to your gallery so that you can choose your best profile picture and share proof when notifying the jackpot payment in the felicitups management.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This identifier will be used to deliver personalized ads to you.</string>
 	<key>FirebasePhoneAuthMultiFactorEnabled</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
@@ -62,6 +64,12 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>FacebookAppID</key>
+	<string>$(FACEBOOK_APP_ID)</string>
+	<key>FacebookClientToken</key>
+	<string>$(FACEBOOK_CLIENT_TOKEN)</string>
+	<key>FacebookDisplayName</key>
+	<string>Felicitup</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 	<dict>
@@ -70,6 +78,7 @@
 		<key>CFBundleURLSchemes</key>
 		<array>
 		<string>com.googleusercontent.apps.846523746579-5uln1n8dn639dbt6h9hs6uide5mmrogr</string>
+		<string>$(FACEBOOK_URL_SCHEME)</string>
 		</array>
 	</dict>
 	</array>
@@ -79,6 +88,12 @@
 	<string>comgooglemaps</string>
 	<string>comgooglemaps-x-callback</string>
 	<string>firebase</string>
+	<string>https</string>
+	<string>whatsapp</string>
+	<string>fbapi</string>
+	<string>fb-messenger-api</string>
+	<string>fbauth2</string>
+	<string>fbshareextension</string>
 	</array>
 </dict>
 

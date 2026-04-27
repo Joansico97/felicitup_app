@@ -12,16 +12,18 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
   InfoFelicitupBloc({
     required FelicitupRepository felicitupRepository,
     required UserRepository userRepository,
-  })  : _felicitupRepository = felicitupRepository,
-        _userRepository = userRepository,
-        super(InfoFelicitupState.initial()) {
+  }) : _felicitupRepository = felicitupRepository,
+       _userRepository = userRepository,
+       super(InfoFelicitupState.initial()) {
     on<InfoFelicitupEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
         sendFelicitup: (event) => _sendFelicitup(emit, event.felicitupId),
-        updateDateFelicitup: (event) => _updateDateFelicitup(emit, event.felicitupId, event.newDate),
+        updateDateFelicitup: (event) =>
+            _updateDateFelicitup(emit, event.felicitupId, event.newDate),
         addToOwnerList: (event) => _addToOwnerList(emit, event.felicitupOwner),
-        updateFelicitupOwners: (event) => _updateFelicitupOwners(emit, event.felicitupId),
+        updateFelicitupOwners: (event) =>
+            _updateFelicitupOwners(emit, event.felicitupId),
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
       ),
     );
@@ -30,11 +32,14 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
   final FelicitupRepository _felicitupRepository;
   final UserRepository _userRepository;
 
-  _changeLoading(Emitter<InfoFelicitupState> emit) {
+  void _changeLoading(Emitter<InfoFelicitupState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
 
-  _sendFelicitup(Emitter<InfoFelicitupState> emit, String felicitupId) async {
+  Future<void> _sendFelicitup(
+    Emitter<InfoFelicitupState> emit,
+    String felicitupId,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       await _felicitupRepository.sendFelicitup(felicitupId);
@@ -44,7 +49,11 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
     }
   }
 
-  _updateDateFelicitup(Emitter<InfoFelicitupState> emit, String felicitupId, DateTime newDate) async {
+  Future<void> _updateDateFelicitup(
+    Emitter<InfoFelicitupState> emit,
+    String felicitupId,
+    DateTime newDate,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       await _felicitupRepository.updateDateFelicitup(felicitupId, newDate);
@@ -54,7 +63,10 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
     }
   }
 
-  _addToOwnerList(Emitter<InfoFelicitupState> emit, OwnerModel owner) async {
+  Future<void> _addToOwnerList(
+    Emitter<InfoFelicitupState> emit,
+    OwnerModel owner,
+  ) async {
     final List<OwnerModel> owners = [...state.ownersList];
     bool exist = owners.any((element) => element == owner);
     if (!exist) {
@@ -65,10 +77,16 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
     emit(state.copyWith(ownersList: owners));
   }
 
-  _updateFelicitupOwners(Emitter<InfoFelicitupState> emit, String felicitupId) async {
+  Future<Null> _updateFelicitupOwners(
+    Emitter<InfoFelicitupState> emit,
+    String felicitupId,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final response = await _felicitupRepository.updateFelicitupOwner(felicitupId, state.ownersList);
+      final response = await _felicitupRepository.updateFelicitupOwner(
+        felicitupId,
+        state.ownersList,
+      );
 
       return response.fold(
         (error) {
@@ -84,7 +102,10 @@ class InfoFelicitupBloc extends Bloc<InfoFelicitupEvent, InfoFelicitupState> {
     }
   }
 
-  _loadFriendsData(Emitter<InfoFelicitupState> emit, List<String> usersIds) async {
+  Future<void> _loadFriendsData(
+    Emitter<InfoFelicitupState> emit,
+    List<String> usersIds,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {

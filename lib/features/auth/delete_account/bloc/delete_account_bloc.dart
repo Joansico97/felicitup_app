@@ -17,8 +17,8 @@ class DeleteAccountBloc extends Bloc<DeleteAccountEvent, DeleteAccountState> {
        super(DeleteAccountState.initial()) {
     on<DeleteAccountEvent>(
       (event, emit) => event.map(
-        deleteAccountEvent:
-            (event) => _deleteAccountEvent(emit, event.userId, event.answers),
+        deleteAccountEvent: (event) =>
+            _deleteAccountEvent(emit, event.userId, event.answers),
       ),
     );
   }
@@ -26,7 +26,7 @@ class DeleteAccountBloc extends Bloc<DeleteAccountEvent, DeleteAccountState> {
   final UserRepository _userRepository;
   final FirebaseFunctionsHelper _firebaseFunctionsHelper;
 
-  _deleteAccountEvent(
+  Future<void> _deleteAccountEvent(
     Emitter<DeleteAccountState> emit,
     String userId,
     List<String> answers,
@@ -37,11 +37,11 @@ class DeleteAccountBloc extends Bloc<DeleteAccountEvent, DeleteAccountState> {
         userId: userId,
         answers: answers,
       );
+      emit(state.copyWith(isLoading: false));
       return result.fold(
         (error) => logger.error('Error deleting account: $error'),
         (_) async {
           await _firebaseFunctionsHelper.disableCurrentUser();
-          emit(state.copyWith(isLoading: false));
         },
       );
     } catch (e) {

@@ -12,7 +12,6 @@ import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
 
@@ -36,22 +35,23 @@ class FelicitupsDashboardBloc
        super(FelicitupsDashboardState.initial()) {
     on<FelicitupsDashboardEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
-        deleteFelicitup:
-            (event) => _deleteFelicitup(emit, event.felicitupId, event.chatId),
-        changeListBoolsTap:
-            (event) => _changeListBoolTap(emit, event.index, event.controller),
+        changeIndex: (event) => emit(state.copyWith(currentIndex: event.index)),
+        sortPastFelicitups: (event) =>
+            _sortPastFelicitups(emit, event.index, event.userId),
+        deleteFelicitup: (event) =>
+            _deleteFelicitup(emit, event.felicitupId, event.chatId),
         setLike: (event) => _setLike(emit, event.felicitupId, event.userId),
-        updateMatchList: (event) => _updateMatchList(event.phones),
-        createSingleChat:
-            (event) => _createSingleChat(emit, event.singleChatData),
+        createSingleChat: (event) =>
+            _createSingleChat(emit, event.singleChatData),
         getRememberStatus: (_) => _getRememberStatus(emit),
         closeRememberSection: (_) => _closeRememberSection(emit),
         deleteBirthdateAlert: (event) => _deleteBirthdateAlert(emit, event.id),
         startListening: (_) => _startListening(emit),
         recivedData: (event) => _recivedData(emit, event.listFelicitups),
-        recivedPastData:
-            (event) => _recivedPastData(emit, event.listFelicitups),
+        recivedPastData: (event) =>
+            _recivedPastData(emit, event.listFelicitups),
+        deletePastFelicitup: (event) =>
+            _deletePastFelicitup(emit, event.felicitupId),
       ),
     );
   }
@@ -66,24 +66,39 @@ class FelicitupsDashboardBloc
   final FirebaseAuth _firebaseAuth;
   final LocalStorageHelper _localStorageHelper;
 
-  _changeLoading(Emitter<FelicitupsDashboardState> emit) {}
-
-  _changeListBoolTap(
+  void _sortPastFelicitups(
     Emitter<FelicitupsDashboardState> emit,
     int index,
-    PageController controller,
+    String userId,
   ) {
-    final listBoolsTap = state.listBoolsTap.map((e) => false).toList();
-    listBoolsTap[index] = true;
-    emit(state.copyWith(listBoolsTap: listBoolsTap));
-    controller.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    switch (index) {
+      case 0:
+        emit(
+          state.copyWith(listFelicitupsPast: state.backUpListFelicitupsPast),
+        );
+        break;
+      case 1:
+        final filteredList = state.backUpListFelicitupsPast
+            .where(
+              (felicitup) => felicitup.owner.any((data) => data.id == userId),
+            )
+            .toList();
+        emit(state.copyWith(listFelicitupsPast: filteredList));
+        break;
+      case 2:
+        final filteredList = state.backUpListFelicitupsPast
+            .where(
+              (felicitup) =>
+                  felicitup.invitedUsers.any((data) => data == userId),
+            )
+            .toList();
+        emit(state.copyWith(listFelicitupsPast: filteredList));
+        break;
+      default:
+    }
   }
 
-  _deleteFelicitup(
+  Future<void> _deleteFelicitup(
     Emitter<FelicitupsDashboardState> emit,
     String felicitupId,
     String chatId,
@@ -99,7 +114,7 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _setLike(
+  Future<void> _setLike(
     Emitter<FelicitupsDashboardState> emit,
     String felicitupId,
     String userId,
@@ -114,23 +129,7 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _updateMatchList(List<String> phonesList) async {
-    List<String> phones = [...phonesList];
-
-    final response = await _userRepository.getListUserDataByPhone(phones);
-
-    response.fold((l) => logger.error(l), (r) async {
-      List<String> ids = [];
-      for (final doc in r) {
-        if (doc.id != null) {
-          ids.add(doc.id!);
-        }
-      }
-      await _userRepository.updateMatchList(ids);
-    });
-  }
-
-  _createSingleChat(
+  Future<Null> _createSingleChat(
     Emitter<FelicitupsDashboardState> emit,
     SingleChatModel singleChatData,
   ) async {
@@ -162,7 +161,7 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _deleteBirthdateAlert(
+  Future<void> _deleteBirthdateAlert(
     Emitter<FelicitupsDashboardState> emit,
     String id,
   ) async {
@@ -175,25 +174,41 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _startListening(Emitter<FelicitupsDashboardState> emit) {
+  Future<void> _deletePastFelicitup(
+    Emitter<FelicitupsDashboardState> emit,
+    String felicitupId,
+  ) async {
+    final userId = _firebaseAuth.currentUser!.uid;
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+
+    try {
+      await _felicitupRepository.deleteAllPastFelicitups(felicitupId, userId);
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+    }
+  }
+
+  void _startListening(Emitter<FelicitupsDashboardState> emit) {
     final userId = _firebaseAuth.currentUser!.uid;
     _felicitupSubscription = _felicitupRepository
         .streamFelicitups(userId)
         .listen((either) {
-          either.fold((error) {}, (feicitups) {
+          either.fold((_) {}, (feicitups) {
             add(FelicitupsDashboardEvent.recivedData(feicitups));
           });
         });
     _felicitupPastSubscription = _felicitupRepository
         .streamPastFelicitups(userId)
         .listen((either) {
-          either.fold((error) {}, (feicitups) {
+          either.fold((_) {}, (feicitups) {
             add(FelicitupsDashboardEvent.recivedPastData(feicitups));
           });
         });
   }
 
-  _getRememberStatus(Emitter<FelicitupsDashboardState> emit) async {
+  Future<void> _getRememberStatus(
+    Emitter<FelicitupsDashboardState> emit,
+  ) async {
     final data = await _localStorageHelper.read(
       key: LocalStorageConstants.userKey,
     );
@@ -209,7 +224,9 @@ class FelicitupsDashboardBloc
     }
   }
 
-  _closeRememberSection(Emitter<FelicitupsDashboardState> emit) async {
+  Future<void> _closeRememberSection(
+    Emitter<FelicitupsDashboardState> emit,
+  ) async {
     await _localStorageHelper.update(
       key: LocalStorageConstants.userKey,
       value: jsonEncode('false'),
@@ -228,7 +245,12 @@ class FelicitupsDashboardBloc
     Emitter<FelicitupsDashboardState> emit,
     List<FelicitupModel> listFelicitups,
   ) async {
-    emit(state.copyWith(listFelicitupsPast: listFelicitups));
+    emit(
+      state.copyWith(
+        listFelicitupsPast: listFelicitups,
+        backUpListFelicitupsPast: listFelicitups,
+      ),
+    );
   }
 
   @override

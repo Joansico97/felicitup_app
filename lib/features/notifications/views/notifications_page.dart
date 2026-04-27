@@ -29,8 +29,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<NotificationsBloc, NotificationsState>(
-      listenWhen:
-          (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -78,11 +78,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
               SizedBox(height: context.sp(12)),
               BlocBuilder<NotificationsBloc, NotificationsState>(
                 builder: (_, state) {
-                  final notifications = List.of(state.notifications)..sort(
-                    (a, b) => (a.sentDate ?? DateTime(0)).compareTo(
-                      b.sentDate ?? DateTime(0),
-                    ),
-                  );
+                  final notifications = List.of(state.notifications)
+                    ..sort(
+                      (a, b) => (a.sentDate ?? DateTime(0)).compareTo(
+                        b.sentDate ?? DateTime(0),
+                      ),
+                    );
 
                   return Expanded(
                     child: ListView.builder(
@@ -125,18 +126,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               data: notifications[index].data?.toJson() ?? {},
                             );
                           },
-                          // onLongPress: () {
-                          //   showConfirmModal(
-                          //     title: 'Deseas eliminar la notificación?',
-                          //     onAccept: () async {
-                          //       context.read<NotificationsBloc>().add(
-                          //         NotificationsEvent.deleteNotification(
-                          //           notifications[index].messageId ?? '',
-                          //         ),
-                          //       );
-                          //     },
-                          //   );
-                          // },
                         );
                       },
                     ),

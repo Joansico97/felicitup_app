@@ -6,30 +6,25 @@ class AppTheme {
   AppTheme();
 
   ThemeData getTheme() => ThemeData(
-        useMaterial3: true,
-        fontFamily: FontFamily.poppins,
-        scaffoldBackgroundColor: AppColors().white,
-        brightness: Brightness.light,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        dividerTheme: const DividerThemeData(
-          color: Colors.transparent,
-        ),
-        bottomSheetTheme: BottomSheetThemeData(
-          shadowColor: AppColors().lightGrey,
-          constraints: BoxConstraints(
-            minHeight: 400,
-          ),
-          modalBarrierColor: AppColors().lightGrey,
-        ),
-        snackBarTheme: SnackBarThemeData(
-          backgroundColor: AppColors().orange,
-        ),
-        timePickerTheme: TimePickerThemeData(
-          backgroundColor: AppColors().white,
-          hourMinuteColor: AppColors().white,
-          hourMinuteTextColor: AppColors().primary,
-        ),        
-      );
+    useMaterial3: true,
+    fontFamily: FontFamily.poppins,
+    scaffoldBackgroundColor: AppColors().white,
+    brightness: Brightness.light,
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
+    focusColor: Colors.transparent,
+    dividerTheme: const DividerThemeData(color: Colors.transparent),
+    bottomSheetTheme: BottomSheetThemeData(
+      shadowColor: AppColors().lightGrey,
+      constraints: BoxConstraints(minHeight: 400),
+      modalBarrierColor: AppColors().lightGrey,
+    ),
+    snackBarTheme: SnackBarThemeData(backgroundColor: AppColors().orange),
+    timePickerTheme: TimePickerThemeData(
+      backgroundColor: AppColors().white,
+      hourMinuteColor: AppColors().white,
+      hourMinuteTextColor: AppColors().primary,
+    ),
+    cardTheme: CardThemeData(color: AppColors().white),
+  );
 }

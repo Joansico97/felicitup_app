@@ -3,11 +3,7 @@ import 'package:logger/logger.dart';
 final logger = _CustomLogger();
 
 class _CustomLogger {
-  final _loggerInstance = Logger(
-    printer: PrettyPrinter(
-      methodCount: 0,
-    ),
-  );
+  final _loggerInstance = Logger(printer: PrettyPrinter(methodCount: 0));
 
   void debug(dynamic message) {
     _loggerInstance.d(message);

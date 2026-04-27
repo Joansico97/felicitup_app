@@ -14,9 +14,7 @@ Future<void> customModal({
     builder: (context) {
       return Center(
         child: Container(
-          margin: EdgeInsets.symmetric(
-            horizontal: context.sp(24),
-          ),
+          margin: EdgeInsets.symmetric(horizontal: context.sp(24)),
           constraints: BoxConstraints(
             maxHeight: isColapsed ? context.sp(200) : context.sp(300),
             minHeight: context.sp(50),
@@ -45,10 +43,7 @@ Future<void> customModal({
                         shape: BoxShape.circle,
                         color: context.colors.orange,
                       ),
-                      child: Icon(
-                        Icons.close,
-                        color: Colors.white,
-                      ),
+                      child: Icon(Icons.close, color: Colors.white),
                     ),
                   ),
                 ),

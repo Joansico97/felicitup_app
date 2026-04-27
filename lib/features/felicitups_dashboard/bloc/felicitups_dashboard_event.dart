@@ -2,21 +2,19 @@ part of 'felicitups_dashboard_bloc.dart';
 
 @freezed
 class FelicitupsDashboardEvent with _$FelicitupsDashboardEvent {
-  const factory FelicitupsDashboardEvent.changeLoading() = _changeLoading;
+  const factory FelicitupsDashboardEvent.changeIndex(int index) = _changeIndex;
+  const factory FelicitupsDashboardEvent.sortPastFelicitups(
+    int index,
+    String userId,
+  ) = _sortPastFelicitups;
   const factory FelicitupsDashboardEvent.deleteFelicitup(
     String felicitupId,
     String chatId,
   ) = _deleteFelicitup;
-  const factory FelicitupsDashboardEvent.changeListBoolsTap(
-    int index,
-    PageController controller,
-  ) = _changeListBoolsTap;
   const factory FelicitupsDashboardEvent.setLike(
     String felicitupId,
     String userId,
   ) = _setLike;
-  const factory FelicitupsDashboardEvent.updateMatchList(List<String> phones) =
-      _updateMatchList;
   const factory FelicitupsDashboardEvent.deleteBirthdateAlert(String id) =
       _deleteBirthdateAlert;
   const factory FelicitupsDashboardEvent.createSingleChat(
@@ -24,6 +22,9 @@ class FelicitupsDashboardEvent with _$FelicitupsDashboardEvent {
   ) = _createSingleChat;
   const factory FelicitupsDashboardEvent.getRememberStatus() =
       _getRememberStatus;
+  const factory FelicitupsDashboardEvent.deletePastFelicitup({
+    required String felicitupId,
+  }) = _deletePastFelicitup;
   const factory FelicitupsDashboardEvent.closeRememberSection() =
       _closeRememberSection;
   const factory FelicitupsDashboardEvent.startListening() = _startListening;

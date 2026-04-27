@@ -12,12 +12,14 @@ class NotificationsSettingsPage extends StatefulWidget {
   const NotificationsSettingsPage({super.key});
 
   @override
-  State<NotificationsSettingsPage> createState() => _NotificationsSettingsPageState();
+  State<NotificationsSettingsPage> createState() =>
+      _NotificationsSettingsPageState();
 }
 
 class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
   List<bool> switchList = [
-    rootNavigatorKey.currentContext!.read<AppBloc>().state.status == AuthorizationStatus.authorized,
+    rootNavigatorKey.currentContext!.read<AppBloc>().state.status ==
+        AuthorizationStatus.authorized,
     true,
   ];
 
@@ -29,15 +31,13 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
           children: [
             CollapsedHeader(
               title: 'Configuración de notificaciones',
-              onPressed: () async => context.go(RouterPaths.felicitupsDashboard),
+              onPressed: () async =>
+                  context.go(RouterPaths.felicitupsDashboard),
             ),
             SizedBox(height: context.sp(12)),
             SizedBox(
               width: context.sp(300),
-              child: Text(
-                'Notificaciones',
-                style: context.styles.header2,
-              ),
+              child: Text('Notificaciones', style: context.styles.header2),
             ),
             SizedBox(height: context.sp(12)),
             SwitchButton(
@@ -45,9 +45,13 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
               stateValue: switchList[0],
               onChanged: (v) {
                 if (v) {
-                  context.read<AppBloc>().add(const AppEvent.requestManualPermissions());
+                  context.read<AppBloc>().add(
+                    const AppEvent.requestManualPermissions(),
+                  );
                 } else {
-                  context.read<AppBloc>().add(const AppEvent.deleterPermissions());
+                  context.read<AppBloc>().add(
+                    const AppEvent.deleterPermissions(),
+                  );
                 }
                 setState(() {
                   switchList[0] = v;

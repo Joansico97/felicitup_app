@@ -14,15 +14,16 @@ part 'people_felicitup_event.dart';
 part 'people_felicitup_state.dart';
 part 'people_felicitup_bloc.freezed.dart';
 
-class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupState> {
+class PeopleFelicitupBloc
+    extends Bloc<PeopleFelicitupEvent, PeopleFelicitupState> {
   PeopleFelicitupBloc({
     required FelicitupRepository felicitupRepository,
     required UserRepository userRepository,
     required FirebaseAuth firebaseAuth,
-  })  : _felicitupRepository = felicitupRepository,
-        _userRepository = userRepository,
-        _firebaseAuth = firebaseAuth,
-        super(PeopleFelicitupState.initial()) {
+  }) : _felicitupRepository = felicitupRepository,
+       _userRepository = userRepository,
+       _firebaseAuth = firebaseAuth,
+       super(PeopleFelicitupState.initial()) {
     on<PeopleFelicitupEvent>(
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
@@ -34,34 +35,30 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
           name: event.name,
           felicitupOwnerId: event.felicitupOwnerId,
         ),
-        sendNotification: (event) => _sendNotification(
-          event.userId,
-          event.name,
-          event.felicitupId,
-        ),
-        deleteParticipant: (event) => _deleteParticipant(
-          emit,
-          event.felicitupId,
-          event.userId,
-        ),
+        sendNotification: (event) =>
+            _sendNotification(event.userId, event.name, event.felicitupId),
+        deleteParticipant: (event) =>
+            _deleteParticipant(emit, event.felicitupId, event.userId),
         addParticipant: (event) => _addParticipant(emit, event.participant),
-        updateParticipantsList: (event) => _updateParticipantsList(emit, event.felicitupId),
+        updateParticipantsList: (event) =>
+            _updateParticipantsList(emit, event.felicitupId),
         startListening: (event) => _startListening(emit, event.felicitupId),
         recivedData: (event) => _recivedData(emit, event.invitedUsers),
       ),
     );
   }
 
-  StreamSubscription<Either<ApiException, List<InvitedModel>>>? _invitedUsersSubscription;
+  StreamSubscription<Either<ApiException, List<InvitedModel>>>?
+  _invitedUsersSubscription;
   final FelicitupRepository _felicitupRepository;
   final UserRepository _userRepository;
   final FirebaseAuth _firebaseAuth;
 
-  _changeLoading(Emitter<PeopleFelicitupState> emit) {
+  void _changeLoading(Emitter<PeopleFelicitupState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
 
-  _informParticipation({
+  Future<Future<Null>?>? _informParticipation({
     required Emitter<PeopleFelicitupState> emit,
     required String felicitupId,
     required String felicitupOwnerId,
@@ -70,15 +67,24 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
   }) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final response = await _felicitupRepository.setParticipation(felicitupId, newStatus);
+      final response = await _felicitupRepository.setParticipation(
+        felicitupId,
+        newStatus,
+      );
       return response.fold(
         (error) {
           emit(state.copyWith(isLoading: false));
           unawaited(showErrorModal(error.message));
+          return null;
         },
         (data) async {
           if (newStatus == enumToStringAssistance(AssistanceStatus.rejected)) {
-            add(PeopleFelicitupEvent.deleteParticipant(felicitupId, _firebaseAuth.currentUser!.uid));
+            add(
+              PeopleFelicitupEvent.deleteParticipant(
+                felicitupId,
+                _firebaseAuth.currentUser!.uid,
+              ),
+            );
           } else {
             await _userRepository.sendNotification(
               userId: felicitupOwnerId,
@@ -96,14 +102,19 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
             );
             emit(state.copyWith(isLoading: false));
           }
+          return null;
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+    return null;
   }
 
-  _addParticipant(Emitter<PeopleFelicitupState> emit, InvitedModel participant) {
+  void _addParticipant(
+    Emitter<PeopleFelicitupState> emit,
+    InvitedModel participant,
+  ) {
     final List<InvitedModel> participants = [...state.invitedContacts];
 
     if (participants.contains(participant)) {
@@ -114,15 +125,22 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
     emit(state.copyWith(invitedContacts: participants));
   }
 
-  _updateParticipantsList(Emitter<PeopleFelicitupState> emit, String felicitupId) async {
+  Future<Future<Null>?>? _updateParticipantsList(
+    Emitter<PeopleFelicitupState> emit,
+    String felicitupId,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final response = await _felicitupRepository.updateFelicitupParticipants(felicitupId, state.invitedContacts);
+      final response = await _felicitupRepository.updateFelicitupParticipants(
+        felicitupId,
+        state.invitedContacts,
+      );
 
       return response.fold(
         (error) {
           emit(state.copyWith(isLoading: false));
           logger.error(error);
+          return null;
           // unawaited(showErrorModal(error.message));
         },
         (data) async {
@@ -143,14 +161,19 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
             );
           }
           emit(state.copyWith(isLoading: false));
+          return null;
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+    return null;
   }
 
-  _loadFriendsData(Emitter<PeopleFelicitupState> emit, List<String> usersIds) async {
+  Future<void> _loadFriendsData(
+    Emitter<PeopleFelicitupState> emit,
+    List<String> usersIds,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -173,36 +196,46 @@ class PeopleFelicitupBloc extends Bloc<PeopleFelicitupEvent, PeopleFelicitupStat
     }
   }
 
-  _sendNotification(String userId, String name, String felicitupId) async {}
+  Future<void> _sendNotification(
+    String userId,
+    String name,
+    String felicitupId,
+  ) async {}
 
-  _deleteParticipant(Emitter<PeopleFelicitupState> emit, String felicitupId, String userId) async {
+  Future<void> _deleteParticipant(
+    Emitter<PeopleFelicitupState> emit,
+    String felicitupId,
+    String userId,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final response = await _felicitupRepository.deleteParticipant(felicitupId, userId);
-      response.fold(
-        (error) {
-          emit(state.copyWith(isLoading: false));
-          unawaited(showErrorModal(error.message));
-        },
-        (data) => emit(state.copyWith(isLoading: false)),
+      final response = await _felicitupRepository.deleteParticipant(
+        felicitupId,
+        userId,
       );
+      response.fold((error) {
+        emit(state.copyWith(isLoading: false));
+        unawaited(showErrorModal(error.message));
+      }, (data) => emit(state.copyWith(isLoading: false)));
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
   }
 
-  _startListening(Emitter<PeopleFelicitupState> emit, String felicitupId) {
-    _invitedUsersSubscription = _felicitupRepository.getInvitedStream(felicitupId).listen((either) {
-      either.fold(
-        (error) {},
-        (feicitups) {
-          add(PeopleFelicitupEvent.recivedData(feicitups));
-        },
-      );
-    });
+  void _startListening(Emitter<PeopleFelicitupState> emit, String felicitupId) {
+    _invitedUsersSubscription = _felicitupRepository
+        .getInvitedStream(felicitupId)
+        .listen((either) {
+          either.fold((error) {}, (feicitups) {
+            add(PeopleFelicitupEvent.recivedData(feicitups));
+          });
+        });
   }
 
-  Future<void> _recivedData(Emitter<PeopleFelicitupState> emit, List<InvitedModel> listUsers) async {
+  Future<void> _recivedData(
+    Emitter<PeopleFelicitupState> emit,
+    List<InvitedModel> listUsers,
+  ) async {
     emit(state.copyWith(invitedUsers: listUsers));
   }
 

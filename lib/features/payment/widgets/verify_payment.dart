@@ -103,7 +103,7 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                       ),
                       children: [
                         TextSpan(
-                          text: 'A la espera',
+                          text: 'Pagado',
                           style: context.styles.paragraph,
                         ),
                       ],
@@ -139,17 +139,17 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                             TextSpan(
                               text:
                                   state
-                                              .userInvitedInformationModel
-                                              ?.paymentDate !=
-                                          null
-                                      ? DateFormat('dd/MM/yyyy').format(
-                                        state
-                                            .userInvitedInformationModel!
-                                            .paymentDate!,
-                                      )
-                                      : DateFormat(
-                                        'dd/MM/yyyy',
-                                      ).format(DateTime.now()),
+                                          .userInvitedInformationModel
+                                          ?.paymentDate !=
+                                      null
+                                  ? DateFormat('dd/MM/yyyy').format(
+                                      state
+                                          .userInvitedInformationModel!
+                                          .paymentDate!,
+                                    )
+                                  : DateFormat(
+                                      'dd/MM/yyyy',
+                                    ).format(DateTime.now()),
                               style: context.styles.paragraph,
                             ),
                           ],
@@ -200,16 +200,15 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                 ),
                 SizedBox(height: context.sp(14)),
                 GestureDetector(
-                  onTap:
-                      () => showImageModal(
-                        context,
-                        context
-                                .read<PaymentBloc>()
-                                .state
-                                .userInvitedInformationModel
-                                ?.photoUrl ??
-                            '',
-                      ),
+                  onTap: () => showImageModal(
+                    context,
+                    context
+                            .read<PaymentBloc>()
+                            .state
+                            .userInvitedInformationModel
+                            ?.photoUrl ??
+                        '',
+                  ),
                   child: Container(
                     height: context.sp(350),
                     width: context.fullWidth,
@@ -226,27 +225,40 @@ class _VerifyPaymentState extends State<VerifyPayment> {
                       builder: (_, state) {
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(context.sp(30)),
-                          child: Image.network(
-                            state.userInvitedInformationModel?.photoUrl ?? '',
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) {
-                                return child;
-                              } else {
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Text(
-                                  'Cargando imagen...',
-                                  style: context.styles.paragraph,
+                          child:
+                              state.userInvitedInformationModel?.photoUrl !=
+                                      null ||
+                                  state.userInvitedInformationModel?.photoUrl !=
+                                      ''
+                              ? Image.network(
+                                  state.userInvitedInformationModel?.photoUrl ??
+                                      '',
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        } else {
+                                          return Center(
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        }
+                                      },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Center(
+                                      child: Text(
+                                        'Bote sin foto',
+                                        style: context.styles.paragraph,
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Center(
+                                  child: Text(
+                                    'Bote sin foto',
+                                    style: context.styles.paragraph,
+                                  ),
                                 ),
-                              );
-                            },
-                          ),
                         );
                       },
                     ),

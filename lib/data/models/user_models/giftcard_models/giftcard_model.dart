@@ -4,7 +4,7 @@ part 'giftcard_model.freezed.dart';
 part 'giftcard_model.g.dart';
 
 @freezed
-class GiftcarModel with _$GiftcarModel {
+abstract class GiftcarModel with _$GiftcarModel {
   const factory GiftcarModel({
     String? id,
     String? productName,
@@ -13,5 +13,6 @@ class GiftcarModel with _$GiftcarModel {
     List<String>? links,
   }) = _GiftcarModel;
 
-  factory GiftcarModel.fromJson(Map<String, dynamic> json) => _$GiftcarModelFromJson(json);
+  factory GiftcarModel.fromJson(Map<String, dynamic> json) =>
+      _$GiftcarModelFromJson(json);
 }

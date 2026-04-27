@@ -10,10 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class SingleChatPage extends StatefulWidget {
-  const SingleChatPage({
-    super.key,
-    required this.data,
-  });
+  const SingleChatPage({super.key, required this.data});
 
   final SingleChatModel data;
 
@@ -21,7 +18,8 @@ class SingleChatPage extends StatefulWidget {
   State<SingleChatPage> createState() => _SingleChatPageState();
 }
 
-class _SingleChatPageState extends State<SingleChatPage> with WidgetsBindingObserver {
+class _SingleChatPageState extends State<SingleChatPage>
+    with WidgetsBindingObserver {
   final TextEditingController textController = TextEditingController();
   final scrollController = ScrollController();
 
@@ -30,10 +28,16 @@ class _SingleChatPageState extends State<SingleChatPage> with WidgetsBindingObse
     super.initState();
     final currentChatId = context.read<SingleChatBloc>().state.currentChatId;
     if (currentChatId.isNotEmpty) {
-      context.read<SingleChatBloc>().add(SingleChatEvent.startListening(currentChatId));
+      context.read<SingleChatBloc>().add(
+        SingleChatEvent.startListening(currentChatId),
+      );
     } else {
-      context.read<SingleChatBloc>().add(SingleChatEvent.setCurrentChatId(widget.data.chatId ?? ''));
-      context.read<SingleChatBloc>().add(SingleChatEvent.startListening(widget.data.chatId ?? ''));
+      context.read<SingleChatBloc>().add(
+        SingleChatEvent.setCurrentChatId(widget.data.chatId ?? ''),
+      );
+      context.read<SingleChatBloc>().add(
+        SingleChatEvent.startListening(widget.data.chatId ?? ''),
+      );
     }
   }
 
@@ -86,36 +90,38 @@ class _SingleChatPageState extends State<SingleChatPage> with WidgetsBindingObse
                       slivers: [
                         BlocBuilder<SingleChatBloc, SingleChatState>(
                           builder: (_, state) {
-                            List<ChatMessageModel> chatMessages = state.messages;
+                            List<ChatMessageModel> chatMessages =
+                                state.messages;
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               _scrollToBottom();
                             });
 
                             return SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                (_, index) {
-                                  return chatMessages.isEmpty
-                                      ? Center(
-                                          child: Text(
-                                            'No hay mensajes',
-                                            style: context.styles.paragraph,
-                                          ),
-                                        )
-                                      : ChatSpace(
-                                          key: ValueKey(chatMessages[index].id),
-                                          isMine: chatMessages[index].sendedBy == currentUser?.id,
-                                          date: chatMessages[index].sendedAt,
-                                          textContent: chatMessages[index].message,
-                                          id: chatMessages[index].sendedBy,
-                                          name: chatMessages[index].userName,
-                                          userImg: chatMessages[index].userImg,
-                                        );
-                                },
-                                childCount: chatMessages.length,
-                              ),
+                              delegate: SliverChildBuilderDelegate((_, index) {
+                                return chatMessages.isEmpty
+                                    ? Center(
+                                        child: Text(
+                                          'No hay mensajes',
+                                          style: context.styles.paragraph,
+                                        ),
+                                      )
+                                    : ChatSpace(
+                                        key: ValueKey(chatMessages[index].id),
+                                        isMine:
+                                            chatMessages[index].sendedBy ==
+                                            currentUser?.id,
+                                        date: chatMessages[index].sendedAt,
+                                        textContent:
+                                            chatMessages[index].message ?? '',
+                                        id: chatMessages[index].sendedBy ?? '',
+                                        name:
+                                            chatMessages[index].userName ?? '',
+                                        userImg: chatMessages[index].userImg,
+                                      );
+                              }, childCount: chatMessages.length),
                             );
                           },
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -138,7 +144,8 @@ class _SingleChatPageState extends State<SingleChatPage> with WidgetsBindingObse
                         onPressed: () async {
                           final textValue = textController.text;
                           if (textValue.isNotEmpty) {
-                            final ChatMessageModel chatMessage = ChatMessageModel(
+                            final ChatMessageModel
+                            chatMessage = ChatMessageModel(
                               id: '${widget.data.chatId}-${currentUser?.id}',
                               message: textValue,
                               sendedBy: currentUser?.id ?? '',
@@ -147,14 +154,14 @@ class _SingleChatPageState extends State<SingleChatPage> with WidgetsBindingObse
                               userImg: currentUser?.userImg,
                             );
                             context.read<SingleChatBloc>().add(
-                                  SingleChatEvent.sendMessage(
-                                    chatMessage: chatMessage,
-                                    chatId: widget.data.chatId ?? '',
-                                    userId: widget.data.friendId ?? '',
-                                    userName: widget.data.userName ?? '',
-                                    userImage: widget.data.userImage ?? '',
-                                  ),
-                                );
+                              SingleChatEvent.sendMessage(
+                                chatMessage: chatMessage,
+                                chatId: widget.data.chatId ?? '',
+                                userId: widget.data.friendId ?? '',
+                                userName: widget.data.userName ?? '',
+                                userImage: widget.data.userImage ?? '',
+                              ),
+                            );
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               _scrollToBottom();
                             });
@@ -169,10 +176,7 @@ class _SingleChatPageState extends State<SingleChatPage> with WidgetsBindingObse
                             );
                           }
                         },
-                        icon: Icon(
-                          Icons.send,
-                          color: context.colors.primary,
-                        ),
+                        icon: Icon(Icons.send, color: context.colors.primary),
                       ),
                       hintText: 'Escribe un mensaje',
                       hintStyle: context.styles.paragraph.copyWith(

@@ -6,7 +6,7 @@ import 'package:felicitup_app/data/models/models.dart';
 
 abstract class UserRepository {
   Future<Either<ApiException, Map<String, dynamic>>> getUserData(String userId);
-  Future<Either<ApiException, bool>> checkVerifyStatus();
+  Future<Either<ApiException, bool>> checkPhoneExist({required String phone});
   Future<Either<ApiException, void>> sendVerifyEmail();
   Future<Either<ApiException, Map<String, dynamic>>> getUserDataByPhone(
     String phone,
@@ -17,6 +17,9 @@ abstract class UserRepository {
   Future<Either<ApiException, List<UserModel>>> getListUserDataByPhone(
     List<String> phones,
   );
+  Future<Either<ApiException, List<UserModel>>> getListUserDataByPhoneIos(
+    List<String> phones,
+  );
   Future<Either<ApiException, String>> uploadFile(
     File file,
     String destination,
@@ -24,6 +27,7 @@ abstract class UserRepository {
   Future<Either<ApiException, String>> uploadVideoFile(
     File file,
     String destination,
+    String id,
   );
   Future<Either<ApiException, void>> sendNotification({
     required String userId,
@@ -47,9 +51,17 @@ abstract class UserRepository {
     List<String> phones,
   );
   Future<Either<ApiException, void>> updateMatchList(List<String> ids);
+  Future<Either<ApiException, void>> updateMatchListFromPhones(
+    List<String> phones,
+  );
   Future<Either<ApiException, void>> updateUserImageFromFile(File file);
   Future<Either<ApiException, void>> updateUserImageFromUrl(String url);
+  Future<Either<ApiException, void>> completeeUserInfo(
+    String firstName,
+    String lastName,
+  );
   Future<Either<ApiException, void>> updateUserInfo(UserModel user);
+  Future<Either<ApiException, void>> updateUserBirthdate(DateTime date);
   Future<Either<ApiException, void>> createGiftItem(GiftcarModel item);
   Future<Either<ApiException, void>> editGiftItem({
     required String itemId,
@@ -66,20 +78,20 @@ abstract class UserRepository {
   );
   Future<Either<ApiException, void>> deleteNotification(String notificationId);
   Future<Either<ApiException, void>> setInitialUserInfo(UserModel user);
-
+  Future<Either<ApiException, void>> addManualContact(
+    Map<String, dynamic> user,
+  );
   Future<Either<ApiException, void>> setUserInfoRemaining(
     String name,
     String lastName,
     String phone,
     String isoCode,
     String genre,
-    DateTime birthDate,
   );
   Future<Either<ApiException, void>> setFederatedData({
     required String firstName,
     required String lastName,
-    required String genre,
-    required DateTime birthDate,
+    DateTime? birthDate,
   });
   Future<Either<ApiException, void>> setUserPhone(
     String phone,

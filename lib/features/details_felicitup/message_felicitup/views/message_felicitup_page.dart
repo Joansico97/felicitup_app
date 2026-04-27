@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
@@ -33,8 +34,10 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
 
   void assignid() {
     if (context.mounted) {
-      final felicitup =
-          context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
+      final felicitup = context
+          .read<DetailsFelicitupDashboardBloc>()
+          .state
+          .felicitup;
       context.read<MessageFelicitupBloc>().add(
         MessageFelicitupEvent.asignCurrentChat(felicitup?.chatId ?? ''),
       );
@@ -46,6 +49,7 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.inactive:
+        deleteId();
         break;
       case AppLifecycleState.paused:
         deleteId();
@@ -54,8 +58,10 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
         assignid();
         break;
       case AppLifecycleState.detached:
+        deleteId();
         break;
       case AppLifecycleState.hidden:
+        deleteId();
         break;
     }
   }
@@ -68,10 +74,14 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
         .add(DetailsFelicitupDashboardEvent.changeCurrentIndex(1));
     WidgetsBinding.instance.addObserver(this);
     assignid();
-    final felicitup =
-        context.read<DetailsFelicitupDashboardBloc>().state.felicitup;
-    final currentChatId =
-        context.read<MessageFelicitupBloc>().state.currentChatId;
+    final felicitup = context
+        .read<DetailsFelicitupDashboardBloc>()
+        .state
+        .felicitup;
+    final currentChatId = context
+        .read<MessageFelicitupBloc>()
+        .state
+        .currentChatId;
     if (currentChatId.isNotEmpty) {
       context.read<MessageFelicitupBloc>().add(
         MessageFelicitupEvent.startListening(currentChatId),
@@ -110,6 +120,8 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
 
   @override
   Widget build(BuildContext context) {
+    final infoFelicitupBloc = context.read<InfoFelicitupBloc>();
+    final friendList = infoFelicitupBloc.state.friendList;
     return BlocBuilder<
       DetailsFelicitupDashboardBloc,
       DetailsFelicitupDashboardState
@@ -150,15 +162,24 @@ class _MessageFelicitupPageState extends State<MessageFelicitupPage>
 
                             return SliverList(
                               delegate: SliverChildBuilderDelegate((_, index) {
+                                final chatMessage = chatMessages[index];
+                                final senderId = chatMessage.sendedBy;
+                                final sender = friendList.firstWhereOrNull(
+                                  (user) => user.id == senderId,
+                                );
+                                final displayName =
+                                    sender?.getDisplayName(currentUser) ??
+                                    chatMessage.userName;
                                 return ChatSpace(
                                   key: ValueKey(chatMessages[index].id),
                                   isMine:
                                       chatMessages[index].sendedBy ==
                                       currentUser?.id,
                                   date: chatMessages[index].sendedAt,
-                                  textContent: chatMessages[index].message,
-                                  id: chatMessages[index].sendedBy,
-                                  name: chatMessages[index].userName,
+                                  textContent:
+                                      chatMessages[index].message ?? '',
+                                  id: chatMessages[index].sendedBy ?? '',
+                                  name: displayName ?? '',
                                   userImg: chatMessages[index].userImg,
                                 );
                               }, childCount: chatMessages.length),

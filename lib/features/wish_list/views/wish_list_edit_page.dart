@@ -12,17 +12,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class WishListEditPage extends StatelessWidget {
-  const WishListEditPage({
-    super.key,
-    required this.wishListItem,
-  });
+  const WishListEditPage({super.key, required this.wishListItem});
 
   final GiftcarModel wishListItem;
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<WishListBloc, WishListState>(
-      listenWhen: (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -41,8 +39,8 @@ class WishListEditPage extends StatelessWidget {
                     onPressed: () {
                       if (state.isCreate) {
                         context.read<WishListBloc>().add(
-                              WishListEvent.createGiftItem(),
-                            );
+                          WishListEvent.createGiftItem(),
+                        );
                       } else {
                         context.pop();
                       }
@@ -55,12 +53,8 @@ class WishListEditPage extends StatelessWidget {
                 builder: (_, state) {
                   return Expanded(
                     child: state.isCreate
-                        ? EditWishListItemView(
-                            wishListItem: wishListItem,
-                          )
-                        : InfoWishListItemView(
-                            wishListItem: wishListItem,
-                          ),
+                        ? EditWishListItemView(wishListItem: wishListItem)
+                        : InfoWishListItemView(wishListItem: wishListItem),
                   );
                 },
               ),
@@ -74,13 +68,13 @@ class WishListEditPage extends StatelessWidget {
                             onTap: () {
                               if (state.isCreate) {
                                 context.read<WishListBloc>().add(
-                                      WishListEvent.editGiftItemInfo(wishListItem),
-                                    );
+                                  WishListEvent.editGiftItemInfo(wishListItem),
+                                );
                                 context.go(RouterPaths.wishList);
                               } else {
                                 context.read<WishListBloc>().add(
-                                      WishListEvent.createGiftItem(),
-                                    );
+                                  WishListEvent.createGiftItem(),
+                                );
                               }
                             },
                             label: state.isCreate ? 'Guardar' : 'Editar regalo',
@@ -91,8 +85,8 @@ class WishListEditPage extends StatelessWidget {
                               Expanded(
                                 child: PrimaryButton(
                                   onTap: () => context.read<WishListBloc>().add(
-                                        WishListEvent.createGiftItem(),
-                                      ),
+                                    WishListEvent.createGiftItem(),
+                                  ),
                                   label: 'Editar',
                                   isActive: true,
                                 ),
@@ -103,13 +97,17 @@ class WishListEditPage extends StatelessWidget {
                                   onTap: () => showConfirmModal(
                                     title: 'Deseas eliminar tu deseo?',
                                     onAccept: () async {
-                                      context
-                                          .read<WishListBloc>()
-                                          .add(WishListEvent.deleteGiftItemInfo(wishListItem.id ?? ''));
                                       context.read<WishListBloc>().add(
-                                            WishListEvent.createGiftItem(),
-                                          );
-                                      context.read<AppBloc>().add(AppEvent.loadUserData());
+                                        WishListEvent.deleteGiftItemInfo(
+                                          wishListItem.id ?? '',
+                                        ),
+                                      );
+                                      context.read<WishListBloc>().add(
+                                        WishListEvent.createGiftItem(),
+                                      );
+                                      context.read<AppBloc>().add(
+                                        AppEvent.loadUserData(),
+                                      );
                                       context.pop();
                                     },
                                   ),

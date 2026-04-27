@@ -2,10 +2,7 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:flutter/material.dart';
 
 class CirclePicker extends StatelessWidget {
-  const CirclePicker({
-    super.key,
-    required this.isActive,
-  });
+  const CirclePicker({super.key, required this.isActive});
 
   final bool isActive;
 
@@ -23,12 +20,7 @@ class CirclePicker extends StatelessWidget {
           width: context.sp(1),
         ),
       ),
-      child: isActive
-          ? Icon(
-              Icons.check,
-              color: Colors.white,
-            )
-          : null,
+      child: isActive ? Icon(Icons.check, color: Colors.white) : null,
     );
   }
 }

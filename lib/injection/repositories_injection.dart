@@ -33,5 +33,8 @@ void _initRepositoriesInjection() {
         firebaseAuth: di(),
         databaseHelper: di(),
       ),
+    )
+    ..registerLazySingleton<GeneralDataRepository>(
+      () => GeneralDataFirebaseResource(databaseHelper: di()),
     );
 }

@@ -1,390 +1,509 @@
+import 'dart:io';
+
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/bloc/felicitups_dashboard_bloc.dart';
-import 'package:felicitup_app/features/felicitups_dashboard/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+enum MenuOption { opcion1, opcion2, opcion3 }
+
 class PastFelicitupWidget extends StatelessWidget {
-  const PastFelicitupWidget({
-    super.key,
-    required this.felicitup,
-    required this.date,
-  });
+  const PastFelicitupWidget({super.key, required this.felicitup});
 
   final FelicitupModel felicitup;
-  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: context.sp(20),
+        horizontal: context.sp(36),
         vertical: context.sp(14),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            width: context.sp(95),
-            padding: EdgeInsets.all(context.sp(10)),
-            child: Column(
-              children: [
-                SizedBox(height: context.sp(12)),
-                Text(
-                  felicitup.owner.length > 2
-                      ? '${felicitup.owner[0].name.split(' ')[0]} y ${felicitup.owner.length - 1} más'
-                      : felicitup.owner.length == 2
-                      ? '${felicitup.owner[0].name.split(' ')[0]} y ${felicitup.owner[1].name.split(' ')[0]}'
-                      : felicitup.owner[0].name.split(' ')[0],
-                  style: context.styles.subtitle,
+      child: Container(
+        width: context.fullWidth,
+        decoration: BoxDecoration(
+          color: context.colors.white.valueOpacity(.5),
+          borderRadius: BorderRadius.circular(context.sp(10)),
+          boxShadow: [
+            BoxShadow(
+              color: context.colors.black.valueOpacity(.1),
+              blurRadius: 12,
+              offset: Offset(0, 2),
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: context.fullWidth,
+              padding: EdgeInsets.all(context.sp(5)),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(context.sp(10)),
+                  topRight: Radius.circular(context.sp(10)),
                 ),
-                SizedBox(height: context.sp(8)),
-                Container(
-                  height: context.sp(68),
-                  width: context.sp(68),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: context.colors.lightGrey,
+                color: context.colors.orange,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    height: context.sp(45),
+                    width: context.sp(45),
+                    decoration: BoxDecoration(shape: BoxShape.circle),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(context.sp(45)),
+                      child: CommonNetworkImage(
+                        imageUrl: felicitup.owner.first.userImg ?? '',
+                      ),
+                    ),
                   ),
-                  child: Text(
-                    felicitup.owner[0].name[0],
-                    style: context.styles.header2,
+                  SizedBox(
+                    width: context.sp(250),
+                    child: felicitup.owner.length > 2
+                        ? Column(
+                            children: [
+                              Text(
+                                '${felicitup.reason} de',
+                                style: context.styles.subtitle.copyWith(
+                                  color: context.colors.white,
+                                ),
+                                maxLines: 1,
+                              ),
+                              Wrap(
+                                children: [
+                                  ...List.generate(
+                                    felicitup.owner.length,
+                                    (index) =>
+                                        index != felicitup.owner.length - 1
+                                        ? Text(
+                                            '${felicitup.owner[index].name} ',
+                                            style: context.styles.subtitle
+                                                .copyWith(
+                                                  color: context.colors.white,
+                                                ),
+                                          )
+                                        : Text(
+                                            'y ${felicitup.owner[index].name} ',
+                                            style: context.styles.subtitle
+                                                .copyWith(
+                                                  color: context.colors.white,
+                                                ),
+                                          ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          )
+                        : Text(
+                            '${felicitup.reason} de ${felicitup.owner[0].name}',
+                            style: context.styles.subtitle.copyWith(
+                              color: context.colors.white,
+                            ),
+                          ),
                   ),
+                ],
+              ),
+            ),
+            Container(
+              width: context.fullWidth,
+              padding: EdgeInsets.symmetric(
+                horizontal: context.sp(24),
+                vertical: context.sp(20),
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(context.sp(10)),
+                  bottomRight: Radius.circular(context.sp(10)),
                 ),
-                SizedBox(height: context.sp(8)),
-                Text(
-                  DateFormat('dd·MM·yyyy').format(date),
-                  style: context.styles.smallText,
-                ),
-                SizedBox(height: context.sp(8)),
-                SizedBox(
-                  width: context.fullWidth,
-                  child: Stack(
-                    children: [
-                      CircleIcon(color: context.colors.orange),
-                      Row(
+              ),
+              child: Column(
+                children: [
+                  GestureDetector(
+                    onTap: () => context.go(
+                      (felicitup.finalVideoUrl?.isNotEmpty ?? false)
+                          ? RouterPaths.videoPastFelicitup
+                          : RouterPaths.mainPastFelicitup,
+                      extra: {'felicitupId': felicitup.id},
+                    ),
+                    child: Container(
+                      height: context.sp(260),
+                      width: context.sp(200),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(context.sp(10)),
+                        border: Border.all(
+                          color: Colors.black.withAlpha((.18 * 255).toInt()),
+                        ),
+                      ),
+                      child: Stack(
                         children: [
                           SizedBox(
-                            // width: context.sizer.width(.03),
-                            width: context.sp(15),
-                          ),
-                          CircleIcon(color: context.colors.orange),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width: context.sp(30)),
-                          CircleIcon(color: context.colors.orange),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width: context.sp(45)),
-                          CircleIcon(color: context.colors.orange),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: context.sp(200),
-            padding: EdgeInsets.all(context.sp(10)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap:
-                      () => context.go(
-                        (felicitup.finalVideoUrl?.isNotEmpty ?? false)
-                            ? RouterPaths.videoPastFelicitup
-                            : RouterPaths.mainPastFelicitup,
-                        extra: {'felicitupId': felicitup.id},
-                      ),
-                  child: Container(
-                    height: context.sp(240),
-                    width: context.sp(200),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(context.sp(10)),
-                      border: Border.all(
-                        color: Colors.black.withAlpha((.18 * 255).toInt()),
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        SizedBox(
-                          height: context.sp(240),
-                          width: context.sp(200),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(context.sp(10)),
-                            child: Image.network(
-                              felicitup.thumbnailUrl ??
-                                  'https://picsum.photos/450/600',
-                              fit: BoxFit.fitWidth,
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: context.sp(95),
-                          right: context.sp(65),
-                          child: Container(
-                            height: context.sp(50),
-                            width: context.sp(50),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: context.colors.white.valueOpacity(.6),
-                                width: context.sp(5),
+                            height: context.sp(260),
+                            width: context.sp(200),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                context.sp(10),
+                              ),
+                              child: CommonNetworkImage(
+                                imageUrl: felicitup.thumbnailUrl ?? '',
                               ),
                             ),
-                            child: Icon(
-                              Icons.play_arrow,
-                              color: context.colors.white.valueOpacity(.6),
-                              size: context.sp(25),
-                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    BlocBuilder<
-                      FelicitupsDashboardBloc,
-                      FelicitupsDashboardState
-                    >(
-                      builder: (_, state) {
-                        final user = context.read<AppBloc>().state.currentUser;
-                        return IconButton(
-                          onPressed:
-                              () => context.read<FelicitupsDashboardBloc>().add(
-                                FelicitupsDashboardEvent.setLike(
-                                  felicitup.id,
-                                  user?.id ?? '',
+                          Align(
+                            child: Container(
+                              height: context.sp(50),
+                              width: context.sp(50),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: context.colors.white.valueOpacity(.6),
+                                  width: context.sp(5),
                                 ),
                               ),
-                          icon: Icon(
-                            felicitup.likes!.contains(user?.id ?? '')
-                                ? Icons.favorite
-                                : Icons.favorite_outline,
-                            color:
-                                felicitup.likes!.contains(user?.id ?? '')
-                                    ? context.colors.error
-                                    : context.colors.black.valueOpacity(.5),
-                            size: context.sp(20),
+                              child: Icon(
+                                Icons.play_arrow,
+                                color: context.colors.white.valueOpacity(.6),
+                                size: context.sp(25),
+                              ),
+                            ),
                           ),
-                        );
-                      },
-                    ),
-                    IconButton(
-                      onPressed:
-                          () => context.go(
-                            RouterPaths.chatPastFelicitup,
-                            extra: {'felicitupId': felicitup.id},
-                          ),
-                      icon: Icon(
-                        Icons.message_outlined,
-                        color: Colors.black.withAlpha((.5 * 255).toInt()),
-                        size: context.sp(20),
+                        ],
                       ),
                     ),
-                    Visibility(
-                      visible: false,
-                      child: IconButton(
-                        onPressed: () {
-                          // ref.read(homeEventsProvider.notifier).toggleShowButton();
-                          commoBottomModal(
-                            context: context,
-                            body: Column(
-                              children: [
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Elige a donde deseas compartir tu felicitup',
-                                    style: context.styles.paragraph,
+                  ),
+                  Row(
+                    children: [
+                      BlocBuilder<
+                        FelicitupsDashboardBloc,
+                        FelicitupsDashboardState
+                      >(
+                        builder: (_, state) {
+                          final user = context
+                              .read<AppBloc>()
+                              .state
+                              .currentUser;
+                          return IconButton(
+                            onPressed: () =>
+                                context.read<FelicitupsDashboardBloc>().add(
+                                  FelicitupsDashboardEvent.setLike(
+                                    felicitup.id,
+                                    user?.id ?? '',
                                   ),
                                 ),
-                                SizedBox(height: context.sp(20)),
-                                Row(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () async {
-                                        final whatsAppUrl = Uri.parse(
-                                          "whatsapp://send?text=${Uri.encodeComponent('text')}",
-                                        );
-                                        if (await canLaunchUrl(whatsAppUrl)) {
-                                          await launchUrl(whatsAppUrl);
-                                        } else {
-                                          ScaffoldMessenger.of(
-                                            rootNavigatorKey.currentContext!,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                'No se pudo lanzar WhatsApp',
-                                                style: context.styles.paragraph
-                                                    .copyWith(
-                                                      color:
-                                                          context.colors.white,
-                                                    ),
-                                              ),
-                                              duration: const Duration(
-                                                seconds: 2,
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                      child: Container(
-                                        height: context.sp(50),
-                                        width: context.sp(50),
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: context.sp(10),
-                                        ),
-                                        margin: EdgeInsets.only(
-                                          right: context.sp(10),
-                                        ),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: context.colors.primary,
-                                          ),
-                                          color: Colors.white.withAlpha(
-                                            (.5 * 255).toInt(),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () async {
-                                        final Uri url = Uri.parse(
-                                          'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent('https://felicitup.com/video-section/https://firebasestorage.googleapis.com/v0/b/felicitup-prod.appspot.com/o/videos%2Fraj4iPOUV9QeRYUYEFCb%2F3nppj2XmKJUfhCxp8ROfXKxsC1I2.mp4?alt=media&token=e6774836-5719-41b3-94c3-4c211a4d48c8&fbclid=IwY2xjawIyoCBleHRuA2FlbQIxMAABHTdRNmlIzDd5xyk_oBez5YsXcNljHpx7p93TYakjcDn3mxJjI9FNUnbD7g_aem_2W2Yutt3E_7yJc7udAp79w')}',
-                                        );
-
-                                        if (!await launchUrl(
-                                          url,
-                                          mode: LaunchMode.externalApplication,
-                                        )) {
-                                          throw Exception(
-                                            'Could not launch $url',
-                                          );
-                                        }
-                                      },
-                                      child: Container(
-                                        height: context.sp(50),
-                                        width: context.sp(50),
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: context.sp(10),
-                                        ),
-                                        margin: EdgeInsets.only(
-                                          right: context.sp(10),
-                                        ),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: context.colors.primary,
-                                          ),
-                                          color: Colors.white.withAlpha(
-                                            (.5 * 255).toInt(),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {},
-                                      child: Container(
-                                        height: context.sp(50),
-                                        width: context.sp(50),
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: context.sp(10),
-                                        ),
-                                        margin: EdgeInsets.only(
-                                          right: context.sp(10),
-                                        ),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: context.colors.primary,
-                                          ),
-                                          color: Colors.white.withAlpha(
-                                            (.5 * 255).toInt(),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: context.sp(20)),
-                              ],
+                            icon: PhosphorIcon(
+                              PhosphorIcons.heart(
+                                felicitup.likes!.contains(user?.id ?? '')
+                                    ? PhosphorIconsStyle.fill
+                                    : PhosphorIconsStyle.regular,
+                              ),
+                              color: felicitup.likes!.contains(user?.id ?? '')
+                                  ? context.colors.error
+                                  : context.colors.black.valueOpacity(.5),
+                              size: context.sp(20),
                             ),
                           );
                         },
+                      ),
+                      Visibility(
+                        visible: felicitup.likes?.isNotEmpty ?? false,
+                        child: Row(
+                          children: [
+                            Column(
+                              children: [
+                                SizedBox(height: context.sp(3)),
+                                Text(
+                                  '${felicitup.likes?.length ?? 0}',
+                                  style: context.styles.smallText,
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: context.sp(12)),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => context.go(
+                          RouterPaths.chatPastFelicitup,
+                          extra: {'felicitupId': felicitup.id},
+                        ),
                         icon: Icon(
-                          Icons.share,
+                          Icons.message_outlined,
                           color: Colors.black.withAlpha((.5 * 255).toInt()),
                           size: context.sp(20),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                RichText(
-                  text: TextSpan(
-                    text:
-                        felicitup.owner.length > 2
-                            ? '#felicitup${felicitup.owner[0].name.split(' ')[0]}${felicitup.owner.length - 1}'
-                            : '#felicitup${felicitup.owner[0].name.split(' ')[0]}',
-                    style: context.styles.smallText,
-                    children: [
-                      TextSpan(
-                        text: ' ${felicitup.message ?? ''}',
-                        style: context.styles.smallText,
+
+                      BlocBuilder<AppBloc, AppState>(
+                        builder: (_, state) {
+                          final currentUser = state.currentUser;
+                          if (currentUser == null) {
+                            return const SizedBox.shrink();
+                          }
+
+                          final isOwner = felicitup.owner.any(
+                            (owner) => owner.id == currentUser.id,
+                          );
+
+                          if (!isOwner) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return IconButton(
+                            onPressed: () async {
+                              commoBottomModal(
+                                context: context,
+                                noSpace: true,
+                                body: Column(
+                                  children: [
+                                    Text(
+                                      'Comparte tu felicitup',
+                                      style: context.styles.header2,
+                                    ),
+                                    SizedBox(height: context.sp(24)),
+                                    Row(
+                                      children: [
+                                        SocialMediaBubble(
+                                          onTap: () async {
+                                            final encoded =
+                                                'https://play.felicitup.com/init?id=${felicitup.id}';
+
+                                            final Uri url = Uri.parse(
+                                              "whatsapp://send?text=$encoded",
+                                            );
+
+                                            if (await canLaunchUrl(url)) {
+                                              await launchUrl(
+                                                url,
+                                                mode: LaunchMode
+                                                    .externalApplication,
+                                              );
+                                            } else {
+                                              const playStore =
+                                                  "https://play.google.com/store/apps/details?id=com.whatsapp";
+                                              const appStore =
+                                                  "https://apps.apple.com/app/whatsapp-messenger/id310633997";
+
+                                              await launchUrl(
+                                                Uri.parse(
+                                                  Platform.isAndroid
+                                                      ? playStore
+                                                      : appStore,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          icon: PhosphorIcons.whatsappLogo(),
+                                          label: 'WhatsApp',
+                                        ),
+                                        SocialMediaBubble(
+                                          onTap: () async {
+                                            final encoded =
+                                                'https://play.felicitup.com/init?id=${felicitup.id}';
+
+                                            final fbUrl = Uri.parse(
+                                              "https://www.facebook.com/sharer/sharer.php?u=$encoded",
+                                            );
+
+                                            await launchUrl(
+                                              fbUrl,
+                                              mode: LaunchMode
+                                                  .externalApplication,
+                                            );
+                                          },
+                                          icon: PhosphorIcons.facebookLogo(),
+                                          label: 'Facebook',
+                                        ),
+                                        // SocialMediaBubble(
+                                        //   onTap: () async {
+                                        //     // final uri = Uri.file(filePath);
+
+                                        //     // if (Platform.isAndroid) {
+                                        //     //   await launchUrl(
+                                        //     //     Uri.parse(
+                                        //     //       "instagram://story-camera",
+                                        //     //     ),
+                                        //     //     mode: LaunchMode
+                                        //     //         .externalApplication,
+                                        //     //   );
+                                        //     // } else if (Platform.isIOS) {
+                                        //     //   await launchUrl(
+                                        //     //     Uri.parse(
+                                        //     //       "instagram-stories://share?source_application=com.your.app",
+                                        //     //     ),
+                                        //     //     mode: LaunchMode
+                                        //     //         .externalApplication,
+                                        //     //   );
+                                        //     // }
+                                        //   },
+                                        //   icon: PhosphorIcons.instagramLogo(),
+                                        //   label: 'Instagram',
+                                        // ),
+                                        SocialMediaBubble(
+                                          onTap: () async {
+                                            final encoded =
+                                                'https://play.felicitup.com/init?id=${felicitup.id}';
+
+                                            final twitterUrl = Uri.parse(
+                                              "https://twitter.com/intent/tweet?url=$encoded",
+                                            );
+
+                                            await launchUrl(
+                                              twitterUrl,
+                                              mode: LaunchMode
+                                                  .externalApplication,
+                                            );
+                                          },
+                                          icon: PhosphorIcons.xLogo(),
+                                          label: 'X',
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            icon: Icon(
+                              Icons.share,
+                              color: Colors.black.withAlpha((.5 * 255).toInt()),
+                              size: context.sp(20),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
-                ),
-                SizedBox(height: context.sp(8)),
-                GestureDetector(
-                  onTap:
-                      () => context.go(
-                        RouterPaths.mainPastFelicitup,
-                        extra: {'felicitupId': felicitup.id},
-                      ),
-                  child: Row(
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        children: [
-                          Text('Ver más', style: context.styles.smallText),
-                          Container(
-                            height: context.sp(1),
-                            width: context.sp(45),
-                            color: Colors.black,
+                      GestureDetector(
+                        onTap: () => context.go(
+                          RouterPaths.mainPastFelicitup,
+                          extra: {'felicitupId': felicitup.id},
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Ver más',
+                              style: context.styles.smallText.copyWith(
+                                decoration: TextDecoration.underline,
+                                decorationThickness: context.sp(1.5),
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: Colors.black,
+                              size: context.sp(12),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Theme(
+                        data: ThemeData(
+                          popupMenuTheme: PopupMenuThemeData(
+                            color: context.colors.grey,
+                            elevation: context.sp(8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                context.sp(8),
+                              ),
+                            ),
                           ),
-                        ],
-                      ),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: Colors.black,
-                        size: context.sp(12),
+                        ),
+                        child: PopupMenuButton<MenuOption>(
+                          icon: Icon(Icons.more_vert),
+                          onSelected: (MenuOption result) {
+                            switch (result) {
+                              case MenuOption.opcion1:
+                                showConfirmModal(
+                                  title: 'Eliminar felicitup',
+                                  content:
+                                      '¿Estás seguro de eliminar esta felicitup? Si la eliminas no podrás recuperarla.',
+                                  onAccept: () async {
+                                    context.read<FelicitupsDashboardBloc>().add(
+                                      FelicitupsDashboardEvent.deletePastFelicitup(
+                                        felicitupId: felicitup.id,
+                                      ),
+                                    );
+                                  },
+                                );
+                                break;
+                              case MenuOption.opcion2:
+                                break;
+                              case MenuOption.opcion3:
+                                break;
+                            }
+                          },
+                          itemBuilder: (_) {
+                            return [
+                              PopupMenuItem(
+                                value: MenuOption.opcion1,
+                                child: Text(
+                                  'Eliminar felicitup',
+                                  style: context.styles.paragraph,
+                                ),
+                              ),
+                            ];
+                          },
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SocialMediaBubble extends StatelessWidget {
+  const SocialMediaBubble({
+    super.key,
+    required this.onTap,
+    required this.icon,
+    required this.label,
+  });
+
+  final Function() onTap;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.only(right: context.sp(12)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              height: context.sp(50),
+              width: context.sp(50),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: context.colors.white,
+              ),
+              child: PhosphorIcon(icon),
+            ),
+            SizedBox(height: context.sp(8)),
+            Text(label, style: context.styles.smallText),
+          ],
+        ),
       ),
     );
   }

@@ -17,7 +17,8 @@ class ListSingleChatPage extends StatelessWidget {
           children: [
             CollapsedHeader(
               title: 'Mensajes directos',
-              onPressed: () async => context.go(RouterPaths.felicitupsDashboard),
+              onPressed: () async =>
+                  context.go(RouterPaths.felicitupsDashboard),
             ),
             SizedBox(height: context.sp(12)),
             Expanded(
@@ -27,7 +28,8 @@ class ListSingleChatPage extends StatelessWidget {
 
                   return ListView.separated(
                     itemCount: listChats.length,
-                    separatorBuilder: (_, __) => SizedBox(height: context.sp(12)),
+                    separatorBuilder: (_, _) =>
+                        SizedBox(height: context.sp(12)),
                     itemBuilder: (_, index) {
                       return SizedBox(
                         child: ListTile(

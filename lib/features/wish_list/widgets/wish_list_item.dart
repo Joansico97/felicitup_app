@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class WishListItem extends StatelessWidget {
-  const WishListItem({
-    super.key,
-    required this.giftcard,
-  });
+  const WishListItem({super.key, required this.giftcard});
 
   final GiftcarModel giftcard;
 
@@ -18,9 +15,7 @@ class WishListItem extends StatelessWidget {
       width: context.fullWidth,
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: Colors.black.withAlpha((.2 * 255).toInt()),
-          ),
+          bottom: BorderSide(color: Colors.black.withAlpha((.2 * 255).toInt())),
         ),
       ),
       padding: EdgeInsets.symmetric(
@@ -55,14 +50,9 @@ class WishListItem extends StatelessWidget {
           ),
           Spacer(),
           IconButton(
-            icon: Icon(
-              Icons.drag_indicator,
-              color: context.colors.orange,
-            ),
-            onPressed: () => context.push(
-              RouterPaths.wishListEdit,
-              extra: giftcard,
-            ),
+            icon: Icon(Icons.drag_indicator, color: context.colors.orange),
+            onPressed: () =>
+                context.push(RouterPaths.wishListEdit, extra: giftcard),
           ),
         ],
       ),

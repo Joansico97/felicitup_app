@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:string_similarity/string_similarity.dart';
 
 class AuthFirebaseResource implements AuthRepository {
   AuthFirebaseResource({
@@ -73,37 +74,24 @@ class AuthFirebaseResource implements AuthRepository {
   @override
   Future<Either<ApiException, UserCredential>> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
+      final googleInstance = GoogleSignIn.instance;
+      await googleInstance.initialize();
+
+      final googleUser =
+          await googleInstance.attemptLightweightAuthentication() ??
+          await googleInstance.authenticate();
+
+      final googleAuth = googleUser.authentication;
+
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+        idToken: googleAuth.idToken,
       );
+
       final response = await _firebaseAuth.signInWithCredential(credential);
 
       return Right(response);
     } on FirebaseAuthException catch (e) {
       return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
-    } catch (e) {
-      return Left(ApiException(400, e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<ApiException, String>> setFCMToken({
-    required String token,
-  }) async {
-    try {
-      final userId = _firebaseAuth.currentUser?.uid;
-      if (userId == null) {
-        return Left(ApiException(400, 'User not logged in'));
-      }
-      _client.update(AppConstants.appTitle, {
-        'fcmToken': token,
-      }, document: userId);
-
-      return const Right('');
     } catch (e) {
       return Left(ApiException(400, e.toString()));
     }
@@ -129,26 +117,24 @@ class AuthFirebaseResource implements AuthRepository {
   }
 
   @override
-  Future<Either<ApiException, UserCredential>> signInWithApple() async {
+  Future<Either<ApiException, Map<String, dynamic>>> signInWithApple() async {
     try {
       final AuthorizationCredentialAppleID appleCredential =
           await SignInWithApple.getAppleIDCredential(
             scopes: [
-              //Solicita los datos que necesites
               AppleIDAuthorizationScopes.email,
               AppleIDAuthorizationScopes.fullName,
             ],
           );
-      final OAuthProvider oAuthProvider = OAuthProvider(
-        "apple.com",
-      ); //Importante, el providerId
+      final OAuthProvider oAuthProvider = OAuthProvider("apple.com");
+
       final AuthCredential credential = oAuthProvider.credential(
         idToken: appleCredential.identityToken,
         accessToken: appleCredential.authorizationCode,
       );
       final response = await _firebaseAuth.signInWithCredential(credential);
 
-      return Right(response);
+      return Right({'credential': response, 'data': appleCredential});
     } on FirebaseAuthException catch (e) {
       return Left(ApiException(400, _mapFirebaseAuthErrors(e)));
     } catch (e) {
@@ -230,11 +216,92 @@ class AuthFirebaseResource implements AuthRepository {
       return Left(ApiException(400, e.toString()));
     }
   }
+
+  @override
+  Future<Either<ApiException, (bool, String?)>> validateEmailDomain({
+    required String email,
+  }) async {
+    final cleanEmail = email.trim();
+
+    if (!cleanEmail.contains('@')) {
+      return const Right((false, null));
+    }
+
+    final domain = cleanEmail.split('@').last.toLowerCase();
+    const commonDomains = [
+      'gmail.com',
+      'googlemail.com',
+      'hotmail.com',
+      'outlook.com',
+      'live.com',
+      'msn.com',
+      'windowslive.com',
+      'hotmail.es',
+      'outlook.es',
+      'live.com.mx',
+      'hotmail.com.mx',
+      'hotmail.com.ar',
+      'outlook.com.ar',
+      'hotmail.cl',
+      'outlook.cl',
+      'yahoo.com',
+      'ymail.com',
+      'yahoo.es',
+      'yahoo.com.mx',
+      'yahoo.com.ar',
+      'yahoo.com.co',
+      'rocketmail.com',
+      'icloud.com',
+      'me.com',
+      'mac.com',
+      'aol.com',
+      'gmx.com',
+      'gmx.es',
+      'mail.com',
+      'protonmail.com',
+      'proton.me',
+      'zoho.com',
+      'yandex.com',
+      'uol.com.br',
+      'bol.com.br',
+    ];
+
+    try {
+      final result = await _firebaseFunctionsHelper.validateEmailDomain(
+        email: cleanEmail,
+      );
+      final bool isValid = result['valid'] as bool? ?? false;
+
+      if (isValid) {
+        return const Right((true, null));
+      } else {
+        final bestMatch = StringSimilarity.findBestMatch(domain, commonDomains);
+        if ((bestMatch.bestMatch.rating ?? 0) > 0.8) {
+          return Right((false, bestMatch.bestMatch.target));
+        }
+        return const Right((false, null));
+      }
+    } catch (e, s) {
+      logger.error(
+        'Error validating email domain via function $e, stack trace: $s',
+      );
+
+      if (commonDomains.contains(domain)) {
+        return const Right((true, null));
+      }
+
+      final bestMatch = StringSimilarity.findBestMatch(domain, commonDomains);
+
+      if ((bestMatch.bestMatch.rating ?? 0) > 0.8) {
+        return Right((false, bestMatch.bestMatch.target));
+      }
+      return const Right((false, null));
+    }
+  }
 }
 
 String _mapFirebaseAuthErrors(FirebaseAuthException e) {
   switch (e.code) {
-    // Errores generales
     case 'invalid-email':
       return 'El formato del correo electrónico no es válido';
     case 'user-disabled':
@@ -252,7 +319,6 @@ String _mapFirebaseAuthErrors(FirebaseAuthException e) {
     case 'requires-recent-login':
       return 'Debes iniciar sesión nuevamente para realizar esta acción';
 
-    // Errores de proveedores federados
     case 'account-exists-with-different-credential':
       return 'Esta cuenta ya existe con un método de autenticación diferente';
     case 'invalid-credential':
@@ -260,7 +326,6 @@ String _mapFirebaseAuthErrors(FirebaseAuthException e) {
     case 'credential-already-in-use':
       return 'Estas credenciales ya están asociadas a otra cuenta';
 
-    // Errores de verificación por teléfono
     case 'invalid-verification-code':
       return 'El código de verificación es inválido o ha expirado';
     case 'invalid-verification-id':
@@ -278,19 +343,16 @@ String _mapFirebaseAuthErrors(FirebaseAuthException e) {
     case 'too-many-requests':
       return 'Demasiados intentos. Por favor, espera antes de intentar nuevamente';
 
-    // Errores de autenticación con Google
     case 'popup-closed-by-user':
       return 'Cerraste la ventana de autenticación antes de completar el proceso';
     case 'network-request-failed':
       return 'Error de conexión a internet. Verifica tu red';
 
-    // Errores de autenticación con Apple
     case 'apple-auth-invalid-nonce':
       return 'Error en la autenticación con Apple (nonce inválido)';
     case 'apple-auth-invalid-id-token':
       return 'Error en la autenticación con Apple (token inválido)';
 
-    // Errores varios
     case 'app-not-authorized':
       return 'La aplicación no está autorizada para usar Firebase Authentication';
     case 'expired-action-code':
@@ -302,7 +364,6 @@ String _mapFirebaseAuthErrors(FirebaseAuthException e) {
     case 'missing-iframe-start':
       return 'Error interno de autenticación (iframe)';
 
-    // Errores de configuración
     case 'auth-domain-config-required':
       return 'Configuración de dominio de autenticación requerida';
     case 'missing-client-type':

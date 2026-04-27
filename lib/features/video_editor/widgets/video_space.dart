@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 class VideoSpace extends StatelessWidget {
   const VideoSpace({
@@ -37,15 +39,24 @@ class VideoSpace extends StatelessWidget {
                   borderRadius: BorderRadius.circular(context.sp(10)),
                   child: SizedBox(
                     child: screenshotImage != null
-                        ? Image.network(
-                            screenshotImage ?? '',
+                        ? CachedNetworkImage(
+                            imageUrl: screenshotImage ?? '',
+                            height: context.fullHeight,
+                            width: context.sp(100),
                             fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) => loadingProgress == null
-                                ? child
-                                : Center(
-                                    child: CircularProgressIndicator(),
+                            placeholder: (_, url) => Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(
+                                    context.sp(8),
                                   ),
-                            errorBuilder: (context, error, stackTrace) => Center(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (_, url, error) => Center(
                               child: Text(
                                 name?.split(' ')[0] ?? '',
                                 style: context.styles.subtitle,
@@ -53,6 +64,8 @@ class VideoSpace extends StatelessWidget {
                             ),
                           )
                         : Container(
+                            height: context.fullHeight,
+                            width: context.sp(100),
                             color: context.colors.grey,
                             child: Center(
                               child: Text(

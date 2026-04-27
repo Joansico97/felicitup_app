@@ -1,3 +1,4 @@
+import 'package:felicitup_app/core/analytics/analytics_handler.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/features.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,6 +21,7 @@ class CustomRouter {
   static final _router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: RouterPaths.felicitupsDashboard,
+    observers: [injection.di<AnalyticsNavigatorObserver>()],
     redirect: (context, state) {
       if (!RouterPaths().noAuthenticated.contains(state.matchedLocation)) {
         if (FirebaseAuth.instance.currentUser == null) {
@@ -220,6 +222,11 @@ class CustomRouter {
       GoRoute(
         path: RouterPaths.deleteAccount,
         pageBuilder: _deleteAccountHandler,
+        parentNavigatorKey: rootNavigatorKey,
+      ),
+      GoRoute(
+        path: RouterPaths.completeUserData,
+        pageBuilder: _completeUserDataHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
     ],

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/bloc/details_felicitup_dashboard_bloc.dart';
 
 void redirectHelper({required Map<String, dynamic> data}) {
+  final router = CustomRouter().router;
   final String type = data['type'];
   final pushMessageType = pushMessageTypeToEnum(type);
   final felicitupId = data['felicitupId'] ?? '';
@@ -14,20 +15,17 @@ void redirectHelper({required Map<String, dynamic> data}) {
 
   switch (pushMessageType) {
     case PushMessageType.felicitup:
-      CustomRouter().router.go(
-        RouterPaths.felicitupNotification,
-        extra: felicitupId,
-      );
+      router.go(RouterPaths.felicitupNotification, extra: felicitupId);
       break;
 
     case PushMessageType.chat:
-      if (CustomRouter().router.routerDelegate.state.matchedLocation ==
+      if (router.routerDelegate.state.matchedLocation ==
           RouterPaths.messageFelicitup) {
         detailsFelicitupNavigatorKey.currentContext!
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
-      CustomRouter().router.go(
+      router.go(
         RouterPaths.messageFelicitup,
         extra: {'felicitupId': felicitupId, 'chatId': chatId},
       );
@@ -35,16 +33,13 @@ void redirectHelper({required Map<String, dynamic> data}) {
       break;
 
     case PushMessageType.payment:
-      if (CustomRouter().router.routerDelegate.state.matchedLocation ==
+      if (router.routerDelegate.state.matchedLocation ==
           RouterPaths.boteFelicitup) {
         detailsFelicitupNavigatorKey.currentContext!
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
-      CustomRouter().router.go(
-        RouterPaths.boteFelicitup,
-        extra: {'felicitupId': felicitupId},
-      );
+      router.go(RouterPaths.boteFelicitup, extra: {'felicitupId': felicitupId});
 
       break;
 
@@ -55,40 +50,37 @@ void redirectHelper({required Map<String, dynamic> data}) {
         friendId: friendId,
         userImage: userImage,
       );
-      CustomRouter().router.go(
-        RouterPaths.singleChat,
-        extra: {'data': chatModel},
-      );
+      router.go(RouterPaths.singleChat, extra: {'data': chatModel});
       break;
 
     case PushMessageType.participation:
-      if (CustomRouter().router.routerDelegate.state.matchedLocation ==
+      if (router.routerDelegate.state.matchedLocation ==
           RouterPaths.peopleFelicitup) {
         detailsFelicitupNavigatorKey.currentContext!
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
-      CustomRouter().router.go(
+      router.go(
         RouterPaths.peopleFelicitup,
         extra: {'felicitupId': felicitupId},
       );
       break;
     case PushMessageType.video:
-      if (CustomRouter().router.routerDelegate.state.matchedLocation ==
+      if (router.routerDelegate.state.matchedLocation ==
           RouterPaths.videoFelicitup) {
         detailsFelicitupNavigatorKey.currentContext!
             .read<DetailsFelicitupDashboardBloc>()
             .add(DetailsFelicitupDashboardEvent.startListening(felicitupId));
       }
-      CustomRouter().router.go(
+      router.go(
         RouterPaths.videoFelicitup,
         extra: {'felicitupId': felicitupId},
       );
 
       break;
     case PushMessageType.past:
-      CustomRouter().router.go(
-        RouterPaths.chatPastFelicitup,
+      router.go(
+        RouterPaths.mainPastFelicitup,
         extra: {'felicitupId': felicitupId},
       );
       break;

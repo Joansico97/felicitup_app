@@ -1,16 +1,19 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class RememberCard extends StatelessWidget {
   const RememberCard({
     super.key,
+    required this.userId,
     required this.name,
     required this.date,
     required this.onTap,
     this.image,
   });
 
+  final String userId;
   final String name;
   final String? image;
   final DateTime date;
@@ -43,17 +46,16 @@ class RememberCard extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: context.colors.grey,
                   ),
-                  child:
-                      image != null
-                          ? ClipRRect(
-                            borderRadius: BorderRadius.circular(context.sp(20)),
-                            child: Image.network(image!, fit: BoxFit.cover),
-                          )
-                          : Icon(
-                            Icons.person,
-                            color: context.colors.white,
-                            size: context.sp(20),
-                          ),
+                  child: image != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(context.sp(20)),
+                          child: CommonNetworkImage(imageUrl: image!),
+                        )
+                      : Icon(
+                          Icons.person,
+                          color: context.colors.white,
+                          size: context.sp(20),
+                        ),
                 ),
                 SizedBox(width: context.sp(10)),
                 Column(
@@ -71,7 +73,15 @@ class RememberCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      date == now ? 'Hoy' : DateFormat('MMMM d').format(date),
+                      date.year == now.year &&
+                              date.month == now.month &&
+                              date.day == now.day
+                          ? 'Hoy'
+                          : date.year == now.year &&
+                                date.month == now.month &&
+                                date.day == now.day - 1
+                          ? 'Ayer'
+                          : DateFormat('MMMM d').format(date),
                       style: context.styles.paragraph.copyWith(
                         color: context.colors.grey,
                       ),

@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/auth/register/bloc/register_bloc.dart';
 import 'package:felicitup_app/features/auth/register/widgets/register_form.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,9 +19,9 @@ class RegisterView extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: context.sp(60)),
       child: Column(
         children: [
-          Image.asset(Assets.images.logo.path, height: context.sp(48)),
+          Image.asset(Assets.images.logo.path, height: context.sp(52)),
           SizedBox(height: context.sp(8)),
-          Image.asset(Assets.images.logoLetter.path, height: context.sp(52)),
+          Image.asset(Assets.images.logoLetter.path, height: context.sp(56)),
           SizedBox(height: context.sp(8)),
           RegisterForm(),
           Row(
@@ -48,10 +47,9 @@ class RegisterView extends StatelessWidget {
             child: BlocBuilder<RegisterBloc, RegisterState>(
               builder: (_, state) {
                 return AppSocialRegularButton(
-                  onTap:
-                      () => context.read<RegisterBloc>().add(
-                        RegisterEvent.googleLoginEvent(),
-                      ),
+                  onTap: () => context.read<RegisterBloc>().add(
+                    RegisterEvent.googleLoginEvent(),
+                  ),
                   label: 'Registrate con Google',
                   isActive: true,
                   icon: Assets.icons.googleIcon,
@@ -62,17 +60,16 @@ class RegisterView extends StatelessWidget {
           ),
           SizedBox(height: context.sp(12)),
           Visibility(
-            visible: Platform.isIOS,
+            visible: defaultTargetPlatform == TargetPlatform.iOS,
             child: SizedBox(
               height: context.sp(40),
               width: context.sp(240),
               child: BlocBuilder<RegisterBloc, RegisterState>(
                 builder: (_, state) {
                   return AppSocialRegularButton(
-                    onTap:
-                        () => context.read<RegisterBloc>().add(
-                          RegisterEvent.appleLoginEvent(),
-                        ),
+                    onTap: () => context.read<RegisterBloc>().add(
+                      RegisterEvent.appleLoginEvent(),
+                    ),
                     label: 'Registrate con Apple',
                     isActive: true,
                     icon: Assets.icons.appleIcon,
@@ -93,9 +90,8 @@ class RegisterView extends StatelessWidget {
                   style: context.styles.smallText.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
-                  recognizer:
-                      TapGestureRecognizer()
-                        ..onTap = () => context.push(RouterPaths.login),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () => context.push(RouterPaths.login),
                 ),
               ],
             ),

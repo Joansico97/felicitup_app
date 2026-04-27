@@ -29,23 +29,24 @@ class CreateFelicitupBloc
        super(CreateFelicitupState.initial()) {
     on<CreateFelicitupEvent>(
       (events, emit) => events.map(
-        deleteCurrentFelicitup: (_) => _deleteCurrentFelicitup(emit),
+        deleteCurrentFelicitup: (_) => emit(CreateFelicitupState.initial()),
         previousStep: (_) => _previousStep(emit),
         nextStep: (event) => _nextStep(emit, event.lenght),
         jumpToStep: (event) => _jumpToStep(emit, event.index),
-        toggleHasVideo: (_) => _toggleHasVideo(emit),
-        toggleHasBote: (_) => _toggleHasBote(emit),
-        changeBoteQuantity:
-            (event) => _changeBoteQuantity(emit, event.quantity),
-        changeEventReason: (event) => _changeEventReason(emit, event.reason),
-        changeFelicitupDate:
-            (event) => _changeFelicitupDate(emit, event.felicitupDate),
-        changeFelicitupOwner:
-            (event) => _changeFelicitupOwner(emit, event.felicitupOwner),
+        toggleHasVideo: (_) => emit(state.copyWith(hasVideo: !state.hasVideo)),
+        toggleHasBote: (_) => emit(state.copyWith(hasBote: !state.hasBote)),
+        changeBoteQuantity: (event) =>
+            emit(state.copyWith(boteQuantity: event.quantity)),
+        changeEventReason: (event) =>
+            emit(state.copyWith(eventReason: event.reason)),
+        changeFelicitupDate: (event) =>
+            emit(state.copyWith(selectedDate: event.felicitupDate)),
+        changeFelicitupOwner: (event) =>
+            _changeFelicitupOwner(emit, event.felicitupOwner),
         addParticipant: (event) => _addParticipant(emit, event.participant),
         loadFriendsData: (event) => _loadFriendsData(emit, event.usersIds),
-        createFelicitup:
-            (event) => _createFelicitup(emit, event.felicitupMessage),
+        createFelicitup: (event) =>
+            _createFelicitup(emit, event.felicitupMessage),
         searchEvent: (event) => _searchEvent(emit, event.value),
         sendNotification: (event) => _sendNotification(event.felicitupId),
       ),
@@ -57,21 +58,27 @@ class CreateFelicitupBloc
   final UserRepository _userRepository;
   final FelicitupRepository _felicitupRepository;
 
-  _previousStep(Emitter<CreateFelicitupState> emit) {
+  void _previousStep(Emitter<CreateFelicitupState> emit) {
     emit(state.copyWith(steperIndex: state.steperIndex - 1));
   }
 
-  _nextStep(Emitter<CreateFelicitupState> emit, int lenght) {
+  void _nextStep(Emitter<CreateFelicitupState> emit, int lenght) {
     switch (state.steperIndex) {
       case 0:
-        if (state.felicitupOwner.length == 1 ||
+        if ((state.felicitupOwner.length == 1 &&
+                (state.felicitupOwner.first.date != null ||
+                    state.selectedDate != null)) ||
             (state.felicitupOwner.length >= 2 && state.selectedDate != null)) {
           emit(state.copyWith(steperIndex: state.steperIndex + 1));
         } else {
           ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
             SnackBar(
               content: Text(
-                state.felicitupOwner.length > 1 && state.selectedDate == null
+                state.felicitupOwner.length > 1 &&
+                        state.felicitupOwner.first.date == null
+                    ? 'Debes seleccionar una fecha'
+                    : state.felicitupOwner.length > 1 &&
+                          state.selectedDate == null
                     ? 'Debes seleccionar una fecha'
                     : 'Debes seleccionar al menos un amigo',
               ),
@@ -121,7 +128,7 @@ class CreateFelicitupBloc
     }
   }
 
-  _jumpToStep(Emitter<CreateFelicitupState> emit, int index) {
+  void _jumpToStep(Emitter<CreateFelicitupState> emit, int index) {
     switch (index) {
       case 0:
         emit(state.copyWith(steperIndex: index));
@@ -183,31 +190,10 @@ class CreateFelicitupBloc
     }
   }
 
-  _deleteCurrentFelicitup(Emitter<CreateFelicitupState> emit) {
-    emit(CreateFelicitupState.initial());
-  }
-
-  _changeEventReason(Emitter<CreateFelicitupState> emit, String reason) {
-    emit(state.copyWith(eventReason: reason));
-  }
-
-  _changeFelicitupDate(Emitter<CreateFelicitupState> emit, DateTime date) {
-    emit(state.copyWith(selectedDate: date));
-  }
-
-  _toggleHasVideo(Emitter<CreateFelicitupState> emit) {
-    emit(state.copyWith(hasVideo: !state.hasVideo));
-  }
-
-  _toggleHasBote(Emitter<CreateFelicitupState> emit) {
-    emit(state.copyWith(hasBote: !state.hasBote));
-  }
-
-  _changeBoteQuantity(Emitter<CreateFelicitupState> emit, int quantity) {
-    emit(state.copyWith(boteQuantity: quantity));
-  }
-
-  _changeFelicitupOwner(Emitter<CreateFelicitupState> emit, OwnerModel owner) {
+  void _changeFelicitupOwner(
+    Emitter<CreateFelicitupState> emit,
+    OwnerModel owner,
+  ) {
     final List<OwnerModel> owners = [...state.felicitupOwner];
     bool exist = owners.any((element) => element == owner);
     if (!exist) {
@@ -218,7 +204,7 @@ class CreateFelicitupBloc
     emit(state.copyWith(felicitupOwner: owners));
   }
 
-  _addParticipant(
+  void _addParticipant(
     Emitter<CreateFelicitupState> emit,
     InvitedModel participant,
   ) {
@@ -226,16 +212,28 @@ class CreateFelicitupBloc
 
     if (participants.contains(participant)) {
       participants.remove(participant);
+      emit(state.copyWith(invitedContacts: participants));
     } else {
-      participants.add(participant);
+      if (participants.length < 19) {
+        participants.add(participant);
+        emit(state.copyWith(invitedContacts: participants));
+      } else {
+        emit(
+          state.copyWith(errorMessage: 'Solo puedes invitar hasta 19 personas'),
+        );
+      }
     }
-    emit(state.copyWith(invitedContacts: participants));
   }
 
-  _loadFriendsData(
+  Future<void> _loadFriendsData(
     Emitter<CreateFelicitupState> emit,
     List<String> usersIds,
   ) async {
+    if (usersIds.isEmpty) {
+      emit(state.copyWith(isLoading: false, friendList: []));
+      return;
+    }
+
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -258,7 +256,7 @@ class CreateFelicitupBloc
     }
   }
 
-  _createFelicitup(
+  void _createFelicitup(
     Emitter<CreateFelicitupState> emit,
     String felicitupMessage,
   ) async {
@@ -266,7 +264,7 @@ class CreateFelicitupBloc
     try {
       final now = DateTime.now();
       DateTime felicitupDate =
-          state.selectedDate ?? state.felicitupOwner.first.date;
+          state.selectedDate ?? state.felicitupOwner.first.date!;
       int currentMonth = now.month;
       int currentDay = now.day;
       int otherMonth = felicitupDate.month;
@@ -295,8 +293,9 @@ class CreateFelicitupBloc
         AppConstants.feclitiupsCollection,
       );
       final listOwners = state.felicitupOwner.map((e) => e.toJson()).toList();
-      final participants =
-          state.invitedContacts.map((e) => e.toJson()).toList();
+      final participants = state.invitedContacts
+          .map((e) => e.toJson())
+          .toList();
 
       final response = await _felicitupRepository.createFelicitup(
         id: felicitupId,
@@ -314,6 +313,7 @@ class CreateFelicitupBloc
         (l) {
           emit(state.copyWith(isLoading: false));
           unawaited(showErrorModal(l.message));
+          return null;
         },
         (r) async {
           add(CreateFelicitupEvent.sendNotification(felicitupId));
@@ -321,15 +321,17 @@ class CreateFelicitupBloc
           await _firebaseFunctionsHelper.sendFelicitup(
             felicitupId: felicitupId,
           );
+          return;
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
       showErrorModal('Ocurrió un error al crear la felicitup');
     }
+    return null;
   }
 
-  _sendNotification(String felicitupId) async {
+  Future<void> _sendNotification(String felicitupId) async {
     try {
       List<InvitedModel> participants = [...state.invitedContacts];
       List<String> ids = participants.map((e) => e.id as String).toList();
@@ -354,17 +356,14 @@ class CreateFelicitupBloc
     }
   }
 
-  _searchEvent(Emitter<CreateFelicitupState> emit, String value) {
-    final listProv =
-        state.friendList.where((element) {
-          return element.fullName != null &&
-              value
-                  .toLowerCase()
-                  .split('')
-                  .every(
-                    (char) => element.fullName!.toLowerCase().contains(char),
-                  );
-        }).toList();
+  void _searchEvent(Emitter<CreateFelicitupState> emit, String value) {
+    final listProv = state.friendList.where((element) {
+      return element.fullName != null &&
+          value
+              .toLowerCase()
+              .split('')
+              .every((char) => element.fullName!.toLowerCase().contains(char));
+    }).toList();
     emit(state.copyWith(friendList: listProv));
   }
 }

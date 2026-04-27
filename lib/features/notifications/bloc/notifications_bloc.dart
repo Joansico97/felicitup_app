@@ -17,21 +17,17 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
        super(NotificationsState.initial()) {
     on<NotificationsEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
         getNotifications: (_) => _getNotifications(emit),
-        deleteNotification:
-            (event) => _deleteNotification(emit, event.notificationId),
+        deleteNotification: (event) =>
+            _deleteNotification(emit, event.notificationId),
       ),
     );
   }
   final FirebaseAuth _firebaseAuth;
   final UserRepository _userRepository;
 
-  _changeLoading(Emitter<NotificationsState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _getNotifications(Emitter<NotificationsState> emit) async {
+  Future<void> _getNotifications(Emitter<NotificationsState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final uid = _firebaseAuth.currentUser?.uid;
@@ -56,7 +52,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     }
   }
 
-  _deleteNotification(
+  Future<void> _deleteNotification(
     Emitter<NotificationsState> emit,
     String notificationId,
   ) async {

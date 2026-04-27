@@ -2,11 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
-import 'package:felicitup_app/data/models/chat_message_model/chat_message_model.dart';
-import 'package:felicitup_app/data/models/felicitup_models/felicitup_model/felicitup_model.dart';
-import 'package:felicitup_app/data/models/felicitup_models/invited_model/invited_model.dart';
-import 'package:felicitup_app/data/models/felicitup_models/owner_model/owner_model.dart';
-import 'package:felicitup_app/data/models/user_models/user_models.dart';
+import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -123,11 +119,10 @@ class FelicitupFirebaseResource implements FelicitupRepository {
     String felicitupId,
   ) async {
     try {
-      final data =
-          await _firestore
-              .collection(AppConstants.feclitiupsCollection)
-              .doc(felicitupId)
-              .get();
+      final data = await _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId)
+          .get();
       if (data.data() == null) {
         return Left(ApiException(1000, 'Felicitup not found'));
       }
@@ -148,34 +143,42 @@ class FelicitupFirebaseResource implements FelicitupRepository {
     String userId,
   ) async {
     try {
-      final response = await _databaseHelper.get(
-        AppConstants.feclitiupsCollection,
-        document: felicitupId,
-      );
+      // Usamos _firestore para asegurar la compatibilidad y evitar inconsistencias con _databaseHelper
+      final docRef = _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId);
 
-      return response.fold(
-        (l) {
-          return Future.value(Left(ApiException(1000, 'Error setting like')));
-        },
-        (r) async {
-          final felicitup = FelicitupModel.fromJson(r);
-          final List<String> likes = List.from(felicitup.likes ?? []);
-          if (likes.contains(userId)) {
-            likes.remove(userId);
-          } else {
-            likes.add(userId);
-          }
-          await _databaseHelper.set(
-            AppConstants.feclitiupsCollection,
-            document: felicitupId,
-            {'likes': likes},
-          );
-          return Right(null);
-        },
-      );
+      final docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      // Verificamos si existe la lista de "likes", si no existe, inicializamos
+      List<dynamic> currentLikesDynamic = [];
+      if (data.containsKey('likes') && data['likes'] != null) {
+        currentLikesDynamic = List.from(data['likes'] as List<dynamic>);
+      }
+      // Transformamos a List<String> asegurando su tipado
+      final List<String> likes = currentLikesDynamic
+          .map((e) => e.toString())
+          .toList();
+
+      if (likes.contains(userId)) {
+        likes.remove(userId);
+      } else {
+        likes.add(userId);
+      }
+
+      await docRef.update({'likes': likes});
+      return Right(null);
     } on FirebaseException catch (e) {
       return Left(
-        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+        ApiException(
+          int.tryParse(e.code) ?? 1000,
+          e.message ?? "Error de Firebase",
+        ),
       );
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
@@ -197,8 +200,7 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       }
       final userId = _firebaseAuth.currentUser!.uid;
 
-      final felicitupData =
-          felicitup.data() as Map<String, dynamic>; //Cast a Map
+      final felicitupData = felicitup.data() as Map<String, dynamic>;
       final invitedUserDetails =
           felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
       final userIndex = invitedUserDetails.indexWhere(
@@ -235,8 +237,7 @@ class FelicitupFirebaseResource implements FelicitupRepository {
         return Left(ApiException(1000, 'Felicitup not found'));
       }
 
-      final felicitupData =
-          felicitup.data() as Map<String, dynamic>; //Cast a Map
+      final felicitupData = felicitup.data() as Map<String, dynamic>;
       final invitedUserDetails =
           felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
       final invitedUsers =
@@ -299,8 +300,7 @@ class FelicitupFirebaseResource implements FelicitupRepository {
         return Left(ApiException(1000, 'Felicitup not found'));
       }
 
-      final felicitupData =
-          felicitupDoc.data() as Map<String, dynamic>; //Cast a Map
+      final felicitupData = felicitupDoc.data() as Map<String, dynamic>;
       final invitedUserDetails =
           felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
       final userIndex = invitedUserDetails.indexWhere(
@@ -345,8 +345,7 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       }
       final userId = _firebaseAuth.currentUser!.uid;
 
-      final felicitupData =
-          felicitup.data() as Map<String, dynamic>; //Cast a Map
+      final felicitupData = felicitup.data() as Map<String, dynamic>;
       final invitedUserDetails =
           felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
       final userIndex = invitedUserDetails.indexWhere(
@@ -382,8 +381,7 @@ class FelicitupFirebaseResource implements FelicitupRepository {
       if (!felicitupDoc.exists) {
         return Left(ApiException(1000, 'Felicitup not found'));
       }
-      final felicitupData =
-          felicitupDoc.data() as Map<String, dynamic>; //Cast a Map
+      final felicitupData = felicitupDoc.data() as Map<String, dynamic>;
       final invitedUserDetails =
           felicitupData['invitedUserDetails'] as List<dynamic>? ?? [];
       final userIndex = invitedUserDetails.indexWhere(
@@ -413,17 +411,76 @@ class FelicitupFirebaseResource implements FelicitupRepository {
   }
 
   @override
+  Future<Either<ApiException, void>> prepareFelicitup(
+    String felicitupId,
+  ) async {
+    try {
+      await _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId)
+          .update({
+            'exportVideoUrl': '',
+            'finalVideoUrl': '',
+            'thumbnailUrl': '',
+          });
+
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
+      );
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
   Future<Either<ApiException, void>> mergeVideos(
     String felicitupId,
     List<String> listUrlVideos,
   ) async {
     try {
       final uid = _firebaseAuth.currentUser!.uid;
-      await _firebaseFunctionsHelper.mergeVideos(
-        videoUrls: listUrlVideos,
-        felicitupId: felicitupId,
-        userId: uid,
+
+      await _firestore
+          .collection(AppConstants.videoMergeCollection)
+          .doc(felicitupId)
+          .set({
+            'userId': uid,
+            'videoUrls': listUrlVideos,
+            'status': 'pending',
+            'createdAt': DateTime.now(),
+          });
+      return Right(null);
+    } on FirebaseException catch (e) {
+      return Left(
+        ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
       );
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> deleteMergedVideo(
+    String felicitupId,
+  ) async {
+    try {
+      await _firestore
+          .collection(AppConstants.videoMergeCollection)
+          .doc(felicitupId)
+          .delete();
+
+      await _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId)
+          .update({
+            'error': null,
+            'exportVideoUrl': '',
+            'finalVideoUrl': '',
+            'thumbnailUrl': '',
+          });
+
       return Right(null);
     } on FirebaseException catch (e) {
       return Left(
@@ -461,6 +518,9 @@ class FelicitupFirebaseResource implements FelicitupRepository {
         document: felicitupId,
         {'date': newDate},
       );
+      await Future.delayed(Duration(seconds: 1), () async {
+        await _firebaseFunctionsHelper.sendFelicitup(felicitupId: felicitupId);
+      });
       return Right(null);
     } on FirebaseException catch (e) {
       return Left(
@@ -591,16 +651,107 @@ class FelicitupFirebaseResource implements FelicitupRepository {
             'userId': userId,
             'reportDate': DateTime.now(),
           });
-      // await _databaseHelper.update(
-      //   AppConstants.feclitiupsCollection,
-      //   document: felicitupId,
-      //   {'boteQuantity': newBoteQuantity},
-      // );
+
       return Right(null);
     } on FirebaseException catch (e) {
       return Left(
         ApiException(int.parse(e.code), e.message ?? "Error de Firebase"),
       );
+    } catch (e) {
+      return Left(ApiException(1000, e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<ApiException, void>> deleteAllPastFelicitups(
+    String felicitupId,
+    String userId,
+  ) async {
+    try {
+      final docRef = _firestore
+          .collection(AppConstants.feclitiupsCollection)
+          .doc(felicitupId);
+      final docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        return Left(ApiException(1000, 'Felicitup not found'));
+      }
+
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      final owners = (data['owner'] as List<dynamic>? ?? []);
+      final isOwner = owners.any((owner) => owner['id'] == userId);
+
+      if (isOwner) {
+        // Si hay más de un owner, elimina solo al owner que ejecuta la función
+        if (owners.length >= 2) {
+          // Eliminar al owner de la lista de owners
+          final updatedOwners = List<dynamic>.from(owners)
+            ..removeWhere((owner) => owner['id'] == userId);
+
+          // También eliminar de invitedUserDetails e invitedUsers si está presente
+          final invitedUserDetails =
+              (data['invitedUserDetails'] as List<dynamic>? ?? []);
+          final invitedUsers = (data['invitedUsers'] as List<dynamic>? ?? []);
+
+          final userIndex = invitedUserDetails.indexWhere(
+            (user) => user['id'] == userId,
+          );
+
+          final updatedInvitedUserDetails = List<dynamic>.from(
+            invitedUserDetails,
+          );
+          if (userIndex != -1) {
+            updatedInvitedUserDetails.removeAt(userIndex);
+          }
+
+          final updatedInvitedUsers = List<dynamic>.from(invitedUsers)
+            ..remove(userId);
+
+          await docRef.update({
+            'owner': updatedOwners,
+            'invitedUserDetails': updatedInvitedUserDetails,
+            'invitedUsers': updatedInvitedUsers,
+          });
+
+          return Right(null);
+        } else {
+          // Solo hay un owner, eliminar el documento y el chat
+          final chatId = data['chatId'] as String?;
+          await docRef.delete();
+          if (chatId != null && chatId.isNotEmpty) {
+            await _firestore
+                .collection(AppConstants.chatsCollection)
+                .doc(chatId)
+                .delete();
+          }
+          return Right(null);
+        }
+      } else {
+        final invitedUserDetails =
+            (data['invitedUserDetails'] as List<dynamic>? ?? []);
+        final invitedUsers = (data['invitedUsers'] as List<dynamic>? ?? []);
+        final userIndex = invitedUserDetails.indexWhere(
+          (user) => user['id'] == userId,
+        );
+
+        if (userIndex == -1) {
+          return Left(
+            ApiException(1000, 'User not found in invitedUserDetails'),
+          );
+        }
+
+        final updatedInvitedUserDetails = List<dynamic>.from(invitedUserDetails)
+          ..removeAt(userIndex);
+        final updatedInvitedUsers = List<dynamic>.from(invitedUsers)
+          ..remove(userId);
+
+        await docRef.update({
+          'invitedUserDetails': updatedInvitedUserDetails,
+          'invitedUsers': updatedInvitedUsers,
+        });
+
+        return Right(null);
+      }
     } catch (e) {
       return Left(ApiException(1000, e.toString()));
     }
@@ -638,10 +789,12 @@ class FelicitupFirebaseResource implements FelicitupRepository {
           .where('invitedUsers', arrayContains: userId)
           .snapshots()
           .map((event) {
-            final List<Map<String, dynamic>> documents =
-                event.docs.map((e) => e.data()).toList();
-            final List<FelicitupModel> listFelicitups =
-                documents.map((e) => FelicitupModel.fromJson(e)).toList();
+            final List<Map<String, dynamic>> documents = event.docs
+                .map((e) => e.data())
+                .toList();
+            final List<FelicitupModel> listFelicitups = documents
+                .map((e) => FelicitupModel.fromJson(e))
+                .toList();
             return Right(
               listFelicitups
                   .where((element) => element.status == 'inProgress')
@@ -663,14 +816,22 @@ class FelicitupFirebaseResource implements FelicitupRepository {
           .where('invitedUsers', arrayContains: userId)
           .snapshots()
           .map((event) {
-            final List<Map<String, dynamic>> documents =
-                event.docs.map((e) => e.data()).toList();
-            final List<FelicitupModel> listFelicitups =
-                documents.map((e) => FelicitupModel.fromJson(e)).toList();
+            final List<Map<String, dynamic>> documents = event.docs
+                .map((e) => e.data())
+                .toList();
+            final List<FelicitupModel> listFelicitups = documents
+                .map((e) => FelicitupModel.fromJson(e))
+                .toList();
             return Right(
               listFelicitups
                   .where((element) => element.status == 'Finished')
-                  .toList(),
+                  .toList()
+                ..sort((a, b) {
+                  if (a.sentAt == null && b.sentAt == null) return 0;
+                  if (a.sentAt == null) return 1;
+                  if (b.sentAt == null) return -1;
+                  return b.sentAt!.compareTo(a.sentAt!);
+                }),
             );
           });
     } catch (e) {
@@ -695,8 +856,9 @@ class FelicitupFirebaseResource implements FelicitupRepository {
             final List<Map<String, dynamic>> invitedUsers = List.from(
               data['invitedUserDetails'],
             );
-            final List<InvitedModel> listInvited =
-                invitedUsers.map((e) => InvitedModel.fromJson(e)).toList();
+            final List<InvitedModel> listInvited = invitedUsers
+                .map((e) => InvitedModel.fromJson(e))
+                .toList();
             return Right(listInvited);
           });
     } catch (e) {
@@ -721,8 +883,9 @@ class FelicitupFirebaseResource implements FelicitupRepository {
             final List<Map<String, dynamic>> messageData = List.from(
               data['messages'],
             );
-            final List<ChatMessageModel> listMessages =
-                messageData.map((e) => ChatMessageModel.fromJson(e)).toList();
+            final List<ChatMessageModel> listMessages = messageData
+                .map((e) => ChatMessageModel.fromJson(e))
+                .toList();
             return Right(listMessages);
           });
     } catch (e) {

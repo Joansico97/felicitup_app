@@ -26,10 +26,9 @@ class PhoneVerifyIntPage extends StatelessWidget {
     }
 
     return BlocListener<PhoneVerifyIntBloc, PhoneVerifyIntState>(
-      listenWhen:
-          (previous, current) =>
-              previous.isLoading != current.isLoading ||
-              previous.finished != current.finished,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading ||
+          previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -37,7 +36,16 @@ class PhoneVerifyIntPage extends StatelessWidget {
           await stopLoadingModal();
         }
 
-        if (state.finished) {
+        if (state.status == PhoneVerifyStatus.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage ?? 'Error desconocido'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+
+        if (state.status == PhoneVerifyStatus.success) {
           context.go(RouterPaths.felicitupsDashboard);
         }
       },

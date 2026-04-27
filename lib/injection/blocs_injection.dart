@@ -8,16 +8,25 @@ void _initBlocsInjection() {
         authRepository: di(),
         firebaseAuth: di(),
         firebaseMessaging: di(),
+        updateService: di(),
+        facebookAnalyticsHelper: di(),
       ),
     )
     ..registerFactory(() => SplashBloc())
-    ..registerFactory(() => InitBloc(userRepository: di()))
-    ..registerFactory(() => LoginBloc(authRepository: di(), firestore: di()))
+    ..registerFactory(() => InitBloc())
+    ..registerFactory(
+      () => LoginBloc(
+        authRepository: di(),
+        firestore: di(),
+        analyticsHandler: di(),
+      ),
+    )
     ..registerFactory(
       () => RegisterBloc(
         authRepository: di(),
         userRepository: di(),
         firestore: di(),
+        analyticsHandler: di(),
       ),
     )
     ..registerFactory(() => HomeBloc(userRepository: di()))
@@ -100,7 +109,7 @@ void _initBlocsInjection() {
         firestore: di(),
       ),
     )
-    ..registerFactory(() => TermsPoliciesBloc())
+    ..registerFactory(() => TermsPoliciesBloc(generalDataRepository: di()))
     ..registerFactory(
       () => DetailsPastFelicitupDashboardBloc(
         felicitupRepository: di(),
@@ -115,7 +124,12 @@ void _initBlocsInjection() {
         chatRepository: di(),
       ),
     )
-    ..registerFactory(() => PeoplePastFelicitupBloc(felicitupRepository: di()))
+    ..registerFactory(
+      () => PeoplePastFelicitupBloc(
+        felicitupRepository: di(),
+        userRepository: di(),
+      ),
+    )
     ..registerFactory(() => VideoPastFelicitupBloc())
     ..registerFactory(
       () => RemindersBloc(userRepository: di(), chatRepository: di()),
@@ -131,5 +145,8 @@ void _initBlocsInjection() {
       ),
     )
     ..registerFactory(() => OnBoardingBloc())
-    ..registerFactory(() => FrequentQuestionsBloc());
+    ..registerFactory(() => FrequentQuestionsBloc())
+    ..registerFactory(
+      () => CompleteUserDataBloc(userRepository: di(), firebaseAuth: di()),
+    );
 }

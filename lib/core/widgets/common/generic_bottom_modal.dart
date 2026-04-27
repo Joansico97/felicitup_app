@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 Future<T?> showGenericModalBottomSheet<T>({
   required BuildContext context,
   required Widget child, // El widget que se mostrará en el modal.
-  bool isScrollControlled = true, // Permite que el modal ocupe más del 50% de la pantalla.
+  bool isScrollControlled =
+      true, // Permite que el modal ocupe más del 50% de la pantalla.
   bool isDismissible = true, // Permite cerrar el modal tocando fuera.
   Color? backgroundColor, // Color de fondo personalizado (opcional).
   double? elevation, // Elevación personalizada (opcional).
@@ -11,7 +12,8 @@ Future<T?> showGenericModalBottomSheet<T>({
   Clip? clipBehavior, // Comportamiento de recorte (opcional).
   BoxConstraints? constraints, // Restricciones de tamaño (opcional).
   bool useSafeArea = false, // Usa SafeArea (opcional).
-  AnimationController? transitionAnimationController, //Opcional, controlador de animación.
+  AnimationController?
+  transitionAnimationController, //Opcional, controlador de animación.
   Color? barrierColor,
 }) async {
   return showModalBottomSheet<T>(

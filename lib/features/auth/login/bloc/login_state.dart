@@ -3,7 +3,7 @@ part of 'login_bloc.dart';
 enum LoginStatus { initial, inProgress, success, federated, error }
 
 @freezed
-class LoginState with _$LoginState {
+abstract class LoginState with _$LoginState {
   const factory LoginState({
     required bool isLoading,
     required LoginStatus status,

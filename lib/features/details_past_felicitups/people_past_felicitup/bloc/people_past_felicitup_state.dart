@@ -1,13 +1,13 @@
 part of 'people_past_felicitup_bloc.dart';
 
 @freezed
-class PeoplePastFelicitupState with _$PeoplePastFelicitupState {
+abstract class PeoplePastFelicitupState with _$PeoplePastFelicitupState {
   const factory PeoplePastFelicitupState({
     required bool isLoading,
     List<InvitedModel>? invitedUsers,
+    List<UserModel>? friendList,
   }) = _PeoplePastFelicitupState;
 
-  factory PeoplePastFelicitupState.initial() => PeoplePastFelicitupState(
-        isLoading: true,
-      );
+  factory PeoplePastFelicitupState.initial() =>
+      PeoplePastFelicitupState(isLoading: true);
 }

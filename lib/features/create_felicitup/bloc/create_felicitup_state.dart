@@ -3,7 +3,7 @@ part of 'create_felicitup_bloc.dart';
 enum CreateStatus { initial, success, error }
 
 @freezed
-class CreateFelicitupState with _$CreateFelicitupState {
+abstract class CreateFelicitupState with _$CreateFelicitupState {
   const factory CreateFelicitupState({
     required int steperIndex,
     required bool isLoading,
@@ -16,17 +16,18 @@ class CreateFelicitupState with _$CreateFelicitupState {
     required CreateStatus status,
     int? boteQuantity,
     DateTime? selectedDate,
+    String? errorMessage,
   }) = _CreateFelicitupState;
 
   factory CreateFelicitupState.initial() => CreateFelicitupState(
-        steperIndex: 0,
-        isLoading: false,
-        hasBote: false,
-        hasVideo: false,
-        eventReason: '',
-        felicitupOwner: [],
-        invitedContacts: [],
-        friendList: [],
-        status: CreateStatus.initial,
-      );
+    steperIndex: 0,
+    isLoading: false,
+    hasBote: false,
+    hasVideo: false,
+    eventReason: '',
+    felicitupOwner: [],
+    invitedContacts: [],
+    friendList: [],
+    status: CreateStatus.initial,
+  );
 }

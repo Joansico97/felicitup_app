@@ -9,6 +9,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/constants/app_constants.dart';
+
 class SelectEventView extends StatefulWidget {
   const SelectEventView({super.key});
 
@@ -40,32 +42,33 @@ class _SelectEventViewState extends State<SelectEventView> {
                   final listOwner = state.felicitupOwner;
                   return listOwner.isEmpty || listOwner[0].userImg == ''
                       ? SizedBox(
-                        width: context.sp(120),
-                        child: SvgPicture.asset(
-                          Assets.icons.personIcon,
+                          width: context.sp(120),
+                          child: SvgPicture.asset(
+                            Assets.icons.personIcon,
+                            height: context.sp(76),
+                            width: context.sp(76),
+                            colorFilter: ColorFilter.mode(
+                              Color(0xFFDADADA),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        )
+                      : Container(
                           height: context.sp(76),
                           width: context.sp(76),
-                          colorFilter: ColorFilter.mode(
-                            Color(0xFFDADADA),
-                            BlendMode.srcIn,
+                          margin: EdgeInsets.only(
+                            left: context.sp(25),
+                            right: context.sp(25),
                           ),
-                        ),
-                      )
-                      : Container(
-                        height: context.sp(76),
-                        width: context.sp(76),
-                        margin: EdgeInsets.only(
-                          left: context.sp(25),
-                          right: context.sp(25),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(context.sp(100)),
-                          child: Image.network(
-                            listOwner[0].userImg ?? '',
-                            fit: BoxFit.cover,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              context.sp(100),
+                            ),
+                            child: CommonNetworkImage(
+                              imageUrl: listOwner[0].userImg ?? '',
+                            ),
                           ),
-                        ),
-                      );
+                        );
                 },
               ),
               SizedBox(
@@ -84,22 +87,21 @@ class _SelectEventViewState extends State<SelectEventView> {
 
                         return RichText(
                           text: TextSpan(
-                            text:
-                                reason.isEmpty
-                                    ? 'Selecciona un evento'
-                                    : listOwner.length > 2
-                                    ? '$reason de ${listOwner[0].name}, de ${listOwner[1].name} y de ${listOwner.length - 2} más'
-                                    : listOwner.length == 2
-                                    ? '$reason de ${listOwner[0].name} y de ${listOwner[1].name}'
-                                    : '$reason de ${listOwner[0].name}',
+                            text: reason.isEmpty
+                                ? 'Selecciona un evento'
+                                : listOwner.length > 2
+                                ? '$reason de ${listOwner[0].name}, de ${listOwner[1].name} y de ${listOwner.length - 2} más'
+                                : listOwner.length == 2
+                                ? '$reason de ${listOwner[0].name} y de ${listOwner[1].name}'
+                                : '$reason de ${listOwner[0].name}',
                             style: context.styles.subtitle,
                             children: [
                               reason.isNotEmpty
                                   ? TextSpan(
-                                    text:
-                                        '\n\n${DateFormat('dd·MM·yyyy').format(selectedDate)} - ${DateFormat('HH:mm').format(selectedDate)}',
-                                    style: context.styles.smallText,
-                                  )
+                                      text:
+                                          '\n\n${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(selectedDate!).capitalize()} - ${DateFormat('HH:mm').format(selectedDate)}',
+                                      style: context.styles.smallText,
+                                    )
                                   : TextSpan(),
                             ],
                           ),

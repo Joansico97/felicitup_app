@@ -1,4 +1,5 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
+import 'package:felicitup_app/core/analytics/analytics_handler.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/data/resources/resources.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
@@ -17,8 +18,9 @@ class FelicitupApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final router = CustomRouter().router;
     final appBloc = injection.di<AppBloc>();
+
+    final router = CustomRouter().router;
 
     return MultiRepositoryProvider(
       providers: [
@@ -34,9 +36,14 @@ class FelicitupApp extends StatelessWidget {
         RepositoryProvider<ChatRepository>(
           create: (_) => injection.di<ChatFirebaseResource>(),
         ),
+        RepositoryProvider<GeneralDataRepository>(
+          create: (_) => injection.di<GeneralDataFirebaseResource>(),
+        ),
       ],
       child: BlocProvider<AppBloc>(
-        create: (_) => appBloc..add(const AppEvent.checkAppStatus()),
+        create: (_) => appBloc
+          ..add(const AppEvent.checkAppStatus())
+          ..add(const AppEvent.onAppStarted()),
         child: BlocBuilder<AppBloc, AppState>(
           builder: (_, state) {
             return MediaQuery(
@@ -47,7 +54,7 @@ class FelicitupApp extends StatelessWidget {
               ),
               child: MaterialApp.router(
                 title: AppConstants.appTitle,
-
+                locale: Locale('ES_es'),
                 localizationsDelegates: const [
                   IntlTrans.delegate,
                   GlobalMaterialLocalizations.delegate,
@@ -57,9 +64,8 @@ class FelicitupApp extends StatelessWidget {
                 supportedLocales: IntlTrans.delegate.supportedLocales,
                 theme: AppTheme().getTheme(),
                 routerConfig: router,
-                builder:
-                    (context, child) =>
-                        HandleNotificationsInteractions(child: child!),
+                builder: (context, child) =>
+                    HandleNotificationsInteractions(child: child!),
               ),
             );
           },
@@ -80,26 +86,43 @@ class HandleNotificationsInteractions extends StatefulWidget {
 }
 
 class _HandleNotificationsInteractionsState
-    extends State<HandleNotificationsInteractions> {
-  Future<void> setupInteractedMessage() async {
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+    extends State<HandleNotificationsInteractions>
+    with WidgetsBindingObserver {
+  final _analyticsHandler = injection.di<AnalyticsHandler>();
+
+  Future<void> _setupInteractedMessage() async {
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance
+        .getInitialMessage();
 
     if (initialMessage != null) {
-      _handleMessage(initialMessage);
+      context.read<AppBloc>().add(
+        AppEvent.notificationReceived(initialMessage.data),
+      );
     }
 
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
-  }
-
-  void _handleMessage(RemoteMessage message) async {
-    redirectHelper(data: message.data);
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      redirectHelper(data: message.data);
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    setupInteractedMessage();
+    WidgetsBinding.instance.addObserver(this);
+    _setupInteractedMessage();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _analyticsHandler.logActivateApp();
+    }
   }
 
   @override

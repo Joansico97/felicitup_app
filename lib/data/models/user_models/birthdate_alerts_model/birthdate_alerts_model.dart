@@ -6,7 +6,7 @@ part 'birthdate_alerts_model.freezed.dart';
 part 'birthdate_alerts_model.g.dart';
 
 @freezed
-class BirthdateAlertsModel with _$BirthdateAlertsModel {
+abstract class BirthdateAlertsModel with _$BirthdateAlertsModel {
   const factory BirthdateAlertsModel({
     String? id,
     String? friendId,

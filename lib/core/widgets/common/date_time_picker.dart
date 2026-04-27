@@ -3,23 +3,23 @@ import 'package:flutter/material.dart';
 
 Future<DateTime?> showGenericDatePicker({
   required BuildContext context,
-  DateTime? initialDate, // Fecha inicial (opcional).
-  DateTime? firstDate, // Primera fecha seleccionable (opcional).
-  DateTime? lastDate, // Última fecha seleccionable (opcional).
-  DatePickerMode initialDatePickerMode = DatePickerMode.day, // Modo inicial (día/año).
-  SelectableDayPredicate? selectableDayPredicate, // Predicado para días seleccionables (opcional).
+  DateTime? initialDate,
+  DateTime? firstDate,
+  DateTime? lastDate,
+  DatePickerMode initialDatePickerMode = DatePickerMode.day,
+  SelectableDayPredicate? selectableDayPredicate,
   String? helpText,
   String? cancelText,
   String? confirmText,
   Locale? locale,
-  String? fieldHintText, //Nuevo
-  String? fieldLabelText, //Nuevo
+  String? fieldHintText,
+  String? fieldLabelText,
 }) async {
   final DateTime? pickedDate = await showDatePicker(
     context: context,
-    initialDate: initialDate ?? DateTime.now(), // Si no se proporciona, usa la fecha actual.
-    firstDate: firstDate ?? DateTime(2000), // Fecha mínima predeterminada.
-    lastDate: lastDate ?? DateTime(2101), // Fecha máxima predeterminada.
+    initialDate: initialDate ?? DateTime.now(),
+    firstDate: firstDate ?? DateTime(2000),
+    lastDate: lastDate ?? DateTime(2101),
     initialDatePickerMode: initialDatePickerMode,
     selectableDayPredicate: selectableDayPredicate,
     helpText: helpText,
@@ -31,8 +31,9 @@ Future<DateTime?> showGenericDatePicker({
     builder: (_, child) {
       return Theme(
         data: ThemeData.light().copyWith(
-          colorScheme: ColorScheme.light(
-            primary: context.colors.orange,
+          colorScheme: ColorScheme.light(primary: context.colors.orange),
+          inputDecorationTheme: InputDecorationTheme(
+            hintStyle: context.styles.paragraph,
           ),
         ),
         child: child!,
@@ -40,23 +41,22 @@ Future<DateTime?> showGenericDatePicker({
     },
   );
 
-  return pickedDate; // Devuelve la fecha seleccionada (o null si se cancela).
+  return pickedDate;
 }
 
-// Función genérica para showTimePicker.
-Future<TimeOfDay?> showGenericTimePicker(
-    {required BuildContext context,
-    TimeOfDay? initialTime, // Hora inicial (opcional).
-    bool useRootNavigator = true, //Usar el root navigator
-    String? cancelText, //Texto del botón cancelar
-    String? confirmText, //Texto del botón confirmar
-    String? helpText, //Texto de ayuda
-    TimePickerEntryMode initialEntryMode = TimePickerEntryMode.dial, //Ver el reloj o el input
-    String? errorInvalidText //Error de texto invalido
-    }) async {
+Future<TimeOfDay?> showGenericTimePicker({
+  required BuildContext context,
+  TimeOfDay? initialTime,
+  bool useRootNavigator = true,
+  String? cancelText,
+  String? confirmText,
+  String? helpText,
+  TimePickerEntryMode initialEntryMode = TimePickerEntryMode.dial,
+  String? errorInvalidText,
+}) async {
   final TimeOfDay? pickedTime = await showTimePicker(
     context: context,
-    initialTime: initialTime ?? TimeOfDay.now(), // Si no se proporciona, usa la hora actual.
+    initialTime: initialTime ?? TimeOfDay.now(),
 
     useRootNavigator: useRootNavigator,
     cancelText: cancelText,
@@ -67,28 +67,20 @@ Future<TimeOfDay?> showGenericTimePicker(
     builder: (_, child) {
       return Theme(
         data: ThemeData.light().copyWith(
-          colorScheme: ColorScheme.light(
-            primary: context.colors.orange,
-          ),
+          colorScheme: ColorScheme.light(primary: context.colors.orange),
         ),
         child: child!,
       );
     },
   );
 
-  return pickedTime; // Devuelve la hora seleccionada (o null si se cancela).
+  return pickedTime;
 }
 
 DateTime? combineDateAndTime(DateTime? date, TimeOfDay? time) {
   if (date == null || time == null) {
-    return null; // Si alguno es nulo, devuelve nulo.
+    return null;
   }
 
-  return DateTime(
-    date.year,
-    date.month,
-    date.day,
-    time.hour,
-    time.minute,
-  );
+  return DateTime(date.year, date.month, date.day, time.hour, time.minute);
 }

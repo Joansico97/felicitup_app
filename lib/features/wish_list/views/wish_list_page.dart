@@ -17,8 +17,8 @@ class WishListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<WishListBloc, WishListState>(
-      listenWhen:
-          (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -51,33 +51,32 @@ class WishListPage extends StatelessWidget {
                 builder: (_, state) {
                   final listGiftcard = state.listGiftcard;
                   return Expanded(
-                    child:
-                        state.isEdit
-                            ? FadeInUp(
-                              child: SingleChildScrollView(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: context.sp(20),
-                                ),
-                                child: CreateWishListItem(),
+                    child: state.isEdit
+                        ? FadeInUp(
+                            child: SingleChildScrollView(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: context.sp(20),
                               ),
-                            )
-                            : FadeInUp(
-                              child: SingleChildScrollView(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: context.sp(20),
-                                ),
-                                child: Column(
-                                  children: [
-                                    ...List.generate(
-                                      listGiftcard?.length ?? 0,
-                                      (index) => WishListItem(
-                                        giftcard: listGiftcard![index],
-                                      ),
+                              child: CreateWishListItem(),
+                            ),
+                          )
+                        : FadeInUp(
+                            child: SingleChildScrollView(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: context.sp(20),
+                              ),
+                              child: Column(
+                                children: [
+                                  ...List.generate(
+                                    listGiftcard?.length ?? 0,
+                                    (index) => WishListItem(
+                                      giftcard: listGiftcard![index],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
+                          ),
                   );
                 },
               ),
@@ -153,10 +152,9 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
             controller: nameController,
             hintText: 'Ingresa el nombre del producto',
             titleText: 'Nombre del producto',
-            onchangeEditing:
-                (value) => context.read<WishListBloc>().add(
-                  WishListEvent.setProductName(value),
-                ),
+            onchangeEditing: (value) => context.read<WishListBloc>().add(
+              WishListEvent.setProductName(value),
+            ),
           ),
           SizedBox(height: context.sp(16)),
           InputCommon(
@@ -165,10 +163,9 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
             hintText: 'Ingresa el precio del producto',
             titleText: 'Precio del producto',
             isPrice: true,
-            onchangeEditing:
-                (value) => context.read<WishListBloc>().add(
-                  WishListEvent.setProductPrice(value),
-                ),
+            onchangeEditing: (value) => context.read<WishListBloc>().add(
+              WishListEvent.setProductPrice(value),
+            ),
           ),
           SizedBox(height: context.sp(16)),
           InputCommon(
@@ -176,10 +173,9 @@ class _CreateWishListItemState extends State<CreateWishListItem> {
             controller: descriptionController,
             hintText: 'Ingresa la descripción del producto',
             titleText: 'Descripción del producto',
-            onchangeEditing:
-                (value) => context.read<WishListBloc>().add(
-                  WishListEvent.setProductDescription(value),
-                ),
+            onchangeEditing: (value) => context.read<WishListBloc>().add(
+              WishListEvent.setProductDescription(value),
+            ),
           ),
           SizedBox(height: context.sp(16)),
           Text(

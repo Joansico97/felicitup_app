@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:felicitup_app/core/analytics/analytics_handler.dart';
 import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
@@ -16,8 +18,10 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
   LoginBloc({
     required AuthRepository authRepository,
     required FirebaseFirestore firestore,
+    required AnalyticsHandler analyticsHandler,
   }) : _authRepository = authRepository,
        _firestore = firestore,
+       _analyticsHandler = analyticsHandler,
        super(LoginState.initial()) {
     on<LoginEvent>(
       (events, emit) => events.map(
@@ -34,16 +38,21 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
 
   final AuthRepository _authRepository;
   final FirebaseFirestore _firestore;
+  final AnalyticsHandler _analyticsHandler;
 
-  _changeLoading(Emitter<LoginState> emit) {
+  void _changeLoading(Emitter<LoginState> emit) {
     emit(state.copyWith(isLoading: !state.isLoading));
   }
 
-  _changeFirstTimeRedirect(Emitter<LoginState> emit) {
+  void _changeFirstTimeRedirect(Emitter<LoginState> emit) {
     emit(state.copyWith(isFirstTime: false));
   }
 
-  _loginEvent(Emitter<LoginState> emit, String email, String password) async {
+  Future<Null> _loginEvent(
+    Emitter<LoginState> emit,
+    String email,
+    String password,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.login(
@@ -62,6 +71,11 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
           );
         },
         (r) {
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            // The user id will be automatically set by the firebase analytics sdk
+          }
+          _analyticsHandler.logLogin();
           emit(state.copyWith(isLoading: false, status: LoginStatus.success));
         },
       );
@@ -70,7 +84,7 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
     }
   }
 
-  _googleLoginEvent(Emitter<LoginState> emit) async {
+  Future<Future<Null>?>? _googleLoginEvent(Emitter<LoginState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.signInWithGoogle();
@@ -84,10 +98,15 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
               errorMessage: l.message,
             ),
           );
+          return null;
         },
         (r) async {
           bool exist = await checkUserExist(email: r.user?.email ?? '');
           if (exist) {
+            if (r.user?.uid != null) {
+              // The user id will be automatically set by the firebase analytics sdk
+            }
+            _analyticsHandler.logLogin();
             emit(state.copyWith(isLoading: false, status: LoginStatus.success));
           } else {
             final user = r.user;
@@ -114,14 +133,16 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
               state.copyWith(isLoading: false, status: LoginStatus.federated),
             );
           }
+          return null;
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+    return null;
   }
 
-  _setUserInfo(Emitter<LoginState> emit, UserModel user) async {
+  Future<void> _setUserInfo(Emitter<LoginState> emit, UserModel user) async {
     await _firestore.collection(AppConstants.usersCollection).doc(user.id).set({
       'id': user.id,
       'firstName': user.firstName,
@@ -141,7 +162,7 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
     });
   }
 
-  _appleLoginEvent(Emitter<LoginState> emit) async {
+  Future<Future<Null>?>? _appleLoginEvent(Emitter<LoginState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.signInWithApple();
@@ -155,43 +176,34 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
               errorMessage: l.message,
             ),
           );
+          return null;
         },
         (r) async {
-          bool exist = await checkUserExist(email: r.user?.email ?? '');
+          final data = r['credential'] as UserCredential?;
+          final user = data?.user;
+
+          bool exist = await checkUserExist(email: user?.email ?? '');
           if (exist) {
+            if (user?.uid != null) {
+              // The user id will be automatically set by the firebase analytics sdk
+            }
+            _analyticsHandler.logLogin();
             emit(state.copyWith(isLoading: false, status: LoginStatus.success));
           } else {
-            final user = r.user;
-            final userModel = UserModel(
-              id: user?.uid,
-              firstName: user?.displayName?.split(' ')[0],
-              lastName: user?.displayName?.split(' ')[1],
-              fullName: user?.displayName,
-              userImg: '',
-              email: user?.email,
-              birthDate: DateTime.now(),
-              registerDate: DateTime.now(),
-              phone: '',
-              isoCode: '',
-              friendList: [],
-              giftcardList: [],
-              matchList: [],
-              fcmToken: '',
-            );
-
-            add(LoginEvent.setUserInfo(userModel));
             emit(
               state.copyWith(isLoading: false, status: LoginStatus.federated),
             );
           }
+          return null;
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+    return null;
   }
 
-  _changeEvent(Emitter<LoginState> emit) async {
+  Future<void> _changeEvent(Emitter<LoginState> emit) async {
     emit(state.copyWith(status: LoginStatus.inProgress));
   }
 

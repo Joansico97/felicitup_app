@@ -30,23 +30,20 @@ class EditInputField extends StatelessWidget {
           filled: true,
           border: OutlineInputBorder(
             borderSide: BorderSide(
-              width: 2,
+              width: context.sp(2),
               color: context.colors.grey,
             ),
             borderRadius: BorderRadius.circular(context.sp(10)),
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              width: 2,
+              width: context.sp(2),
               color: context.colors.grey,
             ),
             borderRadius: BorderRadius.circular(context.sp(10)),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              width: 1,
-              color: context.colors.grey,
-            ),
+            borderSide: BorderSide(width: 1, color: context.colors.grey),
             borderRadius: BorderRadius.circular(context.sp(10)),
           ),
           disabledBorder: InputBorder.none,
@@ -58,7 +55,7 @@ class EditInputField extends StatelessWidget {
           suffixIcon: Icon(
             Icons.edit,
             color: context.colors.black,
-            size: 20,
+            size: context.sp(20),
           ),
         ),
         validator: (value) {

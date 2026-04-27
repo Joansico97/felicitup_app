@@ -7,7 +7,7 @@ part 'felicitup_model.freezed.dart';
 part 'felicitup_model.g.dart';
 
 @freezed
-class FelicitupModel with _$FelicitupModel {
+abstract class FelicitupModel with _$FelicitupModel {
   const factory FelicitupModel({
     required String id,
     required String createdBy,
@@ -15,6 +15,7 @@ class FelicitupModel with _$FelicitupModel {
     required String reason,
     String? finalVideoUrl,
     @TimestampConverter() required DateTime date,
+    @TimestampConverter() DateTime? sentAt,
     required bool hasBote,
     required bool hasVideo,
     required List<String> invitedUsers,
@@ -22,12 +23,15 @@ class FelicitupModel with _$FelicitupModel {
     required List<OwnerModel> owner,
     required int boteQuantity,
     String? message,
+    String? error,
     String? status,
     String? thumbnailUrl,
+    String? processingStatus,
     List<String>? likes,
     @TimestampConverter() required DateTime limitDate,
     required String chatId,
   }) = _FelicitupModel;
 
-  factory FelicitupModel.fromJson(Map<String, dynamic> json) => _$FelicitupModelFromJson(json);
+  factory FelicitupModel.fromJson(Map<String, dynamic> json) =>
+      _$FelicitupModelFromJson(json);
 }

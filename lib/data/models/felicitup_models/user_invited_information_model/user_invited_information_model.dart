@@ -6,7 +6,7 @@ part 'user_invited_information_model.freezed.dart';
 part 'user_invited_information_model.g.dart';
 
 @freezed
-class UserInvitedInformationModel with _$UserInvitedInformationModel {
+abstract class UserInvitedInformationModel with _$UserInvitedInformationModel {
   const factory UserInvitedInformationModel({
     required String id,
     required String userId,

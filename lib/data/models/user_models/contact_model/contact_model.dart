@@ -4,7 +4,7 @@ part 'contact_model.freezed.dart';
 part 'contact_model.g.dart';
 
 @freezed
-class ContactModel with _$ContactModel {
+abstract class ContactModel with _$ContactModel {
   const factory ContactModel({
     String? uid,
     String? displayName,
@@ -12,5 +12,6 @@ class ContactModel with _$ContactModel {
     required String phone,
   }) = _ContactModel;
 
-  factory ContactModel.fromJson(Map<String, dynamic> json) => _$ContactModelFromJson(json);
+  factory ContactModel.fromJson(Map<String, dynamic> json) =>
+      _$ContactModelFromJson(json);
 }

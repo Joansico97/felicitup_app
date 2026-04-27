@@ -13,9 +13,17 @@ class VideoEditorEvent with _$VideoEditorEvent {
   const factory VideoEditorEvent.disposeVideoController() =
       _disposeVideoController;
   const factory VideoEditorEvent.setUrlVideo(String url) = _setUrlVideo;
+  const factory VideoEditorEvent.normalizeVideo({
+    required String url,
+    required String userId,
+    required String felicitupId,
+  }) = _normalizeVideo;
   const factory VideoEditorEvent.uploadUserVideo(
     String felicitupId,
     File file,
+    String userId,
+    String userName,
+    String felicitupCreatorId,
   ) = _uploadUserVideo;
   const factory VideoEditorEvent.generateThumbnail(String filePath) =
       _generateThumbnail;
@@ -28,4 +36,9 @@ class VideoEditorEvent with _$VideoEditorEvent {
     String felicitupId,
     String url,
   ) = _updateParticipantInfo;
+  const factory VideoEditorEvent.sendNotification(
+    String userId,
+    String userName,
+    String felicitupId,
+  ) = _sendNotification;
 }

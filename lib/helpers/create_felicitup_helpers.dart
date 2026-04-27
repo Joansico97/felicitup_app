@@ -22,10 +22,7 @@ List<Map<String, dynamic>> createListIdsFromUsers({
     'name': currentUser.fullName,
     'userImage': currentUser.userImg,
     'assistanceStatus': enumToStringAssistance(AssistanceStatus.accepted),
-    'videoData': {
-      'videoUrl': '',
-      'videoThumbnail': '',
-    },
+    'videoData': {'videoUrl': '', 'videoThumbnail': ''},
     'paid': enumToStringPayment(PaymentStatus.paid),
     'idInformation': '',
   };
@@ -38,10 +35,7 @@ List<Map<String, dynamic>> createListIdsFromUsers({
       'name': element['name'],
       'userImage': element['userImg'],
       'assistanceStatus': enumToStringAssistance(AssistanceStatus.pending),
-      'videoData': {
-        'videoUrl': '',
-        'videoThumbnail': '',
-      },
+      'videoData': {'videoUrl': '', 'videoThumbnail': ''},
       'paid': enumToStringPayment(PaymentStatus.pending),
       'idInformation': '',
     };

@@ -1,4 +1,5 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -78,7 +79,7 @@ class ChatSpace extends StatelessWidget {
                                         color: context.colors.text,
                                       ),
                                     ),
-                            )
+                            ),
                           ],
                         ),
                       ),
@@ -102,27 +103,38 @@ class ChatSpace extends StatelessWidget {
                             height: context.sp(40),
                             width: context.sp(40),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(context.sp(40)),
-                              child: Image.network(
-                                userImg!,
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) => loadingProgress == null
-                                    ? child
-                                    : Center(
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                errorBuilder: (context, error, stackTrace) => Text(
-                                  name[0].toUpperCase(),
-                                  style: context.styles.paragraph,
+                              borderRadius: BorderRadius.circular(
+                                context.sp(40),
+                              ),
+                              child: CommonNetworkImage(
+                                imageUrl: userImg!,
+                                errorWidget: Container(
+                                  height: context.sp(40),
+                                  width: context.sp(40),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: context.colors.lightGrey,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      name[0].toUpperCase(),
+                                      style: context.styles.paragraph,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           )
-                        : Text(
-                            name[0].toUpperCase(),
-                            style: context.styles.paragraph,
+                        : Container(
+                            height: context.sp(40),
+                            width: context.sp(40),
+                            alignment: Alignment.center,
+                            child: Text(
+                              name[0].toUpperCase(),
+                              style: context.styles.paragraph,
+                            ),
                           ),
-                  )
+                  ),
                 ],
               ),
             )
@@ -143,24 +155,33 @@ class ChatSpace extends StatelessWidget {
                           width: context.sp(40),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(context.sp(40)),
-                            child: Image.network(
-                              userImg!,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) => loadingProgress == null
-                                  ? child
-                                  : Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                              errorBuilder: (context, error, stackTrace) => Text(
-                                name[0].toUpperCase(),
-                                style: context.styles.paragraph,
+                            child: CommonNetworkImage(
+                              imageUrl: userImg!,
+                              errorWidget: Container(
+                                height: context.sp(40),
+                                width: context.sp(40),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: context.colors.lightGrey,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    name[0].toUpperCase(),
+                                    style: context.styles.paragraph,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         )
-                      : Text(
-                          name[0].toUpperCase(),
-                          style: context.styles.paragraph,
+                      : Container(
+                          height: context.sp(40),
+                          width: context.sp(40),
+                          alignment: Alignment.center,
+                          child: Text(
+                            name[0].toUpperCase(),
+                            style: context.styles.paragraph,
+                          ),
                         ),
                 ),
                 SizedBox(width: context.sp(18)),
@@ -198,10 +219,7 @@ class ChatSpace extends StatelessWidget {
                             ),
                           ),
                           SizedBox(height: context.sp(8)),
-                          Text(
-                            textContent,
-                            style: context.styles.paragraph,
-                          ),
+                          Text(textContent, style: context.styles.paragraph),
                           SizedBox(height: context.sp(8)),
                           Align(
                             alignment: Alignment.bottomRight,
@@ -223,7 +241,7 @@ class ChatSpace extends StatelessWidget {
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
     );

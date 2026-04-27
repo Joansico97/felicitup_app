@@ -31,8 +31,8 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<DeleteAccountBloc, DeleteAccountState>(
-      listenWhen:
-          (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -51,11 +51,10 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                 context.read<DeleteAccountBloc>().add(
                   DeleteAccountEvent.deleteAccountEvent(
                     userId: currentUser?.id ?? '',
-                    answers:
-                        _answers
-                            .where((a) => a != null)
-                            .cast<String>()
-                            .toList(),
+                    answers: _answers
+                        .where((a) => a != null)
+                        .cast<String>()
+                        .toList(),
                   ),
                 );
               },

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
-import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/auth/register/bloc/register_bloc.dart';
@@ -16,8 +15,9 @@ class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<RegisterBloc, RegisterState>(
-      listenWhen:
-          (previous, current) => previous.isLoading != current.isLoading,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading ||
+          previous.status != current.status,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -53,33 +53,14 @@ class RegisterPage extends StatelessWidget {
           }
         }
       },
-      child: Scaffold(
-        body: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: SafeArea(
-            child: Container(
-              height: context.fullHeight,
-              width: context.fullWidth,
-              padding: EdgeInsets.symmetric(vertical: context.sp(12)),
-              child: BlocBuilder<RegisterBloc, RegisterState>(
-                builder: (_, state) {
-                  final currentStep = state.currentStep;
-                  if (currentStep == 0) {
-                    return RegisterView();
-                  } else if (currentStep == 1) {
-                    return GetUserPhoneView();
-                  } else if (currentStep == 2) {
-                    return ValidateCodeView();
-                  } else if (currentStep == 3) {
-                    return FinishRegisterView();
-                  } else {
-                    return RegisterView();
-                  }
-                },
-              ),
-            ),
-          ),
-        ),
+      child: LayoutBuilder(
+        builder: (_, constraints) {
+          if (constraints.maxWidth > 1024) {
+            return const RegisterWebView();
+          }
+
+          return const RegisterMobileView();
+        },
       ),
     );
   }

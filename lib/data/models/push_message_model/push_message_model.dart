@@ -61,7 +61,7 @@ PushMessageType pushMessageTypeToEnum(String value) {
 }
 
 @freezed
-class PushMessageModel with _$PushMessageModel {
+abstract class PushMessageModel with _$PushMessageModel {
   const factory PushMessageModel({
     String? messageId,
     String? title,
@@ -70,11 +70,12 @@ class PushMessageModel with _$PushMessageModel {
     DataMessageModel? data,
   }) = _PushMessageModel;
 
-  factory PushMessageModel.fromJson(Map<String, dynamic> json) => _$PushMessageModelFromJson(json);
+  factory PushMessageModel.fromJson(Map<String, dynamic> json) =>
+      _$PushMessageModelFromJson(json);
 }
 
 @freezed
-class DataMessageModel with _$DataMessageModel {
+abstract class DataMessageModel with _$DataMessageModel {
   const factory DataMessageModel({
     required String type,
     required String felicitupId,
@@ -84,5 +85,6 @@ class DataMessageModel with _$DataMessageModel {
     required String userImage,
   }) = _DataMessageModel;
 
-  factory DataMessageModel.fromJson(Map<String, dynamic> json) => _$DataMessageModelFromJson(json);
+  factory DataMessageModel.fromJson(Map<String, dynamic> json) =>
+      _$DataMessageModelFromJson(json);
 }

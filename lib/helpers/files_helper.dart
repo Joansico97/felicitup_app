@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 Future pickImageFromGallery() async {
-  final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+  final pickedImage = await ImagePicker().pickImage(
+    source: ImageSource.gallery,
+  );
 
   if (pickedImage == null) return;
 
@@ -24,9 +26,7 @@ Future pickVideoFromCamera(BuildContext context) async {
   if (orientation == Orientation.landscape) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          'Por favor, graba el video en modo vertical',
-        ),
+        content: Text('Por favor, graba el video en modo vertical'),
         duration: const Duration(seconds: 2),
       ),
     );

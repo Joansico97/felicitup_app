@@ -7,6 +7,7 @@ import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
 
 part 'video_editor_event.dart';
@@ -26,27 +27,45 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
        super(VideoEditorState.initial()) {
     on<VideoEditorEvent>(
       (events, emit) => events.map(
-        changeLoading: (event) => _changeLoading(emit),
+        changeLoading: (event) =>
+            emit(state.copyWith(isLoading: !state.isLoading)),
         setUrlVideo: (event) => _setUrlVideo(emit, event.url),
         getFelicitupInfo: (event) => _getFelicitupInfo(emit, event.felicitupId),
-        uploadUserVideo:
-            (event) => _uploadUserVideo(emit, event.felicitupId, event.file),
-        updateParticipantInfo:
-            (event) => _updateParticipantInfo(event.felicitupId, event.url),
-        initializeVideoController:
-            (event) => _initializeVideoController(emit, event.url),
+        uploadUserVideo: (event) => _uploadUserVideo(
+          emit,
+          event.felicitupId,
+          event.file,
+          event.userId,
+          event.userName,
+          event.felicitupCreatorId,
+        ),
+        updateParticipantInfo: (event) =>
+            _updateParticipantInfo(event.felicitupId, event.url),
+        initializeVideoController: (event) =>
+            _initializeVideoController(emit, event.url),
         disposeVideoController: (event) => _disposeVideoController(emit),
         generateThumbnail: (event) => _generateThumbnail(event.filePath),
         setDuraton: (event) => _setDuraton(emit, event.duration),
         setPosition: (event) => _setPosition(emit, event.position),
         changeFullScreen: (event) => _changeFullScreen(emit),
-        reportUserVideo:
-            (event) => _reportUserVideo(
-              emit,
-              event.felicitupId,
-              event.userId,
-              event.videoUrl,
-            ),
+        normalizeVideo: (event) => _normalizeVideo(
+          emit,
+          url: event.url,
+          userId: event.userId,
+          felicitupId: event.felicitupId,
+        ),
+        reportUserVideo: (event) => _reportUserVideo(
+          emit,
+          event.felicitupId,
+          event.userId,
+          event.videoUrl,
+        ),
+        sendNotification: (event) => _sendNotification(
+          emit,
+          event.userId,
+          event.userName,
+          event.felicitupId,
+        ),
       ),
     );
   }
@@ -56,16 +75,15 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
   final FirebaseAuth _firebaseAuth;
   final FirebaseFunctionsHelper _firebaseFunctionsHelper;
 
-  _changeLoading(Emitter<VideoEditorState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _setUrlVideo(Emitter<VideoEditorState> emit, String url) {
+  void _setUrlVideo(Emitter<VideoEditorState> emit, String url) {
     add(VideoEditorEvent.initializeVideoController(url));
     emit(state.copyWith(currentSelectedVideo: url));
   }
 
-  _getFelicitupInfo(Emitter<VideoEditorState> emit, String felicitupId) async {
+  Future<void> _getFelicitupInfo(
+    Emitter<VideoEditorState> emit,
+    String felicitupId,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final result = await _felicitupRepository.getFelicitupById(felicitupId);
@@ -80,21 +98,60 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _uploadUserVideo(
+  Future<void> _normalizeVideo(
+    Emitter<VideoEditorState> emit, {
+    required String url,
+    required String userId,
+    required String felicitupId,
+  }) async {
+    try {
+      await _firebaseFunctionsHelper.normalizeSingleVideo(
+        videoUrl: url,
+        felicitupId: felicitupId,
+        userId: userId,
+      );
+    } catch (e) {
+      logger.error('Error normalizing video: $e');
+    }
+  }
+
+  Future<void> _uploadUserVideo(
     Emitter<VideoEditorState> emit,
     String felicitupId,
     File file,
+    String userId,
+    String userName,
+    String felicitupCreatorId,
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final result = await _userRepository.uploadVideoFile(file, 'videos');
+      final uniqueId = const Uuid().v4();
+      final result = await _userRepository.uploadVideoFile(
+        file,
+        'videos',
+        uniqueId,
+      );
       return result.fold(
         (error) => logger.error('Error uploading video: $error'),
         (url) {
+          final correctUrl = extractFilePathFromFirebaseStorageUrl(url);
+          add(
+            VideoEditorEvent.normalizeVideo(
+              url: correctUrl,
+              userId: userId,
+              felicitupId: felicitupId,
+            ),
+          );
           add(VideoEditorEvent.updateParticipantInfo(felicitupId, url));
           add(VideoEditorEvent.initializeVideoController(url));
           add(VideoEditorEvent.getFelicitupInfo(felicitupId));
-          // add(VideoEditorEvent.generateThumbnail(extractFilePathFromFirebaseStorageUrl(url)));
+          add(
+            VideoEditorEvent.sendNotification(
+              felicitupCreatorId,
+              userName,
+              felicitupId,
+            ),
+          );
           emit(state.copyWith(isLoading: false, currentSelectedVideo: url));
         },
       );
@@ -103,7 +160,10 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _initializeVideoController(Emitter<VideoEditorState> emit, String url) async {
+  Future<void> _initializeVideoController(
+    Emitter<VideoEditorState> emit,
+    String url,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final videoPlayerController = VideoPlayerController.networkUrl(
@@ -137,7 +197,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _disposeVideoController(Emitter<VideoEditorState> emit) {
+  void _disposeVideoController(Emitter<VideoEditorState> emit) {
     emit(state.copyWith(isLoading: true));
     try {
       state.videoPlayerController?.dispose();
@@ -147,7 +207,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _generateThumbnail(String filePath) async {
+  Future<void> _generateThumbnail(String filePath) async {
     try {
       await _firebaseFunctionsHelper.generateThumbnail(
         filePath: filePath,
@@ -158,7 +218,7 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _updateParticipantInfo(String felicitupId, String url) async {
+  Future<void> _updateParticipantInfo(String felicitupId, String url) async {
     try {
       await _felicitupRepository.updateVideoData(felicitupId, url);
     } catch (e) {
@@ -166,19 +226,19 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
     }
   }
 
-  _setDuraton(Emitter<VideoEditorState> emit, Duration duration) {
+  void _setDuraton(Emitter<VideoEditorState> emit, Duration duration) {
     emit(state.copyWith(duration: duration));
   }
 
-  _setPosition(Emitter<VideoEditorState> emit, Duration position) {
+  void _setPosition(Emitter<VideoEditorState> emit, Duration position) {
     emit(state.copyWith(position: position));
   }
 
-  _changeFullScreen(Emitter<VideoEditorState> emit) {
+  void _changeFullScreen(Emitter<VideoEditorState> emit) {
     emit(state.copyWith(isFullScreen: !state.isFullScreen));
   }
 
-  _reportUserVideo(
+  Future<void> _reportUserVideo(
     Emitter<VideoEditorState> emit,
     String felicitupId,
     String userId,
@@ -207,5 +267,31 @@ class VideoEditorBloc extends Bloc<VideoEditorEvent, VideoEditorState> {
   Future<void> close() {
     state.videoPlayerController?.dispose();
     return super.close();
+  }
+
+  Future<void> _sendNotification(
+    Emitter<VideoEditorState> emit,
+    String userId,
+    String userName,
+    String felicitupId,
+  ) async {
+    try {
+      await _userRepository.sendNotification(
+        userId: userId,
+        title: 'Nuevo vídeo',
+        message: '$userName ha grabado un nuevo vídeo',
+        currentChat: '',
+        data: DataMessageModel(
+          type: enumToPushMessageType(PushMessageType.chat),
+          felicitupId: felicitupId,
+          chatId: '',
+          name: '',
+          friendId: '',
+          userImage: '',
+        ),
+      );
+    } catch (e) {
+      logger.error(e.toString());
+    }
   }
 }

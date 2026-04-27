@@ -20,7 +20,10 @@ class ForgotPasswordBloc
 
   final AuthRepository _authRepository;
 
-  _sendEmailEvent(Emitter<ForgotPasswordState> emit, String email) async {
+  Future<void> _sendEmailEvent(
+    Emitter<ForgotPasswordState> emit,
+    String email,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final response = await _authRepository.forgotPassword(email: email);

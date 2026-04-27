@@ -12,7 +12,8 @@ extension ContextExtensions on BuildContext {
 
   AppColors get colors => AppColors();
 
-  double sp(double pixel) => (pixel / baseWidth) * MediaQuery.of(this).size.width;
+  double sp(double pixel) =>
+      (pixel / baseWidth) * MediaQuery.of(this).size.width;
 
   double get fullWidth => MediaQuery.of(this).size.width;
 

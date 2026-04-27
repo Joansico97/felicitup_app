@@ -1,3 +1,4 @@
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
@@ -28,20 +29,27 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
   String _searchQuery = '';
   List<UserModel> _filteredFriendList = [];
   final TextEditingController _searchController = TextEditingController();
+  late UserModel? currentUser;
 
   @override
   void initState() {
     super.initState();
-    widget.initialFriendList.sort(
-      (a, b) => (a.fullName ?? '').toLowerCase().compareTo(
-        (b.fullName ?? '').toLowerCase(),
-      ),
-    );
     _filteredFriendList = List.from(widget.initialFriendList);
 
     _searchController.addListener(() {
       _filterContacts(_searchController.text);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    currentUser = context.read<AppBloc>().state.currentUser;
+    widget.initialFriendList.sort(
+      (a, b) => (a.getDisplayName(
+        currentUser,
+      )).toLowerCase().compareTo((b.getDisplayName(currentUser)).toLowerCase()),
+    );
   }
 
   @override
@@ -57,14 +65,13 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
       if (_searchQuery.isEmpty) {
         _filteredFriendList = List.from(widget.initialFriendList);
       } else {
-        _filteredFriendList =
-            widget.initialFriendList
-                .where(
-                  (contact) => (contact.fullName ?? '').toLowerCase().contains(
-                    lowerCaseQuery,
-                  ),
-                )
-                .toList();
+        _filteredFriendList = widget.initialFriendList
+            .where(
+              (contact) => (contact.getDisplayName(
+                currentUser,
+              )).toLowerCase().contains(lowerCaseQuery),
+            )
+            .toList();
       }
     });
   }
@@ -120,7 +127,6 @@ class _ParticipantSearchListState extends State<ParticipantSearchList> {
         else
           BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
             bloc: widget.felicitupBloc,
-
             builder: (context, state) {
               final currentSelectedParticipantsFromBloc = state.invitedContacts;
 
@@ -193,42 +199,32 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                   return listOwner.isEmpty ||
                           (listOwner[0].userImg ?? '').isEmpty
                       ? SizedBox(
-                        width: context.sp(120),
-                        child: SvgPicture.asset(
-                          Assets.icons.personIcon,
+                          width: context.sp(120),
+                          child: SvgPicture.asset(
+                            Assets.icons.personIcon,
+                            height: context.sp(76),
+                            width: context.sp(76),
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFFDADADA),
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                        )
+                      : Container(
                           height: context.sp(76),
                           width: context.sp(76),
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xFFDADADA),
-                            BlendMode.srcIn,
+                          margin: EdgeInsets.symmetric(
+                            horizontal: context.sp(22),
                           ),
-                        ),
-                      )
-                      : Container(
-                        height: context.sp(76),
-                        width: context.sp(76),
-                        margin: EdgeInsets.symmetric(
-                          horizontal: context.sp(22),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(context.sp(100)),
-                          child: Image.network(
-                            listOwner[0].userImg!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return SvgPicture.asset(
-                                Assets.icons.personIcon,
-                                height: context.sp(76),
-                                width: context.sp(76),
-                                colorFilter: const ColorFilter.mode(
-                                  Color(0xFFDADADA),
-                                  BlendMode.srcIn,
-                                ),
-                              );
-                            },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              context.sp(100),
+                            ),
+                            child: CommonNetworkImage(
+                              imageUrl: listOwner[0].userImg ?? '',
+                            ),
                           ),
-                        ),
-                      );
+                        );
                 },
               ),
               SizedBox(
@@ -254,9 +250,8 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
         ),
         SizedBox(height: context.sp(12)),
         BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
-          builder: (buttonContext, state) {
-            final felicitupBlocInstance =
-                buttonContext.read<CreateFelicitupBloc>();
+          builder: (_, state) {
+            final felicitupBlocInstance = context.read<CreateFelicitupBloc>();
             final listOwner = state.felicitupOwner;
 
             List<UserModel> availableFriendsForParticipation = [
@@ -266,16 +261,10 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
               (friend) => listOwner.any((owner) => owner.id == friend.id),
             );
 
-            availableFriendsForParticipation.removeWhere(
-              (friend) => state.invitedContacts.any(
-                (invited) => invited.id == friend.id,
-              ),
-            );
-
             return PrimarySmallButton(
               onTap: () {
                 commoBottomModal(
-                  context: buttonContext,
+                  context: context,
                   changeClose: true,
                   body: ParticipantSearchList(
                     initialFriendList: availableFriendsForParticipation,
@@ -285,7 +274,9 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                   ),
                 );
               },
-              label: 'Buscar participantes',
+              label: state.invitedContacts.isEmpty
+                  ? 'Buscar participantes'
+                  : 'Editar participantes',
               isActive: true,
               isCollapsed: true,
             );
@@ -308,7 +299,14 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                         ...List.generate(
                           listParticipants.length,
                           (index) => OnlyViewCardRow(
-                            contactName: listParticipants[index].name ?? '',
+                            contactName: state.friendList
+                                .firstWhere(
+                                  (element) =>
+                                      element.id == listParticipants[index].id,
+                                )
+                                .getDisplayName(
+                                  context.read<AppBloc>().state.currentUser,
+                                ),
                             userImg: listParticipants[index].userImage ?? '',
                             stepOne: false,
                             stepTwo: false,

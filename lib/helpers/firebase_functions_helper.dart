@@ -38,7 +38,7 @@ class FirebaseFunctionsHelper {
     required Map<String, dynamic> data,
   }) async {
     await _call(
-      'sendNotificationToList',
+      'sendNotificationToMultiple',
       parameters: {
         'userIds': ids,
         'title': title,
@@ -49,15 +49,15 @@ class FirebaseFunctionsHelper {
     );
   }
 
-  Future<void> mergeVideos({
-    required List<String> videoUrls,
+  Future<void> normalizeSingleVideo({
+    required String videoUrl,
     required String felicitupId,
     required String userId,
   }) async {
     await _call(
-      'mergeVideos',
+      'normalizeSingleVideo',
       parameters: {
-        'videoUrls': videoUrls,
+        'videoUrl': videoUrl,
         'felicitupId': felicitupId,
         'userId': userId,
       },
@@ -66,6 +66,12 @@ class FirebaseFunctionsHelper {
 
   Future<void> disableCurrentUser() async {
     await _call('disableCurrentUser');
+  }
+
+  Future<Map<String, dynamic>> validateEmailDomain({
+    required String email,
+  }) async {
+    return await _call('validateEmailDomain', parameters: {'email': email});
   }
 
   Future<void> sendFelicitup({required String felicitupId}) async {

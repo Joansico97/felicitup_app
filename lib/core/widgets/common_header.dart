@@ -1,6 +1,7 @@
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/home/bloc/home_bloc.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
@@ -42,27 +43,8 @@ class CommonHeader extends StatelessWidget {
                     builder: (_, state) {
                       return ClipRRect(
                         borderRadius: BorderRadius.circular(context.sp(24)),
-                        child: Image.network(
-                          state.currentUser?.userImg ?? '',
-                          width: context.sp(48),
-                          height: context.sp(48),
-                          fit: BoxFit.cover,
-                          loadingBuilder: (_, child, loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            }
-                            return CircularProgressIndicator();
-                          },
-                          errorBuilder:
-                              (_, error, stackTrace) => Text(
-                                state.currentUser?.firstName
-                                        ?.substring(0, 1)
-                                        .toUpperCase() ??
-                                    '',
-                                style: context.styles.header2.copyWith(
-                                  color: context.colors.orange,
-                                ),
-                              ),
+                        child: CommonNetworkImage(
+                          imageUrl: state.currentUser?.userImg ?? '',
                         ),
                       );
                     },

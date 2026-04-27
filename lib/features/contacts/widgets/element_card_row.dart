@@ -1,11 +1,10 @@
-import 'package:felicitup_app/app/bloc/app_bloc.dart';
+import 'dart:io';
+
 import 'package:felicitup_app/core/extensions/extensions.dart';
-import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/contacts/contacts.dart';
 import 'package:felicitup_app/features/contacts/widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,17 +23,14 @@ class ElementCardRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // padding: size.symmetric(.05, .02),
       padding: EdgeInsets.symmetric(
-        horizontal: context.sp(20),
-        vertical: context.sp(10),
+        horizontal: context.sp(24),
+        vertical: context.sp(12),
       ),
       width: context.fullWidth,
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: context.colors.orange.valueOpacity(.1),
-          ),
+          bottom: BorderSide(color: context.colors.orange.valueOpacity(.1)),
         ),
       ),
       child: Row(
@@ -57,58 +53,39 @@ class ElementCardRow extends StatelessWidget {
           SizedBox(width: context.sp(24)),
           SizedBox(
             width: context.sp(150),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  contact.displayName ?? '',
-                  style: context.styles.subtitle,
-                ),
-                Text(
-                  contact.phone.replaceAll(' ', '').replaceAll('(', '').replaceAll(')', '').replaceAll('-', ''),
-                  style: context.styles.smallText,
-                )
-              ],
+            child: Text(
+              contact.displayName ?? '',
+              style: context.styles.subtitle,
             ),
           ),
           const Spacer(),
           isRegistered
-              ? const Icon(
-                  Icons.check,
-                  color: Colors.green,
-                )
+              ? const Icon(Icons.check, color: Colors.green)
               : TextButton(
                   onPressed: () async {
-                    await Clipboard.setData(
-                      const ClipboardData(
-                        text:
-                            '¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.',
-                      ),
-                    );
-                    showConfirmModal(
-                      title:
-                          'Hemos copiado a tu portapapeles la invitación para que puedas invitar a tus amigos mediante Whatsapp.',
-                      onAccept: () async {
-                        final user = context.read<AppBloc>().state.currentUser;
-                        String number = contact.phone
-                            .replaceAll(' ', '')
-                            .replaceAll('(', '')
-                            .replaceAll(')', '')
-                            .replaceAll('-', '');
-                        if (number[0] == '0' && number[1] == '0') {
-                          number = number.substring(2);
-                          number = '+$number';
-                        } else if (number[0] != '+') {
-                          number = '${user?.isoCode}$number';
-                        }
+                    final encoded =
+                        ''''¡Hola! Te invito a Felicitup, la app que te permite enviar felicitaciones a tus amigos y familiares de forma rápida.
+Descárgala desde play store aquí: https://play.google.com/store/apps/details?id=com.felicitup.felicitup_app
+Descárgala desde app store aquí: https://apps.apple.com/co/app/felicitup/id6743689559
+                          ''';
 
-                        final Uri url = Uri.parse('http://wa.me/$number');
-                        await launchUrl(
-                          url,
-                          mode: LaunchMode.inAppBrowserView,
-                        );
-                      },
-                    );
+                    final Uri url = Uri.parse("whatsapp://send?text=$encoded");
+
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    } else {
+                      const playStore =
+                          "https://play.google.com/store/apps/details?id=com.whatsapp";
+                      const appStore =
+                          "https://apps.apple.com/app/whatsapp-messenger/id310633997";
+
+                      await launchUrl(
+                        Uri.parse(Platform.isAndroid ? playStore : appStore),
+                      );
+                    }
                   },
                   child: Text(
                     'Invitar',
@@ -121,16 +98,16 @@ class ElementCardRow extends StatelessWidget {
           GestureDetector(
             onTap: () {
               if (isRegistered) {
-                context.read<ContactsBloc>().add(ContactsEvent.getInfoSingleContact(contact.phone));
+                context.read<ContactsBloc>().add(
+                  ContactsEvent.getInfoSingleContact(contact.phone),
+                );
               }
-              _showContactDetails(
-                contact,
-                isRegistered,
-                context,
-              );
+              _showContactDetails(contact, isRegistered, context);
             },
             child: Icon(
-              Icons.drag_indicator,
+              isRegistered
+                  ? Icons.card_giftcard_outlined
+                  : Icons.drag_indicator,
             ),
           ),
         ],
@@ -154,7 +131,9 @@ void _showContactDetails(
           return DetailsContactView(
             contact: contact,
             isRegistered: isRegistered,
-            giftcardList: isRegistered ? state.dataSingleUsers?.giftcardList : [],
+            giftcardList: isRegistered
+                ? state.dataSingleUsers?.giftcardList
+                : [],
           );
         },
       ),

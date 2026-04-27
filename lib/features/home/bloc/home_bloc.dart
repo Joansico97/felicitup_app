@@ -1,12 +1,20 @@
 import 'package:bloc/bloc.dart';
-import 'package:fast_contacts/fast_contacts.dart';
+import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';
 part 'home_bloc.freezed.dart';
+
+class HashedContact {
+  final String displayName;
+  final String hashedPhone;
+
+  HashedContact({required this.displayName, required this.hashedPhone});
+}
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc({required UserRepository userRepository})
@@ -14,108 +22,53 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       super(HomeState.initial()) {
     on<HomeEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
-        changeCreate: (_) => _changeCreate(emit),
-        changeShowButton: (_) => _changeShowButton(emit),
-        getAndUpdateContacts: (event) => _getAndUpdateContacts(event.isoCode),
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
+        changeCreate: (_) => emit(state.copyWith(create: !state.create)),
+        setUserBirthdate: (event) => _setUserBirthdate(emit, event.date),
+        changeShowButton: (_) =>
+            emit(state.copyWith(showButton: !state.showButton)),
+        getAndUpdateContacts: (event) =>
+            _getAndUpdateContacts(emit, event.isoCode),
       ),
     );
   }
 
   final UserRepository _userRepository;
 
-  _changeLoading(Emitter<HomeState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
+  Future<void> _getAndUpdateContacts(
+    Emitter<HomeState> emit,
+    String isoCode,
+  ) async {}
 
-  _changeCreate(Emitter<HomeState> emit) {
-    emit(state.copyWith(create: !state.create));
-  }
+  Future<void> _setUserBirthdate(Emitter<HomeState> emit, DateTime date) async {
+    emit(state.copyWith(isLoading: true));
 
-  _changeShowButton(Emitter<HomeState> emit) {
-    emit(state.copyWith(showButton: !state.showButton));
-  }
+    try {
+      final response = await _userRepository.updateUserBirthdate(date);
 
-  _getAndUpdateContacts(String isoCode) async {
-    final contacts = await getAllInfoContacts();
-    List<Map<String, dynamic>> contactsMapList =
-        contacts
-            .where((e) => e.displayName.isNotEmpty && e.phones.isNotEmpty)
-            .map((e) {
-              return {
-                'displayName': e.displayName,
-                'phone': e.phones.first.number
-                    .replaceAll('-', '')
-                    .replaceAll('(', '')
-                    .replaceAll(')', '')
-                    .replaceAll(' ', ''),
-              };
-            })
-            .toList();
-
-    RegExp nameRegex = RegExp(r'\d{3,}');
-
-    contactsMapList.removeWhere(
-      (element) =>
-          element['displayName'] == null || element['displayName'].isEmpty,
-    );
-    contactsMapList.removeWhere(
-      (element) => nameRegex.hasMatch(element['displayName'] ?? ''),
-    );
-
-    for (var element in contactsMapList) {
-      if (element['phone'][0] == '0' && element['phone'][1] == '0') {
-        String number = element['phone'];
-        number = number.substring(2);
-        element['phone'] = '+$number';
-      } else if (element['phone'][0] != '+') {
-        String number = element['phone'];
-        element['phone'] = isoCode + number;
-      }
-    }
-
-    List<String> friendsPhoneList =
-        contactsMapList.map((e) => e['phone'] as String).toList();
-    await _userRepository.updateContacts(contactsMapList, friendsPhoneList);
-  }
-
-  Future<List<Contact>> getAllInfoContacts() async {
-    bool isGranted = await _checkContactsPermission();
-
-    if (isGranted) {
-      final packageContacts = await FastContacts.getAllContacts();
-      final List<Contact> contacts = [...packageContacts];
-      contacts.removeWhere((element) => element.displayName.isEmpty);
-      contacts.sort(
-        (a, b) => a.displayName.toLowerCase().trim().compareTo(
-          b.displayName.toLowerCase().trim(),
-        ),
+      response.fold(
+        (l) {
+          emit(state.copyWith(isLoading: false));
+          throw l;
+        },
+        (r) {
+          emit(state.copyWith(isLoading: false));
+          ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Fecha de cumpleaños actualizada correctamente',
+                style: rootNavigatorKey.currentContext!.styles.paragraph
+                    .copyWith(
+                      color: rootNavigatorKey.currentContext!.colors.white,
+                    ),
+              ),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        },
       );
-      contacts.removeWhere(
-        (element) =>
-            element.phones.isNotEmpty
-                ? element.phones[0].number.length < 8
-                : false,
-      );
-      return contacts;
-    }
-
-    return [];
-  }
-
-  Future<bool> _checkContactsPermission() async {
-    final contactsPermissionStatus = await Permission.contacts.status;
-    if (contactsPermissionStatus.isDenied) {
-      final newPermissionStatus = await Permission.contacts.request();
-      if (newPermissionStatus.isGranted) {
-        return true;
-      } else {
-        return false;
-      }
-    } else if (contactsPermissionStatus.isPermanentlyDenied) {
-      return false;
-    } else {
-      return true;
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
     }
   }
 }

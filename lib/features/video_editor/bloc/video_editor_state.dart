@@ -1,7 +1,7 @@
 part of 'video_editor_bloc.dart';
 
 @freezed
-class VideoEditorState with _$VideoEditorState {
+abstract class VideoEditorState with _$VideoEditorState {
   const factory VideoEditorState({
     required bool isLoading,
     required bool isFullScreen,
@@ -14,11 +14,11 @@ class VideoEditorState with _$VideoEditorState {
   }) = _VideoEditorState;
 
   factory VideoEditorState.initial() => VideoEditorState(
-        isLoading: false,
-        currentSelectedVideo: '',
-        isFullScreen: false,
-        duration: Duration.zero,
-        position: Duration.zero,
-        isPlaying: false,
-      );
+    isLoading: false,
+    currentSelectedVideo: '',
+    isFullScreen: false,
+    duration: Duration.zero,
+    position: Duration.zero,
+    isPlaying: false,
+  );
 }

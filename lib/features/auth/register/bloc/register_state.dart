@@ -13,7 +13,7 @@ enum RegisterStatus {
 }
 
 @freezed
-class RegisterState with _$RegisterState {
+abstract class RegisterState with _$RegisterState {
   const factory RegisterState({
     required bool isLoading,
     required int currentStep,
@@ -26,6 +26,7 @@ class RegisterState with _$RegisterState {
     String? confirmPassword,
     String? genre,
     String? phone,
+    String? hashedPhone,
     String? isoCode,
     String? verificationId,
     DateTime? birthDate,
@@ -39,7 +40,4 @@ class RegisterState with _$RegisterState {
     errorMessage: '',
     currentStep: 0,
   );
-
-  factory RegisterState.fromJson(Map<String, dynamic> json) =>
-      _$RegisterStateFromJson(json);
 }

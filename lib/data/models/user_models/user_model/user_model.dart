@@ -7,7 +7,7 @@ part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
 @freezed
-class UserModel with _$UserModel {
+abstract class UserModel with _$UserModel {
   const factory UserModel({
     String? id,
     String? firstName,
@@ -20,9 +20,11 @@ class UserModel with _$UserModel {
     String? fcmToken,
     String? currentChat,
     String? provider,
+    String? userIdentifier,
     int? birthMonth,
     int? birthDay,
     List<ContactModel>? friendList,
+    List<ContactModel>? manualContacts,
     List<BirthdateAlertsModel>? birthdateAlerts,
     List<RemainderModel>? remainders,
     List<String>? matchList,

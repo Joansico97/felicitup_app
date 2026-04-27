@@ -6,13 +6,14 @@ part 'owner_model.freezed.dart';
 part 'owner_model.g.dart';
 
 @freezed
-class OwnerModel with _$OwnerModel {
+abstract class OwnerModel with _$OwnerModel {
   const factory OwnerModel({
     required String id,
     required String name,
     String? userImg,
-    @TimestampConverter() required DateTime date,
+    @TimestampConverter() DateTime? date,
   }) = _OwnerModel;
 
-  factory OwnerModel.fromJson(Map<String, dynamic> json) => _$OwnerModelFromJson(json);
+  factory OwnerModel.fromJson(Map<String, dynamic> json) =>
+      _$OwnerModelFromJson(json);
 }

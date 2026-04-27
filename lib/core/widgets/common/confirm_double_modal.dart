@@ -43,13 +43,20 @@ Future<void> showConfirDoublemModal({
                     onTap: () => Navigator.of(context).pop(),
                     child: Container(
                       padding: EdgeInsets.all(context.sp(2)),
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: context.colors.orange),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: context.colors.orange,
+                      ),
                       child: Icon(Icons.close, color: Colors.white),
                     ),
                   ),
                 ),
                 SizedBox(height: context.sp(10)),
-                Text(title, textAlign: TextAlign.center, style: context.styles.header2),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: context.styles.header2,
+                ),
                 SizedBox(height: context.sp(24)),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -64,7 +71,12 @@ Future<void> showConfirDoublemModal({
                         disabledBackgroundColor: context.colors.lightGrey,
                         elevation: 0,
                       ),
-                      child: Text(label1, style: context.styles.buttons.copyWith(color: context.colors.white)),
+                      child: Text(
+                        label1,
+                        style: context.styles.buttons.copyWith(
+                          color: context.colors.white,
+                        ),
+                      ),
                     ),
                     ElevatedButton(
                       onPressed: () {
@@ -72,7 +84,9 @@ Future<void> showConfirDoublemModal({
                         onAction2();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: (needOtherButton ?? false) ? context.colors.orange : Colors.transparent,
+                        backgroundColor: (needOtherButton ?? false)
+                            ? context.colors.orange
+                            : Colors.transparent,
                         shadowColor: Colors.transparent,
                         disabledBackgroundColor: context.colors.lightGrey,
                         elevation: 0,
@@ -80,7 +94,9 @@ Future<void> showConfirDoublemModal({
                       child: Text(
                         label2,
                         style: context.styles.buttons.copyWith(
-                          color: (needOtherButton ?? false) ? context.colors.white : context.colors.black,
+                          color: (needOtherButton ?? false)
+                              ? context.colors.white
+                              : context.colors.black,
                         ),
                       ),
                     ),
@@ -97,7 +113,12 @@ Future<void> showConfirDoublemModal({
                           disabledBackgroundColor: context.colors.lightGrey,
                           elevation: 0,
                         ),
-                        child: Text(label3 ?? '', style: context.styles.buttons.copyWith(color: context.colors.white)),
+                        child: Text(
+                          label3 ?? '',
+                          style: context.styles.buttons.copyWith(
+                            color: context.colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],

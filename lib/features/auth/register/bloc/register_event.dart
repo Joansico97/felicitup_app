@@ -6,15 +6,14 @@ class RegisterEvent with _$RegisterEvent {
   const factory RegisterEvent.changeStatus(RegisterStatus status) =
       _changeStatus;
   const factory RegisterEvent.previousStep() = _previousStep;
-  const factory RegisterEvent.initRegister(
-    String name,
-    String lastName,
-    String email,
-    String password,
-    String confirmPassword,
-    String genre,
-    DateTime birthDate,
-  ) = _initRegister;
+  const factory RegisterEvent.initRegister({
+    required String name,
+    required String lastName,
+    required String email,
+    required String password,
+    required String confirmPassword,
+    DateTime? birthDate,
+  }) = _initRegister;
   const factory RegisterEvent.savePhoneInfo(String phone, String isoCode) =
       _savePhoneInfo;
   const factory RegisterEvent.googleLoginEvent() = _googleLoginEvent;
@@ -28,5 +27,6 @@ class RegisterEvent with _$RegisterEvent {
   const factory RegisterEvent.registerEvent(bool isEmail) = _registerEvent;
   const factory RegisterEvent.setUserInfo(UserCredential credential) =
       _setUserInfo;
+  const factory RegisterEvent.deleteState() = _deleteState;
   const factory RegisterEvent.finishEvent() = _finishEvent;
 }

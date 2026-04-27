@@ -16,13 +16,15 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
   SingleChatBloc({
     required ChatRepository chatRepository,
     required UserRepository userRepository,
-  })  : _chatRepository = chatRepository,
-        _userRepository = userRepository,
-        super(SingleChatState.initial()) {
+  }) : _chatRepository = chatRepository,
+       _userRepository = userRepository,
+       super(SingleChatState.initial()) {
     on<SingleChatEvent>(
       (events, emit) => events.map(
-        changeIsLoading: (_) => _changeIsLoading(emit),
-        setCurrentChatId: (event) => _setCurrentChatId(emit, event.chatId),
+        changeIsLoading: (_) =>
+            emit(state.copyWith(isLoading: !state.isLoading)),
+        setCurrentChatId: (event) =>
+            emit(state.copyWith(currentChatId: event.chatId)),
         sendMessage: (event) => _sendMessage(
           emit,
           event.chatMessage,
@@ -37,19 +39,12 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
     );
   }
 
-  StreamSubscription<Either<ApiException, List<ChatMessageModel>>>? _chatMessagesSubscription;
+  StreamSubscription<Either<ApiException, List<ChatMessageModel>>>?
+  _chatMessagesSubscription;
   final ChatRepository _chatRepository;
   final UserRepository _userRepository;
 
-  _changeIsLoading(Emitter<SingleChatState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _setCurrentChatId(Emitter<SingleChatState> emit, String chatId) async {
-    emit(state.copyWith(currentChatId: chatId));
-  }
-
-  _sendMessage(
+  Future<void> _sendMessage(
     Emitter<SingleChatState> emit,
     ChatMessageModel chatMessage,
     String chatId,
@@ -57,31 +52,41 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
     String userName,
     String userImage,
   ) async {
-    final response = await _chatRepository.sendMessageSingleChat(chatId, chatMessage);
+    if (chatMessage.id == null ||
+        chatMessage.message == null ||
+        chatMessage.sendedBy == null ||
+        chatMessage.userName == null ||
+        (chatMessage.userName?.isEmpty ?? false)) {
+      return;
+    }
 
-    response.fold(
-      (l) {},
-      (r) async {
-        await _userRepository.sendNotification(
-          userId: userId,
-          title: 'Nuevo mensaje de $userName',
-          message: chatMessage.message,
-          currentChat: chatId,
-          data: DataMessageModel(
-            type: enumToPushMessageType(PushMessageType.chat),
-            felicitupId: '',
-            chatId: chatId,
-            name: userName,
-            friendId: userId,
-            userImage: userImage,
-          ),
-        );
-      },
+    final response = await _chatRepository.sendMessageSingleChat(
+      chatId,
+      chatMessage,
     );
+
+    response.fold((l) {}, (r) async {
+      await _userRepository.sendNotification(
+        userId: userId,
+        title: 'Nuevo mensaje de $userName',
+        message: chatMessage.message!,
+        currentChat: chatId,
+        data: DataMessageModel(
+          type: enumToPushMessageType(PushMessageType.chat),
+          felicitupId: '',
+          chatId: chatId,
+          name: userName,
+          friendId: userId,
+          userImage: userImage,
+        ),
+      );
+    });
   }
 
-  _startListening(Emitter<SingleChatState> emit, String chatId) {
-    _chatMessagesSubscription = _chatRepository.getChatMessages(chatId).listen((either) {
+  void _startListening(Emitter<SingleChatState> emit, String chatId) {
+    _chatMessagesSubscription = _chatRepository.getChatMessages(chatId).listen((
+      either,
+    ) {
       either.fold(
         (error) {
           FirebaseCrashlytics.instance.recordError(
@@ -97,7 +102,10 @@ class SingleChatBloc extends Bloc<SingleChatEvent, SingleChatState> {
     });
   }
 
-  Future<void> _recivedData(Emitter<SingleChatState> emit, List<ChatMessageModel> listMessages) async {
+  Future<void> _recivedData(
+    Emitter<SingleChatState> emit,
+    List<ChatMessageModel> listMessages,
+  ) async {
     emit(state.copyWith(messages: listMessages));
   }
 

@@ -1,4 +1,5 @@
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class PrimarySmallButton extends StatelessWidget {
@@ -26,21 +27,19 @@ class PrimarySmallButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isActive ? onTap : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              isActive
-                  ? context.colors.orange
-                  : context.colors.lightBlue.valueOpacity(.6),
+          backgroundColor: isActive
+              ? context.colors.orange
+              : context.colors.lightBlue.valueOpacity(.6),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(context.sp(28)),
+            borderRadius: BorderRadius.circular(kIsWeb ? 28 : context.sp(28)),
           ),
         ),
         child: Text(
           label,
           style: context.styles.paragraph.copyWith(
-            color:
-                isActive
-                    ? context.colors.white
-                    : context.colors.white.valueOpacity(.3),
+            color: isActive
+                ? context.colors.white
+                : context.colors.white.valueOpacity(.3),
           ),
         ),
       ),

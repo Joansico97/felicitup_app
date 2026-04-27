@@ -1,7 +1,7 @@
 part of 'felicitup_notification_bloc.dart';
 
 @freezed
-class FelicitupNotificationState with _$FelicitupNotificationState {
+abstract class FelicitupNotificationState with _$FelicitupNotificationState {
   const factory FelicitupNotificationState({
     required bool isLoading,
     FelicitupModel? currentFelicitup,
@@ -9,7 +9,6 @@ class FelicitupNotificationState with _$FelicitupNotificationState {
     List<UserModel>? invitedUsers,
   }) = _FelicitupNotificationState;
 
-  factory FelicitupNotificationState.initial() => FelicitupNotificationState(
-        isLoading: false,
-      );
+  factory FelicitupNotificationState.initial() =>
+      FelicitupNotificationState(isLoading: false);
 }

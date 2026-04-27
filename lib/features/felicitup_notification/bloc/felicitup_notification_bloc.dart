@@ -11,24 +11,32 @@ part 'felicitup_notification_event.dart';
 part 'felicitup_notification_state.dart';
 part 'felicitup_notification_bloc.freezed.dart';
 
-class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, FelicitupNotificationState> {
+class FelicitupNotificationBloc
+    extends Bloc<FelicitupNotificationEvent, FelicitupNotificationState> {
   FelicitupNotificationBloc({
     required FelicitupRepository felicitupRepository,
     required UserRepository userRepository,
     required FirebaseAuth firebaseAuth,
-  })  : _felicitupRepository = felicitupRepository,
-        _userRepository = userRepository,
-        _firebaseAuth = firebaseAuth,
-        super(FelicitupNotificationState.initial()) {
+  }) : _felicitupRepository = felicitupRepository,
+       _userRepository = userRepository,
+       _firebaseAuth = firebaseAuth,
+       super(FelicitupNotificationState.initial()) {
     on<FelicitupNotificationEvent>(
       (events, emit) => events.map(
-        noEvent: (_) => _noEvent(),
-        changeLoading: (_) => _changeLoading(emit),
+        noEvent: (_) => () {},
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
         getFelicitupData: (event) => _getFelicitupData(emit, event.felicitupId),
         getCreatorData: (event) => _getCreatorData(emit, event.userId),
-        getInvitedUsersData: (event) => _getInvitedUsersData(emit, event.userIds),
-        informParticipation: (event) => _informParticipation(emit, event.felicitupId, event.newStatus, event.userName),
-        deleteParticipant: (event) => _deleteParticipant(emit, event.felicitupId, event.userId),
+        getInvitedUsersData: (event) =>
+            _getInvitedUsersData(emit, event.userIds),
+        informParticipation: (event) => _informParticipation(
+          emit,
+          event.felicitupId,
+          event.newStatus,
+          event.userName,
+        ),
+        deleteParticipant: (event) =>
+            _deleteParticipant(emit, event.felicitupId, event.userId),
       ),
     );
   }
@@ -37,13 +45,10 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
   final UserRepository _userRepository;
   final FirebaseAuth _firebaseAuth;
 
-  _noEvent() {}
-
-  _changeLoading(Emitter<FelicitupNotificationState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
-  }
-
-  _getFelicitupData(Emitter<FelicitupNotificationState> emit, String felicitupId) async {
+  Future<void> _getFelicitupData(
+    Emitter<FelicitupNotificationState> emit,
+    String felicitupId,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -56,10 +61,7 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
         (r) {
           add(FelicitupNotificationEvent.getCreatorData(r.createdBy));
           add(FelicitupNotificationEvent.getInvitedUsersData(r.invitedUsers));
-          emit(state.copyWith(
-            isLoading: false,
-            currentFelicitup: r,
-          ));
+          emit(state.copyWith(isLoading: false, currentFelicitup: r));
         },
       );
     } catch (e) {
@@ -68,21 +70,25 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
     }
   }
 
-  _getCreatorData(Emitter<FelicitupNotificationState> emit, String userId) async {
+  Future<void> _getCreatorData(
+    Emitter<FelicitupNotificationState> emit,
+    String userId,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {
-      final response = await _userRepository.getUserData(state.currentFelicitup?.createdBy ?? '');
+      final response = await _userRepository.getUserData(
+        state.currentFelicitup?.createdBy ?? '',
+      );
       response.fold(
         (l) async {
           emit(state.copyWith(isLoading: false));
           await showErrorModal(l.message);
         },
         (r) {
-          emit(state.copyWith(
-            isLoading: false,
-            creator: UserModel.fromJson(r),
-          ));
+          emit(
+            state.copyWith(isLoading: false, creator: UserModel.fromJson(r)),
+          );
         },
       );
     } catch (e) {
@@ -91,30 +97,41 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
     }
   }
 
-  _getInvitedUsersData(Emitter<FelicitupNotificationState> emit, List<String> ids) async {
+  Future<void> _getInvitedUsersData(
+    Emitter<FelicitupNotificationState> emit,
+    List<String> ids,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {
-      final response = await _userRepository.getListUserData(state.currentFelicitup?.invitedUsers ?? []);
+      final response = await _userRepository.getListUserData(
+        state.currentFelicitup?.invitedUsers ?? [],
+      );
       response.fold(
         (l) async {
           emit(state.copyWith(isLoading: false));
           await showErrorModal(l.message);
         },
         (r) {
-          emit(state.copyWith(
-            isLoading: false,
-            invitedUsers: List<UserModel>.from(r.map((e) => UserModel.fromJson(e))),
-          ));
+          emit(
+            state.copyWith(
+              isLoading: false,
+              invitedUsers: List<UserModel>.from(
+                r.map((e) => UserModel.fromJson(e)),
+              ),
+            ),
+          );
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
-      await showErrorModal('Error al obtener la información de los usuarios invitados');
+      await showErrorModal(
+        'Error al obtener la información de los usuarios invitados',
+      );
     }
   }
 
-  _informParticipation(
+  Future<Future<Null>?>? _informParticipation(
     Emitter<FelicitupNotificationState> emit,
     String felicitupId,
     String newStatus,
@@ -122,20 +139,30 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final response = await _felicitupRepository.setParticipation(felicitupId, newStatus);
+      final response = await _felicitupRepository.setParticipation(
+        felicitupId,
+        newStatus,
+      );
 
       return response.fold(
         (error) {
           emit(state.copyWith(isLoading: false));
           unawaited(showErrorModal(error.message));
+          return null;
         },
         (data) async {
           if (newStatus == enumToStringAssistance(AssistanceStatus.rejected)) {
-            add(FelicitupNotificationEvent.deleteParticipant(felicitupId, _firebaseAuth.currentUser!.uid));
+            add(
+              FelicitupNotificationEvent.deleteParticipant(
+                felicitupId,
+                _firebaseAuth.currentUser!.uid,
+              ),
+            );
             await _userRepository.sendNotification(
               userId: state.currentFelicitup?.createdBy ?? '',
               title: 'Rechazo de participación',
-              message: '$userNmae ha informado que no participará en la felicitup',
+              message:
+                  '$userNmae ha informado que no participará en la felicitup',
               currentChat: '',
               data: DataMessageModel(
                 type: enumToPushMessageType(PushMessageType.participation),
@@ -163,24 +190,30 @@ class FelicitupNotificationBloc extends Bloc<FelicitupNotificationEvent, Felicit
             );
             emit(state.copyWith(isLoading: false));
           }
+          return null;
         },
       );
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }
+    return null;
   }
 
-  _deleteParticipant(Emitter<FelicitupNotificationState> emit, String felicitupId, String userId) async {
+  Future<void> _deleteParticipant(
+    Emitter<FelicitupNotificationState> emit,
+    String felicitupId,
+    String userId,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final response = await _felicitupRepository.deleteParticipant(felicitupId, userId);
-      response.fold(
-        (error) {
-          emit(state.copyWith(isLoading: false));
-          unawaited(showErrorModal(error.message));
-        },
-        (data) => emit(state.copyWith(isLoading: false)),
+      final response = await _felicitupRepository.deleteParticipant(
+        felicitupId,
+        userId,
       );
+      response.fold((error) {
+        emit(state.copyWith(isLoading: false));
+        unawaited(showErrorModal(error.message));
+      }, (data) => emit(state.copyWith(isLoading: false)));
     } catch (e) {
       emit(state.copyWith(isLoading: false));
     }

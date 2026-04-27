@@ -1,4 +1,6 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class CustomTextFormField extends StatefulWidget {
@@ -42,8 +44,8 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     final keyboardType = widget.isEmail
         ? TextInputType.emailAddress
         : widget.isPassword
-            ? TextInputType.visiblePassword
-            : TextInputType.text;
+        ? TextInputType.visiblePassword
+        : TextInputType.text;
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -63,29 +65,55 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           hintStyle: context.styles.paragraph.copyWith(
             color: context.colors.darkGrey,
           ),
-          border: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colors.darkGrey,
-            ),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colors.orange,
-            ),
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colors.darkGrey,
-            ),
-          ),
-          errorBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: context.colors.error,
-            ),
-          ),
+          fillColor: Colors.white,
+          filled: true,
+          border: kIsWeb
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: context.colors.darkGrey,
+                  ),
+                  borderRadius: BorderRadius.circular(200),
+                )
+              : UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colors.darkGrey),
+                ),
+          focusedBorder: kIsWeb
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: context.colors.orange,
+                  ),
+                  borderRadius: BorderRadius.circular(200),
+                )
+              : UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colors.orange),
+                ),
+          enabledBorder: kIsWeb
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: context.colors.darkGrey,
+                  ),
+                  borderRadius: BorderRadius.circular(200),
+                )
+              : UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colors.darkGrey),
+                ),
+          errorBorder: kIsWeb
+              ? OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    color: context.colors.error,
+                  ),
+                  borderRadius: BorderRadius.circular(200),
+                )
+              : UnderlineInputBorder(
+                  borderSide: BorderSide(color: context.colors.error),
+                ),
           contentPadding: EdgeInsets.symmetric(
-            horizontal: context.sp(16),
-            vertical: context.sp(12),
+            horizontal: kIsWeb ? 16 : context.sp(16),
+            vertical: kIsWeb ? 14 : context.sp(12),
           ),
           suffixIcon: widget.isPassword
               ? IconButton(
@@ -100,7 +128,6 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                   },
                 )
               : null,
-          // ...?widget.decoration?.toMap(), // Combina con la decoración personalizada si se proporciona
         ),
         style: context.styles.paragraph.copyWith(
           height: 1,
@@ -130,14 +157,12 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   }
 
   bool _isValidEmail(String email) {
-    // Expresión regular para validar correos
-    final emailRegex = RegExp(
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');
-    return emailRegex.hasMatch(email);
+    return EmailValidator.validate(email);
   }
 
   bool _isValidPassword(String password) {
-    String pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!\@\#\$%\^&\*\(\)\-_\[\]\{\}]).{8,}$';
+    String pattern =
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!\@\#\$%\^&\*\(\)\-_\[\]\{\}]).{8,}$';
     RegExp regex = RegExp(pattern);
     // Validación básica de contraseña (al menos 8 caracteres)
     return regex.hasMatch(password) || password.length >= 8;

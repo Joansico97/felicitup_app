@@ -6,19 +6,19 @@ class CollapsedHeader extends StatelessWidget {
     super.key,
     required this.title,
     required this.onPressed,
+    this.secondaryAction,
   });
 
   final String title;
   final void Function()? onPressed;
+  final Widget? secondaryAction;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: context.sp(50),
       width: context.fullWidth,
-      padding: EdgeInsets.symmetric(
-        horizontal: context.sp(12),
-      ),
+      padding: EdgeInsets.symmetric(horizontal: context.sp(12)),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -30,16 +30,15 @@ class CollapsedHeader extends StatelessWidget {
               style: context.styles.subtitle,
             ),
           ),
-          Container(
-            width: context.fullWidth,
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              icon: Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.black,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
+                onPressed: onPressed,
               ),
-              onPressed: onPressed,
-            ),
+              secondaryAction ?? SizedBox.shrink(),
+            ],
           ),
         ],
       ),

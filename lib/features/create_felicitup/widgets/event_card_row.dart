@@ -16,9 +16,7 @@ class EventCardRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(context.sp(15)),
-      margin: EdgeInsets.only(
-        bottom: context.sp(10),
-      ),
+      margin: EdgeInsets.only(bottom: context.sp(10)),
       width: context.fullWidth,
       decoration: BoxDecoration(
         color: context.colors.white,
@@ -27,14 +25,9 @@ class EventCardRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Text(
-            eventName,
-            style: context.styles.header2,
-          ),
+          Text(eventName, style: context.styles.header2),
           const Spacer(),
-          CirclePicker(
-            isActive: isSelected,
-          ),
+          CirclePicker(isActive: isSelected),
         ],
       ),
     );

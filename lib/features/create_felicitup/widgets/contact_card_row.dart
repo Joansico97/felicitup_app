@@ -1,7 +1,11 @@
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
+import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/widgets/common/common.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class ContactCardRow extends StatelessWidget {
@@ -16,8 +20,8 @@ class ContactCardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DateTime date = contact.birthDate ?? DateTime.now();
-    final String name = contact.fullName ?? '';
+    final currentUser = context.read<AppBloc>().state.currentUser;
+    final String name = contact.getDisplayName(currentUser);
     final String userImg = contact.userImg ?? '';
 
     return StatefulBuilder(
@@ -41,20 +45,19 @@ class ContactCardRow extends StatelessWidget {
                   color: context.colors.lightGrey,
                   shape: BoxShape.circle,
                 ),
-                child:
-                    userImg.isNotEmpty
-                        ? SizedBox(
-                          height: context.sp(55),
-                          width: context.sp(55),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(context.sp(55)),
-                            child: Image.network(userImg, fit: BoxFit.cover),
-                          ),
-                        )
-                        : Text(
-                          name.isNotEmpty ? name[0].toUpperCase() : '',
-                          style: context.styles.header2,
+                child: userImg.isNotEmpty
+                    ? SizedBox(
+                        height: context.sp(55),
+                        width: context.sp(55),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(context.sp(55)),
+                          child: CommonNetworkImage(imageUrl: userImg),
                         ),
+                      )
+                    : Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : '',
+                        style: context.styles.header2,
+                      ),
               ),
               SizedBox(width: context.sp(24)),
               Column(
@@ -68,11 +71,20 @@ class ContactCardRow extends StatelessWidget {
                       style: context.styles.header2,
                     ),
                   ),
-                  SizedBox(height: context.sp(5)),
-                  Text(
-                    DateFormat('dd·MM·yyyy').format(date),
-                    style: context.styles.smallText,
-                  ),
+                  contact.birthDate != null
+                      ? Column(
+                          children: [
+                            SizedBox(height: context.sp(5)),
+                            Text(
+                              DateFormat(
+                                AppConstants.birthDateFormatWithoutYear,
+                                'es_ES',
+                              ).format(contact.birthDate!).capitalize(),
+                              style: context.styles.smallText,
+                            ),
+                          ],
+                        )
+                      : SizedBox.shrink(),
                 ],
               ),
               const Spacer(),

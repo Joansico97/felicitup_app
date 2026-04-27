@@ -6,16 +6,13 @@ part 'list_single_chat_event.dart';
 part 'list_single_chat_state.dart';
 part 'list_single_chat_bloc.freezed.dart';
 
-class ListSingleChatBloc extends Bloc<ListSingleChatEvent, ListSingleChatState> {
+class ListSingleChatBloc
+    extends Bloc<ListSingleChatEvent, ListSingleChatState> {
   ListSingleChatBloc() : super(ListSingleChatState.initial()) {
     on<ListSingleChatEvent>(
       (events, emit) => events.map(
-        changeLoading: (_) => _changeLoading(emit),
+        changeLoading: (_) => emit(state.copyWith(isLoading: !state.isLoading)),
       ),
     );
-  }
-
-  _changeLoading(Emitter<ListSingleChatState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
   }
 }

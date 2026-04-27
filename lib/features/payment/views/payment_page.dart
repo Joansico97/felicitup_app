@@ -13,7 +13,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class PaymentPage extends StatelessWidget {
-  const PaymentPage({super.key, required this.isVerify, required this.felicitup, required this.userId});
+  const PaymentPage({
+    super.key,
+    required this.isVerify,
+    required this.felicitup,
+    required this.userId,
+  });
 
   final bool isVerify;
   final FelicitupModel felicitup;
@@ -22,9 +27,9 @@ class PaymentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<PaymentBloc, PaymentState>(
-      listenWhen:
-          (previous, current) =>
-              previous.isLoading != current.isLoading || previous.updateStatus != current.updateStatus,
+      listenWhen: (previous, current) =>
+          previous.isLoading != current.isLoading ||
+          previous.updateStatus != current.updateStatus,
       listener: (_, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
@@ -33,7 +38,10 @@ class PaymentPage extends StatelessWidget {
         }
 
         if (state.updateStatus == UpdateStatus.success) {
-          context.go(RouterPaths.boteFelicitup, extra: {'felicitupId': felicitup.id});
+          context.go(
+            RouterPaths.boteFelicitup,
+            extra: {'felicitupId': felicitup.id},
+          );
         } else if (state.updateStatus == UpdateStatus.error) {
           await showErrorModal(state.errorMessage);
         }
@@ -63,13 +71,23 @@ class PaymentPage extends StatelessWidget {
                         width: context.fullWidth,
                         alignment: Alignment.centerLeft,
                         child: IconButton(
-                          icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
+                          icon: Icon(
+                            Icons.arrow_back_ios_new,
+                            color: Colors.black,
+                          ),
                           onPressed: () async {
                             if (context.mounted) {
-                              context.go(RouterPaths.boteFelicitup, extra: {'felicitupId': felicitup.id});
-                              detailsFelicitupNavigatorKey.currentContext!.read<DetailsFelicitupDashboardBloc>().add(
-                                DetailsFelicitupDashboardEvent.changeCurrentIndex(3),
+                              context.go(
+                                RouterPaths.boteFelicitup,
+                                extra: {'felicitupId': felicitup.id},
                               );
+                              detailsFelicitupNavigatorKey.currentContext!
+                                  .read<DetailsFelicitupDashboardBloc>()
+                                  .add(
+                                    DetailsFelicitupDashboardEvent.changeCurrentIndex(
+                                      3,
+                                    ),
+                                  );
                             }
                           },
                         ),
@@ -78,7 +96,9 @@ class PaymentPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: context.sp(12)),
-                isVerify ? VerifyPayment(felicitup: felicitup, userId: userId) : ConfirmPayment(felicitup: felicitup),
+                isVerify
+                    ? VerifyPayment(felicitup: felicitup, userId: userId)
+                    : ConfirmPayment(felicitup: felicitup),
               ],
             ),
           ),

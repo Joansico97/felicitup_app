@@ -1,90 +1,69 @@
-import 'package:bloc/bloc.dart';
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'contacts_event.dart';
 part 'contacts_state.dart';
 part 'contacts_bloc.freezed.dart';
 
+class ContactListItem {
+  final ContactModel contact;
+  final bool isRegistered;
+
+  ContactListItem(this.contact, this.isRegistered);
+}
+
 class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
-  ContactsBloc({
-    required UserRepository userRepository,
-  })  : _userRepository = userRepository,
-        super(ContactsState.initial()) {
+  ContactsBloc({required UserRepository userRepository})
+    : _userRepository = userRepository,
+      super(ContactsState.initial()) {
     on<ContactsEvent>(
       (event, emit) => event.map(
-        changeLoading: (_) => _changeLoading(emit),
-        generateListData: (event) => _generateListData(emit, event.contacts, event.ids),
-        getInfoContacts: (event) => _getInfoContacts(emit, event.phones),
-        getInfoSingleContact: (event) => _getInfoSingleContact(emit, event.phone),
+        changeIsFirstTime: (_) => _changeIsFirstTime(emit),
+        getInfoSingleContact: (event) =>
+            _getInfoSingleContact(emit, event.phone),
+        addManualContact: (event) =>
+            _addManualContact(emit, event.user, event.isoCode),
       ),
     );
   }
 
   final UserRepository _userRepository;
 
-  _changeLoading(Emitter<ContactsState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
+  void _changeIsFirstTime(Emitter<ContactsState> emit) {
+    emit(state.copyWith(isFirstTime: false));
   }
 
-  _generateListData(Emitter<ContactsState> emit, List<ContactModel> contacts, List<String> ids) async {
-    emit(state.copyWith(isLoading: true));
-    try {
-      final response = await _userRepository.getListUserDataByPhone(ids);
-      response.fold(
-        (l) {
-          emit(state.copyWith(isLoading: false, dataList: []));
-        },
-        (r) {
-          List<Map<String, dynamic>> dataList = [];
-          List<String> registeredContacts = [];
-          List<String> listPhones = r.map((e) => e.phone ?? '').toList();
-          for (ContactModel contact in contacts) {
-            bool isRegistered = listPhones.contains(contact.phone);
-            dataList.add({
-              'contact': contact,
-              'isRegistered': isRegistered,
-            });
-            if (isRegistered) {
-              registeredContacts.add(contact.phone);
-            }
-          }
-          dataList.sort((a, b) {
-            bool aIsRegistered = a['isRegistered'] as bool;
-            bool bIsRegistered = b['isRegistered'] as bool;
-
-            if (aIsRegistered && !bIsRegistered) {
-              return -1;
-            } else if (!aIsRegistered && bIsRegistered) {
-              return 1;
-            } else {
-              String aName = (a['contact'] as ContactModel).displayName!;
-              String bName = (b['contact'] as ContactModel).displayName!;
-              return aName.compareTo(bName);
-            }
-          });
-
-          emit(state.copyWith(isLoading: false, dataList: dataList));
-        },
-      );
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, dataList: []));
-    }
-  }
-
-  _getInfoSingleContact(Emitter<ContactsState> emit, String phone) async {
-    emit(state.copyWith(isLoading: true));
+  Future<void> _getInfoSingleContact(
+    Emitter<ContactsState> emit,
+    String phone,
+  ) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
     try {
       final response = await _userRepository.getUserDataByPhone(phone);
       response.fold(
         (l) {
           logger.error('Error al obtener el usuario: $l');
-          emit(state.copyWith(isLoading: false, dataSingleUsers: null));
+          emit(
+            state.copyWith(
+              isLoading: false,
+              dataSingleUsers: null,
+              errorMessage: l.message,
+            ),
+          );
         },
         (r) {
-          emit(state.copyWith(isLoading: false, dataSingleUsers: UserModel.fromJson(r)));
+          emit(
+            state.copyWith(
+              isLoading: false,
+              dataSingleUsers: UserModel.fromJson(r),
+            ),
+          );
         },
       );
     } catch (e) {
@@ -92,21 +71,43 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
     }
   }
 
-  _getInfoContacts(Emitter<ContactsState> emit, List<String> phones) async {
-    emit(state.copyWith(isLoading: true));
+  Future<void> _addManualContact(
+    Emitter<ContactsState> emit,
+    Map<String, dynamic> user,
+    String isoCode,
+  ) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
     try {
-      final response = await _userRepository.getListUserDataByPhone(phones);
-
-      response.fold(
-        (l) {
-          emit(state.copyWith(isLoading: false, listDataUsers: []));
-        },
-        (r) {
-          emit(state.copyWith(isLoading: false, listDataUsers: r));
-        },
-      );
+      final phone = user['phone'] as String?;
+      if (phone != null && phone.isNotEmpty) {
+        String formattedPhone = phone;
+        if (!formattedPhone.startsWith('+')) {
+          formattedPhone = isoCode + formattedPhone;
+        }
+        final hashedPhone = sha256
+            .convert(utf8.encode(formattedPhone))
+            .toString();
+        final updatedUser = Map<String, dynamic>.from(user)
+          ..['phone'] = hashedPhone;
+        final response = await _userRepository.addManualContact(updatedUser);
+        response.fold(
+          (l) {
+            emit(state.copyWith(isLoading: false, errorMessage: l.message));
+          },
+          (r) {
+            emit(state.copyWith(isLoading: false, reloadContacts: true));
+          },
+        );
+      } else {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            errorMessage: 'El número de teléfono es requerido.',
+          ),
+        );
+      }
     } catch (e) {
-      emit(state.copyWith(isLoading: false, listDataUsers: []));
+      emit(state.copyWith(isLoading: false));
     }
   }
 }

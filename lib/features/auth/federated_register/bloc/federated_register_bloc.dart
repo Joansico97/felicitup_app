@@ -1,14 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crypto/crypto.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
-import 'package:felicitup_app/core/extensions/context_extensions.dart';
-import 'package:felicitup_app/core/router/router.dart';
-import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'federated_register_event.dart';
@@ -32,16 +31,10 @@ class FederatedRegisterBloc
       (events, emit) => events.map(
         changeLoading: (_) => _changeLoading(emit),
         backStep: (_) => _backStep(emit),
-        initRegister:
-            (event) => _initRegister(
-              emit,
-              event.name,
-              event.lastName,
-              event.genre,
-              event.birthDate,
-            ),
-        savePhoneInfo:
-            (event) => _savePhoneInfo(emit, event.phone, event.isoCode),
+        initRegister: (event) =>
+            _initRegister(emit, event.name, event.lastName, event.birthDate),
+        savePhoneInfo: (event) =>
+            _savePhoneInfo(emit, event.phone, event.isoCode),
         initValidation: (_) => _initValidation(emit),
         validateCode: (event) => _validateCode(emit, event.code),
         setUserInfoRemaning: (_) => _setUserInfoRemaining(emit),
@@ -55,57 +48,59 @@ class FederatedRegisterBloc
   final FirebaseAuth _firebaseAuth;
   final FirebaseFirestore _firestore;
 
-  _changeLoading(Emitter<FederatedRegisterState> emit) {
-    emit(state.copyWith(isLoading: !state.isLoading));
+  void _changeLoading(Emitter<FederatedRegisterState> emit) {
+    emit(state.copyWith(isLoading: false));
   }
 
-  _initRegister(
+  Future<void> _initRegister(
     Emitter<FederatedRegisterState> emit,
     String name,
     String lastName,
-    String incommingGenre,
-    DateTime birthDate,
+    DateTime? birthDate,
   ) async {
-    final response = await _userRepository.setFederatedData(
-      firstName: name,
-      lastName: lastName,
-      genre: incommingGenre,
-      birthDate: birthDate.toLocal(),
-    );
+    await _setFormData(name, lastName, birthDate);
 
-    response.fold(
-      (l) {
-        emit(state.copyWith(isLoading: false));
-      },
-      (r) {
-        final userId = _firebaseAuth.currentUser?.uid;
-        emit(
-          state.copyWith(
-            isLoading: false,
-            currentIndex: state.currentIndex + 1,
-            userId: userId,
-          ),
-        );
-      },
+    emit(
+      state.copyWith(isLoading: false, currentIndex: state.currentIndex + 1),
     );
   }
 
-  _savePhoneInfo(
+  Future<Null> _savePhoneInfo(
     Emitter<FederatedRegisterState> emit,
     String phone,
     String isoCode,
   ) async {
-    emit(state.copyWith(phone: phone, isoCode: isoCode));
-    final currentUser = _firebaseAuth.currentUser!;
-    await _userRepository.setUserPhone(
-      state.phone!,
-      state.isoCode!,
-      currentUser.uid,
+    final bytes = utf8.encode(phone);
+    final digest = sha256.convert(bytes);
+    final hashedPhone = digest.toString();
+
+    final exist = await _userRepository.checkPhoneExist(phone: hashedPhone);
+
+    return exist.fold(
+      (l) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            status: FederatedRegisterStatus.error,
+            errorMessage: l.message,
+          ),
+        );
+      },
+      (r) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            hashedPhone: hashedPhone,
+            phone: phone,
+            isoCode: isoCode,
+          ),
+        );
+        add(const FederatedRegisterEvent.initValidation());
+      },
     );
-    add(FederatedRegisterEvent.initValidation());
   }
 
-  _initValidation(Emitter<FederatedRegisterState> emit) async {
+  Future<void> _initValidation(Emitter<FederatedRegisterState> emit) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -121,31 +116,34 @@ class FederatedRegisterBloc
           );
         },
         onError: (error) {
-          emit(state.copyWith(isLoading: false));
-          ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            SnackBar(
-              content: Text(
-                error,
-                style: rootNavigatorKey.currentContext!.styles.paragraph
-                    .copyWith(
-                      color: rootNavigatorKey.currentContext!.colors.white,
-                    ),
-              ),
-              duration: const Duration(seconds: 5),
+          emit(
+            state.copyWith(
+              isLoading: false,
+              status: FederatedRegisterStatus.error,
+              errorMessage: error.toString(),
             ),
           );
         },
       );
     } catch (e) {
-      emit(state.copyWith(isLoading: false));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          status: FederatedRegisterStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
-  _backStep(Emitter<FederatedRegisterState> emit) async {
+  Future<void> _backStep(Emitter<FederatedRegisterState> emit) async {
     emit(state.copyWith(currentIndex: state.currentIndex - 1));
   }
 
-  _validateCode(Emitter<FederatedRegisterState> emit, String code) async {
+  Future<Null> _validateCode(
+    Emitter<FederatedRegisterState> emit,
+    String code,
+  ) async {
     emit(state.copyWith(isLoading: true));
 
     try {
@@ -158,75 +156,82 @@ class FederatedRegisterBloc
 
       return response.fold(
         (l) {
-          emit(state.copyWith(isLoading: false));
+          FirebaseCrashlytics.instance.recordError(
+            l,
+            StackTrace.current,
+            reason: 'Error al validar el código de verificación',
+          );
+
           emit(
             state.copyWith(
               isLoading: false,
-              // currentIndex: state.currentIndex + 1,
+              status: FederatedRegisterStatus.error,
+              errorMessage: l.message,
             ),
           );
         },
-        (r) async {
-          try {
-            emit(
-              state.copyWith(
-                isLoading: false,
-                currentIndex: state.currentIndex + 1,
-              ),
-            );
-          } catch (e) {
-            // ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            //   SnackBar(
-            //     content: Text(
-            //       '$e',
-            //       style: rootNavigatorKey.currentContext!.styles.paragraph
-            //           .copyWith(
-            //             color: rootNavigatorKey.currentContext!.colors.white,
-            //           ),
-            //     ),
-            //     duration: const Duration(seconds: 5),
-            //   ),
-            // );
-            emit(
-              state.copyWith(
-                isLoading: false,
-                // currentIndex: state.currentIndex + 1,
-              ),
-            );
-          }
+        (r) {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              currentIndex: state.currentIndex + 1,
+            ),
+          );
+          add(const FederatedRegisterEvent.setUserInfoRemaning());
         },
       );
     } on TimeoutException {
-      logger.error('Tiempo de espera agotado');
-      emit(state.copyWith(isLoading: false));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          status: FederatedRegisterStatus.error,
+          errorMessage: 'Tiempo de espera agotado',
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(isLoading: false));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          status: FederatedRegisterStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+
+      FirebaseCrashlytics.instance.recordError(
+        e,
+        StackTrace.current,
+        reason: 'Error al validar el código de verificación',
+      );
     }
   }
 
-  _setUserInfoRemaining(Emitter<FederatedRegisterState> emit) async {
+  Future<void> _setUserInfoRemaining(
+    Emitter<FederatedRegisterState> emit,
+  ) async {
     emit(state.copyWith(isLoading: true));
     try {
       final userId = _firebaseAuth.currentUser?.uid;
 
       await _userRepository.setUserPhone(
-        state.phone ?? '',
+        state.hashedPhone ?? '',
         state.isoCode ?? '',
         userId ?? '',
       );
-
-      emit(
-        state.copyWith(isLoading: false, currentIndex: state.currentIndex + 1),
-      );
     } catch (e) {
-      emit(state.copyWith(isLoading: false));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          status: FederatedRegisterStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
-  _finishEvent(Emitter<FederatedRegisterState> emit) async {
-    emit(state.copyWith(isLoading: true));
-    await Future.delayed(Duration(seconds: 1), () {});
-    emit(state.copyWith(isLoading: false));
+  Future<void> _finishEvent(Emitter<FederatedRegisterState> emit) async {
+    emit(
+      state.copyWith(isLoading: false, status: FederatedRegisterStatus.success),
+    );
   }
 
   Future<bool> checkPhoneExist({required String phone}) async {
@@ -237,5 +242,17 @@ class FederatedRegisterBloc
     } else {
       return false;
     }
+  }
+
+  Future<void> _setFormData(
+    String name,
+    String lastName,
+    DateTime? birthDate,
+  ) async {
+    await _userRepository.setFederatedData(
+      firstName: name,
+      lastName: lastName,
+      birthDate: birthDate,
+    );
   }
 }

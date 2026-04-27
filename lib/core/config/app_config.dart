@@ -3,23 +3,35 @@ import 'package:felicitup_app/core/config/firebase_options.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
 Future<void> initConfig() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
+  usePathUrlStrategy();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Inicializar Facebook SDK
+  final facebookAnalytics = FacebookAnalyticsHelper();
+  await facebookAnalytics.initialize();
+
+  // Rastrear instalación si es la primera vez que se abre la app
+  await facebookAnalytics.trackInstall();
+
+  // Logear activación de la app
+  await facebookAnalytics.logActivateApp();
 }
 
 Future<void> initObservers() async {
-  /// Initialize the [BlocObserver]. This will allow us to observe all Blocs and their changes.
-  /// This is useful for debugging and logging purposes.
   Bloc.observer = AppObserver();
 }
 
@@ -31,8 +43,8 @@ Future<void> initStorage() async {
   final localStorage = LocalStorageHelper();
   await localStorage.init();
   HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory: HydratedStorageDirectory(
-      (await getTemporaryDirectory()).path,
-    ),
+    storageDirectory: kIsWeb
+        ? HydratedStorageDirectory.web
+        : HydratedStorageDirectory((await getTemporaryDirectory()).path),
   );
 }
