@@ -70,3 +70,9 @@ Makefile
 serviceAccountMergeKey.json
 CONFIGURACION_PENDIENTE.md
 FACEBOOK_SDK_SETUP.md
+
+# MCP files
+.gemini
+
+# IA
+.agent
