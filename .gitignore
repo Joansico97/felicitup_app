@@ -66,6 +66,7 @@ Makefile
 
 # Env
 .env
+ios/Flutter/Secrets.xcconfig
 
 serviceAccountMergeKey.json
 CONFIGURACION_PENDIENTE.md

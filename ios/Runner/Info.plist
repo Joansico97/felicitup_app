@@ -65,9 +65,9 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>FacebookAppID</key>
-	<string>871743075419914</string>
+	<string>$(FACEBOOK_APP_ID)</string>
 	<key>FacebookClientToken</key>
-	<string>43e6229b123be286922cf0cff92ce70f</string>
+	<string>$(FACEBOOK_CLIENT_TOKEN)</string>
 	<key>FacebookDisplayName</key>
 	<string>Felicitup</string>
 	<key>CFBundleURLTypes</key>
@@ -78,7 +78,7 @@
 		<key>CFBundleURLSchemes</key>
 		<array>
 		<string>com.googleusercontent.apps.846523746579-5uln1n8dn639dbt6h9hs6uide5mmrogr</string>
-		<string>fb871743075419914</string>
+		<string>$(FACEBOOK_URL_SCHEME)</string>
 		</array>
 	</dict>
 	</array>
