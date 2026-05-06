@@ -27,18 +27,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         setUserBirthdate: (event) => _setUserBirthdate(emit, event.date),
         changeShowButton: (_) =>
             emit(state.copyWith(showButton: !state.showButton)),
-        getAndUpdateContacts: (event) =>
-            _getAndUpdateContacts(emit, event.isoCode),
       ),
     );
   }
 
   final UserRepository _userRepository;
 
-  Future<void> _getAndUpdateContacts(
-    Emitter<HomeState> emit,
-    String isoCode,
-  ) async {}
 
   Future<void> _setUserBirthdate(Emitter<HomeState> emit, DateTime date) async {
     emit(state.copyWith(isLoading: true));

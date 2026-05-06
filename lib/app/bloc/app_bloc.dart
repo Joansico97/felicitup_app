@@ -46,7 +46,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         checkAppStatus: (_) => _onCheckAppStatus(emit),
         closeRememberSection: (_) => _onCloseRememberSection(emit),
         loadUserData: (_) => _onLoadUserData(emit),
-        syncContacts: (event) => _onSyncContacts(emit, event.isoCode),
+
         updateMatchListFromContacts: (_) =>
             _onUpdateMatchListFromContacts(emit),
         loadProvUserData: (event) =>
@@ -56,9 +56,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             _onNotificationReceived(emit, event.payload),
         clearPendingNotification: (_) => _onClearPendingNotification(emit),
         requestManualPermissions: (_) => _onRequestManualPermissions(emit),
-        requestManualContactsPermissions: (_) =>
-            _onRequestManualContactsPermissions(emit),
-        resetContactsPermissions: (_) => _onResetContactsPermissions(emit),
+
         deleterPermissions: (_) => _onDeleterPermissions(emit),
         handleRemoteMessage: (event) =>
             handleRemoteMessage(event.message, emit),
@@ -245,8 +243,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             rootNavigatorKey.currentContext!.go(RouterPaths.completeUserData);
           }
           emit(state.copyWith(isLoading: false, currentUser: user));
-          await _checkContactsPermission(emit);
-          add(AppEvent.syncContacts(user.isoCode ?? ''));
+
         },
       );
     } catch (e) {
@@ -255,50 +252,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  Future<void> _onSyncContacts(Emitter<AppState> emit, String isoCode) async {
-    try {
-      final List<HashedContact> contacts = await getHashedContacts(
-        isoCode,
-        emit,
-      );
 
-      if (contacts.isEmpty) {
-        logger.info('No contacts to sync.');
-        return;
-      }
-
-      final contactsData = contacts
-          .map((c) => {'displayName': c.displayName, 'phone': c.hashedPhone})
-          .toList();
-
-      final phones = contacts.map((c) => c.hashedPhone).toList();
-
-      final response = await _userRepository.updateContacts(
-        contactsData,
-        phones,
-      );
-
-      response.fold(
-        (error) {
-          logger.error('Failed to sync contacts: ${error.message}');
-          emit(state.copyWith(isLoadingContacts: false));
-        },
-        (_) {
-          logger.info('Contacts synchronized successfully.');
-
-          _onContactsSyncSuccess();
-        },
-      );
-    } catch (e) {
-      logger.error('Error syncing contacts: $e');
-      emit(state.copyWith(isLoadingContacts: false));
-    }
-  }
-
-  void _onContactsSyncSuccess() {
-    add(const AppEvent.loadContacts());
-    add(const AppEvent.updateMatchListFromContacts());
-  }
 
   Future<void> _onUpdateMatchListFromContacts(Emitter<AppState> emit) async {
     final friendsPhones = state.currentUser?.friendsPhoneList ?? [];
@@ -353,47 +307,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  void _onRequestManualContactsPermissions(Emitter<AppState> emit) async {
-    try {
-      if (state.contactsPermissionStatus.isGranted) {
-        final currentUser = state.currentUser;
-        if (currentUser != null && currentUser.isoCode != null) {
-          add(AppEvent.syncContacts(currentUser.isoCode!));
-        }
-      }
-    } catch (e) {
-      logger.error('Error requesting manual contacts permissions: $e');
-    }
-  }
 
-  void _onResetContactsPermissions(Emitter<AppState> emit) async {
-    try {
-      final response = await Permission.contacts.request();
-
-      if (response.isGranted || response.isLimited) {
-        await openAppSettings();
-        return;
-      } else if (response.isDenied) {
-        final newStatus = await Permission.contacts.request();
-        emit(state.copyWith(contactsPermissionStatus: newStatus));
-
-        if (newStatus.isGranted) {
-          _syncContactsIfUserAvailable();
-        }
-      } else {
-        await openAppSettings();
-      }
-    } catch (e) {
-      logger.error('Error resetting contacts permissions: $e');
-    }
-  }
-
-  void _syncContactsIfUserAvailable() {
-    final currentUser = state.currentUser;
-    if (currentUser != null && currentUser.isoCode != null) {
-      add(AppEvent.syncContacts(currentUser.isoCode!));
-    }
-  }
 
   void _onDeleterPermissions(Emitter<AppState> emit) async {
     try {
@@ -742,17 +656,5 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     );
   }
 
-  Future<void> _checkContactsPermission(Emitter<AppState> emit) async {
-    final contactsPermissionStatus = await Permission.contacts.status;
 
-    if (contactsPermissionStatus.isGranted ||
-        contactsPermissionStatus.isLimited) {
-      emit(state.copyWith(contactsPermissionStatus: contactsPermissionStatus));
-    } else if (contactsPermissionStatus.isPermanentlyDenied) {
-      emit(state.copyWith(contactsPermissionStatus: contactsPermissionStatus));
-    } else {
-      final newPermissionStatus = await Permission.contacts.request();
-      emit(state.copyWith(contactsPermissionStatus: newPermissionStatus));
-    }
-  }
 }

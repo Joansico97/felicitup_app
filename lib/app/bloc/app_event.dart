@@ -10,14 +10,11 @@ abstract class AppEvent with _$AppEvent {
   const factory AppEvent.loadUserData() = _loadUserData;
   const factory AppEvent.loadProvUserData(Map<String, dynamic> federatedData) =
       _loadProvUserData;
-  const factory AppEvent.syncContacts(String isoCode) = _syncContacts;
   const factory AppEvent.updateMatchListFromContacts() =
       _updateMatchListFromContacts;
   const factory AppEvent.initializeNotifications() = _initializeNotifications;
   const factory AppEvent.requestManualPermissions() = _requestManualPermissions;
-  const factory AppEvent.requestManualContactsPermissions() =
-      _requestManualContactsPermissions;
-  const factory AppEvent.resetContactsPermissions() = _resetContactsPermissions;
+
   const factory AppEvent.notificationReceived(Map<String, dynamic> payload) =
       _notificationReceived;
   const factory AppEvent.clearPendingNotification() = _clearPendingNotification;
