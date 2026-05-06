@@ -83,7 +83,9 @@ class _FormFederatedViewState extends State<FormFederatedView> {
                       hintText: 'Apellidos',
                     ),
                     Visibility(
-                      visible: kIsWeb || defaultTargetPlatform == TargetPlatform.android,
+                      visible:
+                          kIsWeb ||
+                          defaultTargetPlatform == TargetPlatform.android,
                       child: Column(
                         children: [
                           SizedBox(height: context.sp(6)),
