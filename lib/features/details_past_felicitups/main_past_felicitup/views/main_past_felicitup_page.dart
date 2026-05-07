@@ -4,12 +4,35 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/details_past_felicitups/details_past_felicitups.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class MainPastFelicitupPage extends StatelessWidget {
   const MainPastFelicitupPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Center(
+        child: SizedBox(
+          width: 400,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              size: const Size(393, 852),
+            ),
+            child: const MainPastFelicitupView(),
+          ),
+        ),
+      );
+    }
+    return const MainPastFelicitupView();
+  }
+}
+
+class MainPastFelicitupView extends StatelessWidget {
+  const MainPastFelicitupView({super.key});
 
   @override
   Widget build(BuildContext context) {

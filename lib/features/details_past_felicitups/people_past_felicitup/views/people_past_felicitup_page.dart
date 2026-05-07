@@ -5,19 +5,42 @@ import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/details_past_felicitups/details_past_felicitups.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class PeoplePastFelicitupPage extends StatefulWidget {
+class PeoplePastFelicitupPage extends StatelessWidget {
   const PeoplePastFelicitupPage({super.key});
 
   @override
-  State<PeoplePastFelicitupPage> createState() =>
-      _PeoplePastFelicitupPageState();
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Center(
+        child: SizedBox(
+          width: 400,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              size: const Size(393, 852),
+            ),
+            child: const PeoplePastFelicitupView(),
+          ),
+        ),
+      );
+    }
+    return const PeoplePastFelicitupView();
+  }
 }
 
-class _PeoplePastFelicitupPageState extends State<PeoplePastFelicitupPage> {
+class PeoplePastFelicitupView extends StatefulWidget {
+  const PeoplePastFelicitupView({super.key});
+
+  @override
+  State<PeoplePastFelicitupView> createState() =>
+      _PeoplePastFelicitupViewState();
+}
+
+class _PeoplePastFelicitupViewState extends State<PeoplePastFelicitupView> {
   @override
   void initState() {
     super.initState();

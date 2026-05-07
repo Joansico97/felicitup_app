@@ -3,19 +3,42 @@ import 'dart:io';
 
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/features/features.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
 
-class VideoPastFelicitupPage extends StatefulWidget {
+class VideoPastFelicitupPage extends StatelessWidget {
   const VideoPastFelicitupPage({super.key});
 
   @override
-  State<VideoPastFelicitupPage> createState() => _VideoPastFelicitupPageState();
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Center(
+        child: SizedBox(
+          width: 400,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              size: const Size(393, 852),
+            ),
+            child: const VideoPastFelicitupView(),
+          ),
+        ),
+      );
+    }
+    return const VideoPastFelicitupView();
+  }
 }
 
-class _VideoPastFelicitupPageState extends State<VideoPastFelicitupPage>
+class VideoPastFelicitupView extends StatefulWidget {
+  const VideoPastFelicitupView({super.key});
+
+  @override
+  State<VideoPastFelicitupView> createState() => _VideoPastFelicitupViewState();
+}
+
+class _VideoPastFelicitupViewState extends State<VideoPastFelicitupView>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   File? selectedVideo;
   late VideoPlayerController? _controller;
