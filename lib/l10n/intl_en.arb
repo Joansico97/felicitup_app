@@ -8,5 +8,6 @@
     "birthday_modal_title": "DON'T LET ANYONE FORGET YOUR BIRTHDAY! 🎂",
     "birthday_modal_content": "Tell us your birthday and your contacts will never forget to congratulate you. They can also send you a FELICITUP!",
     "birthday_modal_label": "Add my date",
-    "birthday_modal_question_title": "When is your birthday?"
+    "birthday_modal_question_title": "When is your birthday?",
+    "birthday_update_success": "Birthday updated successfully"
 }

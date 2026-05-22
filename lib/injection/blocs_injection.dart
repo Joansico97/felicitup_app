@@ -17,7 +17,7 @@ void _initBlocsInjection() {
     ..registerFactory(
       () => LoginBloc(
         authRepository: di(),
-        firestore: di(),
+        userRepository: di(),
         analyticsHandler: di(),
       ),
     )
@@ -25,7 +25,6 @@ void _initBlocsInjection() {
       () => RegisterBloc(
         authRepository: di(),
         userRepository: di(),
-        firestore: di(),
         analyticsHandler: di(),
       ),
     )

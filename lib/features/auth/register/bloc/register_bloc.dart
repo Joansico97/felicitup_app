@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
 import 'package:felicitup_app/core/analytics/analytics_handler.dart';
-import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
@@ -21,11 +19,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   RegisterBloc({
     required AuthRepository authRepository,
     required UserRepository userRepository,
-    required FirebaseFirestore firestore,
     required AnalyticsHandler analyticsHandler,
   }) : _authRepository = authRepository,
        _userRepository = userRepository,
-       _firestore = firestore,
        _analyticsHandler = analyticsHandler,
        super(RegisterState.initial()) {
     on<RegisterEvent>(
@@ -61,7 +57,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
-  final FirebaseFirestore _firestore;
   final AnalyticsHandler _analyticsHandler;
 
   String _normalizePhone(String rawPhone) {
@@ -427,7 +422,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           );
         },
         (r) async {
-          bool exist = await checkUserExist(email: (r.user?.email ?? ''));
+          final existResponse = await _userRepository.checkEmailExist(
+            email: (r.user?.email ?? '').trim().toLowerCase(),
+          );
+          bool exist = existResponse.fold((l) => false, (r) => r);
           if (exist) {
             emit(
               state.copyWith(
@@ -455,6 +453,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
               giftcardList: [],
               matchList: [],
               fcmToken: '',
+              provider: 'federated',
             );
 
             _setUserInfoRegister(userModel);
@@ -501,7 +500,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           final data = r['credential'] as UserCredential?;
           final user = data?.user;
 
-          bool exist = await checkUserExist(email: user?.email ?? '');
+          final existResponse = await _userRepository.checkEmailExist(
+            email: (user?.email ?? '').trim().toLowerCase(),
+          );
+          bool exist = existResponse.fold((l) => false, (r) => r);
           if (exist) {
             emit(
               state.copyWith(
@@ -530,6 +532,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
               giftcardList: [],
               matchList: [],
               fcmToken: '',
+              provider: 'federated',
             );
 
             _setUserInfoRegister(userModel);
@@ -562,40 +565,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(state.copyWith(isLoading: false, status: RegisterStatus.finished));
   }
 
-  Future<bool> checkUserExist({required String email}) async {
-    final docRef = _firestore.collection(AppConstants.usersCollection);
-    final normalizedEmail = email.trim().toLowerCase();
-    if (normalizedEmail.isEmpty) return false;
-    final response = await docRef
-        .where('email', isEqualTo: normalizedEmail)
-        .limit(1)
-        .get();
-    if (response.docs.isNotEmpty) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   Future<void> _setUserInfoRegister(UserModel user) async {
-    await _firestore.collection(AppConstants.usersCollection).doc(user.id).set({
-      'id': user.id,
-      'firstName': user.firstName,
-      'lastName': user.lastName,
-      'fullName': user.fullName,
-      'userImg': user.userImg,
-      'email': user.email,
-      'birthDate': user.birthDate,
-      'birthDay': user.birthDay,
-      'birthMonth': user.birthMonth,
-      'registerDate': DateTime.now(),
-      'phone': '',
-      'isoCode': '',
-      'friendList': [],
-      'giftcardList': [],
-      'matchList': [],
-      'fcmToken': '',
-      'provider': 'federated',
-    });
+    await _userRepository.setInitialUserInfo(user);
   }
 }

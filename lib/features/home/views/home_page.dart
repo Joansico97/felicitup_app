@@ -140,6 +140,25 @@ class _HomePageState extends State<HomePage> {
           listenWhen: _shouldHandleUserDataChanges,
           listener: _handleUserDataChanges,
         ),
+
+        BlocListener<HomeBloc, HomeState>(
+          listenWhen: (previous, current) => previous.status != current.status,
+          listener: (context, state) {
+            if (state.status == HomeStatus.success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    context.locale.birthday_update_success,
+                    style: context.styles.paragraph.copyWith(
+                      color: context.colors.white,
+                    ),
+                  ),
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+            }
+          },
+        ),
       ],
       child: Scaffold(
         drawer: const DrawerApp(),

@@ -4,16 +4,13 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:either_dart/either.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
-import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
-import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/data/exceptions/api_exception.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:go_router/go_router.dart';
 
 part 'felicitups_dashboard_event.dart';
 part 'felicitups_dashboard_state.dart';
@@ -35,7 +32,10 @@ class FelicitupsDashboardBloc
        super(FelicitupsDashboardState.initial()) {
     on<FelicitupsDashboardEvent>(
       (events, emit) => events.map(
-        changeIndex: (event) => emit(state.copyWith(currentIndex: event.index)),
+        changeIndex: (event) => emit(state.copyWith(
+          currentIndex: event.index,
+          status: FelicitupsDashboardStatus.initial,
+        )),
         sortPastFelicitups: (event) =>
             _sortPastFelicitups(emit, event.index, event.userId),
         deleteFelicitup: (event) =>
@@ -74,7 +74,10 @@ class FelicitupsDashboardBloc
     switch (index) {
       case 0:
         emit(
-          state.copyWith(listFelicitupsPast: state.backUpListFelicitupsPast),
+          state.copyWith(
+            listFelicitupsPast: state.backUpListFelicitupsPast,
+            status: FelicitupsDashboardStatus.initial,
+          ),
         );
         break;
       case 1:
@@ -83,7 +86,10 @@ class FelicitupsDashboardBloc
               (felicitup) => felicitup.owner.any((data) => data.id == userId),
             )
             .toList();
-        emit(state.copyWith(listFelicitupsPast: filteredList));
+        emit(state.copyWith(
+          listFelicitupsPast: filteredList,
+          status: FelicitupsDashboardStatus.initial,
+        ));
         break;
       case 2:
         final filteredList = state.backUpListFelicitupsPast
@@ -92,7 +98,10 @@ class FelicitupsDashboardBloc
                   felicitup.invitedUsers.any((data) => data == userId),
             )
             .toList();
-        emit(state.copyWith(listFelicitupsPast: filteredList));
+        emit(state.copyWith(
+          listFelicitupsPast: filteredList,
+          status: FelicitupsDashboardStatus.initial,
+        ));
         break;
       default:
     }
@@ -103,14 +112,18 @@ class FelicitupsDashboardBloc
     String felicitupId,
     String chatId,
   ) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, status: FelicitupsDashboardStatus.loading));
     try {
       await _felicitupRepository.deleteFelicitup(felicitupId);
       await _chatRepository.deleteChatDocument(chatId);
 
-      emit(state.copyWith(isLoading: false));
+      emit(state.copyWith(isLoading: false, status: FelicitupsDashboardStatus.success));
     } catch (e) {
-      emit(state.copyWith(isLoading: false));
+      emit(state.copyWith(
+        isLoading: false,
+        status: FelicitupsDashboardStatus.error,
+        errorMessage: e.toString(),
+      ));
     }
   }
 
@@ -119,45 +132,69 @@ class FelicitupsDashboardBloc
     String felicitupId,
     String userId,
   ) async {
-    unawaited(startLoadingModal());
+    emit(state.copyWith(isLoading: true, status: FelicitupsDashboardStatus.loading));
     try {
-      _felicitupRepository.setLike(felicitupId, userId);
-      await stopLoadingModal();
-    } catch (e) {
-      await stopLoadingModal();
-      unawaited(showErrorModal('Error al dar like'));
-    }
-  }
-
-  Future<Null> _createSingleChat(
-    Emitter<FelicitupsDashboardState> emit,
-    SingleChatModel singleChatData,
-  ) async {
-    emit(state.copyWith(isLoading: true));
-    try {
-      final response = await _chatRepository.createSingleChat(singleChatData);
-      return response.fold(
+      final response = await _felicitupRepository.setLike(felicitupId, userId);
+      response.fold(
         (l) {
-          logger.error(l);
-          emit(state.copyWith(isLoading: false));
+          emit(state.copyWith(
+            isLoading: false,
+            status: FelicitupsDashboardStatus.likeError,
+            errorMessage: l.message,
+          ));
         },
         (r) {
-          emit(state.copyWith(isLoading: false));
-          if (rootNavigatorKey.currentContext!.mounted) {
-            rootNavigatorKey.currentContext!.go(
-              RouterPaths.singleChat,
-              extra: SingleChatModel(
-                chatId: r,
-                userName: singleChatData.userName,
-                userImage: singleChatData.userImage,
-                friendId: singleChatData.friendId,
-              ),
-            );
-          }
+          emit(state.copyWith(
+            isLoading: false,
+            status: FelicitupsDashboardStatus.likeSuccess,
+          ));
         },
       );
     } catch (e) {
-      emit(state.copyWith(isLoading: false));
+      emit(state.copyWith(
+        isLoading: false,
+        status: FelicitupsDashboardStatus.likeError,
+        errorMessage: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _createSingleChat(
+    Emitter<FelicitupsDashboardState> emit,
+    SingleChatModel singleChatData,
+  ) async {
+    emit(state.copyWith(isLoading: true, status: FelicitupsDashboardStatus.loading));
+    try {
+      final response = await _chatRepository.createSingleChat(singleChatData);
+      response.fold(
+        (l) {
+          logger.error(l);
+          emit(state.copyWith(
+            isLoading: false,
+            status: FelicitupsDashboardStatus.error,
+            errorMessage: l.message,
+          ));
+        },
+        (r) {
+          final newChat = SingleChatModel(
+            chatId: r,
+            userName: singleChatData.userName,
+            userImage: singleChatData.userImage,
+            friendId: singleChatData.friendId,
+          );
+          emit(state.copyWith(
+            isLoading: false,
+            status: FelicitupsDashboardStatus.chatCreated,
+            createdChat: newChat,
+          ));
+        },
+      );
+    } catch (e) {
+      emit(state.copyWith(
+        isLoading: false,
+        status: FelicitupsDashboardStatus.error,
+        errorMessage: e.toString(),
+      ));
     }
   }
 
@@ -165,12 +202,16 @@ class FelicitupsDashboardBloc
     Emitter<FelicitupsDashboardState> emit,
     String id,
   ) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, status: FelicitupsDashboardStatus.loading));
     try {
       await _userRepository.deleteReminder(id);
-      emit(state.copyWith(isLoading: false));
+      emit(state.copyWith(isLoading: false, status: FelicitupsDashboardStatus.success));
     } catch (e) {
-      emit(state.copyWith(isLoading: false));
+      emit(state.copyWith(
+        isLoading: false,
+        status: FelicitupsDashboardStatus.error,
+        errorMessage: e.toString(),
+      ));
     }
   }
 
@@ -179,12 +220,21 @@ class FelicitupsDashboardBloc
     String felicitupId,
   ) async {
     final userId = _firebaseAuth.currentUser!.uid;
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    emit(state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      status: FelicitupsDashboardStatus.loading,
+    ));
 
     try {
       await _felicitupRepository.deleteAllPastFelicitups(felicitupId, userId);
+      emit(state.copyWith(isLoading: false, status: FelicitupsDashboardStatus.success));
     } catch (e) {
-      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+      emit(state.copyWith(
+        isLoading: false,
+        status: FelicitupsDashboardStatus.error,
+        errorMessage: e.toString(),
+      ));
     }
   }
 
@@ -218,9 +268,12 @@ class FelicitupsDashboardBloc
         key: LocalStorageConstants.userKey,
         value: jsonEncode('true'),
       );
-      emit(state.copyWith(showSection: true));
+      emit(state.copyWith(showSection: true, status: FelicitupsDashboardStatus.initial));
     } else {
-      emit(state.copyWith(showSection: data == 'true' ? true : false));
+      emit(state.copyWith(
+        showSection: data == 'true' ? true : false,
+        status: FelicitupsDashboardStatus.initial,
+      ));
     }
   }
 
@@ -231,14 +284,17 @@ class FelicitupsDashboardBloc
       key: LocalStorageConstants.userKey,
       value: jsonEncode('false'),
     );
-    emit(state.copyWith(showSection: false));
+    emit(state.copyWith(showSection: false, status: FelicitupsDashboardStatus.initial));
   }
 
   Future<void> _recivedData(
     Emitter<FelicitupsDashboardState> emit,
     List<FelicitupModel> listFelicitups,
   ) async {
-    emit(state.copyWith(listFelicitups: listFelicitups));
+    emit(state.copyWith(
+      listFelicitups: listFelicitups,
+      status: FelicitupsDashboardStatus.initial,
+    ));
   }
 
   Future<void> _recivedPastData(
@@ -249,14 +305,15 @@ class FelicitupsDashboardBloc
       state.copyWith(
         listFelicitupsPast: listFelicitups,
         backUpListFelicitupsPast: listFelicitups,
+        status: FelicitupsDashboardStatus.initial,
       ),
     );
   }
 
   @override
   Future<void> close() {
-    _felicitupSubscription?.cancel(); // Cancelar la suscripción *SIEMPRE*.
-    _felicitupPastSubscription?.cancel(); // Cancelar la suscripción *SIEMPRE*.
+    _felicitupSubscription?.cancel();
+    _felicitupPastSubscription?.cancel();
     return super.close();
   }
 }

@@ -63,6 +63,19 @@ class UserFirebaseResource implements UserRepository {
   }
 
   @override
+  Future<Either<ApiException, bool>> checkEmailExist({required String email}) {
+    return _executeFirebaseOperation(() async {
+      final querySnapshot = await _firestore
+          .collection(AppConstants.usersCollection)
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      return querySnapshot.docs.isNotEmpty;
+    });
+  }
+
+  @override
   Future<Either<ApiException, void>> sendVerifyEmail() {
     return _executeFirebaseOperation(() async {
       final user = _firebaseAuth.currentUser;

@@ -1,9 +1,14 @@
+import 'dart:async';
+
+import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/bloc/felicitups_dashboard_bloc.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/views/dashboard_mobile_view.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/views/dashboard_web_view.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class FelicitupsDashboardPage extends StatefulWidget {
   const FelicitupsDashboardPage({super.key, this.isFromPast});
@@ -53,21 +58,51 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (_, constraints) {
-        if (constraints.maxWidth > 1024) {
-          return DashboardWebView(
-            felicitupsDashboardPageController:
-                _felicitupsDashboardPageController,
-            pages: _pages,
-          );
+    return BlocListener<FelicitupsDashboardBloc, FelicitupsDashboardState>(
+      listenWhen: (previous, current) =>
+          previous.status != current.status ||
+          previous.isLoading != current.isLoading,
+      listener: (context, state) {
+        // Manejar modal de carga reactivamente
+        if (state.isLoading) {
+          unawaited(startLoadingModal());
+        } else {
+          unawaited(stopLoadingModal());
         }
 
-        return DashboardMobileView(
-          felicitupsDashboardPageController: _felicitupsDashboardPageController,
-          pages: _pages,
-        );
+        // Manejar errores
+        if (state.status == FelicitupsDashboardStatus.error &&
+            state.errorMessage != null) {
+          unawaited(showErrorModal(state.errorMessage!));
+        } else if (state.status == FelicitupsDashboardStatus.likeError) {
+          unawaited(showErrorModal(state.errorMessage ?? 'Error al dar like'));
+        }
+
+        // Manejar navegación
+        if (state.status == FelicitupsDashboardStatus.chatCreated &&
+            state.createdChat != null) {
+          context.go(
+            RouterPaths.singleChat,
+            extra: state.createdChat,
+          );
+        }
       },
+      child: LayoutBuilder(
+        builder: (_, constraints) {
+          if (constraints.maxWidth > 1024) {
+            return DashboardWebView(
+              felicitupsDashboardPageController:
+                  _felicitupsDashboardPageController,
+              pages: _pages,
+            );
+          }
+
+          return DashboardMobileView(
+            felicitupsDashboardPageController: _felicitupsDashboardPageController,
+            pages: _pages,
+          );
+        },
+      ),
     );
   }
 }

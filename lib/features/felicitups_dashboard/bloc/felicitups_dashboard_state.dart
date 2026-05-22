@@ -1,5 +1,15 @@
 part of 'felicitups_dashboard_bloc.dart';
 
+enum FelicitupsDashboardStatus {
+  initial,
+  loading,
+  success,
+  error,
+  likeSuccess,
+  likeError,
+  chatCreated,
+}
+
 @freezed
 abstract class FelicitupsDashboardState with _$FelicitupsDashboardState {
   const factory FelicitupsDashboardState({
@@ -9,6 +19,8 @@ abstract class FelicitupsDashboardState with _$FelicitupsDashboardState {
     required List<FelicitupModel> listFelicitups,
     required List<FelicitupModel> listFelicitupsPast,
     required List<FelicitupModel> backUpListFelicitupsPast,
+    required FelicitupsDashboardStatus status,
+    SingleChatModel? createdChat,
     String? errorMessage,
   }) = _FelicitupsDashboardState;
 
@@ -19,5 +31,6 @@ abstract class FelicitupsDashboardState with _$FelicitupsDashboardState {
     listFelicitups: [],
     listFelicitupsPast: [],
     backUpListFelicitupsPast: [],
+    status: FelicitupsDashboardStatus.initial,
   );
 }

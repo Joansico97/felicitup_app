@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:felicitup_app/core/analytics/analytics_handler.dart';
-import 'package:felicitup_app/core/constants/app_constants.dart';
 import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/data/repositories/repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,10 +15,10 @@ part 'login_bloc.g.dart';
 class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
   LoginBloc({
     required AuthRepository authRepository,
-    required FirebaseFirestore firestore,
+    required UserRepository userRepository,
     required AnalyticsHandler analyticsHandler,
   }) : _authRepository = authRepository,
-       _firestore = firestore,
+       _userRepository = userRepository,
        _analyticsHandler = analyticsHandler,
        super(LoginState.initial()) {
     on<LoginEvent>(
@@ -37,7 +35,7 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
   }
 
   final AuthRepository _authRepository;
-  final FirebaseFirestore _firestore;
+  final UserRepository _userRepository;
   final AnalyticsHandler _analyticsHandler;
 
   void _changeLoading(Emitter<LoginState> emit) {
@@ -101,7 +99,10 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
           return null;
         },
         (r) async {
-          bool exist = await checkUserExist(email: r.user?.email ?? '');
+          final existResponse = await _userRepository.checkEmailExist(
+            email: r.user?.email ?? '',
+          );
+          bool exist = existResponse.fold((l) => false, (r) => r);
           if (exist) {
             if (r.user?.uid != null) {
               // The user id will be automatically set by the firebase analytics sdk
@@ -143,23 +144,7 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
   }
 
   Future<void> _setUserInfo(Emitter<LoginState> emit, UserModel user) async {
-    await _firestore.collection(AppConstants.usersCollection).doc(user.id).set({
-      'id': user.id,
-      'firstName': user.firstName,
-      'lastName': user.lastName,
-      'fullName': user.fullName,
-      'userImg': user.userImg,
-      'email': user.email,
-      'birthDate': DateTime.now(),
-      'registerDate': DateTime.now(),
-      'phone': '',
-      'isoCode': '',
-      'friendList': [],
-      'giftcardList': [],
-      'matchList': [],
-      'fcmToken': '',
-      'genre': '',
-    });
+    await _userRepository.setInitialUserInfo(user);
   }
 
   Future<Future<Null>?>? _appleLoginEvent(Emitter<LoginState> emit) async {
@@ -182,7 +167,10 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
           final data = r['credential'] as UserCredential?;
           final user = data?.user;
 
-          bool exist = await checkUserExist(email: user?.email ?? '');
+          final existResponse = await _userRepository.checkEmailExist(
+            email: user?.email ?? '',
+          );
+          bool exist = existResponse.fold((l) => false, (r) => r);
           if (exist) {
             if (user?.uid != null) {
               // The user id will be automatically set by the firebase analytics sdk
@@ -205,16 +193,6 @@ class LoginBloc extends HydratedBloc<LoginEvent, LoginState> {
 
   Future<void> _changeEvent(Emitter<LoginState> emit) async {
     emit(state.copyWith(status: LoginStatus.inProgress));
-  }
-
-  Future<bool> checkUserExist({required String email}) async {
-    final docRef = _firestore.collection(AppConstants.usersCollection);
-    final response = await docRef.where('email', isEqualTo: email).get();
-    if (response.docs.isNotEmpty) {
-      return true;
-    } else {
-      return false;
-    }
   }
 
   @override
