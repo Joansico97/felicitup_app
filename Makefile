@@ -1,3 +1,5 @@
+.PHONY: clean gen gen_l10n fix_gen test coverage deploy_functions
+
 clean:
 	@echo "╠ Cleaning project..."
 	flutter clean

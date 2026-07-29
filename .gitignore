@@ -61,8 +61,8 @@ gen
 *.g.dart
 *.freezed.dart
 
-# Makefile
-Makefile
+# Coverage
+coverage/
 
 # Env
 .env
