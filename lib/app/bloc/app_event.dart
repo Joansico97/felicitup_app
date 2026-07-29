@@ -6,6 +6,8 @@ abstract class AppEvent with _$AppEvent {
   const factory AppEvent.changeLoadContacts() = _changeLoadContacts;
   const factory AppEvent.loadContacts() = _loadContacts;
   const factory AppEvent.closeRememberSection() = _closeRememberSection;
+  const factory AppEvent.toggleRememberSectionCollapsed() =
+      _toggleRememberSectionCollapsed;
   const factory AppEvent.checkAppStatus() = _checkAppStatus;
   const factory AppEvent.loadUserData() = _loadUserData;
   const factory AppEvent.loadProvUserData(Map<String, dynamic> federatedData) =

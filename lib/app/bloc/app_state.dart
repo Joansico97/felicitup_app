@@ -17,6 +17,8 @@ abstract class AppState with _$AppState {
     UserModel? currentUser,
     Map<String, dynamic>? federatedData,
     List<PushMessageModel>? notifications,
+    @Default(true) bool isFirstRun,
+    @Default(false) bool isRememberSectionCollapsed,
   }) = _AppState;
 
   factory AppState.initial() => AppState(
@@ -24,7 +26,9 @@ abstract class AppState with _$AppState {
     isLoadingContacts: false,
     reloadContacts: true,
     showRememberSection: true,
+    isRememberSectionCollapsed: false,
     status: AuthorizationStatus.notDetermined,
     contactsPermissionStatus: PermissionStatus.denied,
+    isFirstRun: true,
   );
 }

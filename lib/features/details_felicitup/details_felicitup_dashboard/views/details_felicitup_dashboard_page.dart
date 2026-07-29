@@ -1,18 +1,13 @@
 import 'dart:async';
 
-import 'package:felicitup_app/app/bloc/app_bloc.dart';
-import 'package:felicitup_app/core/extensions/extensions.dart';
-import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
-import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
-import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/widgets/widgets.dart';
-import 'package:felicitup_app/helpers/facebook_analytics_helper.dart';
-import 'package:flutter/foundation.dart';
+import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/bloc/details_felicitup_dashboard_bloc.dart';
+import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/views/mobile/details_felicitup_dashboard_mobile_page.dart';
+import 'package:felicitup_app/features/details_felicitup/details_felicitup_dashboard/views/web/details_felicitup_dashboard_web_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-class DetailsFelicitupDashboardPage extends StatefulWidget {
+class DetailsFelicitupDashboardPage extends StatelessWidget {
   const DetailsFelicitupDashboardPage({
     super.key,
     required this.childView,
@@ -25,103 +20,6 @@ class DetailsFelicitupDashboardPage extends StatefulWidget {
   final String? chatId;
 
   @override
-  State<DetailsFelicitupDashboardPage> createState() =>
-      _DetailsFelicitupDashboardPageState();
-}
-
-class _DetailsFelicitupDashboardPageState
-    extends State<DetailsFelicitupDashboardPage> {
-  @override
-  void initState() {
-    super.initState();
-    FacebookAnalyticsHelper().trackViewContent();
-
-    if (widget.fromNotification) {
-      final felicitup = context
-          .read<DetailsFelicitupDashboardBloc>()
-          .state
-          .felicitup;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<DetailsFelicitupDashboardBloc>().add(
-          DetailsFelicitupDashboardEvent.changeCurrentIndex(
-            (felicitup?.hasVideo ?? false) ? 3 : 4,
-          ),
-        );
-      });
-    }
-    final currentUser = context.read<AppBloc>().state.currentUser;
-    context.read<InfoFelicitupBloc>().add(
-      InfoFelicitupEvent.loadFriendsData(currentUser?.matchList ?? []),
-    );
-  }
-
-  final List<Widget> pagesComplete = [
-    InfoFelicitupPage(),
-    MessageFelicitupPage(),
-    PeopleFelicitupPage(),
-    VideoFelicitupPage(),
-    BoteFelicitupPage(),
-  ];
-
-  final List<Widget> pagesWithoutBote = [
-    InfoFelicitupPage(),
-    MessageFelicitupPage(),
-    PeopleFelicitupPage(),
-    VideoFelicitupPage(),
-  ];
-
-  final List<Widget> pagesWithoutVideo = [
-    InfoFelicitupPage(),
-    MessageFelicitupPage(),
-    PeopleFelicitupPage(),
-    BoteFelicitupPage(),
-  ];
-
-  List<IconData> icons = [
-    Icons.person_outline,
-    Icons.chat_outlined,
-    Icons.people_outline,
-    Icons.camera_alt_outlined,
-    Icons.attach_money_outlined,
-  ];
-
-  List<IconData> iconsWithoutBote = [
-    Icons.person_outline,
-    Icons.chat_outlined,
-    Icons.people_outline,
-    Icons.camera_alt_outlined,
-  ];
-
-  List<IconData> iconsWithoutVideo = [
-    Icons.person_outline,
-    Icons.chat_outlined,
-    Icons.people_outline,
-    Icons.attach_money_outlined,
-  ];
-
-  List<IconData> selectedIcons = [
-    Icons.person,
-    Icons.chat,
-    Icons.people,
-    Icons.camera_alt,
-    Icons.attach_money,
-  ];
-
-  List<IconData> selectedIconsWithoutBote = [
-    Icons.person,
-    Icons.chat,
-    Icons.people,
-    Icons.camera_alt,
-  ];
-
-  List<IconData> selectedIconsWithoutVideo = [
-    Icons.person,
-    Icons.chat,
-    Icons.people,
-    Icons.attach_money,
-  ];
-
-  @override
   Widget build(BuildContext context) {
     return BlocListener<
       DetailsFelicitupDashboardBloc,
@@ -129,224 +27,29 @@ class _DetailsFelicitupDashboardPageState
     >(
       listenWhen: (previous, current) =>
           previous.isLoading != current.isLoading,
-      listener: (_, state) async {
+      listener: (context, state) async {
         if (state.isLoading) {
           unawaited(startLoadingModal());
         } else {
           await stopLoadingModal();
         }
       },
-      child: PopScope(
-        onPopInvokedWithResult: (didPop, result) {
-          if (didPop) {
-            context.read<MessageFelicitupBloc>().add(
-              MessageFelicitupEvent.asignCurrentChat(''),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth > 1024) {
+            return DetailsFelicitupDashboardWebPage(
+              childView: childView,
+              fromNotification: fromNotification,
+              chatId: chatId,
             );
-            context.go(RouterPaths.felicitupsDashboard);
           }
+
+          return DetailsFelicitupDashboardMobilePage(
+            childView: childView,
+            fromNotification: fromNotification,
+            chatId: chatId,
+          );
         },
-        child: BlocBuilder<DetailsFelicitupDashboardBloc, DetailsFelicitupDashboardState>(
-          buildWhen: (previous, current) =>
-              previous.felicitup != current.felicitup,
-          builder: (_, state) {
-            final felicitup = state.felicitup;
-
-            return felicitup != null
-                ? Scaffold(
-                    backgroundColor: context.colors.background,
-                    body: SafeArea(
-                      child: Column(
-                        children: [
-                          DetailsHeader(),
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: kIsWeb ? 24 : context.sp(24),
-                              ),
-                              child: widget.childView,
-                            ),
-                          ),
-                          Container(
-                            height: kIsWeb ? 60 : context.sp(60),
-                            width: kIsWeb ? 335 : context.sp(335),
-                            margin: EdgeInsets.symmetric(
-                              vertical: kIsWeb ? 24 : context.sp(20),
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(
-                                kIsWeb ? 40 : context.sp(40),
-                              ),
-                              color: context.colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: context.colors.black.valueOpacity(.5),
-                                  blurRadius: kIsWeb ? 10 : context.sp(10),
-                                  spreadRadius: kIsWeb ? 1 : context.sp(1),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                ...List.generate(
-                                  !felicitup.hasBote
-                                      ? pagesWithoutBote.length
-                                      : !felicitup.hasVideo
-                                      ? pagesWithoutVideo.length
-                                      : pagesComplete.length,
-                                  (index) => IconButton(
-                                    onPressed: () async {
-                                      detailsFelicitupNavigatorKey
-                                          .currentContext!
-                                          .read<DetailsFelicitupDashboardBloc>()
-                                          .add(
-                                            DetailsFelicitupDashboardEvent.changeCurrentIndex(
-                                              index,
-                                            ),
-                                          );
-                                      switch (index) {
-                                        case 0:
-                                          detailsFelicitupNavigatorKey
-                                              .currentContext!
-                                              .go(RouterPaths.infoFelicitup);
-                                          context
-                                              .read<
-                                                DetailsFelicitupDashboardBloc
-                                              >()
-                                              .add(
-                                                DetailsFelicitupDashboardEvent.asignCurrentChat(
-                                                  '',
-                                                ),
-                                              );
-                                          break;
-                                        case 1:
-                                          detailsFelicitupNavigatorKey
-                                              .currentContext!
-                                              .go(
-                                                RouterPaths.messageFelicitup,
-                                                extra: {'chatId': ''},
-                                              );
-                                          context
-                                              .read<
-                                                DetailsFelicitupDashboardBloc
-                                              >()
-                                              .add(
-                                                DetailsFelicitupDashboardEvent.asignCurrentChat(
-                                                  felicitup.chatId,
-                                                ),
-                                              );
-                                          break;
-                                        case 2:
-                                          detailsFelicitupNavigatorKey
-                                              .currentContext!
-                                              .go(RouterPaths.peopleFelicitup);
-                                          context
-                                              .read<
-                                                DetailsFelicitupDashboardBloc
-                                              >()
-                                              .add(
-                                                DetailsFelicitupDashboardEvent.asignCurrentChat(
-                                                  '',
-                                                ),
-                                              );
-                                          break;
-                                        case 3:
-                                          if (!felicitup.hasVideo) {
-                                            detailsFelicitupNavigatorKey
-                                                .currentContext!
-                                                .go(RouterPaths.boteFelicitup);
-                                          } else {
-                                            detailsFelicitupNavigatorKey
-                                                .currentContext!
-                                                .go(RouterPaths.videoFelicitup);
-                                          }
-                                          context
-                                              .read<
-                                                DetailsFelicitupDashboardBloc
-                                              >()
-                                              .add(
-                                                DetailsFelicitupDashboardEvent.asignCurrentChat(
-                                                  '',
-                                                ),
-                                              );
-                                          break;
-                                        case 4:
-                                          detailsFelicitupNavigatorKey
-                                              .currentContext!
-                                              .go(RouterPaths.boteFelicitup);
-                                          context
-                                              .read<
-                                                DetailsFelicitupDashboardBloc
-                                              >()
-                                              .add(
-                                                DetailsFelicitupDashboardEvent.asignCurrentChat(
-                                                  '',
-                                                ),
-                                              );
-                                          break;
-                                        default:
-                                      }
-                                    },
-                                    icon:
-                                        BlocBuilder<
-                                          DetailsFelicitupDashboardBloc,
-                                          DetailsFelicitupDashboardState
-                                        >(
-                                          builder: (_, state) {
-                                            final currentIndex =
-                                                state.currentIndex;
-
-                                            return Container(
-                                              padding: EdgeInsets.all(
-                                                kIsWeb ? 10 : context.sp(10),
-                                              ),
-                                              alignment: Alignment.center,
-                                              child: Icon(
-                                                currentIndex == index
-                                                    ? !felicitup.hasBote
-                                                          ? selectedIconsWithoutBote[index]
-                                                          : !felicitup.hasVideo
-                                                          ? selectedIconsWithoutVideo[index]
-                                                          : selectedIcons[index]
-                                                    : !felicitup.hasBote
-                                                    ? iconsWithoutBote[index]
-                                                    : !felicitup.hasVideo
-                                                    ? iconsWithoutVideo[index]
-                                                    : icons[index],
-                                                color: context.colors.orange,
-                                                size: currentIndex == index
-                                                    ? kIsWeb
-                                                          ? 30
-                                                          : context.sp(30)
-                                                    : kIsWeb
-                                                    ? 20
-                                                    : context.sp(20),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : Scaffold(
-                    backgroundColor: context.colors.background,
-                    appBar: AppBar(
-                      leading: IconButton(
-                        icon: Icon(Icons.arrow_back),
-                        onPressed: () {
-                          context.go(RouterPaths.felicitupsDashboard);
-                        },
-                      ),
-                    ),
-                  );
-          },
-        ),
       ),
     );
   }

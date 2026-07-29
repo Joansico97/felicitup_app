@@ -20,13 +20,9 @@ class FelicitupsDashboardEvent with _$FelicitupsDashboardEvent {
   const factory FelicitupsDashboardEvent.createSingleChat(
     SingleChatModel singleChatData,
   ) = _createSingleChat;
-  const factory FelicitupsDashboardEvent.getRememberStatus() =
-      _getRememberStatus;
   const factory FelicitupsDashboardEvent.deletePastFelicitup({
     required String felicitupId,
   }) = _deletePastFelicitup;
-  const factory FelicitupsDashboardEvent.closeRememberSection() =
-      _closeRememberSection;
   const factory FelicitupsDashboardEvent.startListening() = _startListening;
   const factory FelicitupsDashboardEvent.recivedData(
     List<FelicitupModel> listFelicitups,

@@ -145,7 +145,7 @@ class PastFelicitupWidget extends StatelessWidget {
                           kIsWeb ? 10 : context.sp(10),
                         ),
                         border: Border.all(
-                          color: Colors.black.withAlpha((.18 * 255).toInt()),
+                          color: context.colors.black.withAlpha((.18 * 255).toInt()),
                         ),
                       ),
                       child: Stack(
@@ -242,7 +242,7 @@ class PastFelicitupWidget extends StatelessWidget {
                         ),
                         icon: Icon(
                           Icons.message_outlined,
-                          color: Colors.black.withAlpha((.5 * 255).toInt()),
+                          color: context.colors.black.withAlpha((.5 * 255).toInt()),
                           size: kIsWeb ? 20 : context.sp(20),
                         ),
                       ),
@@ -380,7 +380,7 @@ class PastFelicitupWidget extends StatelessWidget {
                             },
                             icon: Icon(
                               Icons.share,
-                              color: Colors.black.withAlpha((.5 * 255).toInt()),
+                              color: context.colors.black.withAlpha((.5 * 255).toInt()),
                               size: kIsWeb ? 20 : context.sp(20),
                             ),
                           );
@@ -408,7 +408,7 @@ class PastFelicitupWidget extends StatelessWidget {
                             ),
                             Icon(
                               Icons.arrow_forward_ios_rounded,
-                              color: Colors.black,
+                              color: context.colors.black,
                               size: kIsWeb ? 12 : context.sp(12),
                             ),
                           ],

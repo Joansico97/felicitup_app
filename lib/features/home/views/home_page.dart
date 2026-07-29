@@ -4,6 +4,8 @@ import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/utils/utils.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/home/bloc/home_bloc.dart';
+import 'package:felicitup_app/features/home/views/mobile/home_mobile_page.dart';
+import 'package:felicitup_app/features/home/views/web/home_web_page.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -112,7 +114,7 @@ class _HomePageState extends State<HomePage> {
                 );
                 context.pop();
               },
-              child: Text('Aceptar', style: context.styles.buttons),
+              child: Text(context.locale.accept, style: context.styles.buttons),
             ),
           ],
         ),
@@ -160,10 +162,13 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ],
-      child: Scaffold(
-        drawer: const DrawerApp(),
-        backgroundColor: context.colors.background,
-        body: widget.childView,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth > 1024) {
+            return HomeWebPage(childView: widget.childView);
+          }
+          return HomeMobilePage(childView: widget.childView);
+        },
       ),
     );
   }

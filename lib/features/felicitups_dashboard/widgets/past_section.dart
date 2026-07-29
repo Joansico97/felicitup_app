@@ -119,7 +119,7 @@ class PastSection extends StatelessWidget {
                           horizontal: context.sp(20),
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: context.colors.white,
                           borderRadius: BorderRadius.circular(context.sp(30)),
                         ),
                         child: Text(

@@ -23,8 +23,8 @@ class SettingsButton extends StatelessWidget {
           horizontal: context.sp(20),
           vertical: context.sp(15),
         ),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Color(0xFFD7DEEA))),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: context.colors.otherGrey)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -80,8 +80,8 @@ class SettingsButtonWeb extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Color(0xFFD7DEEA))),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: context.colors.otherGrey)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

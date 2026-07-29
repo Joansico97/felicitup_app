@@ -4,7 +4,8 @@ import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/auth/register/bloc/register_bloc.dart';
-import 'package:felicitup_app/features/auth/register/views/views.dart';
+import 'package:felicitup_app/features/auth/register/views/mobile/register_mobile_page.dart';
+import 'package:felicitup_app/features/auth/register/views/web/register_web_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -48,18 +49,18 @@ class RegisterPage extends StatelessWidget {
 
         if (state.status == RegisterStatus.federatedFinished) {
           if (context.mounted) {
-            context.read<AppBloc>().add(AppEvent.loadUserData());
+            context.read<AppBloc>().add(const AppEvent.loadUserData());
             context.go(RouterPaths.onBoarding);
           }
         }
       },
       child: LayoutBuilder(
-        builder: (_, constraints) {
+        builder: (context, constraints) {
           if (constraints.maxWidth > 1024) {
-            return const RegisterWebView();
+            return const RegisterWebPage();
           }
 
-          return const RegisterMobileView();
+          return const RegisterMobilePage();
         },
       ),
     );

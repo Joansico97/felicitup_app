@@ -14,7 +14,6 @@ enum FelicitupsDashboardStatus {
 abstract class FelicitupsDashboardState with _$FelicitupsDashboardState {
   const factory FelicitupsDashboardState({
     required bool isLoading,
-    required bool showSection,
     required int currentIndex,
     required List<FelicitupModel> listFelicitups,
     required List<FelicitupModel> listFelicitupsPast,
@@ -26,7 +25,6 @@ abstract class FelicitupsDashboardState with _$FelicitupsDashboardState {
 
   factory FelicitupsDashboardState.initial() => FelicitupsDashboardState(
     isLoading: false,
-    showSection: false,
     currentIndex: 0,
     listFelicitups: [],
     listFelicitupsPast: [],

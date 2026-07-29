@@ -1,3 +1,3 @@
-export './on_boarding_mobile_view.dart';
+export './mobile/on_boarding_mobile_page.dart';
 export './on_boarding_page.dart';
-export './on_boarding_web_view.dart';
+export './web/on_boarding_web_page.dart';

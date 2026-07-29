@@ -1,4 +1,5 @@
-import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/features/splash/views/mobile/splash_mobile_page.dart';
+import 'package:felicitup_app/features/splash/views/web/splash_web_page.dart';
 import 'package:flutter/material.dart';
 
 class SplashPage extends StatelessWidget {
@@ -6,9 +7,14 @@ class SplashPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.colors.background,
-      body: SizedBox(),
+    return LayoutBuilder(
+      builder: (_, constraints) {
+        if (constraints.maxWidth > 1024) {
+          return const SplashWebPage();
+        }
+
+        return const SplashMobilePage();
+      },
     );
   }
 }

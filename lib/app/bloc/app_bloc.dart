@@ -22,7 +22,7 @@ part 'app_event.dart';
 part 'app_state.dart';
 part 'app_bloc.freezed.dart';
 
-class AppBloc extends Bloc<AppEvent, AppState> {
+class AppBloc extends HydratedBloc<AppEvent, AppState> {
   AppBloc({
     required UserRepository userRepository,
     required AuthRepository authRepository,
@@ -44,6 +44,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         loadContacts: (_) => _onLoadContacts(emit),
         checkAppStatus: (_) => _onCheckAppStatus(emit),
         closeRememberSection: (_) => _onCloseRememberSection(emit),
+        toggleRememberSectionCollapsed: (_) =>
+            _onToggleRememberSectionCollapsed(emit),
         loadUserData: (_) => _onLoadUserData(emit),
 
         updateMatchListFromContacts: (_) =>
@@ -72,7 +74,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   final UpdateServiceHelper _updateService;
   final FacebookAnalyticsHelper _facebookAnalyticsHelper;
 
-  void _onAppStartedRequested(Emitter<AppState> emit) {
+  Future<void> _onAppStartedRequested(Emitter<AppState> emit) async {
+    if (state.isFirstRun) {
+      await _facebookAnalyticsHelper.trackInstall();
+      emit(state.copyWith(isFirstRun: false));
+    }
     add(const AppEvent.initializeNotifications());
     add(const AppEvent.loadUserData());
   }
@@ -214,6 +220,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   void _onCloseRememberSection(Emitter<AppState> emit) {
     emit(state.copyWith(showRememberSection: false));
+  }
+
+  void _onToggleRememberSectionCollapsed(Emitter<AppState> emit) {
+    emit(
+      state.copyWith(
+        isRememberSectionCollapsed: !state.isRememberSectionCollapsed,
+      ),
+    );
   }
 
   void _onLoadUserData(Emitter<AppState> emit) async {
@@ -655,5 +669,29 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     );
   }
 
+  @override
+  AppState? fromJson(Map<String, dynamic> json) {
+    try {
+      final isFirstRun = json['isFirstRun'] as bool? ?? true;
+      final showRememberSection = json['showRememberSection'] as bool? ?? true;
+      final isRememberSectionCollapsed =
+          json['isRememberSectionCollapsed'] as bool? ?? false;
+      return AppState.initial().copyWith(
+        isFirstRun: isFirstRun,
+        showRememberSection: showRememberSection,
+        isRememberSectionCollapsed: isRememberSectionCollapsed,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 
+  @override
+  Map<String, dynamic>? toJson(AppState state) {
+    return {
+      'isFirstRun': state.isFirstRun,
+      'showRememberSection': state.showRememberSection,
+      'isRememberSectionCollapsed': state.isRememberSectionCollapsed,
+    };
+  }
 }

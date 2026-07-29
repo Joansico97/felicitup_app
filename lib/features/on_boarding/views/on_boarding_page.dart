@@ -1,7 +1,7 @@
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/features/on_boarding/bloc/on_boarding_bloc.dart';
-import 'package:felicitup_app/features/on_boarding/views/on_boarding_mobile_view.dart';
-import 'package:felicitup_app/features/on_boarding/views/on_boarding_web_view.dart';
+import 'package:felicitup_app/features/on_boarding/views/mobile/on_boarding_mobile_page.dart';
+import 'package:felicitup_app/features/on_boarding/views/web/on_boarding_web_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -22,10 +22,10 @@ class OnBoardingPage extends StatelessWidget {
       child: LayoutBuilder(
         builder: (_, constraints) {
           if (constraints.maxWidth > 1024) {
-            return const OnBoardingWebView();
+            return const OnBoardingWebPage();
           }
 
-          return const OnBoardingMobileView();
+          return const OnBoardingMobilePage();
         },
       ),
     );

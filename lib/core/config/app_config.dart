@@ -24,9 +24,6 @@ Future<void> initConfig() async {
   final facebookAnalytics = FacebookAnalyticsHelper();
   await facebookAnalytics.initialize();
 
-  // Rastrear instalación si es la primera vez que se abre la app
-  await facebookAnalytics.trackInstall();
-
   // Logear activación de la app
   await facebookAnalytics.logActivateApp();
 }
@@ -40,8 +37,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 Future<void> initStorage() async {
-  final localStorage = LocalStorageHelper();
-  await localStorage.init();
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
         ? HydratedStorageDirectory.web

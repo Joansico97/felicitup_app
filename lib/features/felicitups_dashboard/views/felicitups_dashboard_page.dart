@@ -1,10 +1,11 @@
 import 'dart:async';
 
+import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/bloc/felicitups_dashboard_bloc.dart';
-import 'package:felicitup_app/features/felicitups_dashboard/views/dashboard_mobile_view.dart';
-import 'package:felicitup_app/features/felicitups_dashboard/views/dashboard_web_view.dart';
+import 'package:felicitup_app/features/felicitups_dashboard/views/mobile/felicitups_dashboard_mobile_page.dart';
+import 'package:felicitup_app/features/felicitups_dashboard/views/web/felicitups_dashboard_web_page.dart';
 import 'package:felicitup_app/features/felicitups_dashboard/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,13 +29,10 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
   void initState() {
     super.initState();
     _felicitupsDashboardPageController = PageController();
-    _pages = [InProgressSection(), PastSection()];
+    _pages = const [InProgressSection(), PastSection()];
     context.read<FelicitupsDashboardBloc>().add(
-      const FelicitupsDashboardEvent.startListening(),
-    );
-    context.read<FelicitupsDashboardBloc>().add(
-      const FelicitupsDashboardEvent.getRememberStatus(),
-    );
+          const FelicitupsDashboardEvent.startListening(),
+        );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if ((widget.isFromPast ?? false) &&
           _felicitupsDashboardPageController.hasClients) {
@@ -44,8 +42,8 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
           curve: Curves.easeInOut,
         );
         context.read<FelicitupsDashboardBloc>().add(
-          FelicitupsDashboardEvent.changeIndex(1),
-        );
+              const FelicitupsDashboardEvent.changeIndex(1),
+            );
       }
     });
   }
@@ -75,7 +73,8 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
             state.errorMessage != null) {
           unawaited(showErrorModal(state.errorMessage!));
         } else if (state.status == FelicitupsDashboardStatus.likeError) {
-          unawaited(showErrorModal(state.errorMessage ?? 'Error al dar like'));
+          unawaited(showErrorModal(
+              state.errorMessage ?? context.locale.like_error));
         }
 
         // Manejar navegación
@@ -88,17 +87,18 @@ class _FelicitupsDashboardPageState extends State<FelicitupsDashboardPage> {
         }
       },
       child: LayoutBuilder(
-        builder: (_, constraints) {
+        builder: (context, constraints) {
           if (constraints.maxWidth > 1024) {
-            return DashboardWebView(
+            return FelicitupsDashboardWebPage(
               felicitupsDashboardPageController:
                   _felicitupsDashboardPageController,
               pages: _pages,
             );
           }
 
-          return DashboardMobileView(
-            felicitupsDashboardPageController: _felicitupsDashboardPageController,
+          return FelicitupsDashboardMobilePage(
+            felicitupsDashboardPageController:
+                _felicitupsDashboardPageController,
             pages: _pages,
           );
         },

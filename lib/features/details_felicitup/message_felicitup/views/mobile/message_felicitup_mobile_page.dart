@@ -1,0 +1,272 @@
+import 'package:collection/collection.dart';
+import 'package:felicitup_app/app/bloc/app_bloc.dart';
+import 'package:felicitup_app/core/extensions/extensions.dart';
+import 'package:felicitup_app/core/router/router.dart';
+import 'package:felicitup_app/data/models/models.dart';
+import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
+import 'package:felicitup_app/features/details_felicitup/message_felicitup/widgets/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+class MessageFelicitupMobilePage extends StatefulWidget {
+  const MessageFelicitupMobilePage({super.key, this.chatId});
+
+  final String? chatId;
+
+  @override
+  State<MessageFelicitupMobilePage> createState() =>
+      _MessageFelicitupMobilePageState();
+}
+
+class _MessageFelicitupMobilePageState
+    extends State<MessageFelicitupMobilePage>
+    with WidgetsBindingObserver {
+  final TextEditingController textController = TextEditingController();
+  final scrollController = ScrollController();
+
+  void deleteId() {
+    if (context.mounted) {
+      context.read<MessageFelicitupBloc>().add(
+            const MessageFelicitupEvent.asignCurrentChat(''),
+          );
+    }
+  }
+
+  void assignid() {
+    if (context.mounted) {
+      final felicitup = context
+          .read<DetailsFelicitupDashboardBloc>()
+          .state
+          .felicitup;
+      context.read<MessageFelicitupBloc>().add(
+            MessageFelicitupEvent.asignCurrentChat(felicitup?.chatId ?? ''),
+          );
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.inactive:
+        deleteId();
+        break;
+      case AppLifecycleState.paused:
+        deleteId();
+        break;
+      case AppLifecycleState.resumed:
+        assignid();
+        break;
+      case AppLifecycleState.detached:
+        deleteId();
+        break;
+      case AppLifecycleState.hidden:
+        deleteId();
+        break;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    detailsFelicitupNavigatorKey.currentContext!
+        .read<DetailsFelicitupDashboardBloc>()
+        .add(const DetailsFelicitupDashboardEvent.changeCurrentIndex(1));
+    WidgetsBinding.instance.addObserver(this);
+    assignid();
+    final felicitup = context
+        .read<DetailsFelicitupDashboardBloc>()
+        .state
+        .felicitup;
+    final currentChatId = context
+        .read<MessageFelicitupBloc>()
+        .state
+        .currentChatId;
+    if (currentChatId.isNotEmpty) {
+      context.read<MessageFelicitupBloc>().add(
+            MessageFelicitupEvent.startListening(currentChatId),
+          );
+    } else if (widget.chatId != null && widget.chatId != currentChatId) {
+      context.read<MessageFelicitupBloc>().add(
+            MessageFelicitupEvent.setCurrentChatId(widget.chatId ?? ''),
+          );
+      context.read<MessageFelicitupBloc>().add(
+            MessageFelicitupEvent.startListening(widget.chatId ?? ''),
+          );
+    } else {
+      context.read<MessageFelicitupBloc>().add(
+            MessageFelicitupEvent.startListening(felicitup?.chatId ?? ''),
+          );
+    }
+  }
+
+  @override
+  void dispose() {
+    textController.dispose();
+    scrollController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    deleteId();
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    if (scrollController.hasClients) {
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final infoFelicitupBloc = context.read<InfoFelicitupBloc>();
+    final friendList = infoFelicitupBloc.state.friendList;
+    return BlocBuilder<
+      DetailsFelicitupDashboardBloc,
+      DetailsFelicitupDashboardState
+    >(
+      buildWhen: (previous, current) => previous.felicitup != current.felicitup,
+      builder: (_, state) {
+        final felicitup = state.felicitup;
+        final currentUser = context.read<AppBloc>().state.currentUser;
+
+        return PopScope(
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) {
+              deleteId();
+              context.go(RouterPaths.felicitupsDashboard);
+            }
+          },
+          child: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Scaffold(
+              backgroundColor: context.colors.background,
+              body: Column(
+                children: [
+                  Expanded(
+                    child: CustomScrollView(
+                      controller: scrollController,
+                      slivers: [
+                        BlocBuilder<
+                          MessageFelicitupBloc,
+                          MessageFelicitupState
+                        >(
+                          builder: (_, state) {
+                            List<ChatMessageModel> chatMessages =
+                                state.messages;
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _scrollToBottom();
+                            });
+
+                            return SliverList(
+                              delegate: SliverChildBuilderDelegate((_, index) {
+                                final chatMessage = chatMessages[index];
+                                final senderId = chatMessage.sendedBy;
+                                final sender = friendList.firstWhereOrNull(
+                                  (user) => user.id == senderId,
+                                );
+                                final displayName =
+                                    sender?.getDisplayName(currentUser) ??
+                                    chatMessage.userName;
+                                return ChatSpace(
+                                  key: ValueKey(chatMessages[index].id),
+                                  isMine:
+                                      chatMessages[index].sendedBy ==
+                                      currentUser?.id,
+                                  date: chatMessages[index].sendedAt,
+                                  textContent:
+                                      chatMessages[index].message ?? '',
+                                  id: chatMessages[index].sendedBy ?? '',
+                                  name: displayName ?? '',
+                                  userImg: chatMessages[index].userImg,
+                                );
+                              }, childCount: chatMessages.length),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: context.sp(8)),
+                  TextFormField(
+                    controller: textController,
+                    style: context.styles.paragraph,
+                    textCapitalization: TextCapitalization.sentences,
+                    maxLines: null,
+                    decoration: InputDecoration(
+                      fillColor: context.colors.lightGrey,
+                      filled: true,
+                      suffixIcon: IconButton(
+                        onPressed: () async {
+                          final textValue = textController.text;
+                          if (textValue.isNotEmpty) {
+                            context.read<MessageFelicitupBloc>().add(
+                                  MessageFelicitupEvent.sendMessage(
+                                    ChatMessageModel(
+                                      id: '${felicitup?.id}-${currentUser?.id}',
+                                      message: textValue,
+                                      sendedBy: currentUser?.id ?? '',
+                                      userName: currentUser?.firstName ?? '',
+                                      sendedAt: DateTime.now(),
+                                      userImg: currentUser?.userImg,
+                                    ),
+                                    felicitup!,
+                                    currentUser?.id ?? '',
+                                    currentUser?.firstName ?? '',
+                                  ),
+                                );
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _scrollToBottom();
+                            });
+                            textController.clear();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  context.locale.empty_message_error,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        icon: Icon(Icons.send, color: context.colors.primary),
+                      ),
+                      hintText: context.locale.type_message_hint,
+                      hintStyle: context.styles.paragraph.copyWith(
+                        color: context.colors.darkGrey,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(context.sp(20)),
+                        borderSide: BorderSide(
+                          width: context.sp(1),
+                          color: context.colors.darkGrey,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(context.sp(20)),
+                        borderSide: BorderSide(
+                          width: context.sp(1),
+                          color: context.colors.darkGrey,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(context.sp(20)),
+                        borderSide: BorderSide(
+                          width: context.sp(1),
+                          color: context.colors.darkGrey,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
