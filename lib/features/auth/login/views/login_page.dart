@@ -41,7 +41,12 @@ class LoginPage extends StatelessWidget {
             context.read<LoginBloc>().add(LoginEvent.changeFirstTimeRedirect());
             context.go(RouterPaths.onBoarding);
           } else {
-            context.go(RouterPaths.felicitupsDashboard);
+            final redirect = GoRouterState.of(context).uri.queryParameters['redirect'];
+            if (redirect != null && redirect.isNotEmpty) {
+              context.go(redirect);
+            } else {
+              context.go(RouterPaths.felicitupsDashboard);
+            }
           }
         }
       },

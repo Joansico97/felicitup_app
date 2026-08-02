@@ -40,6 +40,12 @@ export async function completeFelicitup(felicitupId: string): Promise<void> {
     const felicitup = felicitupDoc.data();
     if (!felicitup) return;
 
+    // Idempotencia Activa: Evitar doble ejecución
+    if (felicitup.status === "Finished") {
+      logger.info(`Felicitup ${felicitupId} ya está en estado Finished. Omitiendo.`);
+      return;
+    }
+
     const invitedUserDetails: Array<any> = Array.isArray(felicitup.invitedUserDetails)
       ? felicitup.invitedUserDetails
       : [];
@@ -130,6 +136,12 @@ export async function completeFelicitup(felicitupId: string): Promise<void> {
   }
 }
 
+/**
+ * @function sendFelicitup
+ * @description Programa una Felicitup para ser enviada (completada) en la fecha especificada en el documento.
+ * Si la fecha ya pasó, la completa inmediatamente. Si es a futuro, utiliza Google Cloud Tasks.
+ * @param {CallableRequest} request - Payload con `felicitupId`. Requiere que el usuario esté autenticado.
+ */
 export const sendFelicitup = onCall(
   {
     secrets: [taskQueueSecret],
@@ -223,6 +235,11 @@ export const sendFelicitup = onCall(
   }
 );
 
+/**
+ * @function executeFelicitupCompletion
+ * @description Endpoint HTTP invocado por Google Cloud Tasks en el momento programado para completar una Felicitup.
+ * Validado mediante un secreto (TASK_QUEUE_SECRET).
+ */
 export const executeFelicitupCompletion = onRequest({ region: "us-central1" }, async (req: Request, res: Response) => {
   try {
     const authHeader = req.headers.authorization || "";
@@ -249,6 +266,11 @@ export const executeFelicitupCompletion = onRequest({ region: "us-central1" }, a
   }
 });
 
+/**
+ * @function sendManualFelicitup
+ * @description Permite a un usuario enviar y completar una Felicitup de manera manual e inmediata.
+ * @param {CallableRequest} request - Payload con `felicitupId`.
+ */
 export const sendManualFelicitup = onCall(async (request: CallableRequest) => {
   try {
     const { felicitupId } = request.data?.data || request.data || {};
@@ -267,6 +289,11 @@ export const sendManualFelicitup = onCall(async (request: CallableRequest) => {
 
     const felicitup = felicitupDoc.data();
     if (!felicitup) return;
+
+    // Idempotencia Activa: Evitar envíos duplicados
+    if (felicitup.status === "Finished") {
+      return { success: true, message: "La felicitup ya había sido enviada." };
+    }
 
     const invitedUserDetails: Array<any> = Array.isArray(felicitup.invitedUserDetails) ? felicitup.invitedUserDetails : [];
     const atLeastOneVideo = invitedUserDetails.some(

@@ -229,6 +229,14 @@ class CustomRouter {
         pageBuilder: _completeUserDataHandler,
         parentNavigatorKey: rootNavigatorKey,
       ),
+      GoRoute(
+        path: RouterPaths.inviteLink,
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return InvitePage(felicitupId: id);
+        },
+        parentNavigatorKey: rootNavigatorKey,
+      ),
     ],
   );
 

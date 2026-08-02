@@ -40,7 +40,12 @@ class FinishRegisterView extends StatelessWidget {
               context.read<RegisterBloc>().add(
                 const RegisterEvent.deleteState(),
               );
-              context.go(RouterPaths.login);
+              final redirect = GoRouterState.of(context).uri.queryParameters['redirect'];
+              if (redirect != null && redirect.isNotEmpty) {
+                context.go('${RouterPaths.login}?redirect=$redirect');
+              } else {
+                context.go(RouterPaths.login);
+              }
             },
             isBig: false,
             label: 'Iniciar Sesión',

@@ -146,5 +146,11 @@ void _initBlocsInjection() {
     ..registerFactory(() => FrequentQuestionsBloc())
     ..registerFactory(
       () => CompleteUserDataBloc(userRepository: di(), firebaseAuth: di()),
+    )
+    ..registerFactory(
+      () => InviteBloc(
+        felicitupRepository: di(),
+        userRepository: di(),
+      ),
     );
 }

@@ -17,6 +17,7 @@ abstract class CreateFelicitupState with _$CreateFelicitupState {
     int? boteQuantity,
     DateTime? selectedDate,
     String? errorMessage,
+    String? currentFelicitupId,
   }) = _CreateFelicitupState;
 
   factory CreateFelicitupState.initial() => CreateFelicitupState(

@@ -6,6 +6,12 @@ import { getAdminAuth, getAdminStorage, getDb } from "./lib/admin";
 import { getMessaging, Message } from "firebase-admin/messaging";
 import { resolveMx } from "dns/promises";
 
+/**
+ * @function checkBirthdaysAndCreateAlerts
+ * @description Tarea programada (Cron Job) que se ejecuta cada 12 horas.
+ * Evalúa los cumpleaños próximos de los amigos del usuario (matchList) y genera notificaciones push.
+ * Utiliza un ID determinista (`año`) para la alerta asegurando Idempotencia ante reejecuciones.
+ */
 export const checkBirthdaysAndCreateAlerts = onSchedule(
   {
     schedule: "every 12 hours",
@@ -101,7 +107,7 @@ async function processFriendsForBirthdayUser(
     alertDate.setFullYear(new Date().getFullYear());
 
     const newAlert = {
-      id: `${birthdayUserId}-${alertDate.getTime()}`,
+      id: `${birthdayUserId}-${alertDate.getFullYear()}`,
       friendId: birthdayUserId,
       friendName: birthdayUser.fullName || `User ${birthdayUserId}`,
       friendProfilePic: birthdayUser.userImg || "",
@@ -164,6 +170,11 @@ async function sendBirthdayNotifications(
   }
 }
 
+/**
+ * @function getTemporaryImageUrl
+ * @description Obtiene una Signed URL temporal (15 min) para leer una imagen subida al directorio `temp/` de Storage.
+ * @param {CallableRequest} request - Payload con `imageName`. Requiere autenticación.
+ */
 export const getTemporaryImageUrl = onCall(
   {
     timeoutSeconds: 120,
@@ -190,6 +201,12 @@ export const getTemporaryImageUrl = onCall(
   }
 );
 
+/**
+ * @function disableCurrentUser
+ * @description Bloquea la cuenta del usuario autenticado de Firebase Auth y revoca sus refresh tokens.
+ * Aplica Autocuración y limpieza de estado eliminando el token FCM y limpiando la sesión activa.
+ * @param {CallableRequest} request - Requiere autenticación.
+ */
 export const disableCurrentUser = onCall(
   {
     timeoutSeconds: 120,
@@ -207,7 +224,15 @@ export const disableCurrentUser = onCall(
       await auth.updateUser(uid, { disabled: true });
       await auth.revokeRefreshTokens(uid);
 
-      logger.info(`Usuario ${uid} deshabilitado exitosamente.`);
+      // Self-Healing & Higiene del Estado: Limpiar tokens y estados activos
+      const db = getDb();
+      await db.collection("Users").doc(uid).update({
+        fcmToken: null,
+        currentChat: null,
+        isOnline: false,
+      });
+
+      logger.info(`Usuario ${uid} deshabilitado exitosamente y datos de sesión limpiados.`);
       return { success: true, message: "Tu cuenta ha sido bloqueada exitosamente." };
     } catch (error: unknown) {
       logger.error("Error al deshabilitar el usuario:", error);
@@ -216,6 +241,11 @@ export const disableCurrentUser = onCall(
   }
 );
 
+/**
+ * @function validateEmailDomain
+ * @description Valida si el dominio de un correo electrónico tiene registros MX asociados resolviendo el DNS.
+ * @param {CallableRequest} request - Payload con `email`.
+ */
 export const validateEmailDomain = onCall(
   {
     region: "us-central1",

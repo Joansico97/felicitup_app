@@ -317,7 +317,7 @@ class CreateFelicitupBloc
         },
         (r) async {
           add(CreateFelicitupEvent.sendNotification(felicitupId));
-          emit(state.copyWith(isLoading: false, status: CreateStatus.success));
+          emit(state.copyWith(isLoading: false, status: CreateStatus.success, currentFelicitupId: felicitupId));
           await _firebaseFunctionsHelper.sendFelicitup(
             felicitupId: felicitupId,
           );

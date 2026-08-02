@@ -3,10 +3,10 @@ import { logger } from "firebase-functions";
 import { getAdminApp, getDb } from "./lib/admin";
 import { getMessaging, TokenMessage } from "firebase-admin/messaging";
 
-export async function sendPushNotification(payload: TokenMessage): Promise<{ success: boolean; error?: string }> {
+export async function sendPushNotification(payload: TokenMessage): Promise<{ success: boolean; error?: string; isInvalidToken?: boolean }> {
   if (!payload.token) {
     logger.warn("Error: User has no push notification token!");
-    return { success: false, error: "No token provided" };
+    return { success: false, error: "No token provided", isInvalidToken: true };
   }
 
   try {
@@ -17,10 +17,26 @@ export async function sendPushNotification(payload: TokenMessage): Promise<{ suc
   } catch (error: unknown) {
     const err = error as { code?: string; message?: string };
     logger.error("Error sending push notification:", err);
-    return { success: false, error: err.code || err.message };
+    
+    // Self-Healing: Detect invalid tokens
+    const invalidTokenCodes = [
+      "messaging/invalid-registration-token",
+      "messaging/registration-token-not-registered",
+      "messaging/invalid-argument"
+    ];
+    const isInvalidToken = err.code ? invalidTokenCodes.includes(err.code) : false;
+
+    return { success: false, error: err.code || err.message, isInvalidToken };
   }
 }
 
+/**
+ * @function sendNotification
+ * @description Envía una notificación push FCM a un único usuario basándose en su `userId`.
+ * Si el token es inválido o expiró, lo elimina automáticamente de Firestore (Self-Healing).
+ * Evita el envío si el usuario ya está dentro de la misma sala de chat (`currentChat`).
+ * @param {CallableRequest} request - Payload con `userId`, `title`, `message`, `currentChat`, y `dataInfo`.
+ */
 export const sendNotification = onCall(
   {
     region: "us-central1",
@@ -72,6 +88,11 @@ export const sendNotification = onCall(
         if (result.success) {
           return { success: true, message: `Notificación enviada a ${userId}` };
         } else {
+          // Self-Healing: Limpiar token si es inválido
+          if (result.isInvalidToken) {
+            logger.warn(`Token inválido para el usuario ${userId}. Eliminando token del registro.`);
+            await db.collection("Users").doc(userId).update({ fcmToken: null });
+          }
           return { success: false, error: `Error enviando a ${userId}: ${result.error}` };
         }
       } else {
@@ -83,11 +104,18 @@ export const sendNotification = onCall(
       if (error instanceof HttpsError) {
         throw error;
       }
-      throw new HttpsError("internal", "Error al enviar la notificación", error);
+      const err = error as Error;
+      throw new HttpsError("internal", "Error al enviar la notificación", err.message);
     }
   }
 );
 
+/**
+ * @function sendNotificationToMultiple
+ * @description Envía notificaciones push a múltiples usuarios en bloque (`userIds`).
+ * Implementa validaciones y autocuración eliminando tokens inválidos por cada usuario en el array.
+ * @param {CallableRequest} request - Payload con `userIds`, `title`, `message`, `currentChat`, y `dataInfo`.
+ */
 export const sendNotificationToMultiple = onCall(
   {
     region: "us-central1",
@@ -139,9 +167,20 @@ export const sendNotificationToMultiple = onCall(
               data: dataInfo ? Object.fromEntries(Object.entries(dataInfo).map(([k, v]) => [k, String(v)])) : undefined,
             };
 
-            await sendPushNotification(payload);
-            results.details.push({ userId, status: "success" });
-            results.success++;
+            const result = await sendPushNotification(payload);
+            
+            if (result.success) {
+              results.details.push({ userId, status: "success" });
+              results.success++;
+            } else {
+              // Self-Healing: Limpiar token inválido
+              if (result.isInvalidToken) {
+                logger.warn(`Token inválido para el usuario ${userId}. Eliminando token del registro.`);
+                await db.collection("Users").doc(userId).update({ fcmToken: null });
+              }
+              results.details.push({ userId, status: "failed", reason: result.error });
+              results.failed++;
+            }
           } else {
             results.details.push({ userId, status: "skipped", reason: "En chat actual" });
           }
@@ -162,7 +201,8 @@ export const sendNotificationToMultiple = onCall(
       if (error instanceof HttpsError) {
         throw error;
       }
-      throw new HttpsError("internal", "Error al enviar notificaciones", error);
+      const err = error as Error;
+      throw new HttpsError("internal", "Error al enviar notificaciones", err.message);
     }
   }
 );

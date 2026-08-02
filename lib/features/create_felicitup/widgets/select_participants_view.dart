@@ -234,12 +234,12 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                   children: [
                     Text('| Paso 03', style: context.styles.menu),
                     SizedBox(height: context.sp(8)),
-                    Text('¿Quién participa?', style: context.styles.subtitle),
+                    Text('¿Quién participa? (Opcional)', style: context.styles.subtitle),
                     SizedBox(height: context.sp(8)),
                     Text(
-                      'Selecciona los participantes de la Felicitup.',
+                      'Puedes seleccionar los participantes ahora o saltar este paso y compartirles el enlace de invitación al finalizar.',
                       style: context.styles.paragraph,
-                      maxLines: 3,
+                      maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],

@@ -2,17 +2,61 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-void showFinishModal(void Function()? onPressed) {
+void showFinishModal(void Function()? onPressed, {String? felicitupId}) {
+  final String shareLink = 'https://app.felicitup.com/invite/$felicitupId'; // TODO: Update to actual domain later
+
   showDialog(
     context: rootNavigatorKey.currentContext!,
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('¡Enhorabuena!'),
         titleTextStyle: context.styles.header1,
-        content: const Text(
-          'Tu Felicitup se ha creado correctamente. Hemos enviado una invitación a los miembros del grupo.',
-          textAlign: TextAlign.center,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Tu Felicitup se ha creado correctamente.',
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: context.sp(10)),
+            if (felicitupId != null) ...[
+              Text(
+                'Comparte este enlace para que otros se unan:',
+                textAlign: TextAlign.center,
+                style: context.styles.smallText.copyWith(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: context.sp(8)),
+              Container(
+                padding: EdgeInsets.all(context.sp(8)),
+                decoration: BoxDecoration(
+                  color: context.colors.lightGrey,
+                  borderRadius: BorderRadius.circular(context.sp(8)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        shareLink,
+                        style: context.styles.smallText.copyWith(color: Colors.blue),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy, size: 20),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: shareLink));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Enlace copiado al portapapeles')),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
         contentTextStyle: context.styles.smallText,
         icon: Column(

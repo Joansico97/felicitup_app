@@ -80,6 +80,55 @@ class _ContactSearchListState extends State<ContactSearchList> {
     });
   }
 
+  void _showManualOwnerCreation(BuildContext context) {
+    final TextEditingController nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(
+            'Crear destinatario',
+            style: context.styles.header1.copyWith(fontSize: 18),
+          ),
+          content: TextField(
+            controller: nameController,
+            decoration: const InputDecoration(
+              hintText: 'Nombre de la persona',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (nameController.text.trim().isNotEmpty) {
+                  final customOwner = OwnerModel(
+                    id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
+                    name: nameController.text.trim(),
+                    userImg: '',
+                  );
+                  widget.felicitupBloc.add(
+                    CreateFelicitupEvent.changeFelicitupOwner(customOwner),
+                  );
+                  widget.onContactSelected(customOwner);
+                  Navigator.pop(ctx); // Close dialog
+                  Navigator.pop(context); // Close bottom sheet
+                }
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.initialFriendList.isEmpty && _searchQuery.isEmpty) {
@@ -117,6 +166,32 @@ class _ContactSearchListState extends State<ContactSearchList> {
               ),
             ),
             style: context.styles.smallText.copyWith(color: Colors.black87),
+          ),
+        ),
+        GestureDetector(
+          onTap: () => _showManualOwnerCreation(context),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              vertical: context.sp(12),
+              horizontal: context.sp(15),
+            ),
+            margin: EdgeInsets.only(bottom: context.sp(12)),
+            decoration: BoxDecoration(
+              color: context.colors.orange.valueOpacity(0.1),
+              borderRadius: BorderRadius.circular(context.sp(10)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.person_add, color: context.colors.orange),
+                SizedBox(width: context.sp(10)),
+                Text(
+                  'Crear destinatario manualmente',
+                  style: context.styles.paragraph.copyWith(
+                    color: context.colors.orange,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         if (_filteredFriendList.isEmpty && _searchQuery.isNotEmpty)
@@ -237,17 +312,13 @@ class SelectContactsView extends StatelessWidget {
                             previous.felicitupOwner != current.felicitupOwner,
                         builder: (_, state) {
                           final listOwner = state.felicitupOwner;
-                          final currentUser = context
-                              .read<AppBloc>()
-                              .state
-                              .currentUser;
                           return Text(
                             listOwner.length > 2
-                                ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)}, a ${state.friendList.firstWhere((element) => element.id == listOwner[1].id).getDisplayName(currentUser)} y a ${listOwner.length - 2} más'
+                                ? 'Felicitas a ${listOwner[0].name}, a ${listOwner[1].name} y a ${listOwner.length - 2} más'
                                 : listOwner.length == 2
-                                ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)} y a ${state.friendList.firstWhere((element) => element.id == listOwner[1].id).getDisplayName(currentUser)}'
+                                ? 'Felicitas a ${listOwner[0].name} y a ${listOwner[1].name}'
                                 : listOwner.length == 1
-                                ? 'Felicitas a ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)}'
+                                ? 'Felicitas a ${listOwner[0].name}'
                                 : '¿A quién felicitas?',
                             style: context.styles.subtitle,
                             maxLines: 3,

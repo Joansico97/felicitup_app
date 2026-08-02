@@ -34,7 +34,7 @@ class CreateFelicitupPage extends StatelessWidget {
                       const CreateFelicitupEvent.deleteCurrentFelicitup(),
                     );
                 context.go(RouterPaths.felicitupsDashboard);
-              });
+              }, felicitupId: state.currentFelicitupId);
             }
           },
         ),

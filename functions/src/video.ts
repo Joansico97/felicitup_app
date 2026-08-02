@@ -219,6 +219,12 @@ async function applyWatermark(inputPath: string, outputPath: string, watermarkPa
   });
 }
 
+/**
+ * @function normalizeSingleVideo
+ * @description Normaliza un video subido por un usuario (resolución, codec, aspect ratio) y genera un thumbnail.
+ * Aplica Idempotencia Activa para no procesar el mismo video si ya se encuentra en estado `processing` o `completed`.
+ * @param {CallableRequest} request - Debe incluir auth.uid, videoUrl, userId y felicitupId en request.data.
+ */
 export const normalizeSingleVideo = onCall(
   {
     region: "us-central1",
@@ -248,6 +254,16 @@ export const normalizeSingleVideo = onCall(
         if (userIndex === -1) throw new HttpsError("not-found", "User not found in invitedUserDetails");
 
         const userToUpdate = invitedUserDetails[userIndex];
+        const currentStatus = userToUpdate.videoData?.processingStatus;
+        
+        // Idempotencia Activa: Si ya está en proceso o completado, abortar para no repetir
+        if (currentStatus === "completed") {
+          throw new HttpsError("already-exists", "El video ya ha sido procesado.");
+        }
+        if (currentStatus === "processing") {
+          throw new HttpsError("failed-precondition", "El video ya se está procesando.");
+        }
+
         invitedUserDetails[userIndex] = {
           ...userToUpdate,
           videoData: {
@@ -335,6 +351,9 @@ export const normalizeSingleVideo = onCall(
       };
     } catch (error: unknown) {
       logger.error("Error in normalizeSingleVideo:", error);
+      if (error instanceof HttpsError && (error.code === "already-exists" || error.code === "failed-precondition")) {
+        throw error;
+      }
       await db.runTransaction(async (t) => {
         const doc = await t.get(felicitupRef);
         if (!doc.exists) return;
@@ -365,6 +384,12 @@ export const normalizeSingleVideo = onCall(
   }
 );
 
+/**
+ * @function processVideoMerge
+ * @description Trigger que escucha la creación de documentos en `VideoMergeJobs/{felicitupId}`. 
+ * Descarga todos los videos normalizados de los usuarios y los concatena en un solo video final usando FFmpeg.
+ * Implementa un mecanismo de salida temprana (early return) si el trabajo ya está completo o en proceso.
+ */
 export const processVideoMerge = onDocumentCreated(
   {
     document: "VideoMergeJobs/{felicitupId}",
@@ -376,9 +401,16 @@ export const processVideoMerge = onDocumentCreated(
     const snap = event.data;
     if (!snap) return;
 
-    const jobData = snap.data();
-    const { videoUrls } = jobData || {};
     const { felicitupId } = event.params;
+    const jobData = snap.data();
+    
+    // Idempotencia Activa
+    if (jobData?.status === "completed" || jobData?.status === "processing") {
+      logger.info(`VideoMergeJob ${felicitupId} ya está en estado ${jobData?.status}. Omitiendo.`);
+      return;
+    }
+
+    const { videoUrls } = jobData || {};
     const db = getDb();
     const bucket = getAdminStorage().bucket();
 
@@ -499,6 +531,12 @@ export const processVideoMerge = onDocumentCreated(
   }
 );
 
+/**
+ * @function processWatermark
+ * @description Aplica una marca de agua (watermark) al video final generado. 
+ * Descarga el video, aplica el filtro con FFmpeg y lo sube nuevamente a Cloud Storage.
+ * @param {CallableRequest} request - Debe contener videoUrl, felicitupId y userId.
+ */
 export const processWatermark = onCall(async (request: CallableRequest) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "The function must be called while authenticated.");
