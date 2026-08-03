@@ -184,21 +184,28 @@ class _SelectComplementsViewState extends State<SelectComplementsView> {
                         );
                 },
               ),
-              SizedBox(
-                width: context.sp(150),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('| Paso 04', style: context.styles.menu),
-                    SizedBox(height: context.sp(8)),
-                    Text('¿Qué hacemos?', style: context.styles.subtitle),
-                    SizedBox(height: context.sp(8)),
-                    Text(
-                      'Elige los elementos que tendrá tu Felicitup.',
-                      style: context.styles.paragraph,
+              BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                builder: (_, state) {
+                  return SizedBox(
+                    width: context.sp(150),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '| Paso 0${state.steperIndex + 1}',
+                          style: context.styles.menu,
+                        ),
+                        SizedBox(height: context.sp(8)),
+                        Text('¿Qué hacemos?', style: context.styles.subtitle),
+                        SizedBox(height: context.sp(8)),
+                        Text(
+                          'Elige los elementos que tendrá tu Felicitup.',
+                          style: context.styles.paragraph,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ],
           ),

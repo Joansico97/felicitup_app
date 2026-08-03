@@ -63,6 +63,65 @@ class CreateFelicitupBloc
   }
 
   void _nextStep(Emitter<CreateFelicitupState> emit, int lenght) {
+    final bool hasMatchList = state.friendList.isNotEmpty;
+
+    if (!hasMatchList) {
+      // 4-step flow: 0: Quién, 1: Evento, 2: Qué, 3: Resumen
+      switch (state.steperIndex) {
+        case 0:
+          if ((state.felicitupOwner.length == 1 &&
+                  (state.felicitupOwner.first.date != null ||
+                      state.selectedDate != null)) ||
+              (state.felicitupOwner.length >= 2 && state.selectedDate != null)) {
+            emit(state.copyWith(steperIndex: state.steperIndex + 1));
+          } else {
+            ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.felicitupOwner.length > 1 &&
+                          state.felicitupOwner.first.date == null
+                      ? 'Debes seleccionar una fecha'
+                      : state.felicitupOwner.length > 1 &&
+                            state.selectedDate == null
+                      ? 'Debes seleccionar una fecha'
+                      : 'Debes seleccionar al menos un amigo',
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+          break;
+        case 1:
+          if (state.eventReason.isNotEmpty) {
+            emit(state.copyWith(steperIndex: state.steperIndex + 1));
+          } else {
+            ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+              const SnackBar(
+                content: Text('Debes seleccionar un motivo'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+          break;
+        case 2:
+          if ((state.hasBote && state.boteQuantity != null) || !state.hasBote) {
+            emit(state.copyWith(steperIndex: state.steperIndex + 1));
+          } else {
+            ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+              const SnackBar(
+                content: Text('Debes agregar una cantidad para el bote'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+          break;
+        case 3:
+          break;
+      }
+      return;
+    }
+
+    // 5-step flow: 0: Quién, 1: Evento, 2: Participantes, 3: Qué, 4: Resumen
     switch (state.steperIndex) {
       case 0:
         if ((state.felicitupOwner.length == 1 &&
@@ -92,9 +151,9 @@ class CreateFelicitupBloc
           emit(state.copyWith(steperIndex: state.steperIndex + 1));
         } else {
           ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Debes seleccionar un motivo'),
-              duration: const Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -104,9 +163,9 @@ class CreateFelicitupBloc
           emit(state.copyWith(steperIndex: state.steperIndex + 1));
         } else {
           ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Debes seleccionar al menos un amigo'),
-              duration: const Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -116,9 +175,9 @@ class CreateFelicitupBloc
           emit(state.copyWith(steperIndex: state.steperIndex + 1));
         } else {
           ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Debes agregar una cantidad para el bote'),
-              duration: const Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -129,6 +188,60 @@ class CreateFelicitupBloc
   }
 
   void _jumpToStep(Emitter<CreateFelicitupState> emit, int index) {
+    final bool hasMatchList = state.friendList.isNotEmpty;
+
+    if (!hasMatchList) {
+      // 4-step flow: 0: Quién, 1: Evento, 2: Qué, 3: Resumen
+      switch (index) {
+        case 0:
+          emit(state.copyWith(steperIndex: index));
+          break;
+        case 1:
+          if (state.felicitupOwner.length == 1 ||
+              (state.felicitupOwner.length >= 2 && state.selectedDate != null)) {
+            emit(state.copyWith(steperIndex: index));
+          } else {
+            ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.felicitupOwner.length > 1 && state.selectedDate == null
+                      ? 'Debes seleccionar una fecha'
+                      : 'Debes seleccionar al menos un amigo',
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+          break;
+        case 2:
+          if (state.eventReason.isNotEmpty) {
+            emit(state.copyWith(steperIndex: index));
+          } else {
+            ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+              const SnackBar(
+                content: Text('Debes seleccionar un motivo'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+          break;
+        case 3:
+          if (state.felicitupOwner.isNotEmpty && state.eventReason.isNotEmpty) {
+            emit(state.copyWith(steperIndex: index));
+          } else {
+            ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
+              const SnackBar(
+                content: Text('Debes completar los datos requeridos'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+          break;
+      }
+      return;
+    }
+
+    // 5-step flow: 0: Quién, 1: Evento, 2: Participantes, 3: Qué, 4: Resumen
     switch (index) {
       case 0:
         emit(state.copyWith(steperIndex: index));
@@ -155,9 +268,9 @@ class CreateFelicitupBloc
           emit(state.copyWith(steperIndex: index));
         } else {
           ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Debes seleccionar un motivo'),
-              duration: const Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -167,9 +280,9 @@ class CreateFelicitupBloc
           emit(state.copyWith(steperIndex: index));
         } else {
           ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Debes seleccionar al menos un amigo'),
-              duration: const Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -179,9 +292,9 @@ class CreateFelicitupBloc
           emit(state.copyWith(steperIndex: index));
         } else {
           ScaffoldMessenger.of(rootNavigatorKey.currentContext!).showSnackBar(
-            SnackBar(
-              content: Text('Debes completar los pasos previos'),
-              duration: const Duration(seconds: 2),
+            const SnackBar(
+              content: Text('Debes completar los datos requeridos'),
+              duration: Duration(seconds: 2),
             ),
           );
         }
@@ -264,7 +377,9 @@ class CreateFelicitupBloc
     try {
       final now = DateTime.now();
       DateTime felicitupDate =
-          state.selectedDate ?? state.felicitupOwner.first.date!;
+          state.selectedDate ??
+          state.felicitupOwner.firstOrNull?.date ??
+          DateTime.now();
       int currentMonth = now.month;
       int currentDay = now.day;
       int otherMonth = felicitupDate.month;

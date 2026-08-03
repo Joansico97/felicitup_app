@@ -15,8 +15,8 @@ class FelicitupsDashboardWebPage extends StatelessWidget {
     super.key,
     required PageController felicitupsDashboardPageController,
     required List<Widget> pages,
-  })  : _felicitupsDashboardPageController = felicitupsDashboardPageController,
-        _pages = pages;
+  }) : _felicitupsDashboardPageController = felicitupsDashboardPageController,
+       _pages = pages;
 
   final PageController _felicitupsDashboardPageController;
   final List<Widget> _pages;
@@ -39,11 +39,12 @@ class FelicitupsDashboardWebPage extends StatelessWidget {
                     builder: (_, state) {
                       return InkWell(
                         onTap: () {
-                          if (state.create) {
-                            context.go(RouterPaths.createFelicitup);
-                          } else {
-                            context.go(RouterPaths.felicitupsDashboard);
-                          }
+                          context.go(RouterPaths.createFelicitup);
+                          // if (state.create) {
+                          //   context.go(RouterPaths.createFelicitup);
+                          // } else {
+                          //   context.go(RouterPaths.felicitupsDashboard);
+                          // }
                         },
                         child: Image.asset(
                           Assets.images.logoLetter.path,
@@ -134,7 +135,9 @@ class FelicitupsDashboardWebPage extends StatelessWidget {
               children: [
                 BlocBuilder<AppBloc, AppState>(
                   builder: (_, stateApp) {
-                    final birthdateAlerts = stateApp.currentUser?.birthdateAlerts
+                    final birthdateAlerts = stateApp
+                        .currentUser
+                        ?.birthdateAlerts
                         ?.where(
                           (alert) => alert.targetDate!.isAfter(
                             DateTime.now().subtract(const Duration(days: 1)),
@@ -142,7 +145,8 @@ class FelicitupsDashboardWebPage extends StatelessWidget {
                         )
                         .toList();
                     return Visibility(
-                      visible: (birthdateAlerts?.isNotEmpty ?? false) &&
+                      visible:
+                          (birthdateAlerts?.isNotEmpty ?? false) &&
                           stateApp.showRememberSection,
                       child: const RememberSection(),
                     );
@@ -168,63 +172,70 @@ class FelicitupsDashboardWebPage extends StatelessWidget {
                             padding: EdgeInsets.symmetric(
                               horizontal: context.sp(24),
                             ),
-                            child: BlocBuilder<FelicitupsDashboardBloc,
-                                FelicitupsDashboardState>(
-                              buildWhen: (previous, current) =>
-                                  previous.currentIndex != current.currentIndex,
-                              builder: (_, state) {
-                                return Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    FelicitupsDashboardHeaderOption(
-                                      label: context.locale.in_progress,
-                                      isActive: state.currentIndex == 0,
-                                      textColor: context.colors.orange,
-                                      activeColor: context.colors.orange,
-                                      onActive: () {
-                                        _felicitupsDashboardPageController
-                                            .animateToPage(
-                                          0,
-                                          duration: const Duration(
-                                            milliseconds: 300,
-                                          ),
-                                          curve: Curves.easeInOut,
-                                        );
-                                        context
-                                            .read<FelicitupsDashboardBloc>()
-                                            .add(
-                                              const FelicitupsDashboardEvent
-                                                  .changeIndex(0),
-                                            );
-                                      },
-                                    ),
-                                    SizedBox(width: context.sp(14)),
-                                    FelicitupsDashboardHeaderOption(
-                                      label: context.locale.past,
-                                      isActive: state.currentIndex == 1,
-                                      textColor: context.colors.orange,
-                                      activeColor: context.colors.orange,
-                                      onActive: () {
-                                        _felicitupsDashboardPageController
-                                            .animateToPage(
-                                          1,
-                                          duration: const Duration(
-                                            milliseconds: 300,
-                                          ),
-                                          curve: Curves.easeInOut,
-                                        );
-                                        context
-                                            .read<FelicitupsDashboardBloc>()
-                                            .add(
-                                              const FelicitupsDashboardEvent
-                                                  .changeIndex(1),
-                                            );
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
+                            child:
+                                BlocBuilder<
+                                  FelicitupsDashboardBloc,
+                                  FelicitupsDashboardState
+                                >(
+                                  buildWhen: (previous, current) =>
+                                      previous.currentIndex !=
+                                      current.currentIndex,
+                                  builder: (_, state) {
+                                    return Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        FelicitupsDashboardHeaderOption(
+                                          label: context.locale.in_progress,
+                                          isActive: state.currentIndex == 0,
+                                          textColor: context.colors.orange,
+                                          activeColor: context.colors.orange,
+                                          onActive: () {
+                                            _felicitupsDashboardPageController
+                                                .animateToPage(
+                                                  0,
+                                                  duration: const Duration(
+                                                    milliseconds: 300,
+                                                  ),
+                                                  curve: Curves.easeInOut,
+                                                );
+                                            context
+                                                .read<FelicitupsDashboardBloc>()
+                                                .add(
+                                                  const FelicitupsDashboardEvent.changeIndex(
+                                                    0,
+                                                  ),
+                                                );
+                                          },
+                                        ),
+                                        SizedBox(width: context.sp(14)),
+                                        FelicitupsDashboardHeaderOption(
+                                          label: context.locale.past,
+                                          isActive: state.currentIndex == 1,
+                                          textColor: context.colors.orange,
+                                          activeColor: context.colors.orange,
+                                          onActive: () {
+                                            _felicitupsDashboardPageController
+                                                .animateToPage(
+                                                  1,
+                                                  duration: const Duration(
+                                                    milliseconds: 300,
+                                                  ),
+                                                  curve: Curves.easeInOut,
+                                                );
+                                            context
+                                                .read<FelicitupsDashboardBloc>()
+                                                .add(
+                                                  const FelicitupsDashboardEvent.changeIndex(
+                                                    1,
+                                                  ),
+                                                );
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
                           ),
                           SizedBox(height: context.sp(12)),
                           Expanded(
@@ -235,14 +246,17 @@ class FelicitupsDashboardWebPage extends StatelessWidget {
                                 return _pages[index];
                               },
                               onPageChanged: (index) async {
-                                _felicitupsDashboardPageController.animateToPage(
-                                  index,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                                context.read<FelicitupsDashboardBloc>().add(
-                                      FelicitupsDashboardEvent.changeIndex(index),
+                                _felicitupsDashboardPageController
+                                    .animateToPage(
+                                      index,
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      curve: Curves.easeInOut,
                                     );
+                                context.read<FelicitupsDashboardBloc>().add(
+                                  FelicitupsDashboardEvent.changeIndex(index),
+                                );
                               },
                             ),
                           ),

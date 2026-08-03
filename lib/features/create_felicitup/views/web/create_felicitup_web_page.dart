@@ -19,16 +19,6 @@ class CreateFelicitupWebPage extends StatefulWidget {
 class _CreateFelicitupWebPageState extends State<CreateFelicitupWebPage> {
   final TextEditingController messageController = TextEditingController();
 
-  static const List<String> steps = [
-    'Quién',
-    'Evento',
-    'Participantes',
-    'Qué',
-    'Resumen',
-  ];
-
-  late final List<Widget> pages;
-
   @override
   void initState() {
     super.initState();
@@ -42,14 +32,6 @@ class _CreateFelicitupWebPageState extends State<CreateFelicitupWebPage> {
             CreateFelicitupEvent.loadFriendsData(listData),
           );
     }
-
-    pages = [
-      const SelectContactsView(),
-      const SelectEventView(),
-      const SelectParticipantsView(),
-      const SelectComplementsView(),
-      SummaryView(messageController: messageController),
-    ];
   }
 
   @override
@@ -60,6 +42,26 @@ class _CreateFelicitupWebPageState extends State<CreateFelicitupWebPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = context.watch<AppBloc>().state.currentUser;
+    final matchList = currentUser?.matchList ?? [];
+    final bool hasMatchList = matchList.isNotEmpty;
+
+    final List<String> steps = [
+      'Quién',
+      'Evento',
+      if (hasMatchList) 'Participantes',
+      'Qué',
+      'Resumen',
+    ];
+
+    final List<Widget> pages = [
+      const SelectContactsView(),
+      const SelectEventView(),
+      if (hasMatchList) const SelectParticipantsView(),
+      const SelectComplementsView(),
+      SummaryView(messageController: messageController),
+    ];
+
     return BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
       builder: (_, state) {
         return Scaffold(

@@ -1,4 +1,5 @@
 import 'package:felicitup_app/core/theme/theme.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../gen/l10n.dart';
 
@@ -13,7 +14,7 @@ extension ContextExtensions on BuildContext {
   AppColors get colors => AppColors();
 
   double sp(double pixel) =>
-      (pixel / baseWidth) * MediaQuery.of(this).size.width;
+      kIsWeb ? pixel : (pixel / baseWidth) * MediaQuery.of(this).size.width;
 
   double get fullWidth => MediaQuery.of(this).size.width;
 

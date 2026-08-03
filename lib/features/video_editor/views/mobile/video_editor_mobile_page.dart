@@ -9,6 +9,7 @@ import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart'
 import 'package:felicitup_app/features/video_editor/bloc/video_editor_bloc.dart';
 import 'package:felicitup_app/features/video_editor/widgets/widgets.dart';
 import 'package:felicitup_app/helpers/helpers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -152,6 +153,10 @@ class _VideoEditorMobilePageState extends State<VideoEditorMobilePage>
 
                   return PrimaryButton(
                     onTap: () async {
+                      if (kIsWeb) {
+                        showDownloadAppModal(context: context);
+                        return;
+                      }
                       context.read<VideoEditorBloc>().add(
                             const VideoEditorEvent.setUrlVideo(''),
                           );

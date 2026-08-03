@@ -6,6 +6,7 @@ import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/router/router.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
 import 'package:felicitup_app/features/details_felicitup/details_felicitup.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -233,10 +234,16 @@ class _VideoFelicitupMobilePageState extends State<VideoFelicitupMobilePage> {
                     SizedBox(height: context.sp(12)),
                     FloatingActionButton.extended(
                       heroTag: '9',
-                      onPressed: () => context.go(
-                        RouterPaths.videoEditor,
-                        extra: {'felicitupId': felicitup.id, 'videoUrl': ''},
-                      ),
+                      onPressed: () {
+                        if (kIsWeb) {
+                          showDownloadAppModal(context: context);
+                          return;
+                        }
+                        context.go(
+                          RouterPaths.videoEditor,
+                          extra: {'felicitupId': felicitup.id, 'videoUrl': ''},
+                        );
+                      },
                       backgroundColor: context.colors.orange,
                       label: Padding(
                         padding: EdgeInsets.symmetric(

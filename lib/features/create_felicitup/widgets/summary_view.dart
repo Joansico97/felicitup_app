@@ -1,7 +1,9 @@
+import 'package:collection/collection.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/constants/constants.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
+import 'package:felicitup_app/data/models/models.dart';
 import 'package:felicitup_app/features/create_felicitup/bloc/create_felicitup_bloc.dart';
 import 'package:felicitup_app/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +35,23 @@ class SummaryView extends StatelessWidget {
                   final reason = state.eventReason;
                   final currentUser = context.read<AppBloc>().state.currentUser;
 
+                  String getOwnerDisplayName(OwnerModel owner) {
+                    final friend = state.friendList.firstWhereOrNull(
+                      (element) => element.id == owner.id,
+                    );
+                    if (friend != null) {
+                      return friend.getDisplayName(currentUser);
+                    }
+                    return owner.name;
+                  }
+
+                  if (listOwner.isEmpty) {
+                    return Text(
+                      reason,
+                      style: context.styles.subtitle,
+                    );
+                  }
+
                   return listOwner.length > 2
                       ? Column(
                           children: [
@@ -43,11 +62,11 @@ class SummaryView extends StatelessWidget {
                                   listOwner.length,
                                   (index) => index != listOwner.length - 1
                                       ? Text(
-                                          '${state.friendList.firstWhere((element) => element.id == listOwner[index].id).getDisplayName(currentUser)} ',
+                                          '${getOwnerDisplayName(listOwner[index])} ',
                                           style: context.styles.subtitle,
                                         )
                                       : Text(
-                                          'y ${state.friendList.firstWhere((element) => element.id == listOwner[index].id).getDisplayName(currentUser)} ',
+                                          'y ${getOwnerDisplayName(listOwner[index])} ',
                                           style: context.styles.subtitle,
                                         ),
                                 ),
@@ -56,7 +75,7 @@ class SummaryView extends StatelessWidget {
                           ],
                         )
                       : Text(
-                          '$reason de ${state.friendList.firstWhere((element) => element.id == listOwner[0].id).getDisplayName(currentUser)}',
+                          '$reason de ${getOwnerDisplayName(listOwner[0])}',
                           style: context.styles.subtitle,
                         );
                 },
@@ -97,21 +116,28 @@ class SummaryView extends StatelessWidget {
                 },
               ),
               SizedBox(height: context.sp(8)),
-              SizedBox(
-                width: context.sp(230),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('| Paso 05', style: context.styles.menu),
-                    SizedBox(height: context.sp(8)),
-                    Text('Resumen', style: context.styles.header2),
-                    SizedBox(height: context.sp(4)),
-                    Text(
-                      'Revisa los datos de tu Felicitup',
-                      style: context.styles.paragraph,
+              BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
+                builder: (_, state) {
+                  return SizedBox(
+                    width: context.sp(230),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '| Paso 0${state.steperIndex + 1}',
+                          style: context.styles.menu,
+                        ),
+                        SizedBox(height: context.sp(8)),
+                        Text('Resumen', style: context.styles.header2),
+                        SizedBox(height: context.sp(4)),
+                        Text(
+                          'Revisa los datos de tu Felicitup',
+                          style: context.styles.paragraph,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
               SizedBox(height: context.sp(8)),
               BlocBuilder<CreateFelicitupBloc, CreateFelicitupState>(
@@ -120,13 +146,15 @@ class SummaryView extends StatelessWidget {
                   final invitedList = state.invitedContacts;
                   final selectedDate = state.selectedDate;
                   final reason = state.eventReason;
+                  final ownerDate = listOwner.isNotEmpty ? listOwner[0].date : null;
+                  final targetDate = selectedDate ?? ownerDate ?? DateTime.now();
+                  final bool hasMatchList = state.friendList.isNotEmpty;
 
                   return Column(
                     children: [
                       _ResumenCard(
-                        label: selectedDate != null
-                            ? 'Fecha: ${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(selectedDate)}'
-                            : 'Fecha: ${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(listOwner[0].date!)}',
+                        label:
+                            'Fecha: ${DateFormat(AppConstants.birthDateFormat, 'es_ES').format(targetDate)}',
                         onTap: () => context.read<CreateFelicitupBloc>().add(
                           CreateFelicitupEvent.jumpToStep(0),
                         ),
@@ -141,16 +169,19 @@ class SummaryView extends StatelessWidget {
 
                       _ResumenCard(
                         label: 'Participantes: ${invitedList.length + 1}',
-                        onTap: () => context.read<CreateFelicitupBloc>().add(
-                          CreateFelicitupEvent.jumpToStep(2),
-                        ),
+                        onTap: () {
+                          if (hasMatchList) {
+                            context.read<CreateFelicitupBloc>().add(
+                              CreateFelicitupEvent.jumpToStep(2),
+                            );
+                          }
+                        },
                       ),
 
                       _ResumenCard(
                         label: (() {
                           final now = DateTime.now();
-                          final date = selectedDate ?? listOwner[0].date;
-                          final sendDate = date!.subtract(Duration(days: 1));
+                          final sendDate = targetDate.subtract(const Duration(days: 1));
                           final year = sendDate.isAfter(now)
                               ? sendDate.year
                               : now.year;

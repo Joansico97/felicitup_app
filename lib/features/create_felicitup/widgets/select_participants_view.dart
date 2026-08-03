@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:felicitup_app/app/bloc/app_bloc.dart';
 import 'package:felicitup_app/core/extensions/extensions.dart';
 import 'package:felicitup_app/core/widgets/widgets.dart';
@@ -298,20 +299,25 @@ class _SelectParticipantsViewState extends State<SelectParticipantsView> {
                         SizedBox(height: context.sp(12)),
                         ...List.generate(
                           listParticipants.length,
-                          (index) => OnlyViewCardRow(
-                            contactName: state.friendList
-                                .firstWhere(
-                                  (element) =>
-                                      element.id == listParticipants[index].id,
-                                )
-                                .getDisplayName(
-                                  context.read<AppBloc>().state.currentUser,
-                                ),
-                            userImg: listParticipants[index].userImage ?? '',
-                            stepOne: false,
-                            stepTwo: false,
-                            isSelected: true,
-                          ),
+                          (index) {
+                            final currentUser =
+                                context.read<AppBloc>().state.currentUser;
+                            final friend = state.friendList.firstWhereOrNull(
+                              (element) =>
+                                  element.id == listParticipants[index].id,
+                            );
+                            final contactName = friend != null
+                                ? friend.getDisplayName(currentUser)
+                                : listParticipants[index].name ?? '';
+
+                            return OnlyViewCardRow(
+                              contactName: contactName,
+                              userImg: listParticipants[index].userImage ?? '',
+                              stepOne: false,
+                              stepTwo: false,
+                              isSelected: true,
+                            );
+                          },
                         ),
                       ],
                     ),
